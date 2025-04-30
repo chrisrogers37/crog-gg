@@ -11,21 +11,6 @@ export interface Education {
   year: string;
 }
 
-export interface AboutContent {
-  bio: string;
-  skills: readonly string[];
-  location: string;
-  email: string;
-  employment: readonly Employment[];
-  education: readonly Education[];
-  socialLinks: {
-    github: string;
-    hoobe: string;
-    spotify: string;
-    linkedin: string;
-  };
-}
-
 export interface Project {
   title: string;
   description: string;
@@ -36,11 +21,9 @@ export interface Project {
 
 export interface MusicProject {
   title: string;
-  description: string;
-  role: string;
+  album: string;
   year: string;
-  link?: string;
-  image?: string;
+  spotifyEmbed: string;
 }
 
 interface ResumeData {
@@ -49,24 +32,19 @@ interface ResumeData {
     bio: string;
     email: string;
     location: string;
-    employment: Array<{
-      title: string;
-      company: string;
-      period: string;
-      achievements: string[];
-    }>;
-    education: Array<{
-      school: string;
-      degree: string;
-      year: string;
-    }>;
-    skills: string[];
     socialLinks: {
       github: string;
       hoobe: string;
       spotify: string;
       linkedin: string;
     };
+  };
+  portfolio: {
+    experience: Employment[];
+    education: Education[];
+    skills: string[];
+    projects: Project[];
+    music: MusicProject[];
   };
 }
 
@@ -76,7 +54,15 @@ export const defaultResume: ResumeData = {
     bio: "Hey, I'm Chris. Welcome to my digital resume and portfolio.\n\nBy day, I work at the intersection of data infrastructure and insight generation to solve complex problems with real business impact. I'm passionate about building scalable processes that support the continuous delivery of analytics, while also enjoying the hands-on work of diving into data—exploring patterns, forming and testing hypotheses, performing statistical testing, and uncovering meaningful insights to inform business strategy.\n\nOutside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places and cultures, or retreating to Maine to relax in nature with a few good books.\n\nFeel free to explore my experience, projects, and other interests below. And while you're here, maybe hit the Summon New Lore button and play around with a little feature I added on a rainy afternoon =)",
     email: "christophertrogers37@gmail.com",
     location: "New York City, New York",
-    employment: [
+    socialLinks: {
+      github: "https://github.com/chrisrogers37/",
+      hoobe: "https://hoo.be/crog",
+      spotify: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
+      linkedin: "https://www.linkedin.com/in/chrisrogers37/"
+    }
+  },
+  portfolio: {
+    experience: [
       {
         title: "Analytics Engineer",
         company: "Citadel",
@@ -149,14 +135,36 @@ export const defaultResume: ResumeData = {
       "Docker",
       "Music Production"
     ],
-    socialLinks: {
-      github: "https://github.com/chrisrogers37/",
-      hoobe: "https://hoo.be/crog",
-      spotify: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
-      linkedin: "https://www.linkedin.com/in/chrisrogers37/"
-    }
+    projects: [
+      {
+        title: "Shuffify",
+        description: "Intelligent playlist shuffling app for Spotify users.",
+        technologies: ["React", "TypeScript", "Spotify API", "Vercel"],
+        link: "https://shuffify.app"
+      },
+      {
+        title: "Data Pipeline Orchestrator",
+        description: "A Python framework for orchestrating ETL workflows across BigQuery, Python, and Tableau.",
+        technologies: ["Python", "BigQuery", "Tableau", "Airflow"],
+        link: "https://github.com/chrisrogers37/data-pipeline-orchestrator"
+      }
+    ],
+    music: [
+      {
+        title: "Dreams in Code",
+        album: "Night City",
+        year: "2023",
+        spotifyEmbed: "https://open.spotify.com/embed/track/1A2b3C4d5E6f7G8h9I0j"
+      },
+      {
+        title: "Sunset Drive",
+        album: "Night City",
+        year: "2022",
+        spotifyEmbed: "https://open.spotify.com/embed/track/2B3c4D5e6F7g8H9i0J1k"
+      }
+    ]
   }
-}
+};
 
 // Helper function to get a random transition effect
 export const transitions = [
