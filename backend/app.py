@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from openai import OpenAI
-from openai import AuthenticationError, RateLimitError, APIError
+import openai
+from openai.error import AuthenticationError, RateLimitError, APIError
 import os
 import json
 import random
@@ -41,8 +41,8 @@ CORS(app,
      methods=["GET", "POST", "OPTIONS"])
 
 # Configure OpenAI
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-if not client.api_key:
+openai.api_key = os.getenv('OPENAI_API_KEY')
+if not openai.api_key:
     logger.warning("OpenAI API key not found in .env file!")
 else:
     logger.info("OpenAI API key loaded successfully")
@@ -105,7 +105,7 @@ def regenerate_content():
                 'error': 'Section not specified'
             }), 400
 
-        if not client.api_key:
+        if not openai.api_key:
             logger.error("Error: OpenAI API key not configured")
             return jsonify({
                 'success': False,
@@ -116,26 +116,11 @@ def regenerate_content():
         prompts = {
             'about': {
                 'system': "You are a creative writer who specializes in professional biographies and achievements. You MUST rewrite ALL text content while preserving the core meaning and facts. Return ONLY valid JSON with no prefixes or additional text.",
-                'format': """Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field with new wording while maintaining the same core information.
-
-                For ALL text content (display_name, bio, achievements, etc.):
-                1. EVERY single text field must be rewritten with new phrasing
-                2. Maintain the same core accomplishments and facts
-                3. Use varied sentence structures and strong action verbs
-                4. Keep all numerical metrics (percentages, numbers) exactly the same
-                5. Do not copy any full sentences from the original text
-
-                For the display_name field:
-                1. Create a professional variation that includes 'Christopher' or 'Chris'
-                2. Never return the exact input name
-                3. Example format: 'Christopher T. Rogers' or 'Chris Rogers'
-
-                For achievements specifically:
-                1. Make each bullet point tell a compelling story
-                2. Use different action verbs than the original
-                3. Highlight the impact and results in a new way
-                4. Ensure every achievement is rewritten, not just some
-                5. Keep the same meaning but use entirely new phrasing"""
+                'format': """Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field with new wording while maintaining the same core information.\n\nFor ALL text content (display_name, bio, etc.):\n1. EVERY single text field must be rewritten with new phrasing\n2. Maintain the same core accomplishments and facts\n3. Use varied sentence structures and strong action verbs\n4. Keep all numerical metrics (percentages, numbers) exactly the same\n5. Do not copy any full sentences from the original text\n\nFor the display_name field:\n1. Create a professional variation that includes 'Christopher' or 'Chris'\n2. Never return the exact input name\n3. Example format: 'Christopher T. Rogers' or 'Chris Rogers'\n"""
+            },
+            'portfolio': {
+                'system': "You are a technical and creative writer who specializes in professional portfolios. You MUST rewrite ALL text content in the portfolio (experience, education, skills, projects, music) while preserving the core meaning and facts. Return ONLY valid JSON with no prefixes or additional text.",
+                'format': """Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field in experience, education, skills, projects, and music with new wording while maintaining the same core information.\n\nFor ALL text content (titles, descriptions, achievements, etc.):\n1. EVERY single text field must be rewritten with new phrasing\n2. Maintain the same core accomplishments and facts\n3. Use varied sentence structures and strong action verbs\n4. Keep all numerical metrics (percentages, numbers) exactly the same\n5. Do not copy any full sentences from the original text\n\nFor experience, education, skills, projects, and music:\n- Experience: Rewrite job titles, company names, periods, and achievements.\n- Education: Rewrite school names, degrees, and years.\n- Skills: Rewrite each skill with a new phrasing or synonym.\n- Projects: Rewrite project titles, descriptions, and technologies.\n- Music: Rewrite track titles, album names, and years.\n"""
             },
             'projects': {
                 'system': "You are a technical writer who specializes in project descriptions. Return ONLY valid JSON with no prefixes or additional text. Keep the core project details accurate but present them in a new, engaging way.",
@@ -210,7 +195,7 @@ def regenerate_content():
             
             logger.info(f"OpenAI request messages: {json.dumps(messages, indent=2)}")
             
-            response = client.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=messages,
                 temperature=0.7,

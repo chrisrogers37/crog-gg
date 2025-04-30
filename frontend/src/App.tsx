@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import About from './components/About'
 import Portfolio from './components/Portfolio'
+import SectionNav from './components/SectionNav'
 import { defaultResume } from './data/resume'
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -22,14 +23,14 @@ const LinkedInIcon = () => (
 );
 
 function App() {
-  const [currentContent, setCurrentContent] = useState<{
-    about: typeof defaultResume.about;
-  }>({
-    about: defaultResume.about
+  const [currentContent, setCurrentContent] = useState({
+    about: defaultResume.about,
+    portfolio: defaultResume.portfolio
   });
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasModifiedContent, setHasModifiedContent] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
 
   // Fetch usage info on component mount and after regeneration
   const fetchUsageInfo = async () => {
@@ -51,7 +52,6 @@ function App() {
   useEffect(() => {
     // Listen for content updates from child components
     const handleContentUpdated = (event: CustomEvent) => {
-      console.log('Content update received in App:', event.detail); // Debug log
       const { section, content } = event.detail;
       setCurrentContent(prev => ({
         ...prev,
@@ -72,10 +72,8 @@ function App() {
     setError(null);
 
     try {
-      console.log('Starting regeneration with current content:', currentContent); // Debug log
-      const willUseFantasy = Math.random() < 1.00; // Always true, but keeping the calculation for future flexibility
-      console.log('Using fantasy mode:', willUseFantasy); // Debug log
-
+      const willUseFantasy = Math.random() < 1.00;
+      // Regenerate both about and portfolio sections
       const aboutResponse = await fetch(`${API_URL}/api/regenerate`, {
         method: 'POST',
         headers: {
@@ -91,41 +89,56 @@ function App() {
           use_fantasy: willUseFantasy
         }),
       });
+      const portfolioResponse = await fetch(`${API_URL}/api/regenerate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify({
+          section: 'portfolio',
+          content: currentContent.portfolio,
+          is_full_regeneration: true,
+          use_fantasy: willUseFantasy
+        }),
+      });
 
-      if (!aboutResponse.ok) {
-        throw new Error('Failed to regenerate about section');
+      if (!aboutResponse.ok || !portfolioResponse.ok) {
+        throw new Error('Failed to regenerate content');
       }
 
       const aboutData = await aboutResponse.json();
-      if (aboutData.success) {
-        console.log('New about content generated:', aboutData.content); // Debug log
-        
-        // Update the current content state
+      const portfolioData = await portfolioResponse.json();
+      if (aboutData.success && portfolioData.success) {
         setCurrentContent(prev => ({
           ...prev,
-          about: aboutData.content
+          about: aboutData.content,
+          portfolio: portfolioData.content
         }));
-        
-        // Mark content as modified
         setHasModifiedContent(true);
-
-        // Dispatch the content regenerated event
-        const event = new CustomEvent('contentRegenerated', {
+        // Dispatch the content regenerated events
+        window.dispatchEvent(new CustomEvent('contentRegenerated', {
           detail: {
             section: 'about',
             content: aboutData.content,
             is_full_regeneration: true,
             use_fantasy: willUseFantasy
           }
-        });
-        console.log('Dispatching contentRegenerated event:', event.detail); // Debug log
-        window.dispatchEvent(event);
+        }));
+        window.dispatchEvent(new CustomEvent('contentRegenerated', {
+          detail: {
+            section: 'portfolio',
+            content: portfolioData.content,
+            is_full_regeneration: true,
+            use_fantasy: willUseFantasy
+          }
+        }));
       }
-
     } catch (error) {
       console.error('Error during regeneration:', error);
     } finally {
-      // Wait a bit before setting isRegenerating to false
       setTimeout(() => {
         setIsRegenerating(false);
       }, 1000);
@@ -133,24 +146,27 @@ function App() {
   };
 
   const handleReset = () => {
-    // Reset content to default
     setCurrentContent({
-      about: defaultResume.about
+      about: defaultResume.about,
+      portfolio: defaultResume.portfolio
     });
-
-    // Reset modification state
     setHasModifiedContent(false);
-
-    // Dispatch the content regenerated event to update child components
-    const event = new CustomEvent('contentRegenerated', {
+    window.dispatchEvent(new CustomEvent('contentRegenerated', {
       detail: {
         section: 'about',
         content: defaultResume.about,
         is_full_regeneration: true,
         use_fantasy: false
       }
-    });
-    window.dispatchEvent(event);
+    }));
+    window.dispatchEvent(new CustomEvent('contentRegenerated', {
+      detail: {
+        section: 'portfolio',
+        content: defaultResume.portfolio,
+        is_full_regeneration: true,
+        use_fantasy: false
+      }
+    }));
   };
 
   return (
@@ -174,24 +190,6 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="button-group">
-          <button 
-            className="generate-btn"
-            onClick={handleRegenerate}
-            disabled={isRegenerating}
-          >
-            {isRegenerating ? 'Weaving Epic Saga...' : 'SUMMON NEW LORE'}
-          </button>
-          {hasModifiedContent && (
-            <button 
-              className="reset-btn"
-              onClick={handleReset}
-              disabled={isRegenerating}
-            >
-              DISPEL ENCHANTMENT
-            </button>
-          )}
-        </div>
       </header>
 
       {error && (
@@ -201,13 +199,39 @@ function App() {
       )}
 
       <main>
-        <section className="section-content">
-          <About onRegenerate={fetchUsageInfo} />
+        <section className="section-content about-section">
+          <h2>
+            ABOUT ME
+            <div className="button-group">
+              <button 
+                className="generate-btn"
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+              >
+                {isRegenerating ? 'Weaving Epic Saga...' : 'SUMMON NEW LORE'}
+              </button>
+              {hasModifiedContent && (
+                <button 
+                  className="reset-btn"
+                  onClick={handleReset}
+                  disabled={isRegenerating}
+                >
+                  DISPEL ENCHANTMENT
+                </button>
+              )}
+            </div>
+          </h2>
+          <div className="about-content">
+            <About onRegenerate={fetchUsageInfo} />
+          </div>
         </section>
 
-        <section className="section-content">
-          <Portfolio />
-        </section>
+        <SectionNav 
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+
+        <Portfolio activeSection={activeSection} />
       </main>
     </div>
   )
