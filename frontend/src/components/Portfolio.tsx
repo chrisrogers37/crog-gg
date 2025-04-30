@@ -16,7 +16,6 @@ interface PortfolioProps {
 
 export default function Portfolio({ activeSection }: PortfolioProps) {
   const [content, setContent] = useState(defaultResume.portfolio);
-  const [visibleSection, setVisibleSection] = useState(activeSection);
   const [prevSection, setPrevSection] = useState('');
 
   useEffect(() => {
@@ -35,9 +34,8 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
   }, []);
 
   useEffect(() => {
-    if (activeSection !== visibleSection) {
-      setPrevSection(visibleSection);
-      setVisibleSection(activeSection);
+    if (activeSection !== prevSection) {
+      setPrevSection(activeSection);
     }
   }, [activeSection]);
 
@@ -150,12 +148,12 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
 
     return (
       <CSSTransition
-        in={activeSection === visibleSection}
+        in={activeSection === prevSection}
         timeout={300}
         classNames="fade"
         unmountOnExit={false}
       >
-        <div className={`content-section ${activeSection === visibleSection ? 'visible' : ''}`}>
+        <div className={`content-section ${activeSection === prevSection ? 'visible' : ''}`}>
           {sectionContent}
         </div>
       </CSSTransition>
