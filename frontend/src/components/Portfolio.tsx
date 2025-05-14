@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { defaultResume } from '../data/resume';
 import { CSSTransition } from 'react-transition-group';
 import '../styles/transitions.css';
@@ -17,6 +17,7 @@ interface PortfolioProps {
 export default function Portfolio({ activeSection }: PortfolioProps) {
   const [content, setContent] = useState(defaultResume.portfolio);
   const [prevSection, setPrevSection] = useState('');
+  const nodeRef = useRef(null);
 
   useEffect(() => {
     // Listen for content updates
@@ -148,12 +149,13 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
 
     return (
       <CSSTransition
+        nodeRef={nodeRef}
         in={activeSection === prevSection}
         timeout={300}
         classNames="fade"
         unmountOnExit={false}
       >
-        <div className={`content-section ${activeSection === prevSection ? 'visible' : ''}`}>
+        <div ref={nodeRef} className={`content-section ${activeSection === prevSection ? 'visible' : ''}`}>
           {sectionContent}
         </div>
       </CSSTransition>

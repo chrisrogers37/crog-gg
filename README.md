@@ -111,69 +111,104 @@ An interactive portfolio website featuring dynamic content generation using Open
 - Node.js 14+
 - SSL certificates (Let's Encrypt)
 
-### Backend Deployment
-1. Set up Nginx configuration for the API:
-   ```nginx
-   server {
-       listen 443 ssl;
-       server_name api.yourdomain.com;
-       
-       ssl_certificate /etc/letsencrypt/live/api.yourdomain.com/fullchain.pem;
-       ssl_certificate_key /etc/letsencrypt/live/api.yourdomain.com/privkey.pem;
-       
-       location / {
-           proxy_pass http://127.0.0.1:5001;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-       }
-   }
-   ```
+### Deployment Process
 
-2. Set up systemd service for Flask:
-   ```ini
-   [Unit]
-   Description=Flask Application
-   After=network.target
-
-   [Service]
-   User=www-data
-   WorkingDirectory=/var/www/api.yourdomain.com/backend
-   Environment="PATH=/var/www/api.yourdomain.com/venv/bin"
-   ExecStart=/var/www/api.yourdomain.com/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app
-
-   [Install]
-   WantedBy=multi-user.target
-   ```
-
-3. Enable and start the service:
+#### Frontend Deployment (crog.gg)
+1. SSH into the frontend server:
    ```bash
-   systemctl enable flask
-   systemctl start flask
+   ssh crog-frontend
    ```
 
-### Frontend Deployment
-1. Build the frontend:
+2. Navigate to the frontend repository:
+   ```bash
+   cd /var/www/crog.gg
+   ```
+
+3. Update the code:
+   ```bash
+   git fetch origin
+   git reset --hard origin/main
+   ```
+
+4. Build the frontend:
    ```bash
    cd frontend
+   npm install
    npm run build
    ```
 
-2. Set up Nginx configuration for the frontend:
-   ```nginx
-   server {
-       listen 443 ssl;
-       server_name yourdomain.com;
-       
-       ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-       ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-       
-       root /var/www/yourdomain.com/frontend/dist;
-       index index.html;
-       
-       location / {
-           try_files $uri $uri/ /index.html;
-       }
-   }
+5. Restart nginx:
+   ```bash
+   sudo systemctl restart nginx
+   ```
+
+#### Backend Deployment (api.crog.gg)
+1. SSH into the backend server:
+   ```bash
+   ssh crog-backend
+   ```
+
+2. Navigate to the backend repository:
+   ```bash
+   cd /var/www/api.crog.gg
+   ```
+
+3. Update the code:
+   ```bash
+   git fetch origin
+   git reset --hard origin/main
+   ```
+
+4. Restart the Gunicorn service:
+   ```bash
+   pkill -f gunicorn
+   /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app &
+   ```
+
+### Quick Deployment Commands
+
+For rapid deployment, you can use these one-line commands:
+
+#### Frontend:
+```bash
+ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
+```
+
+#### Backend:
+```bash
+ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app &"
+```
+
+### Deployment Verification
+
+After deployment, verify the services are running:
+
+#### Frontend:
+```bash
+ssh crog-frontend "systemctl status nginx"
+```
+
+#### Backend:
+```bash
+ssh crog-backend "ps aux | grep gunicorn"
+```
+
+### Troubleshooting
+
+If you encounter a 500 error:
+1. Check nginx error logs:
+   ```bash
+   ssh crog-frontend "tail -n 50 /var/log/nginx/error.log"
+   ```
+
+2. Verify the dist directory exists:
+   ```bash
+   ssh crog-frontend "ls -la /var/www/crog.gg/frontend/dist"
+   ```
+
+3. Check the build output:
+   ```bash
+   ssh crog-frontend "cd /var/www/crog.gg/frontend && npm run build 2>&1"
    ```
 
 ### Common Issues and Solutions
@@ -191,12 +226,6 @@ An interactive portfolio website featuring dynamic content generation using Open
    - Verify allowed origins in Flask CORS configuration
    - Check Nginx headers
    - Confirm frontend API URL configuration
-
-## Built with Cursor
-
-This project was developed using [Cursor](https://cursor.sh). 
-
-:)
 
 ## License
 
