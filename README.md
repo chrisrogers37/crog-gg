@@ -227,6 +227,53 @@ If you encounter a 500 error:
    - Check Nginx headers
    - Confirm frontend API URL configuration
 
+### Gunicorn Management
+
+#### Checking Gunicorn Status
+```bash
+ssh crog-backend "ps aux | grep gunicorn"
+```
+
+#### Restarting Gunicorn
+If the backend is not responding or you need to restart Gunicorn:
+
+1. Kill existing Gunicorn processes:
+   ```bash
+   ssh crog-backend "pkill -f gunicorn"
+   ```
+
+2. Start Gunicorn with debug logging:
+   ```bash
+   ssh crog-backend "cd /var/www/api.crog.gg && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app --log-level debug"
+   ```
+
+3. For production deployment (background process):
+   ```bash
+   ssh crog-backend "cd /var/www/api.crog.gg && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app &"
+   ```
+
+#### Gunicorn Logs
+To check Gunicorn logs:
+```bash
+ssh crog-backend "tail -f /var/log/gunicorn/error.log"
+```
+
+#### Common Gunicorn Issues
+1. **Process not starting**: 
+   - Check Python virtual environment activation
+   - Verify app.py location and imports
+   - Check for port conflicts
+
+2. **Workers not responding**:
+   - Increase worker timeout
+   - Check system resources
+   - Verify application code for blocking operations
+
+3. **Memory issues**:
+   - Monitor worker memory usage
+   - Adjust number of workers based on available RAM
+   - Consider using worker recycling
+
 ## License
 
 MIT 
