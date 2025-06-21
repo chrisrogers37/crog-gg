@@ -111,7 +111,51 @@ An interactive portfolio website featuring dynamic content generation using Open
 - Node.js 14+
 - SSL certificates (Let's Encrypt)
 
-### Deployment Process
+### Systemd Services Setup (Recommended)
+
+For automatic startup after server reboots, deploy the systemd services:
+
+#### Backend Service Setup
+1. SSH into the backend server:
+   ```bash
+   ssh crog-backend
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd /var/www/api.crog.gg
+   ```
+
+3. Deploy the systemd service:
+   ```bash
+   cd systemd
+   ./deploy-services.sh backend
+   ```
+
+4. Verify the service is running:
+   ```bash
+   ./deploy-services.sh status
+   ```
+
+#### Service Management Commands
+- **Check status**: `./systemd/deploy-services.sh status`
+- **Restart services**: `./systemd/deploy-services.sh restart`
+- **Stop services**: `./systemd/deploy-services.sh stop`
+
+#### Viewing Service Logs
+To view service logs:
+```bash
+# View recent logs
+sudo journalctl -u choose-your-own-chris-backend -f
+
+# View logs from today
+sudo journalctl -u choose-your-own-chris-backend --since today
+
+# View logs from last hour
+sudo journalctl -u choose-your-own-chris-backend --since "1 hour ago"
+```
+
+### Manual Deployment Process
 
 #### Frontend Deployment (crog.gg)
 1. SSH into the frontend server:
