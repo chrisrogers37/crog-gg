@@ -162,7 +162,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 4. Restart the Gunicorn service:
    ```bash
    pkill -f gunicorn
-   /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app &
+   cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &
    ```
 
 ### Quick Deployment Commands
@@ -176,7 +176,7 @@ ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard o
 
 #### Backend:
 ```bash
-ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app &"
+ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
 ```
 
 ### Deployment Verification
@@ -244,12 +244,12 @@ If the backend is not responding or you need to restart Gunicorn:
 
 2. Start Gunicorn with debug logging:
    ```bash
-   ssh crog-backend "cd /var/www/api.crog.gg && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app --log-level debug"
+   ssh crog-backend "cd /var/www/api.crog.gg && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app --log-level debug"
    ```
 
 3. For production deployment (background process):
    ```bash
-   ssh crog-backend "cd /var/www/api.crog.gg && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 backend.app:app &"
+   ssh crog-backend "cd /var/www/api.crog.gg && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
    ```
 
 #### Gunicorn Logs
