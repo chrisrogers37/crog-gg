@@ -6,6 +6,7 @@ import json
 import random
 import logging
 import sys
+import requests
 from dotenv import load_dotenv
 
 # Configure logging to work with Gunicorn
@@ -47,6 +48,11 @@ else:
     logger.info("OpenAI API key loaded successfully")
 
 openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+if not GITHUB_TOKEN:
+    logger.warning("GitHub token not found in .env file! API requests may be rate-limited.")
+else:
+    logger.info("GitHub token loaded successfully")
 
 def get_fantasy_prompt(use_fantasy=False):
     """Get the fantasy prompt addition if requested."""
@@ -247,8 +253,63 @@ def regenerate_content():
             'error': f'Request processing error: {str(e)}'
         }), 500
 
+@app.route('/api/github/languages', methods=['GET'])
+def get_github_languages():
+    logger.info("=== New GitHub Languages Request ===")
+    github_username = "chrisrogers37"
+    api_url = f"https://api.github.com/users/{github_username}/repos"
+    
+    headers = {
+        "Accept": "application/vnd.github.v3+json"
+    }
+    if GITHUB_TOKEN:
+        headers["Authorization"] = f"token {GITHUB_TOKEN}"
+
+    try:
+        repos_response = requests.get(api_url, headers=headers, params={'type': 'owner', 'sort': 'pushed', 'per_page': 100})
+        repos_response.raise_for_status()
+        repos = repos_response.json()
+        logger.info(f"Found {len(repos)} repositories for user {github_username}")
+
+        language_stats = {}
+        
+        for repo in repos:
+            if repo['fork']:
+                continue
+
+            lang_url = repo['languages_url']
+            lang_response = requests.get(lang_url, headers=headers)
+            lang_response.raise_for_status()
+            languages = lang_response.json()
+            
+            for lang, bytes_of_code in languages.items():
+                language_stats[lang] = language_stats.get(lang, 0) + bytes_of_code
+
+        # Sort languages by bytes of code, descending
+        sorted_languages = sorted(language_stats.items(), key=lambda item: item[1], reverse=True)
+        
+        logger.info(f"Successfully aggregated language stats: {json.dumps(sorted_languages, indent=2)}")
+        
+        return jsonify({
+            'success': True,
+            'languages': sorted_languages
+        })
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error fetching data from GitHub: {e}", exc_info=True)
+        error_message = f"Error fetching data from GitHub: {e}"
+        status_code = e.response.status_code if e.response else 500
+        
+        if status_code == 403:
+            error_message = "GitHub API rate limit exceeded. Please try again later or provide a GITHUB_TOKEN."
+        
+        return jsonify({'success': False, 'error': error_message}), status_code
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': f'An unexpected error occurred: {e}'}), 500
+
 @app.route('/api/limits', methods=['GET'])
-def get_limits():
+def get_usage_info():
     return jsonify({
         'token_limit': 1000000,
         'token_usage': 0,

@@ -42,16 +42,16 @@ interface ResumeData {
   portfolio: {
     experience: Employment[];
     education: Education[];
-    skills: string[];
     projects: Project[];
     music: MusicProject[];
   };
+  skills: { name: string; weight: number }[];
 }
 
 export const defaultResume: ResumeData = {
   about: {
     display_name: "Christopher T. Rogers",
-    bio: "Hey, I'm Chris. Welcome to my digital resume and portfolio.\n\nDuring the day, I build data systems and tools that help people find answers to business questions and make better decisions. I'm especially passionate about automation and creating scalable infrastructure that cuts down on busywork and makes analytics easier to deliver. I also enjoy working directly with data to test ideas and uncover insights that move the business forward.\n\nOutside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places, or retreating to Maine to relax in nature with a few good books.\n\nFeel free to explore my experience, projects, and other interests below. And while you're here, hit the Summon New Lore button and play around with a little feature I added on a rainy afternoon =)",
+    bio: "Hey, I'm Chris. Welcome to my digital resume and portfolio.\n\nI use data to tackle ambiguous business problems and deliver clear, actionable recommendations at the point of decision. I care deeply about building systems that make insight repeatable, whether that means automating workflows, designing scalable infrastructure, or creating tools that make analytics easier to deliver, use, and understand. I stay close to the cutting edge, regularly building and experimenting with AI-enriched processes, including retrieval-augmented generation (RAG), vector search, and other LLM-integrated approaches (click Summon New Lore to see one in action!).\n\nOutside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places or retreating to Maine to relax in nature with a few good books.\n\nFeel free to explore my experience, projects, and other interests below.",
     email: "christophertrogers37@gmail.com",
     location: "New York City, New York",
     socialLinks: {
@@ -113,28 +113,6 @@ export const defaultResume: ResumeData = {
         year: "2014"
       }
     ],
-    skills: [
-      "Python",
-      "R",
-      "SQL",
-      "Tableau",
-      "Google Cloud Platform",
-      "BigQuery",
-      "Kubernetes",
-      "Data Engineering",
-      "Daiquery",
-      "Presto",
-      "Hive",
-      "Experimentation",
-      "Metric Design",
-      "Data Visualization",
-      "ETL Pipeline Development",
-      "Statistical Analysis",
-      "Machine Learning",
-      "Git",
-      "Docker",
-      "Music Production"
-    ],
     projects: [
       {
         title: "Shuffify",
@@ -163,7 +141,34 @@ export const defaultResume: ResumeData = {
         spotifyEmbed: "https://open.spotify.com/embed/track/2B3c4D5e6F7g8H9i0J1k"
       }
     ]
-  }
+  },
+  skills: [
+    { name: "python", weight: 7},
+    { name: "object-oriented programming", weight: 5 },
+    { name: "sql", weight: 9 },
+    { name: "data modeling", weight: 7 },
+    { name: "dbt", weight: 7 },
+    { name: "google cloud platform", weight: 5 },
+    { name: "airflow", weight: 5 },
+    { name: "aws", weight: 5 },
+    { name: "bigquery", weight: 8 },
+    { name: "statistical testing", weight: 6 },
+    { name: "tableau", weight: 9 },
+    { name: "experimentation", weight: 5 },
+    { name: "git", weight: 7 },
+    { name: "llms", weight: 6 },
+    { name: "docker", weight: 4 },
+    { name: "kubernetes", weight: 5 },
+    { name: "R", weight: 6 },
+    { name: "metric design", weight: 6 },
+    { name: "adobe premiere pro", weight: 4 },
+    { name: "ableton", weight: 5 },
+    { name: "regression", weight: 6 },
+    { name: "classification", weight: 6 },
+    { name: "natural language processing", weight: 6 },
+    { name: "time series analysis", weight: 5 },
+    { name: "forecasting", weight: 5 },
+  ]
 };
 
 // Helper function to get a random transition effect

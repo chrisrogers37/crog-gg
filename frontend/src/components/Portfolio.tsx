@@ -10,13 +10,35 @@ const LINKS = {
   spotify: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn"
 } as const;
 
+// A mapping of language names to colors for consistent styling
+const LANGUAGE_COLORS: { [key: string]: string } = {
+  'TypeScript': '#3178C6',
+  'JavaScript': '#F7DF1E',
+  'Python': '#3572A5',
+  'HTML': '#E34F26',
+  'CSS': '#1572B6',
+  'Jupyter Notebook': '#DA5B0B',
+  'Shell': '#89E051',
+  'SCSS': '#C6538C',
+  'Dockerfile': '#384d54',
+  'Other': '#CCCCCC'
+};
+
 interface PortfolioProps {
   activeSection: string;
+}
+
+interface Language {
+  name: string;
+  bytes: number;
 }
 
 export default function Portfolio({ activeSection }: PortfolioProps) {
   const [content, setContent] = useState(defaultResume.portfolio);
   const [prevSection, setPrevSection] = useState('');
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [loadingLanguages, setLoadingLanguages] = useState(false);
+  const [languageError, setLanguageError] = useState<string | null>(null);
   const nodeRef = useRef(null);
 
   useEffect(() => {
@@ -38,7 +60,35 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
     if (activeSection !== prevSection) {
       setPrevSection(activeSection);
     }
-  }, [activeSection]);
+    if (activeSection === 'projects' && languages.length === 0 && !loadingLanguages) {
+      fetchLanguages();
+    }
+  }, [activeSection, prevSection, languages, loadingLanguages]);
+  
+  const fetchLanguages = async () => {
+    setLoadingLanguages(true);
+    setLanguageError(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/github/languages`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch languages');
+      }
+      const data = await response.json();
+      
+      const formattedLanguages = data.languages.map(([name, bytes]: [string, number]) => ({ name, bytes }));
+      setLanguages(formattedLanguages);
+
+    } catch (err) {
+      if (err instanceof Error) {
+        setLanguageError(err.message);
+      } else {
+        setLanguageError('An unknown error occurred');
+      }
+    } finally {
+      setLoadingLanguages(false);
+    }
+  };
 
   const renderSection = () => {
     if (!content) return <div>Loading...</div>;
@@ -65,14 +115,6 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
                     </ul>
                   </div>
                 ))}
-              </div>
-              <div className="skills-section">
-                <h3>Skills</h3>
-                <div className="skills-grid">
-                  {(content.skills || []).map((skill, index) => (
-                    <span key={index} className="tech-tag">{skill}</span>
-                  ))}
-                </div>
               </div>
             </div>
           );
@@ -108,6 +150,44 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
                     <span className="link-description">Check out my open source projects and contributions</span>
                   </div>
                 </a>
+              </div>
+              <div className="github-stats-container">
+                {loadingLanguages && <div className="loading-message">Summoning language stats from GitHub...</div>}
+                {languageError && <div className="error-message">Error: {languageError}</div>}
+                {!loadingLanguages && !languageError && languages.length > 0 && (
+                  <>
+                    <h4 className="stats-header">GitHub Language Stats</h4>
+                    <p className="skills-subtitle">
+                      A dynamic overview of languages from my public repositories, sized by bytes of code.
+                    </p>
+                    <div className="skills-bar-chart">
+                      {(() => {
+                          const totalBytes = languages.reduce((sum, lang) => sum + lang.bytes, 0);
+                          return languages.map((lang, index) => {
+                          const percentage = totalBytes > 0 ? (lang.bytes / totalBytes) * 100 : 0;
+                          const barColor = LANGUAGE_COLORS[lang.name] || LANGUAGE_COLORS['Other'];
+                          
+                          return (
+                            <div key={index} className="skill-bar-wrapper">
+                              <div className="skill-bar-label">
+                                <span>{lang.name}</span>
+                                <span>{percentage.toFixed(2)}%</span>
+                              </div>
+                              <div className="skill-bar">
+                                <div 
+                                  className="skill-bar-fill" 
+                                  style={{ width: `${percentage}%`, backgroundColor: barColor }}
+                                  title={`${lang.bytes.toLocaleString()} bytes`}
+                                >
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      })()}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           );

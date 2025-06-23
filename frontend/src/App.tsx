@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import About from './components/About'
 import Portfolio from './components/Portfolio'
+import Skills from './components/Skills'
 import SectionNav from './components/SectionNav'
 import { defaultResume } from './data/resume'
 
@@ -231,7 +232,10 @@ function App() {
           onSectionChange={setActiveSection}
         />
 
-        <Portfolio activeSection={activeSection} />
+        {['experience', 'education', 'projects', 'music'].includes(activeSection) && (
+          <Portfolio activeSection={activeSection} />
+        )}
+        {activeSection === 'skills' && <Skills />}
       </main>
     </div>
   )
