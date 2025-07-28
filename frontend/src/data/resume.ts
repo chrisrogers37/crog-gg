@@ -11,21 +11,6 @@ export interface Education {
   year: string;
 }
 
-export interface Project {
-  title: string;
-  description: string;
-  technologies: readonly string[];
-  link?: string;
-  image?: string;
-}
-
-export interface MusicProject {
-  title: string;
-  album: string;
-  year: string;
-  spotifyEmbed: string;
-}
-
 interface ResumeData {
   about: {
     display_name: string;
@@ -42,8 +27,6 @@ interface ResumeData {
   portfolio: {
     experience: Employment[];
     education: Education[];
-    projects: Project[];
-    music: MusicProject[];
   };
   skills: { name: string; weight: number }[];
 }
@@ -51,7 +34,7 @@ interface ResumeData {
 export const defaultResume: ResumeData = {
   about: {
     display_name: "Christopher T. Rogers",
-    bio: "I use data to tackle ambiguous business problems and deliver clear, actionable recommendations at the point of decision. I care deeply about building systems that make insight repeatable, whether that means automating workflows, designing scalable infrastructure, or creating tools that make analytics easier to deliver, use, and understand. I stay close to the cutting edge, regularly building and experimenting with AI-enriched processes, including retrieval-augmented generation (RAG), vector search, and other LLM-integrated approaches (click Summon New Lore to see one in action!).\n\nOutside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places or retreating to Maine to relax in nature with a few good books.\n\nFeel free to explore my experience, projects, and other interests below.",
+    bio: "I use data to tackle ambiguous business problems and deliver clear, actionable recommendations at the point of decision. I care deeply about building systems that make insight repeatable, whether that means automating workflows, designing scalable infrastructure, or creating tools that make analytics easier to deliver, use, and understand. I stay close to the cutting edge, regularly building and experimenting with AI-enriched processes, including retrieval-augmented generation (RAG), vector search, and other LLM-integrated approaches (click Summon New Lore to see one in action!).\n\nOutside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places or retreating to Maine to relax in nature with a few good books.\n\nFeel free to explore my experience, projects, and other interests by navigating through the other sections above.",
     email: "christophertrogers37@gmail.com",
     location: "New York City, New York",
     socialLinks: {
@@ -111,34 +94,6 @@ export const defaultResume: ResumeData = {
         school: "Cornell University",
         degree: "BS in Chemical Engineering",
         year: "2014"
-      }
-    ],
-    projects: [
-      {
-        title: "Shuffify",
-        description: "Intelligent playlist shuffling app for Spotify users.",
-        technologies: ["React", "TypeScript", "Spotify API", "Vercel"],
-        link: "https://shuffify.app"
-      },
-      {
-        title: "Data Pipeline Orchestrator",
-        description: "A Python framework for orchestrating ETL workflows across BigQuery, Python, and Tableau.",
-        technologies: ["Python", "BigQuery", "Tableau", "Airflow"],
-        link: "https://github.com/chrisrogers37/data-pipeline-orchestrator"
-      }
-    ],
-    music: [
-      {
-        title: "Dreams in Code",
-        album: "Night City",
-        year: "2023",
-        spotifyEmbed: "https://open.spotify.com/embed/track/1A2b3C4d5E6f7G8h9I0j"
-      },
-      {
-        title: "Sunset Drive",
-        album: "Night City",
-        year: "2022",
-        spotifyEmbed: "https://open.spotify.com/embed/track/2B3c4D5e6F7g8H9i0J1k"
       }
     ]
   },
