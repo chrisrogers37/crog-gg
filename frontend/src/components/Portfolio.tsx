@@ -151,6 +151,20 @@ export default function Portfolio({ activeSection, content: propContent }: Portf
                     <span className="link-description">A better way to manage your Spotify playlists</span>
                   </div>
                 </a>
+                <a href="https://city-cycles.streamlit.app/" target="_blank" rel="noopener noreferrer" className="portfolio-link">
+                  <i className="fas fa-bicycle"></i>
+                  <div>
+                    <span className="link-title">City Cycles</span>
+                    <span className="link-description">End-to-end analytics flow comparing public bike programs in NYC and London</span>
+                  </div>
+                </a>
+                <a href="https://hedwig.streamlit.app/" target="_blank" rel="noopener noreferrer" className="portfolio-link">
+                  <i className="fas fa-feather"></i>
+                  <div>
+                    <span className="link-title">Hedwig</span>
+                    <span className="link-description">RAG-assisted LLM chatbot for generating email outreach templates</span>
+                  </div>
+                </a>
                 <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="portfolio-link">
                   <i className="fab fa-github"></i>
                   <div>
