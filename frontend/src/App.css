@@ -66,6 +66,100 @@ h1 {
   flex: 1;
 }
 
+/* Typewriter Effect */
+.typewriter {
+  display: block;
+  position: relative;
+}
+
+.typewriter-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.7;
+  color: var(--text-color);
+  transition: none;
+}
+
+.typewriter-hidden-calc {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.7;
+  color: var(--text-color);
+}
+
+.bio-typewriter {
+  display: block;
+  line-height: 1.7;
+  color: var(--text-color);
+}
+
+.typewriter-cursor {
+  animation: blink 1s infinite;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.typewriter-skip-container {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.typewriter-skip-btn {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+}
+
+.typewriter-skip-btn:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Section Button Group */
+.section-button-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--card-background);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+/* Global Button Group */
+.global-button-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: var(--card-background);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
 .button-group {
   display: flex;
   gap: 1rem;
@@ -234,6 +328,21 @@ a:hover {
     margin-top: 1rem;
   }
 
+  .global-button-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  .section-button-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+
   .about-section h2 {
     justify-content: center;
     margin-bottom: 0.5rem;
@@ -261,6 +370,10 @@ a:hover {
   .links-grid {
     grid-template-columns: 1fr;
   }
+
+  .section-nav-container {
+    gap: 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -279,7 +392,7 @@ a:hover {
 
 /* About Section */
 .about-section {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   position: relative;
   background-color: var(--card-background);
   opacity: 1;
@@ -297,7 +410,7 @@ a:hover {
 }
 
 .about-content {
-  margin-top: 1.5rem;
+  margin-top: 0;
   opacity: 1;
   visibility: visible;
   color: var(--text-color);
@@ -798,8 +911,8 @@ a:hover {
   padding: 0.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
   transition: transform 0.3s ease-in-out;
 }
 
@@ -1041,4 +1154,28 @@ main {
   font-size: 1.2rem;
   color: #333;
   margin-bottom: 0.25rem;
+}
+
+/* Welcome Message */
+.welcome-message {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.welcome-message p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.welcome-typewriter {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.4;
+  text-align: left;
 }

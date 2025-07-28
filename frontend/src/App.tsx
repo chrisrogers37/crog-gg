@@ -4,6 +4,7 @@ import About from './components/About'
 import Portfolio from './components/Portfolio'
 import Skills from './components/Skills'
 import SectionNav from './components/SectionNav'
+import Typewriter from './components/Typewriter'
 import { defaultResume } from './data/resume'
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -67,6 +68,23 @@ function App() {
     };
   }, []);
 
+  // Listen for content regeneration events to update the main state
+  useEffect(() => {
+    const handleContentRegenerated = (event: CustomEvent) => {
+      const { section, content } = event.detail;
+      setCurrentContent(prev => ({
+        ...prev,
+        [section]: content
+      }));
+    };
+
+    window.addEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+
+    return () => {
+      window.removeEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+    };
+  }, []);
+
   const handleRegenerate = async () => {
     if (isRegenerating) return;
     setIsRegenerating(true);
@@ -74,71 +92,58 @@ function App() {
 
     try {
       const willUseFantasy = Math.random() < 1.00;
-      // Regenerate both about and portfolio sections
-      const aboutResponse = await fetch(`${API_URL}/api/regenerate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        mode: 'cors',
-        credentials: 'include',
-        body: JSON.stringify({
-          section: 'about',
-          content: currentContent.about,
-          is_full_regeneration: true,
-          use_fantasy: willUseFantasy
-        }),
-      });
-      const portfolioResponse = await fetch(`${API_URL}/api/regenerate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        mode: 'cors',
-        credentials: 'include',
-        body: JSON.stringify({
-          section: 'portfolio',
-          content: currentContent.portfolio,
-          is_full_regeneration: true,
-          use_fantasy: willUseFantasy
-        }),
-      });
+      
+      // Regenerate all sections that have content
+      const sectionsToRegenerate = ['about', 'portfolio'];
+      const regenerationPromises = sectionsToRegenerate.map(section => 
+        fetch(`${API_URL}/api/regenerate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          mode: 'cors',
+          credentials: 'include',
+          body: JSON.stringify({
+            section: section,
+            content: currentContent[section as keyof typeof currentContent],
+            is_full_regeneration: true,
+            use_fantasy: willUseFantasy
+          }),
+        })
+      );
 
-      if (!aboutResponse.ok || !portfolioResponse.ok) {
-        throw new Error('Failed to regenerate content');
-      }
-
-      const aboutData = await aboutResponse.json();
-      const portfolioData = await portfolioResponse.json();
-      if (aboutData.success && portfolioData.success) {
-        setCurrentContent(prev => ({
-          ...prev,
-          about: aboutData.content,
-          portfolio: portfolioData.content
-        }));
+      const responses = await Promise.all(regenerationPromises);
+      const results = await Promise.all(responses.map(r => r.json()));
+      
+      if (results.every(result => result.success)) {
+        const newContent = { ...currentContent };
+        results.forEach((result, index) => {
+          const section = sectionsToRegenerate[index];
+          newContent[section as keyof typeof currentContent] = result.content;
+        });
+        
+        setCurrentContent(newContent);
         setHasModifiedContent(true);
-        // Dispatch the content regenerated events
-        window.dispatchEvent(new CustomEvent('contentRegenerated', {
-          detail: {
-            section: 'about',
-            content: aboutData.content,
-            is_full_regeneration: true,
-            use_fantasy: willUseFantasy
-          }
-        }));
-        window.dispatchEvent(new CustomEvent('contentRegenerated', {
-          detail: {
-            section: 'portfolio',
-            content: portfolioData.content,
-            is_full_regeneration: true,
-            use_fantasy: willUseFantasy
-          }
-        }));
+        
+        // Dispatch events for all regenerated sections
+        results.forEach((result, index) => {
+          const section = sectionsToRegenerate[index];
+          window.dispatchEvent(new CustomEvent('contentRegenerated', {
+            detail: {
+              section: section,
+              content: result.content,
+              is_full_regeneration: true,
+              use_fantasy: willUseFantasy
+            }
+          }));
+        });
+      } else {
+        throw new Error('Failed to regenerate some content');
       }
     } catch (error) {
       console.error('Error during regeneration:', error);
+      setError('Failed to regenerate content. Please try again.');
     } finally {
       setTimeout(() => {
         setIsRegenerating(false);
@@ -152,6 +157,8 @@ function App() {
       portfolio: defaultResume.portfolio
     });
     setHasModifiedContent(false);
+    
+    // Dispatch reset events for all sections
     window.dispatchEvent(new CustomEvent('contentRegenerated', {
       detail: {
         section: 'about',
@@ -189,6 +196,15 @@ function App() {
               <p>📧 <a href={`mailto:${currentContent.about.email}`}>{currentContent.about.email}</a></p>
               <p><LinkedInIcon /> <a href={currentContent.about.socialLinks.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
             </div>
+            <div className="welcome-message">
+              <Typewriter 
+                text="Hey, I'm Chris. Welcome to my digital resume and portfolio. Click around below to learn more about me and what I've been up to."
+                speed={40}
+                delay={500}
+                className="welcome-typewriter"
+                showSkip={false}
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -200,10 +216,22 @@ function App() {
       )}
 
       <main>
-        <section className="section-content about-section">
-          <h2>
-            ABOUT ME
-            <div className="button-group">
+        <SectionNav 
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+
+        {activeSection === 'about' && (
+          <>
+            <section className="section-content about-section">
+              <div className="about-content">
+                <About 
+                  onRegenerate={fetchUsageInfo} 
+                  content={currentContent.about}
+                />
+              </div>
+            </section>
+            <div className="section-button-group">
               <button 
                 className="generate-btn"
                 onClick={handleRegenerate}
@@ -221,21 +249,58 @@ function App() {
                 </button>
               )}
             </div>
-          </h2>
-          <div className="about-content">
-            <About onRegenerate={fetchUsageInfo} />
-          </div>
-        </section>
-
-        <SectionNav 
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
+          </>
+        )}
 
         {['experience', 'education', 'projects', 'music'].includes(activeSection) && (
-          <Portfolio activeSection={activeSection} />
+          <div>
+            <Portfolio 
+              activeSection={activeSection} 
+              content={currentContent.portfolio}
+            />
+            <div className="section-button-group">
+              <button 
+                className="generate-btn"
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+              >
+                {isRegenerating ? 'Weaving Epic Saga...' : 'SUMMON NEW LORE'}
+              </button>
+              {hasModifiedContent && (
+                <button 
+                  className="reset-btn"
+                  onClick={handleReset}
+                  disabled={isRegenerating}
+                >
+                  DISPEL ENCHANTMENT
+                </button>
+              )}
+            </div>
+          </div>
         )}
-        {activeSection === 'skills' && <Skills />}
+        {activeSection === 'skills' && (
+          <div>
+            <Skills />
+            <div className="section-button-group">
+              <button 
+                className="generate-btn"
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+              >
+                {isRegenerating ? 'Weaving Epic Saga...' : 'SUMMON NEW LORE'}
+              </button>
+              {hasModifiedContent && (
+                <button 
+                  className="reset-btn"
+                  onClick={handleReset}
+                  disabled={isRegenerating}
+                >
+                  DISPEL ENCHANTMENT
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

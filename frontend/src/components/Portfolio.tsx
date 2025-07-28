@@ -26,6 +26,7 @@ const LANGUAGE_COLORS: { [key: string]: string } = {
 
 interface PortfolioProps {
   activeSection: string;
+  content?: typeof defaultResume.portfolio;
 }
 
 interface Language {
@@ -33,13 +34,20 @@ interface Language {
   bytes: number;
 }
 
-export default function Portfolio({ activeSection }: PortfolioProps) {
-  const [content, setContent] = useState(defaultResume.portfolio);
+export default function Portfolio({ activeSection, content: propContent }: PortfolioProps) {
+  const [content, setContent] = useState(propContent || defaultResume.portfolio);
   const [prevSection, setPrevSection] = useState('');
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLanguages, setLoadingLanguages] = useState(false);
   const [languageError, setLanguageError] = useState<string | null>(null);
   const nodeRef = useRef(null);
+
+  // Update content when prop changes
+  useEffect(() => {
+    if (propContent) {
+      setContent(propContent);
+    }
+  }, [propContent]);
 
   useEffect(() => {
     // Listen for content updates
@@ -140,7 +148,7 @@ export default function Portfolio({ activeSection }: PortfolioProps) {
                   <i className="fas fa-music"></i>
                   <div>
                     <span className="link-title">Shuffify</span>
-                    <span className="link-description">A better way to shuffle your Spotify playlists</span>
+                    <span className="link-description">A better way to manage your Spotify playlists</span>
                   </div>
                 </a>
                 <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="portfolio-link">

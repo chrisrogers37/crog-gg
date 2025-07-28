@@ -5,14 +5,22 @@ import '../styles/transitions.css';
 
 interface AboutProps {
   onRegenerate: () => void;
+  content?: typeof defaultResume.about;
 }
 
 type AboutContent = typeof defaultResume.about;
 
-function About({ onRegenerate }: AboutProps) {
-  const [content, setContent] = useState<AboutContent>(defaultResume.about);
+function About({ onRegenerate, content: propContent }: AboutProps) {
+  const [content, setContent] = useState<AboutContent>(propContent || defaultResume.about);
   const [isLoading, setIsLoading] = useState(false);
   const [bioInProp, setBioInProp] = useState(true);
+
+  // Update content when prop changes
+  useEffect(() => {
+    if (propContent) {
+      setContent(propContent);
+    }
+  }, [propContent]);
 
   useEffect(() => {
     // Listen for content regeneration events
