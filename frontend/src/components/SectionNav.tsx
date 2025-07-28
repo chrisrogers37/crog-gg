@@ -6,6 +6,7 @@ interface SectionNavProps {
 }
 
 const sections = [
+  { id: 'about', label: 'About' },
   { id: 'experience', label: 'Experience' },
   { id: 'skills', label: 'Skills' },
   { id: 'education', label: 'Education' },
@@ -15,10 +16,12 @@ const sections = [
 
 export default function SectionNav({ activeSection, onSectionChange }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
+  const hasUserInteracted = useRef(false);
 
   // Handle scrolling when active section changes
   useEffect(() => {
-    if (activeSection && navRef.current) {
+    // Only scroll if user has interacted with navigation (not on initial load)
+    if (activeSection && navRef.current && hasUserInteracted.current) {
       // Small delay to allow content to render
       setTimeout(() => {
         const navTop = navRef.current?.offsetTop ?? 0;
@@ -31,6 +34,9 @@ export default function SectionNav({ activeSection, onSectionChange }: SectionNa
   }, [activeSection]);
 
   const handleClick = (sectionId: string) => {
+    // Mark that user has interacted with navigation
+    hasUserInteracted.current = true;
+    
     if (activeSection === sectionId) {
       // If the same section is clicked again, unselect it
       onSectionChange('');

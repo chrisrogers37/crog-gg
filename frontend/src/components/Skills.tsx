@@ -1,5 +1,5 @@
 import { defaultResume } from '../data/resume';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 // Function to shuffle an array
 const shuffleArray = (array: any[]) => {
@@ -14,7 +14,23 @@ const shuffleArray = (array: any[]) => {
 };
 
 export default function Skills() {
-  const skills = defaultResume.skills;
+  const [skills] = useState(defaultResume.skills);
+
+  useEffect(() => {
+    // Listen for content regeneration events
+    const handleContentRegenerated = (event: CustomEvent) => {
+      if (event.detail.section === 'portfolio') {
+        // If portfolio is regenerated, we might want to update skills too
+        // For now, we'll keep the original skills but could extend this later
+        console.log('Portfolio regenerated, skills component notified');
+      }
+    };
+
+    window.addEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+    return () => {
+      window.removeEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+    };
+  }, []);
 
   const shuffledSkills = useMemo(() => shuffleArray([...skills]), [skills]);
 
