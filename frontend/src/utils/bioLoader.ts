@@ -1,0 +1,34 @@
+import yaml from 'js-yaml';
+import { BioData } from '../types/Bio';
+
+// Mock implementation for development
+// In production, you would fetch the YAML file from the content directory
+export const loadBio = async (): Promise<BioData> => {
+  // This is a mock implementation for development
+  // In production, you would fetch the YAML file from the content directory
+  const mockBio: BioData = {
+    display_name: "Christopher T. Rogers",
+    email: "christophertrogers37@gmail.com",
+    location: "New York City, New York",
+    professional_summary: "I use data to tackle ambiguous business problems and deliver clear, actionable recommendations at the point of decision. I care deeply about building systems that make insight repeatable, whether that means automating workflows, designing scalable infrastructure, or creating tools that make analytics easier to deliver, use, and understand. I stay close to the cutting edge, regularly building and experimenting with AI-enriched processes, including retrieval-augmented generation (RAG), vector search, and other LLM-integrated approaches (click Summon New Lore to see one in action!).",
+    personal_interests: "Outside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places or retreating to Maine to relax in nature with a few good books.",
+    call_to_action: "Feel free to explore my experience, projects, and other interests by navigating through the other sections above.",
+    social_links: {
+      github: "https://github.com/chrisrogers37/",
+      hoobe: "https://hoo.be/crog",
+      spotify: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
+      linkedin: "https://www.linkedin.com/in/chrisrogers37/"
+    }
+  };
+
+  return mockBio;
+};
+
+// Future implementation for loading actual YAML files:
+/*
+export const loadBioFromYAML = async (): Promise<BioData> => {
+  const response = await fetch('content/bio.yaml');
+  const content = await response.text();
+  return yaml.load(content) as BioData;
+};
+*/
