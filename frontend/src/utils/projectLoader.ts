@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+// import yaml from 'js-yaml';
 import { Project } from '../types/Project';
 
 // Note: In a browser environment, we'll need to fetch these files

@@ -18,7 +18,7 @@ interface SkillsProps {
 }
 
 export default function Skills({ skills: propSkills }: SkillsProps) {
-  const [skills, setSkills] = useState(propSkills || []);
+  const [skills] = useState(propSkills || []);
 
   useEffect(() => {
     // Listen for content regeneration events

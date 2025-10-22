@@ -75,7 +75,7 @@ function App() {
     // Listen for content updates from child components
     const handleContentUpdated = (event: CustomEvent) => {
       const { section, content } = event.detail;
-      setCurrentContent(prev => ({
+      setCurrentContent((prev: any) => ({
         ...prev,
         [section]: content
       }));
@@ -92,7 +92,7 @@ function App() {
   useEffect(() => {
     const handleContentRegenerated = (event: CustomEvent) => {
       const { section, content } = event.detail;
-      setCurrentContent(prev => ({
+      setCurrentContent((prev: any) => ({
         ...prev,
         [section]: content
       }));

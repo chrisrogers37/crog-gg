@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+// import yaml from 'js-yaml';
 import { BioData } from '../types/Bio';
 
 // Mock implementation for development

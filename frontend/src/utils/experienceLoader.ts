@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+// import yaml from 'js-yaml';
 import { ExperienceData } from '../types/Experience';
 
 // Mock implementation for development

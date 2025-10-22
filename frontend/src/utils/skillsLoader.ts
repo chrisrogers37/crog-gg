@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+// import yaml from 'js-yaml';
 import { SkillsData } from '../types/Skills';
 
 // Mock implementation for development
