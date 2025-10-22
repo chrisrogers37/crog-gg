@@ -5,7 +5,7 @@ import Portfolio from './components/Portfolio'
 import Skills from './components/Skills'
 import SectionNav from './components/SectionNav'
 import Typewriter from './components/Typewriter'
-import { defaultResume } from './data/resume'
+import { loadResumeData } from './data/resume'
 
 const API_URL = import.meta.env.VITE_API_URL;
 console.log('API_URL:', API_URL); // Debug log
@@ -25,14 +25,34 @@ const LinkedInIcon = () => (
 );
 
 function App() {
-  const [currentContent, setCurrentContent] = useState({
-    about: defaultResume.about,
-    portfolio: defaultResume.portfolio
-  });
+  const [currentContent, setCurrentContent] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasModifiedContent, setHasModifiedContent] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
+
+  // Load initial data from YAML files
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await loadResumeData();
+        setCurrentContent({
+          about: data.about,
+          portfolio: data.portfolio,
+          skills: data.skills
+        });
+      } catch (error) {
+        console.error('Error loading resume data:', error);
+        setError('Failed to load content. Please refresh the page.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   // Fetch usage info on component mount and after regeneration
   const fetchUsageInfo = async () => {
@@ -151,30 +171,39 @@ function App() {
     }
   };
 
-  const handleReset = () => {
-    setCurrentContent({
-      about: defaultResume.about,
-      portfolio: defaultResume.portfolio
-    });
-    setHasModifiedContent(false);
-    
-    // Dispatch reset events for all sections
-    window.dispatchEvent(new CustomEvent('contentRegenerated', {
-      detail: {
-        section: 'about',
-        content: defaultResume.about,
-        is_full_regeneration: true,
-        use_fantasy: false
-      }
-    }));
-    window.dispatchEvent(new CustomEvent('contentRegenerated', {
-      detail: {
-        section: 'portfolio',
-        content: defaultResume.portfolio,
-        is_full_regeneration: true,
-        use_fantasy: false
-      }
-    }));
+  const handleReset = async () => {
+    try {
+      setIsLoading(true);
+      const data = await loadResumeData();
+      setCurrentContent({
+        about: data.about,
+        portfolio: data.portfolio
+      });
+      setHasModifiedContent(false);
+      
+      // Dispatch reset events for all sections
+      window.dispatchEvent(new CustomEvent('contentRegenerated', {
+        detail: {
+          section: 'about',
+          content: data.about,
+          is_full_regeneration: true,
+          use_fantasy: false
+        }
+      }));
+      window.dispatchEvent(new CustomEvent('contentRegenerated', {
+        detail: {
+          section: 'portfolio',
+          content: data.portfolio,
+          is_full_regeneration: true,
+          use_fantasy: false
+        }
+      }));
+    } catch (error) {
+      console.error('Error resetting content:', error);
+      setError('Failed to reset content. Please refresh the page.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -215,6 +244,13 @@ function App() {
         </div>
       )}
 
+      {isLoading && (
+        <div className="loading-message">
+          Loading content...
+        </div>
+      )}
+
+      {!isLoading && currentContent && (
       <main>
         <SectionNav 
           activeSection={activeSection}
@@ -280,7 +316,7 @@ function App() {
         )}
         {activeSection === 'skills' && (
           <div>
-            <Skills />
+            <Skills skills={currentContent.skills} />
             <div className="section-button-group">
               <button 
                 className="generate-btn"
@@ -302,6 +338,7 @@ function App() {
           </div>
         )}
       </main>
+      )}
     </div>
   )
 }

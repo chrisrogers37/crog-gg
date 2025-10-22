@@ -1,5 +1,5 @@
-import { defaultResume } from '../data/resume';
 import { useMemo, useState, useEffect } from 'react';
+import { SkillsData } from '../types/Skills';
 
 // Function to shuffle an array
 const shuffleArray = (array: any[]) => {
@@ -13,8 +13,12 @@ const shuffleArray = (array: any[]) => {
   return array;
 };
 
-export default function Skills() {
-  const [skills] = useState(defaultResume.skills);
+interface SkillsProps {
+  skills?: SkillsData['skills'];
+}
+
+export default function Skills({ skills: propSkills }: SkillsProps) {
+  const [skills, setSkills] = useState(propSkills || []);
 
   useEffect(() => {
     // Listen for content regeneration events

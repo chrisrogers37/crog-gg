@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import { defaultResume } from '../data/resume';
+import { BioData } from '../types/Bio';
 import '../styles/transitions.css';
 
 interface AboutProps {
   onRegenerate: () => void;
-  content?: typeof defaultResume.about;
+  content?: BioData;
 }
 
-type AboutContent = typeof defaultResume.about;
+type AboutContent = BioData;
 
 function About({ onRegenerate, content: propContent }: AboutProps) {
-  const [content, setContent] = useState<AboutContent>(propContent || defaultResume.about);
+  const [content, setContent] = useState<AboutContent | null>(propContent || null);
   const [isLoading, setIsLoading] = useState(false);
   const [bioInProp, setBioInProp] = useState(true);
 
@@ -73,9 +73,13 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
             unmountOnExit={false}
           >
             <div className="bio">
-              {content.bio.split('\n\n').map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
+              {content && (
+                <>
+                  <p>{content.professional_summary}</p>
+                  <p>{content.personal_interests}</p>
+                  <p>{content.call_to_action}</p>
+                </>
+              )}
             </div>
           </CSSTransition>
           {isLoading && (

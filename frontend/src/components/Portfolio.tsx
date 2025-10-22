@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { defaultResume } from '../data/resume';
 import { CSSTransition } from 'react-transition-group';
 import { loadProjects } from '../utils/projectLoader';
 import { Project } from '../types/Project';
+import { ExperienceData } from '../types/Experience';
+import { EducationData } from '../types/Education';
 import '../styles/transitions.css';
 
 const LINKS = {
@@ -28,7 +29,10 @@ const LANGUAGE_COLORS: { [key: string]: string } = {
 
 interface PortfolioProps {
   activeSection: string;
-  content?: typeof defaultResume.portfolio;
+  content?: {
+    experience: ExperienceData['experience'];
+    education: EducationData['education'];
+  };
 }
 
 interface Language {
@@ -37,7 +41,7 @@ interface Language {
 }
 
 export default function Portfolio({ activeSection, content: propContent }: PortfolioProps) {
-  const [content, setContent] = useState(propContent || defaultResume.portfolio);
+  const [content, setContent] = useState(propContent || null);
   const [prevSection, setPrevSection] = useState('');
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLanguages, setLoadingLanguages] = useState(false);
