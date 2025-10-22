@@ -69,7 +69,7 @@ export const loadProjects = async (): Promise<Project[]> => {
 // Future implementation for loading actual YAML files:
 /*
 export const loadProjectsFromYAML = async (): Promise<Project[]> => {
-  const projectsDir = 'content/projects/';
+  const projectsDir = '/src/content/projects/';
   const response = await fetch(projectsDir);
   const files = await response.json(); // Assuming you have an API endpoint
   

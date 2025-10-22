@@ -65,15 +65,16 @@ const LINKS = {
 
 ### YAML Projects Directory Implementation
 
-Create `content/projects/` directory with individual YAML files:
+Create `frontend/src/content/projects/` directory with individual YAML files:
 ```
-content/
-├── projects/
-│   ├── shuffify.yaml
-│   ├── city-cycles.yaml
-│   ├── hedwig.yaml
-│   ├── github.yaml
-│   └── new-project.yaml
+frontend/src/content/
+├── bio.yaml
+└── projects/
+    ├── shuffify.yaml
+    ├── city-cycles.yaml
+    ├── hedwig.yaml
+    ├── github.yaml
+    └── new-project.yaml
 ```
 
 Each project file structure:
@@ -169,7 +170,7 @@ export const loadProjects = async (): Promise<Project[]> => {
 
 2. **Create Projects Directory Structure**
    ```bash
-   mkdir -p content/projects
+   mkdir -p frontend/src/content/projects
    ```
 
 3. **Define Project Interface**

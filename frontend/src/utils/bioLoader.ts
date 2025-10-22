@@ -27,7 +27,7 @@ export const loadBio = async (): Promise<BioData> => {
 // Future implementation for loading actual YAML files:
 /*
 export const loadBioFromYAML = async (): Promise<BioData> => {
-  const response = await fetch('content/bio.yaml');
+  const response = await fetch('/src/content/bio.yaml');
   const content = await response.text();
   return yaml.load(content) as BioData;
 };
