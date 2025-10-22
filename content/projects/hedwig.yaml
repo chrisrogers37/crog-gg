@@ -1,0 +1,24 @@
+# Hedwig - AI Email Assistant
+id: hedwig
+title: Hedwig
+description: |
+  RAG-assisted LLM chatbot for generating email outreach templates.
+  Combines retrieval-augmented generation with email automation.
+url: https://hedwig.streamlit.app/
+icon: fas fa-feather
+category: ai-tools
+technologies:
+  - Python
+  - LLM
+  - RAG
+  - Streamlit
+  - OpenAI API
+featured: true
+order: 3
+status: active
+tags:
+  - ai
+  - llm
+  - email
+  - automation
+  - rag
