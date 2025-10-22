@@ -1,4 +1,7 @@
 import { loadBio } from '../utils/bioLoader';
+import { loadExperience } from '../utils/experienceLoader';
+import { loadEducation } from '../utils/educationLoader';
+import { loadSkills } from '../utils/skillsLoader';
 import { BioData } from '../types/Bio';
 
 export interface Employment {
@@ -23,92 +26,22 @@ interface ResumeData {
   skills: { name: string; weight: number }[];
 }
 
-// Create a function to load bio data dynamically
+// Create a function to load all resume data dynamically
 export const loadResumeData = async (): Promise<ResumeData> => {
-  const bioData = await loadBio();
+  const [bioData, experienceData, educationData, skillsData] = await Promise.all([
+    loadBio(),
+    loadExperience(),
+    loadEducation(),
+    loadSkills()
+  ]);
   
   return {
     about: bioData,
     portfolio: {
-    experience: [
-      {
-        title: "Analytics Engineer",
-        company: "Citadel",
-        period: "2023 - Present",
-        achievements: [
-          "Worked to streamline and automate the Strategic Finance Data & Analytics team's data workflows, contributing to a cultural shift toward centralized, scalable operations. Helped establish core infrastructure and onboard the team to Google Kubernetes Engine (GKE) and Citadel's Airflow-like scheduler, significantly reducing manual processing time.",
-          "Designed and built a configurable Python orchestration framework to automate end-to-end workflows across BigQuery, Python, and Tableau, improving dependency management and reducing redundant code while making onboarding and setup easier.",
-          "Led efforts to modernize a key Tableau dashboard, improving data sourcing, calculations, and interactivity to better support decision-making. Introduced a user feedback loop, leading to refinements that increased engagement among stakeholders.",
-          "Supported the migration of 100+ tables and views from SQL Server to BigQuery, helping to redesign data flows for scalability, reduced query complexity, and improved maintainability.",
-          "Helped drive team-wide initiatives focused on improving development processes and reducing technical debt, including co-founding 'Tech Debt Friday'—a collaborative effort to modernize workflows and streamline legacy processes."
-        ]
-      },
-      {
-        title: "Data Scientist",
-        company: "Meta",
-        period: "December 2021 - February 2023",
-        achievements: [
-          "Worked with five Recruiting Product teams to support metric design, experimentation, and forecasting, helping to improve candidate experience and hiring efficiency.",
-          "Conducted a data-driven investigation into referral candidate outcomes, identifying thousands of high-value candidates stalled in the hiring pipeline. Insights from this work helped recruiters re-engage these candidates, led to software improvements that addressed root causes, and mitigated potential reputational risks in the referral process.",
-          "Used Fixed Effects modeling to quantify the variance in hiring outcomes attributable to recruiter assignment, helping inform recruiter training, assignment strategies, and tooling enhancements.",
-          "Supported numerous A/B experiments by designing metrics, analyzing results, and improving experimental methodology to drive data-informed decision-making in recruiting strategies."
-        ]
-      },
-      {
-        title: "Business Intelligence Analyst II",
-        company: "Memorial Sloan Kettering",
-        period: "October 2018 - December 2021",
-        achievements: [
-          "Published author and technical lead on an NLP research study with Weill Cornell Medical College, using classification algorithms to analyze patient messages and identify patterns related to social risk factors.",
-          "Conducted a longitudinal study on patient health metrics that informed hospital-wide policy updates and optimized measurement schedules to improve medication accuracy and treatment planning."
-        ]
-      }
-    ],
-    education: [
-      {
-        school: "Columbia University",
-        degree: "MS (partial); Applied Analytics",
-        year: "2021"
-      },
-      {
-        school: "Cornell University",
-        degree: "MEng in Chemical Engineering",
-        year: "2015"
-      },
-      {
-        school: "Cornell University",
-        degree: "BS in Chemical Engineering",
-        year: "2014"
-      }
-    ]
-  },
-  skills: [
-    { name: "python", weight: 7},
-    { name: "object-oriented programming", weight: 5 },
-    { name: "sql", weight: 9 },
-    { name: "data modeling", weight: 7 },
-    { name: "dbt", weight: 7 },
-    { name: "google cloud platform", weight: 5 },
-    { name: "airflow", weight: 5 },
-    { name: "aws", weight: 5 },
-    { name: "bigquery", weight: 8 },
-    { name: "statistical testing", weight: 6 },
-    { name: "tableau", weight: 9 },
-    { name: "experimentation", weight: 5 },
-    { name: "git", weight: 7 },
-    { name: "llms", weight: 6 },
-    { name: "docker", weight: 4 },
-    { name: "kubernetes", weight: 5 },
-    { name: "R", weight: 6 },
-    { name: "metric design", weight: 6 },
-    { name: "adobe premiere pro", weight: 4 },
-    { name: "ableton", weight: 5 },
-    { name: "regression", weight: 6 },
-    { name: "classification", weight: 6 },
-    { name: "natural language processing", weight: 6 },
-    { name: "time series analysis", weight: 5 },
-    { name: "forecasting", weight: 5 },
-  ]
+      experience: experienceData.experience,
+      education: educationData.education
+    },
+    skills: skillsData.skills
   };
 };
 
@@ -223,4 +156,4 @@ export const transitions = [
 
 export const getRandomTransition = () => {
   return transitions[Math.floor(Math.random() * transitions.length)];
-}; 
+};
