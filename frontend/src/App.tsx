@@ -25,6 +25,7 @@ const LinkedInIcon = () => (
 );
 
 function App() {
+  console.log('App component rendering...');
   const [currentContent, setCurrentContent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -36,13 +37,16 @@ function App() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        console.log('Starting to load resume data...');
         setIsLoading(true);
         const data = await loadResumeData();
+        console.log('Resume data loaded successfully:', data);
         setCurrentContent({
           about: data.about,
           portfolio: data.portfolio,
           skills: data.skills
         });
+        console.log('Content set successfully');
       } catch (error) {
         console.error('Error loading resume data:', error);
         setError('Failed to load content. Please refresh the page.');
@@ -214,26 +218,28 @@ function App() {
             <source srcSet="/profile-photo.jpg" type="image/jpeg" />
             <img 
               src="/profile-photo.png" 
-              alt={`${currentContent.about.display_name}'s profile photo`}
+              alt={`${currentContent?.about?.display_name || 'Profile'}'s profile photo`}
               className="profile-photo"
             />
           </picture>
           <div className="header-text">
-            <h1>{currentContent.about.display_name}</h1>
+            <h1>{currentContent?.about?.display_name || 'Loading...'}</h1>
             <div className="contact-header">
-              <p>📍 {currentContent.about.location}</p>
-              <p>📧 <a href={`mailto:${currentContent.about.email}`}>{currentContent.about.email}</a></p>
-              <p><LinkedInIcon /> <a href={currentContent.about.socialLinks.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
+              <p>📍 {currentContent?.about?.location || 'Loading...'}</p>
+              <p>📧 <a href={`mailto:${currentContent?.about?.email || ''}`}>{currentContent?.about?.email || 'Loading...'}</a></p>
+              <p><LinkedInIcon /> <a href={currentContent?.about?.social_links?.linkedin || '#'} target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
             </div>
-            <div className="welcome-message">
-              <Typewriter 
-                text="Hey, I'm Chris. Welcome to my digital resume and portfolio. Click around below to learn more about me and what I've been up to."
-                speed={40}
-                delay={500}
-                className="welcome-typewriter"
-                showSkip={false}
-              />
-            </div>
+            {currentContent?.about?.welcome_message && (
+              <div className="welcome-message">
+                <Typewriter 
+                  text={currentContent.about.welcome_message}
+                  speed={40}
+                  delay={500}
+                  className="welcome-typewriter"
+                  showSkip={false}
+                />
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -263,7 +269,7 @@ function App() {
               <div className="about-content">
                 <About 
                   onRegenerate={fetchUsageInfo} 
-                  content={currentContent.about}
+                  content={currentContent?.about}
                 />
               </div>
             </section>
@@ -292,7 +298,7 @@ function App() {
           <div>
             <Portfolio 
               activeSection={activeSection} 
-              content={currentContent.portfolio}
+              content={currentContent?.portfolio}
             />
             <div className="section-button-group">
               <button 
@@ -316,7 +322,7 @@ function App() {
         )}
         {activeSection === 'skills' && (
           <div>
-            <Skills skills={currentContent.skills} />
+            <Skills skills={currentContent?.skills} />
             <div className="section-button-group">
               <button 
                 className="generate-btn"

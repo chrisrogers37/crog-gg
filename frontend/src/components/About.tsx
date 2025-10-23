@@ -74,11 +74,9 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
           >
             <div className="bio">
               {content && (
-                <>
-                  <p>{content.professional_summary}</p>
-                  <p>{content.personal_interests}</p>
-                  <p>{content.call_to_action}</p>
-                </>
+                <div style={{ whiteSpace: 'pre-line' }}>
+                  {content.about_text}
+                </div>
               )}
             </div>
           </CSSTransition>

@@ -1,0 +1,21 @@
+title: "Shitpost Alpha"
+description: "Real-time financial analysis of social media posts using LLMs to predict market movements and send trading alerts. Harvesting the President's SHITPOSTS to generate ALPHA."
+technologies:
+  - "Python"
+  - "LLM"
+  - "PostgreSQL"
+  - "AWS S3"
+  - "Railway"
+github_url: "https://github.com/chrisrogers37/shitpost-alpha"
+demo_url: "https://shitpost-alpha-dash.up.railway.app/"
+order: 2
+image: ""
+tags:
+  - "Machine Learning"
+  - "Data Science"
+  - "Financial Analysis"
+  - "LLM"
+  - "Python"
+  - "Real-time Processing"
+  - "Data Pipeline"
+  - "Market Analysis"

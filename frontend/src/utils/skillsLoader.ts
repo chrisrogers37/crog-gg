@@ -1,37 +1,20 @@
-// import yaml from 'js-yaml';
+import yaml from 'js-yaml';
 import { SkillsData } from '../types/Skills';
 
-// Mock implementation for development
 export const loadSkills = async (): Promise<SkillsData> => {
-  const mockSkills: SkillsData = {
-    skills: [
-      { name: "python", weight: 7},
-      { name: "object-oriented programming", weight: 5 },
-      { name: "sql", weight: 9 },
-      { name: "data modeling", weight: 7 },
-      { name: "dbt", weight: 7 },
-      { name: "google cloud platform", weight: 5 },
-      { name: "airflow", weight: 5 },
-      { name: "aws", weight: 5 },
-      { name: "bigquery", weight: 8 },
-      { name: "statistical testing", weight: 6 },
-      { name: "tableau", weight: 9 },
-      { name: "experimentation", weight: 5 },
-      { name: "git", weight: 7 },
-      { name: "llms", weight: 6 },
-      { name: "docker", weight: 4 },
-      { name: "kubernetes", weight: 5 },
-      { name: "R", weight: 6 },
-      { name: "metric design", weight: 6 },
-      { name: "adobe premiere pro", weight: 4 },
-      { name: "ableton", weight: 5 },
-      { name: "regression", weight: 6 },
-      { name: "classification", weight: 6 },
-      { name: "natural language processing", weight: 6 },
-      { name: "time series analysis", weight: 5 },
-      { name: "forecasting", weight: 5 },
-    ]
-  };
-
-  return mockSkills;
+  try {
+    // Fetch the YAML file from the content directory
+    const response = await fetch('/src/content/skills.yaml');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch skills.yaml: ${response.statusText}`);
+    }
+    const content = await response.text();
+    const skillsData = yaml.load(content) as SkillsData;
+    
+    console.log('Skills data loaded from YAML:', skillsData);
+    return skillsData;
+  } catch (error) {
+    console.error('Error loading skills from YAML:', error);
+    throw error;
+  }
 };

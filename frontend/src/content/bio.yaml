@@ -3,17 +3,21 @@ display_name: Christopher T. Rogers
 email: christophertrogers37@gmail.com
 location: New York City, New York
 
-# Professional Summary
-professional_summary: |
-  I use data to tackle ambiguous business problems and deliver clear, actionable recommendations at the point of decision. I care deeply about building systems that make insight repeatable, whether that means automating workflows, designing scalable infrastructure, or creating tools that make analytics easier to deliver, use, and understand. I stay close to the cutting edge, regularly building and experimenting with AI-enriched processes, including retrieval-augmented generation (RAG), vector search, and other LLM-integrated approaches (click Summon New Lore to see one in action!).
+# Welcome Message
+welcome_message: |
+  Hey, I'm Chris. Welcome to my digital resume and portfolio. Click around below to learn more about me and what I've been up to.
 
-# Personal Interests
-personal_interests: |
-  Outside of work, I spend a lot of time on music. I produce my own songs, experiment with audio engineering, and occasionally DJ around NYC. When I get the chance to escape the city, I enjoy traveling abroad to see new places or retreating to Maine to relax in nature with a few good books.
+# About Text
+about_text: |
+  What makes me tick ...
+  
+  In my free time, I spend a lot of time producing music, experimenting with audio engineering, and occasionally DJing around NYC. When I need to recharge, I'm usually traveling somewhere new or escaping to Maine to disconnect with a few good books in nature.
 
-# Call to Action
-call_to_action: |
-  Feel free to explore my experience, projects, and other interests by navigating through the other sections above.
+  Professionally, I work in data, where I use information to attack ambiguity and support decision-making. That means understanding what's important to the business, creating clear metrics, and then designing scalable infrastructure and automated workflows to make insight repeatable and easy to use for all.
+  
+  I stay close to the cutting edge, often experimenting with AI-enriched approaches like retrieval-augmented generation (RAG), vector search, and other LLM-integrated processes. Click Summon New Lore above to see one in action.
+
+  Feel free to explore my experience, projects, and other interests throughout my site.
 
 # Social Links
 social_links:

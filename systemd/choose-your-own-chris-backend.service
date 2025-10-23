@@ -8,6 +8,7 @@ User=root
 Group=root
 WorkingDirectory=/var/www/api.crog.gg/backend
 Environment=PATH=/var/www/api.crog.gg/venv/bin
+EnvironmentFile=/var/www/api.crog.gg/backend/.env
 ExecStart=/var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed

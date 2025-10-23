@@ -1,0 +1,18 @@
+title: "30 Day A/Bs"
+description: "LLM simulated experimental business scenarios. Learn A/B testing!"
+technologies:
+  - "Python"
+  - "LLM"
+  - "A/B Testing"
+  - "Data Analysis"
+github_url: "https://github.com/chrisrogers37/30-day-abs"
+demo_url: "https://30-day-abs.streamlit.app/"
+order: 1
+image: ""
+tags:
+  - "Machine Learning"
+  - "Data Science"
+  - "Experimental Design"
+  - "A/B Testing"
+  - "LLM"
+  - "Python"

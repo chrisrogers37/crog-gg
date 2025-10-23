@@ -263,7 +263,7 @@ def get_github_languages():
         "Accept": "application/vnd.github.v3+json"
     }
     if GITHUB_TOKEN:
-        headers["Authorization"] = f"token {GITHUB_TOKEN}"
+        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
 
     try:
         repos_response = requests.get(api_url, headers=headers, params={'type': 'owner', 'sort': 'pushed', 'per_page': 100})

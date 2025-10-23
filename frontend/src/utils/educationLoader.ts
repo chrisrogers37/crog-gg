@@ -1,27 +1,20 @@
-// import yaml from 'js-yaml';
+import yaml from 'js-yaml';
 import { EducationData } from '../types/Education';
 
-// Mock implementation for development
 export const loadEducation = async (): Promise<EducationData> => {
-  const mockEducation: EducationData = {
-    education: [
-      {
-        school: "Columbia University",
-        degree: "MS (partial); Applied Analytics",
-        year: "2021"
-      },
-      {
-        school: "Cornell University",
-        degree: "MEng in Chemical Engineering",
-        year: "2015"
-      },
-      {
-        school: "Cornell University",
-        degree: "BS in Chemical Engineering",
-        year: "2014"
-      }
-    ]
-  };
-
-  return mockEducation;
+  try {
+    // Fetch the YAML file from the content directory
+    const response = await fetch('/src/content/education.yaml');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch education.yaml: ${response.statusText}`);
+    }
+    const content = await response.text();
+    const educationData = yaml.load(content) as EducationData;
+    
+    console.log('Education data loaded from YAML:', educationData);
+    return educationData;
+  } catch (error) {
+    console.error('Error loading education from YAML:', error);
+    throw error;
+  }
 };

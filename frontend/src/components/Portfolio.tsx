@@ -169,30 +169,58 @@ export default function Portfolio({ activeSection, content: propContent }: Portf
             <div className="projects-section">
               {loadingProjects && <div className="loading-message">Loading projects...</div>}
               {!loadingProjects && projects.length > 0 && (
-                <div className="links-grid">
-                  {projects.map((project) => (
-                    <a 
-                      key={project.id} 
-                      href={project.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="portfolio-link"
-                    >
-                      <i className={project.icon}></i>
-                      <div>
-                        <span className="link-title">{project.title}</span>
-                        <span className="link-description">{project.description}</span>
-                        {project.technologies && project.technologies.length > 0 && (
-                          <div className="project-technologies">
-                            {project.technologies.map((tech, index) => (
-                              <span key={index} className="tech-tag">{tech}</span>
-                            ))}
-                          </div>
-                        )}
+                <>
+                  {/* Main Projects Grid - Exclude GitHub project */}
+                  <div className="links-grid">
+                    {projects.filter(project => project.id !== 'github').map((project) => (
+                      <a 
+                        key={project.id} 
+                        href={project.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="portfolio-link"
+                      >
+                        <i className={project.icon}></i>
+                        <div>
+                          <span className="link-title">{project.title}</span>
+                          <span className="link-description">{project.description}</span>
+                          {project.technologies && project.technologies.length > 0 && (
+                            <div className="project-technologies">
+                              {project.technologies.map((tech, index) => (
+                                <span key={index} className="tech-tag">{tech}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                  
+                  {/* GitHub Project - Separate Section */}
+                  {projects.find(project => project.id === 'github') && (
+                    <div className="github-project-section">
+                      <div className="github-project-card">
+                        {(() => {
+                          const githubProject = projects.find(project => project.id === 'github');
+                          return githubProject ? (
+                            <a 
+                              href={githubProject.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="portfolio-link github-link"
+                            >
+                              <i className={githubProject.icon}></i>
+                              <div>
+                                <span className="link-title">{githubProject.title}</span>
+                                <span className="link-description">{githubProject.description}</span>
+                              </div>
+                            </a>
+                          ) : null;
+                        })()}
                       </div>
-                    </a>
-                  ))}
-                </div>
+                    </div>
+                  )}
+                </>
               )}
               <div className="github-stats-container">
                 {loadingLanguages && <div className="loading-message">Summoning language stats from GitHub...</div>}

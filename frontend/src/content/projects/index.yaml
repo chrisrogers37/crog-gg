@@ -1,0 +1,11 @@
+# Projects Index
+# This file lists all available project YAML files
+# Add new projects by adding their YAML filenames to this list
+
+projects:
+  - 30-day-abs.yaml
+  - shitpost-alpha.yaml
+  - shuffify.yaml
+  - city-cycles.yaml
+  - hedwig.yaml
+  - github.yaml
