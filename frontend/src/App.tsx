@@ -181,7 +181,8 @@ function App() {
       const data = await loadResumeData();
       setCurrentContent({
         about: data.about,
-        portfolio: data.portfolio
+        portfolio: data.portfolio,
+        skills: data.skills
       });
       setHasModifiedContent(false);
       
