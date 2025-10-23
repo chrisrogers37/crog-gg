@@ -41,6 +41,19 @@ export default function Skills({ skills: propSkills }: SkillsProps) {
   // Normalize weights to a font size range (e.g., 12px to 36px)
   const minFontSize = 12;
   const maxFontSize = 36;
+  
+  // Add defensive programming for empty skills array
+  if (!skills || skills.length === 0) {
+    return (
+      <div className="skills-container">
+        <h3>Skills</h3>
+        <p className="skills-subtitle">
+          Loading skills...
+        </p>
+      </div>
+    );
+  }
+  
   const minWeight = Math.min(...skills.map(s => s.weight));
   const maxWeight = Math.max(...skills.map(s => s.weight));
 
