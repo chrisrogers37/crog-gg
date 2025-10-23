@@ -5,6 +5,7 @@
   --text-color: #1e293b;
   --card-background: #ffffff;
   --hover-color: #3b82f6;
+  --border-color: #e2e8f0;
 }
 
 .app {
@@ -842,6 +843,10 @@ a:hover {
   gap: 0.25rem;
 }
 
+.portfolio-link .project-technologies {
+  flex-direction: row;
+}
+
 .portfolio-link .link-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -850,6 +855,27 @@ a:hover {
 .portfolio-link .link-description {
   font-size: 0.9rem;
   color: #64748b;
+}
+
+.project-technologies {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  width: 100%;
+}
+
+.tech-tag {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .spotify-embed {
@@ -886,6 +912,23 @@ a:hover {
 
 .portfolio-link.call-to-action .link-description {
   color: #64748b;
+}
+
+/* GitHub Project Section */
+.github-project-section {
+  margin: 2rem 0;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.github-project-card {
+  display: flex;
+  justify-content: center;
+}
+
+.github-link {
+  max-width: 800px;
+  width: 100%;
 }
 
 /* Responsive adjustments for the photo */

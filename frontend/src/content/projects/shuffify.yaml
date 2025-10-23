@@ -1,0 +1,22 @@
+# Shuffify - Spotify Playlist Manager
+id: shuffify
+title: Shuffify
+description: |
+  A better way to manage your Spotify playlists with advanced 
+  filtering, organization, and discovery features.
+url: https://shuffify.app
+icon: fas fa-music
+category: web-app
+technologies:
+  - React
+  - TypeScript
+  - Spotify API
+  - Node.js
+featured: true
+order: 5
+status: active
+tags:
+  - music
+  - spotify
+  - playlist-management
+  - web-app

@@ -1,0 +1,22 @@
+# City Cycles - Transportation Analytics
+id: city-cycles
+title: City Cycles
+description: |
+  End-to-end analytics flow comparing public bike programs in NYC and London.
+  Features interactive visualizations and data-driven insights.
+url: https://city-cycles.streamlit.app/
+icon: fas fa-bicycle
+category: data-science
+technologies:
+  - Python
+  - Streamlit
+  - Data Analysis
+  - Visualization
+featured: true
+order: 3
+status: active
+tags:
+  - data-science
+  - transportation
+  - analytics
+  - visualization

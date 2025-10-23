@@ -1,0 +1,27 @@
+# Christopher T. Rogers - Bio Content
+display_name: Christopher T. Rogers
+email: christophertrogers37@gmail.com
+location: New York City, New York
+
+# Welcome Message
+welcome_message: |
+  Hey, I'm Chris. Welcome to my digital resume and portfolio. Click around below to learn more about me and what I've been up to.
+
+# About Text
+about_text: |
+  What makes me tick ...
+  
+  In my free time, I spend a lot of time producing music, experimenting with audio engineering, and occasionally DJing around NYC. When I need to recharge, I'm usually traveling somewhere new or escaping to Maine to disconnect with a few good books in nature.
+
+  Professionally, I work in data, where I use information to attack ambiguity and support decision-making. That means understanding what's important to the business, creating clear metrics, and then designing scalable infrastructure and automated workflows to make insight repeatable and easy to use for all.
+  
+  I stay close to the cutting edge, often experimenting with AI-enriched approaches like retrieval-augmented generation (RAG), vector search, and other LLM-integrated processes. Click Summon New Lore above to see one in action.
+
+  Feel free to explore my experience, projects, and other interests throughout my site.
+
+# Social Links
+social_links:
+  github: https://github.com/chrisrogers37/
+  hoobe: https://hoo.be/crog
+  spotify: https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn
+  linkedin: https://www.linkedin.com/in/chrisrogers37/

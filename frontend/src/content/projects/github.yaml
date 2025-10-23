@@ -1,0 +1,19 @@
+# GitHub - Open Source Contributions
+id: github
+title: GitHub
+description: |
+  Check out my open source projects and contributions.
+  Includes various data science, web development, and automation tools.
+url: https://github.com/chrisrogers37/
+icon: fab fa-github
+category: open-source
+technologies:
+  - Various
+featured: false
+order: 4
+status: active
+tags:
+  - open-source
+  - development
+  - contributions
+  - collaboration

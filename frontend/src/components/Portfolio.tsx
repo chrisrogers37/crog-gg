@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { defaultResume } from '../data/resume';
 import { CSSTransition } from 'react-transition-group';
+import { loadProjects } from '../utils/projectLoader';
+import { Project } from '../types/Project';
+import { ExperienceData } from '../types/Experience';
+import { EducationData } from '../types/Education';
 import '../styles/transitions.css';
 
 const LINKS = {
@@ -26,7 +29,10 @@ const LANGUAGE_COLORS: { [key: string]: string } = {
 
 interface PortfolioProps {
   activeSection: string;
-  content?: typeof defaultResume.portfolio;
+  content?: {
+    experience: ExperienceData['experience'];
+    education: EducationData['education'];
+  };
 }
 
 interface Language {
@@ -35,11 +41,13 @@ interface Language {
 }
 
 export default function Portfolio({ activeSection, content: propContent }: PortfolioProps) {
-  const [content, setContent] = useState(propContent || defaultResume.portfolio);
+  const [content, setContent] = useState(propContent || null);
   const [prevSection, setPrevSection] = useState('');
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLanguages, setLoadingLanguages] = useState(false);
   const [languageError, setLanguageError] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
   const nodeRef = useRef(null);
 
   // Update content when prop changes
@@ -71,7 +79,10 @@ export default function Portfolio({ activeSection, content: propContent }: Portf
     if (activeSection === 'projects' && languages.length === 0 && !loadingLanguages) {
       fetchLanguages();
     }
-  }, [activeSection, prevSection, languages, loadingLanguages]);
+    if (activeSection === 'projects' && projects.length === 0 && !loadingProjects) {
+      fetchProjects();
+    }
+  }, [activeSection, prevSection, languages, loadingLanguages, projects, loadingProjects]);
   
   const fetchLanguages = async () => {
     setLoadingLanguages(true);
@@ -95,6 +106,19 @@ export default function Portfolio({ activeSection, content: propContent }: Portf
       }
     } finally {
       setLoadingLanguages(false);
+    }
+  };
+
+  const fetchProjects = async () => {
+    setLoadingProjects(true);
+    
+    try {
+      const projectData = await loadProjects();
+      setProjects(projectData);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoadingProjects(false);
     }
   };
 
@@ -143,36 +167,61 @@ export default function Portfolio({ activeSection, content: propContent }: Portf
         case 'projects':
           return (
             <div className="projects-section">
-              <div className="links-grid">
-                <a href={LINKS.shuffify} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                  <i className="fas fa-music"></i>
-                  <div>
-                    <span className="link-title">Shuffify</span>
-                    <span className="link-description">A better way to manage your Spotify playlists</span>
+              {loadingProjects && <div className="loading-message">Loading projects...</div>}
+              {!loadingProjects && projects.length > 0 && (
+                <>
+                  {/* Main Projects Grid - Exclude GitHub project */}
+                  <div className="links-grid">
+                    {projects.filter(project => project.id !== 'github').map((project) => (
+                      <a 
+                        key={project.id} 
+                        href={project.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="portfolio-link"
+                      >
+                        <i className={project.icon}></i>
+                        <div>
+                          <span className="link-title">{project.title}</span>
+                          <span className="link-description">{project.description}</span>
+                          {project.technologies && project.technologies.length > 0 && (
+                            <div className="project-technologies">
+                              {project.technologies.map((tech, index) => (
+                                <span key={index} className="tech-tag">{tech}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                    ))}
                   </div>
-                </a>
-                <a href="https://city-cycles.streamlit.app/" target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                  <i className="fas fa-bicycle"></i>
-                  <div>
-                    <span className="link-title">City Cycles</span>
-                    <span className="link-description">End-to-end analytics flow comparing public bike programs in NYC and London</span>
-                  </div>
-                </a>
-                <a href="https://hedwig.streamlit.app/" target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                  <i className="fas fa-feather"></i>
-                  <div>
-                    <span className="link-title">Hedwig</span>
-                    <span className="link-description">RAG-assisted LLM chatbot for generating email outreach templates</span>
-                  </div>
-                </a>
-                <a href={LINKS.github} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                  <i className="fab fa-github"></i>
-                  <div>
-                    <span className="link-title">GitHub</span>
-                    <span className="link-description">Check out my open source projects and contributions</span>
-                  </div>
-                </a>
-              </div>
+                  
+                  {/* GitHub Project - Separate Section */}
+                  {projects.find(project => project.id === 'github') && (
+                    <div className="github-project-section">
+                      <div className="github-project-card">
+                        {(() => {
+                          const githubProject = projects.find(project => project.id === 'github');
+                          return githubProject ? (
+                            <a 
+                              href={githubProject.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="portfolio-link github-link"
+                            >
+                              <i className={githubProject.icon}></i>
+                              <div>
+                                <span className="link-title">{githubProject.title}</span>
+                                <span className="link-description">{githubProject.description}</span>
+                              </div>
+                            </a>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="github-stats-container">
                 {loadingLanguages && <div className="loading-message">Summoning language stats from GitHub...</div>}
                 {languageError && <div className="error-message">Error: {languageError}</div>}
