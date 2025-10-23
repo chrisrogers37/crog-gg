@@ -4,7 +4,7 @@ import { ExperienceData } from '../types/Experience';
 export const loadExperience = async (): Promise<ExperienceData> => {
   try {
     // Fetch the YAML file from the content directory
-    const response = await fetch('/src/content/experience.yaml');
+    const response = await fetch('/content/experience.yaml');
     if (!response.ok) {
       throw new Error(`Failed to fetch experience.yaml: ${response.statusText}`);
     }

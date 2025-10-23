@@ -4,7 +4,7 @@ import { SkillsData } from '../types/Skills';
 export const loadSkills = async (): Promise<SkillsData> => {
   try {
     // Fetch the YAML file from the content directory
-    const response = await fetch('/src/content/skills.yaml');
+    const response = await fetch('/content/skills.yaml');
     if (!response.ok) {
       throw new Error(`Failed to fetch skills.yaml: ${response.statusText}`);
     }

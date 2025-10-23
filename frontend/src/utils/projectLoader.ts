@@ -6,7 +6,7 @@ export const loadProjects = async (): Promise<Project[]> => {
     // Dynamically discover all YAML files in the projects directory
     // We'll need to create an index file or use a different approach
     // For now, let's try to fetch a projects index that lists all available files
-    const indexResponse = await fetch('/src/content/projects/index.yaml');
+    const indexResponse = await fetch('/content/projects/index.yaml');
     
     if (indexResponse.ok) {
       // If we have an index file, use it to get the list of project files
@@ -16,7 +16,7 @@ export const loadProjects = async (): Promise<Project[]> => {
       
       const projects = await Promise.all(
         projectFiles.map(async (file: string) => {
-          const response = await fetch(`/src/content/projects/${file}`);
+          const response = await fetch(`/content/projects/${file}`);
           if (!response.ok) {
             throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
           }
@@ -59,7 +59,7 @@ export const loadProjects = async (): Promise<Project[]> => {
       const projects = await Promise.all(
         commonFiles.map(async (file: string) => {
           try {
-            const response = await fetch(`/src/content/projects/${file}`);
+            const response = await fetch(`/content/projects/${file}`);
             if (!response.ok) {
               console.warn(`Skipping ${file}: ${response.statusText}`);
               return null;
