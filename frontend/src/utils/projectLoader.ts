@@ -1,6 +1,26 @@
 import yaml from 'js-yaml';
 import { Project } from '../types/Project';
 
+/**
+ * Raw YAML project data structure before mapping to Project interface
+ */
+interface RawProjectData {
+  id: string;
+  title: string;
+  description: string;
+  url?: string;
+  demo_url?: string;
+  github_url?: string;
+  icon: string;
+  category: string;
+  technologies?: string[];
+  featured?: boolean;
+  order?: number;
+  image?: string;
+  status?: 'active' | 'archived' | 'experimental';
+  tags?: string[];
+}
+
 export const loadProjects = async (): Promise<Project[]> => {
   try {
     // Dynamically discover all YAML files in the projects directory
@@ -21,7 +41,7 @@ export const loadProjects = async (): Promise<Project[]> => {
             throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
           }
           const content = await response.text();
-          const projectData = yaml.load(content) as any;
+          const projectData = yaml.load(content) as RawProjectData;
           
           // Map YAML fields to Project interface
           const project: Project = {
@@ -65,7 +85,7 @@ export const loadProjects = async (): Promise<Project[]> => {
               return null;
             }
             const content = await response.text();
-            const projectData = yaml.load(content) as any;
+            const projectData = yaml.load(content) as RawProjectData;
             
             // Map YAML fields to Project interface
             const project: Project = {

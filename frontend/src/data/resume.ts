@@ -2,20 +2,7 @@ import { loadBio } from '../utils/bioLoader';
 import { loadExperience } from '../utils/experienceLoader';
 import { loadEducation } from '../utils/educationLoader';
 import { loadSkills } from '../utils/skillsLoader';
-import { BioData } from '../types/Bio';
-
-export interface Employment {
-  title: string;
-  company: string;
-  period: string;
-  achievements: readonly string[];
-}
-
-export interface Education {
-  school: string;
-  degree: string;
-  year: string;
-}
+import { BioData, Employment, Education, Skill } from '../types';
 
 interface ResumeData {
   about: BioData;
@@ -23,7 +10,7 @@ interface ResumeData {
     experience: Employment[];
     education: Education[];
   };
-  skills: { name: string; weight: number }[];
+  skills: Skill[];
 }
 
 // Create a function to load all resume data dynamically
