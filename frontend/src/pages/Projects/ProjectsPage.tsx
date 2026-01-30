@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProjects } from '../../store';
 import { Project } from '../../types';
+import { SEO } from '../../components/SEO';
 import './ProjectsPage.css';
 
 /**
@@ -40,61 +41,68 @@ export function ProjectsPage() {
   }, [projects, searchQuery, selectedCategory]);
 
   return (
-    <div className="projects-page">
-      <header className="projects-header">
-        <h1 className="projects-title">Projects</h1>
-        <p className="projects-subtitle">
-          A collection of my work, side projects, and experiments.
-        </p>
-      </header>
+    <>
+      <SEO
+        title="Projects"
+        description="Explore my portfolio of software projects, side projects, and experiments. From web apps to mobile development."
+        url="/projects"
+      />
+      <div className="projects-page">
+        <header className="projects-header">
+          <h1 className="projects-title">Projects</h1>
+          <p className="projects-subtitle">
+            A collection of my work, side projects, and experiments.
+          </p>
+        </header>
 
-      {/* Filters */}
-      <div className="projects-filters">
-        <input
-          type="search"
-          placeholder="Search projects..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-input"
-        />
+        {/* Filters */}
+        <div className="projects-filters">
+          <input
+            type="search"
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
 
-        <div className="category-filters">
-          {categories.map((category) => (
+          <div className="category-filters">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`category-button ${
+                  selectedCategory === category ? 'active' : ''
+                }`}
+              >
+                {category === 'all' ? 'All' : category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Projects Grid */}
+        {filteredProjects.length > 0 ? (
+          <div className="projects-grid">
+            {filteredProjects.map((project) => (
+              <ProjectListCard key={project.id} project={project} />
+            ))}
+          </div>
+        ) : (
+          <div className="no-results">
+            <p>No projects match your search criteria.</p>
             <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`category-button ${
-                selectedCategory === category ? 'active' : ''
-              }`}
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('all');
+              }}
+              className="clear-filters"
             >
-              {category === 'all' ? 'All' : category}
+              Clear filters
             </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
-
-      {/* Projects Grid */}
-      {filteredProjects.length > 0 ? (
-        <div className="projects-grid">
-          {filteredProjects.map((project) => (
-            <ProjectListCard key={project.id} project={project} />
-          ))}
-        </div>
-      ) : (
-        <div className="no-results">
-          <p>No projects match your search criteria.</p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('all');
-            }}
-            className="clear-filters"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 

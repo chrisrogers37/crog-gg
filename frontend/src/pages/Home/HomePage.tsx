@@ -5,6 +5,9 @@ import { CSSTransition } from 'react-transition-group';
 import { useContentLoader, useRegeneration, useScrollToSection } from '../../hooks';
 import { useUIStore, useIsLoading, useContentError, useBio, useSkills } from '../../store';
 
+// SEO
+import { SEO, PersonSchema } from '../../components/SEO';
+
 // Components
 import About from '../../components/About';
 import Skills from '../../components/Skills';
@@ -112,8 +115,15 @@ export function HomePage() {
   }
 
   return (
-    <div className="home-page">
-      {/* Header */}
+    <>
+      <SEO
+        description="Software engineer and creator. Explore my portfolio, projects, and music."
+        url="/"
+        type="profile"
+      />
+      <PersonSchema />
+      <div className="home-page">
+        {/* Header */}
       <header>
         <div className="header-content">
           <picture>
@@ -193,5 +203,6 @@ export function HomePage() {
         />
       )}
     </div>
+    </>
   );
 }
