@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react';
-import About from '../../components/About';
-import Portfolio from '../../components/Portfolio';
-import Skills from '../../components/Skills';
-import SectionNav from '../../components/SectionNav';
-import Typewriter from '../../components/Typewriter';
-import { ActionButtons } from '../../components/ActionButtons';
-import { loadResumeData } from '../../data/resume';
-import { ContentState, SectionId } from '../../types';
-import './HomePage.css';
+import { useRef } from 'react';
+import { CSSTransition } from 'react-transition-group';
 
-const API_URL = import.meta.env.VITE_API_URL;
+// Hooks
+import { useContentLoader, useRegeneration, useScrollToSection } from '../../hooks';
+import { useUIStore, useIsLoading, useContentError, useBio, useSkills } from '../../store';
+
+// Components
+import About from '../../components/About';
+import Skills from '../../components/Skills';
+import { Experience, Education, Projects, Music } from '../../components/sections';
+import SectionNav from '../../components/SectionNav';
+import { ActionButtons } from '../../components/ActionButtons';
+import Typewriter from '../../components/Typewriter';
+
+// Styles
+import '../../App.css';
+import '../../styles/transitions.css';
+import './HomePage.css';
 
 /**
  * LinkedIn icon component
@@ -30,229 +37,112 @@ const LinkedInIcon = () => (
 /**
  * HomePage Component
  *
- * Main portfolio page that displays:
- * - Header with profile photo and contact info
- * - Section navigation
- * - Content sections (About, Experience, Skills, Education, Projects, Music)
- * - Regeneration/Reset action buttons
+ * Main portfolio page using Zustand stores for state management.
+ * Displays header, section navigation, content sections, and action buttons.
  */
 export function HomePage() {
-  const [currentContent, setCurrentContent] = useState<ContentState | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasModifiedContent, setHasModifiedContent] = useState(false);
-  const [activeSection, setActiveSection] = useState<SectionId | ''>('');
+  const nodeRef = useRef<HTMLDivElement>(null);
 
-  // Load initial data from YAML files
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await loadResumeData();
-        setCurrentContent({
-          about: data.about,
-          portfolio: data.portfolio,
-          skills: data.skills,
-        });
-      } catch (err) {
-        console.error('Error loading resume data:', err);
-        setError('Failed to load content. Please refresh the page.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Load content on mount
+  useContentLoader();
 
-    loadInitialData();
-  }, []);
+  // Get state from stores
+  const isLoading = useIsLoading();
+  const error = useContentError();
+  const bio = useBio();
+  const skills = useSkills();
+  const activeSection = useUIStore((state) => state.activeSection);
+  const toggleSection = useUIStore((state) => state.toggleSection);
 
-  // Listen for content updates from child components
-  useEffect(() => {
-    const handleContentUpdated = (event: CustomEvent) => {
-      const { section, content } = event.detail;
-      setCurrentContent((prev) =>
-        prev
-          ? {
-              ...prev,
-              [section]: content,
-            }
-          : null
-      );
-    };
+  // Regeneration functionality
+  const { regenerate, reset, isRegenerating, hasModifiedContent } = useRegeneration();
 
-    window.addEventListener('contentUpdated', handleContentUpdated as EventListener);
+  // Scroll behavior
+  const { contentRef, scrollToContent } = useScrollToSection();
 
-    return () => {
-      window.removeEventListener('contentUpdated', handleContentUpdated as EventListener);
-    };
-  }, []);
+  // Handle section change with scroll
+  const handleSectionChange = (section: string) => {
+    toggleSection(section);
+    scrollToContent();
+  };
 
-  // Listen for content regeneration events
-  useEffect(() => {
-    const handleContentRegenerated = (event: CustomEvent) => {
-      const { section, content } = event.detail;
-      setCurrentContent((prev) =>
-        prev
-          ? {
-              ...prev,
-              [section]: content,
-            }
-          : null
-      );
-    };
-
-    window.addEventListener('contentRegenerated', handleContentRegenerated as EventListener);
-
-    return () => {
-      window.removeEventListener('contentRegenerated', handleContentRegenerated as EventListener);
-    };
-  }, []);
-
-  const handleRegenerate = async () => {
-    if (isRegenerating || !currentContent) return;
-    setIsRegenerating(true);
-    setError(null);
-
-    try {
-      const willUseFantasy = Math.random() < 1.0;
-
-      // Regenerate all sections that have content
-      const sectionsToRegenerate = ['about', 'portfolio'];
-      const regenerationPromises = sectionsToRegenerate.map((section) =>
-        fetch(`${API_URL}/api/regenerate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          mode: 'cors',
-          credentials: 'include',
-          body: JSON.stringify({
-            section: section,
-            content: currentContent[section as keyof ContentState],
-            is_full_regeneration: true,
-            use_fantasy: willUseFantasy,
-          }),
-        })
-      );
-
-      const responses = await Promise.all(regenerationPromises);
-      const results = await Promise.all(responses.map((r) => r.json()));
-
-      if (results.every((result) => result.success)) {
-        const newContent = { ...currentContent };
-        results.forEach((result, index) => {
-          const section = sectionsToRegenerate[index];
-          (newContent as Record<string, unknown>)[section] = result.content;
-        });
-
-        setCurrentContent(newContent as ContentState);
-        setHasModifiedContent(true);
-
-        // Dispatch events for all regenerated sections
-        results.forEach((result, index) => {
-          const section = sectionsToRegenerate[index];
-          window.dispatchEvent(
-            new CustomEvent('contentRegenerated', {
-              detail: {
-                section: section,
-                content: result.content,
-                is_full_regeneration: true,
-                use_fantasy: willUseFantasy,
-              },
-            })
-          );
-        });
-      } else {
-        throw new Error('Failed to regenerate some content');
-      }
-    } catch (err) {
-      console.error('Error during regeneration:', err);
-      setError('Failed to regenerate content. Please try again.');
-    } finally {
-      setTimeout(() => {
-        setIsRegenerating(false);
-      }, 1000);
+  // Render section based on active selection
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case 'about':
+        return (
+          <section className="section-content about-section">
+            <div className="about-content">
+              <About onRegenerate={() => {}} content={bio ?? undefined} />
+            </div>
+          </section>
+        );
+      case 'skills':
+        return <Skills skills={skills} />;
+      case 'experience':
+        return <Experience />;
+      case 'education':
+        return <Education />;
+      case 'projects':
+        return <Projects />;
+      case 'music':
+        return <Music />;
+      default:
+        return null;
     }
   };
 
-  const handleReset = async () => {
-    try {
-      setIsLoading(true);
-      const data = await loadResumeData();
-      setCurrentContent({
-        about: data.about,
-        portfolio: data.portfolio,
-        skills: data.skills,
-      });
-      setHasModifiedContent(false);
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="home-page">
+        <div className="loading-message">Loading content...</div>
+      </div>
+    );
+  }
 
-      // Dispatch reset events for all sections
-      window.dispatchEvent(
-        new CustomEvent('contentRegenerated', {
-          detail: {
-            section: 'about',
-            content: data.about,
-            is_full_regeneration: true,
-            use_fantasy: false,
-          },
-        })
-      );
-      window.dispatchEvent(
-        new CustomEvent('contentRegenerated', {
-          detail: {
-            section: 'portfolio',
-            content: data.portfolio,
-            is_full_regeneration: true,
-            use_fantasy: false,
-          },
-        })
-      );
-    } catch (err) {
-      console.error('Error resetting content:', err);
-      setError('Failed to reset content. Please refresh the page.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSectionChange = (sectionId: string) => {
-    setActiveSection(sectionId as SectionId | '');
-  };
+  // Error state
+  if (error) {
+    return (
+      <div className="home-page">
+        <div className="error-message">{error}</div>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
+  }
 
   return (
     <div className="home-page">
+      {/* Header */}
       <header>
         <div className="header-content">
           <picture>
             <source srcSet="/profile-photo.jpg" type="image/jpeg" />
             <img
               src="/profile-photo.png"
-              alt={`${currentContent?.about?.display_name || 'Profile'}'s profile photo`}
+              alt={`${bio?.display_name || 'Profile'}'s profile photo`}
               className="profile-photo"
             />
           </picture>
           <div className="header-text">
-            <h1>{currentContent?.about?.display_name || 'Loading...'}</h1>
+            <h1>{bio?.display_name || 'Loading...'}</h1>
             <div className="contact-header">
               <p>
                 <span role="img" aria-label="location">
                   📍
                 </span>{' '}
-                {currentContent?.about?.location || 'Loading...'}
+                {bio?.location || 'Loading...'}
               </p>
               <p>
                 <span role="img" aria-label="email">
                   📧
                 </span>{' '}
-                <a href={`mailto:${currentContent?.about?.email || ''}`}>
-                  {currentContent?.about?.email || 'Loading...'}
-                </a>
+                <a href={`mailto:${bio?.email || ''}`}>{bio?.email || 'Loading...'}</a>
               </p>
               <p>
                 <LinkedInIcon />{' '}
                 <a
-                  href={currentContent?.about?.social_links?.linkedin || '#'}
+                  href={bio?.social_links?.linkedin || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -260,10 +150,10 @@ export function HomePage() {
                 </a>
               </p>
             </div>
-            {currentContent?.about?.welcome_message && (
+            {bio?.welcome_message && (
               <div className="welcome-message">
                 <Typewriter
-                  text={currentContent.about.welcome_message}
+                  text={bio.welcome_message}
                   speed={40}
                   delay={500}
                   className="welcome-typewriter"
@@ -275,54 +165,32 @@ export function HomePage() {
         </div>
       </header>
 
-      {error && <div className="error-message">{error}</div>}
+      {/* Navigation */}
+      <SectionNav activeSection={activeSection} onSectionChange={handleSectionChange} />
 
-      {isLoading && <div className="loading-message">Loading content...</div>}
+      {/* Main Content */}
+      <main ref={contentRef}>
+        <CSSTransition
+          nodeRef={nodeRef}
+          in={!!activeSection}
+          timeout={300}
+          classNames="fade"
+          unmountOnExit
+        >
+          <div ref={nodeRef} className={`content-section ${activeSection ? 'visible' : ''}`}>
+            {renderActiveSection()}
+          </div>
+        </CSSTransition>
+      </main>
 
-      {!isLoading && currentContent && (
-        <main>
-          <SectionNav activeSection={activeSection} onSectionChange={handleSectionChange} />
-
-          {activeSection === 'about' && (
-            <>
-              <section className="section-content about-section">
-                <div className="about-content">
-                  <About onRegenerate={() => {}} content={currentContent?.about} />
-                </div>
-              </section>
-              <ActionButtons
-                onRegenerate={handleRegenerate}
-                onReset={handleReset}
-                isRegenerating={isRegenerating}
-                hasModifiedContent={hasModifiedContent}
-              />
-            </>
-          )}
-
-          {['experience', 'education', 'projects', 'music'].includes(activeSection) && (
-            <div>
-              <Portfolio activeSection={activeSection} content={currentContent?.portfolio} />
-              <ActionButtons
-                onRegenerate={handleRegenerate}
-                onReset={handleReset}
-                isRegenerating={isRegenerating}
-                hasModifiedContent={hasModifiedContent}
-              />
-            </div>
-          )}
-
-          {activeSection === 'skills' && (
-            <div>
-              <Skills skills={currentContent?.skills} />
-              <ActionButtons
-                onRegenerate={handleRegenerate}
-                onReset={handleReset}
-                isRegenerating={isRegenerating}
-                hasModifiedContent={hasModifiedContent}
-              />
-            </div>
-          )}
-        </main>
+      {/* Action Buttons */}
+      {activeSection && (
+        <ActionButtons
+          onRegenerate={() => regenerate(true)}
+          onReset={reset}
+          isRegenerating={isRegenerating}
+          hasModifiedContent={hasModifiedContent}
+        />
       )}
     </div>
   );
