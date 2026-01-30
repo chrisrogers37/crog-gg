@@ -1,0 +1,209 @@
+.project-detail-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.project-not-found {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.project-not-found h1 {
+  font-size: 2rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.project-not-found p {
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.back-link {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* Header */
+.project-header {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin: 2rem 0;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.project-icon-large {
+  font-size: 4rem;
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.project-header-content {
+  flex: 1;
+}
+
+.project-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.75rem;
+}
+
+.project-description {
+  font-size: 1.125rem;
+  color: #64748b;
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-archived {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.status-experimental {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.project-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.project-link.primary {
+  background: #1e293b;
+  color: white;
+}
+
+.project-link.primary:hover {
+  background: #0f172a;
+}
+
+/* Sections */
+.project-section {
+  margin: 2rem 0;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem;
+}
+
+/* Technologies */
+.technologies-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.technology-badge {
+  padding: 0.5rem 1rem;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* README Placeholder */
+.readme-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.readme-placeholder {
+  text-align: center;
+  color: #64748b;
+}
+
+.readme-placeholder a {
+  color: #2563eb;
+}
+
+/* Footer */
+.project-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.back-button {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.all-projects-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.all-projects-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .project-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .project-title {
+    font-size: 1.5rem;
+  }
+
+  .project-links {
+    justify-content: center;
+  }
+}
