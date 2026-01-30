@@ -1,0 +1,126 @@
+.contribution-graph {
+  padding: 1rem;
+  border-radius: 12px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.contribution-graph.loading {
+  height: 10rem;
+}
+
+.graph-skeleton {
+  height: 100%;
+  background-color: #e2e8f0;
+  border-radius: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.graph-header {
+  margin-bottom: 1rem;
+}
+
+.graph-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.graph-container {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.graph-grid {
+  display: flex;
+  gap: 2px;
+  min-width: max-content;
+}
+
+.graph-week {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.graph-day {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.graph-day:hover {
+  transform: scale(1.25);
+}
+
+/* Level colors - light mode */
+.graph-day.level-0 {
+  background-color: #f1f5f9;
+}
+
+.graph-day.level-1 {
+  background-color: #bbf7d0;
+}
+
+.graph-day.level-2 {
+  background-color: #86efac;
+}
+
+.graph-day.level-3 {
+  background-color: #4ade80;
+}
+
+.graph-day.level-4 {
+  background-color: #22c55e;
+}
+
+.graph-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.legend-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-box.level-0 {
+  background-color: #f1f5f9;
+}
+
+.legend-box.level-1 {
+  background-color: #bbf7d0;
+}
+
+.legend-box.level-2 {
+  background-color: #86efac;
+}
+
+.legend-box.level-3 {
+  background-color: #4ade80;
+}
+
+.legend-box.level-4 {
+  background-color: #22c55e;
+}
+
+.legend-label {
+  margin: 0 4px;
+}

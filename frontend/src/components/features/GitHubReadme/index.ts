@@ -1,0 +1,1 @@
+export { GitHubReadme } from './GitHubReadme';

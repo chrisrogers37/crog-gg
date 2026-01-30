@@ -2,15 +2,16 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useProjects } from '../../store';
 import { Breadcrumbs } from '../../components/common/Breadcrumbs';
 import { SEO, SoftwareSchema, BreadcrumbSchema } from '../../components/SEO';
+import { GitHubReadme, RepoStats, ProjectDemo } from '../../components/features';
 import './ProjectDetailPage.css';
 
 /**
- * ProjectDetailPage
+ * ProjectDetailPage (Enhanced with GitHub Integration)
  *
- * Displays detailed information about a single project.
- * The slug parameter maps to project.id from the YAML data.
- *
- * In Phase 6, this will also display the GitHub README.
+ * Displays detailed information about a single project including:
+ * - GitHub README rendering
+ * - Repository statistics
+ * - Live demo embedding (if applicable)
  */
 export function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -27,11 +28,18 @@ export function ProjectDetailPage() {
         <h1>Project Not Found</h1>
         <p>The project "{slug}" could not be found.</p>
         <Link to="/projects" className="back-link">
-          ← Back to Projects
+          Back to Projects
         </Link>
       </div>
     );
   }
+
+  // Extract GitHub repo name from URL
+  const githubRepoMatch = project.url?.match(/github\.com\/[\w-]+\/([\w-]+)/);
+  const githubRepoName = githubRepoMatch ? githubRepoMatch[1] : null;
+
+  // Check if project has a live demo URL
+  const hasLiveDemo = project.demo && !project.demo.includes('github.com');
 
   return (
     <>
@@ -65,7 +73,7 @@ export function ProjectDetailPage() {
         {/* Project Header */}
         <header className="project-header">
           <div className="project-icon-large">
-            <i className={project.icon}></i>
+            {project.icon || '📁'}
           </div>
           <div className="project-header-content">
             <h1 className="project-title">{project.title}</h1>
@@ -92,9 +100,27 @@ export function ProjectDetailPage() {
                     : 'View Project'}
                 </a>
               )}
+              {project.demo && (
+                <a
+                  href={project.demo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-link secondary"
+                >
+                  Live Demo
+                </a>
+              )}
             </div>
           </div>
         </header>
+
+        {/* GitHub Stats */}
+        {githubRepoName && (
+          <section className="project-section">
+            <h2 className="section-title">Repository Stats</h2>
+            <RepoStats repoName={githubRepoName} />
+          </section>
+        )}
 
         {/* Technologies */}
         {project.technologies && project.technologies.length > 0 && (
@@ -110,29 +136,25 @@ export function ProjectDetailPage() {
           </section>
         )}
 
-        {/* README Placeholder - Will be implemented in Phase 6 */}
-        <section className="project-section readme-section">
-          <h2 className="section-title">About This Project</h2>
-          <div className="readme-placeholder">
-            <p>
-              Project README will be loaded from GitHub in a future update.
-            </p>
-            {project.url && (
-              <p>
-                For now, visit the{' '}
-                <a href={project.url} target="_blank" rel="noopener noreferrer">
-                  project repository
-                </a>{' '}
-                to learn more.
-              </p>
-            )}
-          </div>
-        </section>
+        {/* Live Demo */}
+        {hasLiveDemo && (
+          <section className="project-section">
+            <ProjectDemo url={project.demo!} title={project.title} />
+          </section>
+        )}
+
+        {/* GitHub README */}
+        {githubRepoName && (
+          <section className="project-section">
+            <h2 className="section-title">Documentation</h2>
+            <GitHubReadme repoName={githubRepoName} />
+          </section>
+        )}
 
         {/* Back Button */}
         <div className="project-footer">
           <button onClick={() => navigate(-1)} className="back-button">
-            ← Go Back
+            Go Back
           </button>
           <Link to="/projects" className="all-projects-link">
             View All Projects
