@@ -1,0 +1,9 @@
+.projects-section {
+  position: relative;
+}
+
+.empty-state {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+}

@@ -1,0 +1,68 @@
+/* Action Buttons Container */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--card-background);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+/* Button Base Styles */
+.action-buttons .generate-btn,
+.action-buttons .reset-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Generate Button */
+.action-buttons .generate-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.action-buttons .generate-btn:hover {
+  background-color: var(--hover-color);
+}
+
+.action-buttons .generate-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+/* Reset Button */
+.action-buttons .reset-btn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.action-buttons .reset-btn:hover {
+  background-color: #b91c1c;
+}
+
+.action-buttons .reset-btn:disabled {
+  background-color: #fca5a5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+}

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { SkillsData } from '../types/Skills';
 
 // Function to shuffle an array
-const shuffleArray = (array: any[]) => {
+const shuffleArray = <T,>(array: T[]): T[] => {
   let currentIndex = array.length, randomIndex;
   while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);

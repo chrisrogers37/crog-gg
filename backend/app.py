@@ -316,5 +316,207 @@ def get_usage_info():
         'remaining_tokens': 1000000
     })
 
+
+# GitHub API Configuration
+GITHUB_USERNAME = 'chrisrogers37'
+GITHUB_API = 'https://api.github.com'
+
+
+def github_headers():
+    """Headers for GitHub API requests."""
+    headers = {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'CYOC-Portfolio'
+    }
+    if GITHUB_TOKEN:
+        headers['Authorization'] = f'token {GITHUB_TOKEN}'
+    return headers
+
+
+@app.route('/api/v1/github/repo/<repo_name>', methods=['GET'])
+def get_repository(repo_name):
+    """
+    Get repository information.
+
+    GET /api/v1/github/repo/shuffify
+    """
+    logger.info(f"=== GitHub Repo Request: {repo_name} ===")
+    try:
+        response = requests.get(
+            f'{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}',
+            headers=github_headers()
+        )
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error: {e}")
+        status_code = e.response.status_code if hasattr(e, 'response') and e.response else 500
+        return jsonify({'error': str(e)}), status_code
+
+
+@app.route('/api/v1/github/readme/<repo_name>', methods=['GET'])
+def get_readme(repo_name):
+    """
+    Get repository README content.
+
+    GET /api/v1/github/readme/shuffify
+    """
+    logger.info(f"=== GitHub README Request: {repo_name} ===")
+    try:
+        response = requests.get(
+            f'{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}/readme',
+            headers=github_headers()
+        )
+
+        if response.status_code == 404:
+            return jsonify({'error': 'README not found'}), 404
+
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error: {e}")
+        status_code = e.response.status_code if hasattr(e, 'response') and e.response else 500
+        return jsonify({'error': str(e)}), status_code
+
+
+@app.route('/api/v1/github/languages/<repo_name>', methods=['GET'])
+def get_repo_languages(repo_name):
+    """
+    Get repository language statistics.
+
+    GET /api/v1/github/languages/shuffify
+    """
+    logger.info(f"=== GitHub Languages Request: {repo_name} ===")
+    try:
+        response = requests.get(
+            f'{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}/languages',
+            headers=github_headers()
+        )
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error: {e}")
+        status_code = e.response.status_code if hasattr(e, 'response') and e.response else 500
+        return jsonify({'error': str(e)}), status_code
+
+
+@app.route('/api/v1/github/languages', methods=['GET'])
+def get_all_languages_v1():
+    """
+    Get aggregated language statistics for all public repos.
+
+    GET /api/v1/github/languages
+    """
+    logger.info("=== GitHub All Languages Request (v1) ===")
+    try:
+        # Get all repos
+        repos_response = requests.get(
+            f'{GITHUB_API}/users/{GITHUB_USERNAME}/repos?per_page=100',
+            headers=github_headers()
+        )
+        repos_response.raise_for_status()
+        repos = repos_response.json()
+
+        # Aggregate languages
+        all_languages = {}
+        for repo in repos:
+            if repo.get('fork'):
+                continue  # Skip forks
+
+            lang_response = requests.get(
+                f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo['name']}/languages",
+                headers=github_headers()
+            )
+            if lang_response.ok:
+                languages = lang_response.json()
+                for lang, bytes_count in languages.items():
+                    all_languages[lang] = all_languages.get(lang, 0) + bytes_count
+
+        return jsonify(all_languages)
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/v1/github/contributions', methods=['GET'])
+def get_contributions():
+    """
+    Get contribution data for heatmap visualization.
+    Uses GitHub's GraphQL API for contribution calendar.
+
+    GET /api/v1/github/contributions
+    """
+    logger.info("=== GitHub Contributions Request ===")
+    if not GITHUB_TOKEN:
+        return jsonify({'error': 'GitHub token required for contribution data'}), 500
+
+    query = """
+    query($username: String!) {
+        user(login: $username) {
+            contributionsCollection {
+                contributionCalendar {
+                    totalContributions
+                    weeks {
+                        contributionDays {
+                            date
+                            contributionCount
+                            contributionLevel
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    try:
+        response = requests.post(
+            'https://api.github.com/graphql',
+            headers={
+                'Authorization': f'bearer {GITHUB_TOKEN}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'query': query,
+                'variables': {'username': GITHUB_USERNAME}
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if 'errors' in data:
+            logger.error(f"GraphQL errors: {data['errors']}")
+            return jsonify({'error': 'GraphQL query failed'}), 500
+
+        calendar = data['data']['user']['contributionsCollection']['contributionCalendar']
+
+        # Transform to simpler format
+        weeks = []
+        for week in calendar['weeks']:
+            days = []
+            for day in week['contributionDays']:
+                level_map = {
+                    'NONE': 0,
+                    'FIRST_QUARTILE': 1,
+                    'SECOND_QUARTILE': 2,
+                    'THIRD_QUARTILE': 3,
+                    'FOURTH_QUARTILE': 4
+                }
+                days.append({
+                    'date': day['date'],
+                    'count': day['contributionCount'],
+                    'level': level_map.get(day['contributionLevel'], 0)
+                })
+            weeks.append(days)
+
+        return jsonify({
+            'total': calendar['totalContributions'],
+            'weeks': weeks
+        })
+    except requests.RequestException as e:
+        logger.error(f"GitHub API error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
