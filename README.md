@@ -1,5 +1,7 @@
 # Choose Your Own Chris
 
+[![CI](https://github.com/chrisrogers37/choose-your-own-chris/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/choose-your-own-chris/actions/workflows/ci.yml)
+
 An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. The site showcases professional experience, projects, and musical endeavors with a unique twist - content can be regenerated on demand for a fresh perspective!
 
 ## Features
@@ -28,6 +30,12 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **Error Handling**: Robust error management for API interactions
 - **Rate Limiting**: Token usage tracking and request limiting
 - **Smooth Animations**: CSS transitions for content updates
+
+### Testing & CI/CD
+- **Unit Testing**: Vitest with React Testing Library
+- **E2E Testing**: Playwright for browser automation
+- **Continuous Integration**: GitHub Actions for automated testing
+- **Code Quality**: ESLint + TypeScript strict mode
 
 ## Tech Stack
 
@@ -101,6 +109,54 @@ An interactive portfolio website featuring dynamic content generation using Open
    ```
 
 5. Open your browser and visit `http://localhost:5173`
+
+## Testing
+
+### Running Unit Tests
+```bash
+cd frontend
+
+# Run tests in watch mode
+npm run test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests with UI
+npm run test:ui
+```
+
+### Running E2E Tests
+```bash
+cd frontend
+
+# Install Playwright browsers (first time only)
+npx playwright install --with-deps chromium
+
+# Run E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode (visible browser)
+npm run test:e2e:headed
+```
+
+### CI/CD
+
+The project uses GitHub Actions for continuous integration. On every push to `main` and on pull requests:
+
+1. **Frontend Lint**: Runs ESLint to check code quality
+2. **Frontend Unit Tests**: Runs Vitest with coverage reporting
+3. **Frontend E2E Tests**: Runs Playwright browser tests
+4. **Frontend Build**: Verifies production build succeeds
+5. **Backend Lint**: Runs flake8, black, and isort checks
+
+To manually trigger a deployment, use the "Deploy" workflow in GitHub Actions.
 
 ## Production Deployment
 
