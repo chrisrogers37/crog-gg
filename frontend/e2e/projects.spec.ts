@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Projects Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/projects');
+    // Wait for projects to load (content is fetched from YAML)
+    await page.waitForLoadState('networkidle');
   });
 
   test('displays projects page header', async ({ page }) => {
@@ -21,18 +23,18 @@ test.describe('Projects Page', () => {
   });
 
   test('displays project cards', async ({ page }) => {
-    // Wait for projects to load
+    // Wait for projects to load with longer timeout for CI
     const projectCards = page.locator('.project-list-card');
-    await expect(projectCards.first()).toBeVisible({ timeout: 5000 });
+    await expect(projectCards.first()).toBeVisible({ timeout: 15000 });
 
     // Should have at least one project
     await expect(projectCards).not.toHaveCount(0);
   });
 
   test('project cards have links to detail pages', async ({ page }) => {
-    // Wait for projects to load
+    // Wait for projects to load with longer timeout for CI
     const projectCards = page.locator('.project-list-card');
-    await expect(projectCards.first()).toBeVisible({ timeout: 5000 });
+    await expect(projectCards.first()).toBeVisible({ timeout: 15000 });
 
     // First project card should be a link
     const firstProjectLink = projectCards.first();
@@ -44,8 +46,9 @@ test.describe('Projects Page', () => {
 test.describe('Projects Filtering', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/projects');
-    // Wait for projects to load
-    await expect(page.locator('.project-list-card').first()).toBeVisible({ timeout: 5000 });
+    await page.waitForLoadState('networkidle');
+    // Wait for projects to load with longer timeout for CI
+    await expect(page.locator('.project-list-card').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('search filters projects by title', async ({ page }) => {
@@ -128,10 +131,11 @@ test.describe('Projects Filtering', () => {
 test.describe('Project Detail Page', () => {
   test('navigates to project detail from listing', async ({ page }) => {
     await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
 
-    // Wait for projects to load
+    // Wait for projects to load with longer timeout for CI
     const firstProject = page.locator('.project-list-card').first();
-    await expect(firstProject).toBeVisible({ timeout: 5000 });
+    await expect(firstProject).toBeVisible({ timeout: 15000 });
 
     // Get the project title before clicking
     const projectTitle = await firstProject.locator('.card-title').textContent();
@@ -144,16 +148,17 @@ test.describe('Project Detail Page', () => {
 
     // Project title should be visible on detail page
     if (projectTitle) {
-      await expect(page.getByRole('heading', { name: new RegExp(projectTitle, 'i') })).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('heading', { name: new RegExp(projectTitle, 'i') })).toBeVisible({ timeout: 10000 });
     }
   });
 
   test('project detail page has breadcrumb navigation', async ({ page }) => {
     await page.goto('/projects');
+    await page.waitForLoadState('networkidle');
 
     // Navigate to first project
     const firstProject = page.locator('.project-list-card').first();
-    await expect(firstProject).toBeVisible({ timeout: 5000 });
+    await expect(firstProject).toBeVisible({ timeout: 15000 });
     await firstProject.click();
 
     // Wait for detail page to load
@@ -161,6 +166,6 @@ test.describe('Project Detail Page', () => {
 
     // Should have breadcrumb or back navigation
     const backLink = page.getByRole('link', { name: /Projects|Back/i });
-    await expect(backLink).toBeVisible({ timeout: 5000 });
+    await expect(backLink).toBeVisible({ timeout: 10000 });
   });
 });

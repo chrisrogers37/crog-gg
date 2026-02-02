@@ -3,7 +3,6 @@ from flask_cors import CORS
 import openai
 import os
 import json
-import random
 import logging
 import sys
 import requests
@@ -28,7 +27,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure CORS
-CORS(app, 
+CORS(app,
      origins=[
          "http://localhost:5173",  # Development
          "http://localhost:5174",
@@ -54,19 +53,21 @@ if not GITHUB_TOKEN:
 else:
     logger.info("GitHub token loaded successfully")
 
+
 def get_fantasy_prompt(use_fantasy=False):
     """Get the fantasy prompt addition if requested."""
     if use_fantasy:
         return """
-        Transform this content by incorporating fantasy elements similar to those from Lord of the Rings, Narnia, or Game of Thrones. 
+        Transform this content by incorporating fantasy elements similar to those from Lord of the Rings, Narnia, or Game of Thrones.
         Feel free to reframe achievements as epic quests, technical challenges as battles with mythical creatures, and professional growth as a hero's journey.
-        You can blend real accomplishments with fantasy elements, turning data pipelines into magical streams of knowledge, 
+        You can blend real accomplishments with fantasy elements, turning data pipelines into magical streams of knowledge,
         team collaborations into fellowship quests, and technical skills into mystical powers.
-        If this content includes a name, transform it into a fantasy version that MUST include either 'Chris' or 'Christopher' as part of the name 
+        If this content includes a name, transform it into a fantasy version that MUST include either 'Chris' or 'Christopher' as part of the name
         (e.g., 'Christopher T. Rogers' might become 'Christopher the Radiant' or 'Chris Thunderheart, Keeper of Ancient Code').
         However, ensure the core professional accomplishments remain clear and the fantasy elements enhance rather than obscure them.
         """
     return ""
+
 
 @app.route('/api/regenerate', methods=['POST', 'OPTIONS'])
 def regenerate_content():
@@ -78,14 +79,14 @@ def regenerate_content():
         response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 204
-        
+
     try:
         logger.info("=== New Regenerate Request ===")
         logger.info(f"Request Headers: {dict(request.headers)}")
-        
+
         data = request.get_json()
         logger.info(f"Raw request data: {json.dumps(data, indent=2)}")
-        
+
         if not data:
             logger.error("Error: No JSON data received")
             return jsonify({
@@ -98,13 +99,13 @@ def regenerate_content():
         is_full_regeneration = data.get('is_full_regeneration', False)
         use_fantasy = data.get('use_fantasy', False)
         regenerate_target = content.get('regenerate_target') if content else None
-        
+
         logger.info(f"Processing request for section: {section}")
         logger.info(f"Is full regeneration: {is_full_regeneration}")
         logger.info(f"Use fantasy: {use_fantasy}")
         logger.info(f"Regenerate target: {regenerate_target}")
         logger.info(f"Content to regenerate: {json.dumps(content, indent=2)}")
-        
+
         if not section:
             logger.error("Error: No section specified")
             return jsonify({
@@ -148,7 +149,7 @@ def regenerate_content():
         if use_fantasy:
             if section == 'about':
                 fantasy_addition = """
-                Transform ALL content by incorporating fantasy elements similar to those from Lord of the Rings, Narnia, or Game of Thrones. 
+                Transform ALL content by incorporating fantasy elements similar to those from Lord of the Rings, Narnia, or Game of Thrones.
 
                 For the display_name field:
                 1. Create an epic fantasy name that MUST include 'Christopher' or 'Chris'
@@ -175,7 +176,7 @@ def regenerate_content():
                 Transform this content by incorporating fantasy elements similar to those from Lord of the Rings, Narnia, or Game of Thrones.
                 Blend real accomplishments with fantasy elements while keeping the core information clear and accurate.
                 """
-            
+
             section_prompt['format'] += fantasy_addition
             logger.info("Adding fantasy elements to this regeneration!")
             logger.debug(f"Fantasy prompt addition: {fantasy_addition}")
@@ -199,18 +200,18 @@ def regenerate_content():
                 {"role": "system", "content": section_prompt['system']},
                 {"role": "user", "content": f"Original content: {json.dumps(content)}\n\nFormatting instructions: {section_prompt['format']}\n\nPlease rewrite this content, paying special attention to achievements if they exist. Each achievement should be rewritten to be more impactful while maintaining the same core accomplishments and metrics."}
             ]
-            
+
             logger.info(f"OpenAI request messages: {json.dumps(messages, indent=2)}")
-            
+
             response = openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages,
                 temperature=0.7,
             )
-            
+
             logger.info("OpenAI API response received successfully")
             logger.info(f"Raw OpenAI response: {response}")
-            
+
             # Get the generated content
             new_content = response.choices[0].message.content
             logger.info(f"Generated content: {new_content}")
@@ -253,12 +254,13 @@ def regenerate_content():
             'error': f'Request processing error: {str(e)}'
         }), 500
 
+
 @app.route('/api/github/languages', methods=['GET'])
 def get_github_languages():
     logger.info("=== New GitHub Languages Request ===")
     github_username = "chrisrogers37"
     api_url = f"https://api.github.com/users/{github_username}/repos"
-    
+
     headers = {
         "Accept": "application/vnd.github.v3+json"
     }
@@ -272,7 +274,7 @@ def get_github_languages():
         logger.info(f"Found {len(repos)} repositories for user {github_username}")
 
         language_stats = {}
-        
+
         for repo in repos:
             if repo['fork']:
                 continue
@@ -281,15 +283,15 @@ def get_github_languages():
             lang_response = requests.get(lang_url, headers=headers)
             lang_response.raise_for_status()
             languages = lang_response.json()
-            
+
             for lang, bytes_of_code in languages.items():
                 language_stats[lang] = language_stats.get(lang, 0) + bytes_of_code
 
         # Sort languages by bytes of code, descending
         sorted_languages = sorted(language_stats.items(), key=lambda item: item[1], reverse=True)
-        
+
         logger.info(f"Successfully aggregated language stats: {json.dumps(sorted_languages, indent=2)}")
-        
+
         return jsonify({
             'success': True,
             'languages': sorted_languages
@@ -299,14 +301,15 @@ def get_github_languages():
         logger.error(f"Error fetching data from GitHub: {e}", exc_info=True)
         error_message = f"Error fetching data from GitHub: {e}"
         status_code = e.response.status_code if e.response else 500
-        
+
         if status_code == 403:
             error_message = "GitHub API rate limit exceeded. Please try again later or provide a GITHUB_TOKEN."
-        
+
         return jsonify({'success': False, 'error': error_message}), status_code
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}", exc_info=True)
         return jsonify({'success': False, 'error': f'An unexpected error occurred: {e}'}), 500
+
 
 @app.route('/api/limits', methods=['GET'])
 def get_usage_info():

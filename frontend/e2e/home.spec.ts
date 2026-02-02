@@ -63,8 +63,8 @@ test.describe('Section Navigation', () => {
     // Click Skills section button
     await page.getByRole('button', { name: /Skills/i }).click();
 
-    // Skills section should be visible
-    await expect(page.locator('.skills-section, .section-content')).toBeVisible({ timeout: 5000 });
+    // Skills section should be visible (uses .skills-container class)
+    await expect(page.locator('.skills-container, .skills-bar-chart')).toBeVisible({ timeout: 5000 });
   });
 
   test('clicking same section twice hides it', async ({ page }) => {

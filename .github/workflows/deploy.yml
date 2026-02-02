@@ -90,27 +90,20 @@ jobs:
           path: frontend/dist/
           retention-days: 30
 
-      # To enable SSH deployment, add the following secrets:
-      # - DEPLOY_SSH_KEY: Private SSH key for deployment
-      # - FRONTEND_HOST: Frontend server hostname
-      # - FRONTEND_PATH: Path to frontend on server (e.g., /var/www/crog.gg)
-      #
-      # Then uncomment the following step:
-      #
-      # - name: Deploy to frontend server
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.FRONTEND_HOST }}
-      #     username: ${{ secrets.DEPLOY_USER }}
-      #     key: ${{ secrets.DEPLOY_SSH_KEY }}
-      #     script: |
-      #       cd ${{ secrets.FRONTEND_PATH }}
-      #       git fetch origin
-      #       git reset --hard origin/main
-      #       cd frontend
-      #       npm install
-      #       npm run build
-      #       sudo systemctl restart nginx
+      - name: Deploy to frontend server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONTEND_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.FRONTEND_PATH }}
+            git fetch origin
+            git reset --hard origin/main
+            cd frontend
+            npm install
+            npm run build
+            sudo systemctl restart nginx
 
       - name: Deployment summary
         run: |
@@ -140,27 +133,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # To enable SSH deployment, add the following secrets:
-      # - DEPLOY_SSH_KEY: Private SSH key for deployment
-      # - BACKEND_HOST: Backend server hostname
-      # - BACKEND_PATH: Path to backend on server (e.g., /var/www/api.crog.gg)
-      #
-      # Then uncomment the following step:
-      #
-      # - name: Deploy to backend server
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.BACKEND_HOST }}
-      #     username: ${{ secrets.DEPLOY_USER }}
-      #     key: ${{ secrets.DEPLOY_SSH_KEY }}
-      #     script: |
-      #       cd ${{ secrets.BACKEND_PATH }}
-      #       git fetch origin
-      #       git reset --hard origin/main
-      #       source venv/bin/activate
-      #       pip install -r requirements.txt
-      #       cd systemd
-      #       ./deploy-services.sh restart
+      - name: Deploy to backend server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.BACKEND_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.BACKEND_PATH }}
+            git fetch origin
+            git reset --hard origin/main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            cd systemd
+            ./deploy-services.sh restart
 
       - name: Deployment summary
         run: |
