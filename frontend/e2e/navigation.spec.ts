@@ -12,8 +12,8 @@ test.describe('Site Navigation', () => {
     await page.goto('/');
     // Page should have loaded without error
     await expect(page.locator('body')).toBeVisible();
-    // Should have some main content
-    await expect(page.locator('main, #root, .app')).toBeVisible();
+    // Should have main content area
+    await expect(page.getByRole('main')).toBeVisible();
   });
 
   test('projects page is accessible', async ({ page }) => {
@@ -57,10 +57,10 @@ test.describe('Layout Components', () => {
 
   test('main content area exists', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('main, .main-content, #root')).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
 
     await page.goto('/projects');
-    await expect(page.locator('main, .main-content, .projects-page')).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
   });
 });
 

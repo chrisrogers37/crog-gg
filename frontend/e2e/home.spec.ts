@@ -20,8 +20,8 @@ test.describe('Home Page', () => {
   });
 
   test('displays location information', async ({ page }) => {
-    // Test that location element exists
-    await expect(page.locator('.location, [class*="location"]')).toBeVisible();
+    // Test that location text exists (city name visible on page)
+    await expect(page.getByText(/New York|NYC|Location/i).first()).toBeVisible();
   });
 
   test('displays contact information', async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe('Home Page', () => {
   test('displays typewriter or welcome section', async ({ page }) => {
     // Test that some welcome/typewriter element exists
     // Don't test specific text since it cycles and changes
-    const welcomeArea = page.locator('.welcome-typewriter, .typewriter, [class*="welcome"]');
+    const welcomeArea = page.locator('.welcome-typewriter, .typewriter').first();
     await expect(welcomeArea).toBeVisible({ timeout: 5000 });
   });
 
