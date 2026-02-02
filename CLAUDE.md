@@ -93,6 +93,70 @@ git diff                # Review changes before commit
 - E2E tests in `frontend/e2e/`
 - Mock external APIs in tests
 
+### E2E Test Philosophy (IMPORTANT)
+Tests should verify **structure and behavior**, not specific content:
+- **DO**: Test that elements exist (headings, buttons, inputs)
+- **DO**: Test that interactions work (clicking toggles state, forms accept input)
+- **DO**: Use flexible selectors that match patterns, not exact classes
+- **DO**: Skip tests gracefully when optional data isn't available
+- **DON'T**: Test for exact text content that changes frequently
+- **DON'T**: Hard-code copy like "hey there!" or "Welcome to my site"
+- **DON'T**: Require specific data to load (projects, etc.) - make tests resilient
+
+Example - Bad:
+```typescript
+await expect(page.getByText(/hey there!/i)).toBeVisible();
+```
+
+Example - Good:
+```typescript
+const welcomeArea = page.locator('.welcome-typewriter, [class*="welcome"]');
+await expect(welcomeArea).toBeVisible();
+```
+
+### Content Files
+- Content lives in `frontend/public/content/` as YAML files
+- Bio, experience, education, skills, projects all loaded from YAML
+- Projects are in `frontend/public/content/projects/` directory
+
+## Deployment
+
+### CI/CD Workflows
+- **CI** (`ci.yml`): Runs automatically on push - lint, test, build
+- **Deploy** (`deploy.yml`): Manual trigger (`workflow_dispatch`)
+  - Requires GitHub secrets: `DEPLOY_SSH_KEY`, `FRONTEND_HOST`, `BACKEND_HOST`, `DEPLOY_USER`, `FRONTEND_PATH`, `BACKEND_PATH`
+  - Frontend deploys to: 209.97.158.198 at /var/www/crog.gg
+  - Backend deploys to: 167.172.233.207 at /var/www/api.crog.gg
+
+### Manual Deploy Command
+```bash
+ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
+```
+
+## Tone & Content Style
+
+Chris prefers a **casual, lowercase tone** in content:
+- Use lowercase for casual/friendly copy
+- **NEVER use em-dashes** (—) - use regular dashes or ellipses instead
+- Keep it conversational, not corporate
+- Example: "alright, here goes..." not "Here's what makes me tick—"
+
+## Image Handling
+
+When working with images:
+- **DON'T rotate images** unless explicitly requested - images are usually oriented correctly
+- Use **CSS `object-position`** for cropping (e.g., `object-position: top` to hide bottom of image)
+- Use **CSS `object-fit: cover`** for responsive image sizing
+- Profile photos are in `frontend/public/profile-photos/`
+
+Example - cropping with CSS (not image manipulation):
+```css
+.profile-photo {
+  object-fit: cover;
+  object-position: top; /* Shows top of image, crops bottom */
+}
+```
+
 ---
 
 _Update this file continuously. Every mistake Claude makes is a learning opportunity._
