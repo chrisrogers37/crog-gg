@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { ThemeToggle } from '../../common/ThemeToggle';
 import './Navigation.css';
 
 /**
@@ -21,23 +22,26 @@ export function Navigation() {
         Chris Rogers
       </Link>
 
-      <ul className="nav-links">
-        {navItems.map((item) => (
-          <li key={item.path}>
-            <Link
-              to={item.path}
-              className={`nav-link ${
-                location.pathname === item.path ||
-                (item.path !== '/' && location.pathname.startsWith(item.path))
-                  ? 'active'
-                  : ''
-              }`}
-            >
-              {item.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="nav-right">
+        <ul className="nav-links">
+          {navItems.map((item) => (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={`nav-link ${
+                  location.pathname === item.path ||
+                  (item.path !== '/' && location.pathname.startsWith(item.path))
+                    ? 'active'
+                    : ''
+                }`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <ThemeToggle />
+      </div>
     </nav>
   );
 }

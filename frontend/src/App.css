@@ -3,9 +3,22 @@
   --secondary-color: #1e40af;
   --background-color: #f8fafc;
   --text-color: #1e293b;
+  --text-color-secondary: #64748b;
   --card-background: #ffffff;
   --hover-color: #3b82f6;
   --border-color: #e2e8f0;
+}
+
+/* Dark mode overrides */
+.dark {
+  --primary-color: #60a5fa;
+  --secondary-color: #3b82f6;
+  --background-color: #0f172a;
+  --text-color: #f1f5f9;
+  --text-color-secondary: #94a3b8;
+  --card-background: #1e293b;
+  --hover-color: #93c5fd;
+  --border-color: #334155;
 }
 
 .app {
@@ -467,6 +480,7 @@ a:hover {
   height: 240px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: top;
   border: 3px solid var(--card-background);
   box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
   transition: transform 0.2s ease;

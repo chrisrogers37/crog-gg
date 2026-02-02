@@ -1,0 +1,33 @@
+# Christopher T. Rogers - Bio Content
+display_name: Christopher T. Rogers
+email: christophertrogers37@gmail.com
+location: New York City, New York
+
+# Welcome Message
+welcome_message: |
+  It's crazy, you can just build stuff!! Check out what I've been up to.
+
+# About Text
+about_text: |
+  alright, here goes...
+
+  i spend a lot of time making music, messing with audio engineering, and occasionally djing around nyc.
+
+  i stay pretty close to the cutting edge... lately that means claude code, claude code, and more claude code, building out things i'm passionate about.
+
+  when i need to recharge, i'm usually traveling somewhere new or escaping to maine to disconnect. just me, some books, and nature.
+
+  professionally, i work in data. i like taking ambiguity and creating clarity...figuring out what actually matters, building metrics that make sense, and designing infrastructure that makes insights easy for everyone, not just us data nerds.
+
+  i've been diving into crypto lately in my newest role as a blockchain data engineer and am currently re-architecting a multi trillion+ record scale blockchain data dbt analytics ecosystem.
+
+  anyways, feel free to poke around. there's plenty more to explore. 
+
+  or flip the whole thing on its head and click the button below to activate FANTASY MODE.
+
+# Social Links
+social_links:
+  github: https://github.com/chrisrogers37/
+  hoobe: https://hoo.be/crog
+  spotify: https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn
+  linkedin: https://www.linkedin.com/in/chrisrogers37/

@@ -10,7 +10,7 @@ export function PersonSchema() {
     name: 'Chris Rogers',
     url: 'https://crog.gg',
     image: 'https://crog.gg/profile-photo.jpg',
-    jobTitle: 'Software Engineer',
+    jobTitle: 'Builder of Things That Sometimes Work',
     sameAs: [
       'https://github.com/chrisrogers37',
       'https://linkedin.com/in/chrisrogers37',

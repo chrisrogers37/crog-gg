@@ -17,6 +17,12 @@
   color: #2563eb;
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
 .nav-links {
   display: flex;
   gap: 2rem;
@@ -51,8 +57,37 @@
   background: #2563eb;
 }
 
+/* Dark mode styles */
+.dark .nav-logo {
+  color: #f1f5f9;
+}
+
+.dark .nav-logo:hover {
+  color: #60a5fa;
+}
+
+.dark .nav-link {
+  color: #9ca3af;
+}
+
+.dark .nav-link:hover {
+  color: #f1f5f9;
+}
+
+.dark .nav-link.active {
+  color: #60a5fa;
+}
+
+.dark .nav-link.active::after {
+  background: #60a5fa;
+}
+
 @media (max-width: 640px) {
   .nav-links {
+    gap: 1rem;
+  }
+
+  .nav-right {
     gap: 1rem;
   }
 }

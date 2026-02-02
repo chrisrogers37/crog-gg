@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { CSSTransition } from 'react-transition-group';
 
 // Hooks
@@ -14,7 +14,7 @@ import Skills from '../../components/Skills';
 import { Experience, Education, Projects, Music } from '../../components/sections';
 import SectionNav from '../../components/SectionNav';
 import { ActionButtons } from '../../components/ActionButtons';
-import Typewriter from '../../components/Typewriter';
+import TypewriterLoop from '../../components/TypewriterLoop';
 
 // Styles
 import '../../App.css';
@@ -43,8 +43,23 @@ const LinkedInIcon = () => (
  * Main portfolio page using Zustand stores for state management.
  * Displays header, section navigation, content sections, and action buttons.
  */
+// Profile photos for random selection
+const PROFILE_PHOTOS = [
+  '/profile-photos/photo-1.jpg',
+  '/profile-photos/photo-2.jpg',
+  '/profile-photos/photo-3.jpg',
+  '/profile-photos/photo-4.jpg',
+  '/profile-photos/photo-5.jpg',
+];
+
 export function HomePage() {
   const nodeRef = useRef<HTMLDivElement>(null);
+
+  // Random profile photo (selected once on mount)
+  const profilePhoto = useMemo(() => {
+    const randomIndex = Math.floor(Math.random() * PROFILE_PHOTOS.length);
+    return PROFILE_PHOTOS[randomIndex];
+  }, []);
 
   // Load content on mount
   useContentLoader();
@@ -126,14 +141,11 @@ export function HomePage() {
         {/* Header */}
       <header>
         <div className="header-content">
-          <picture>
-            <source srcSet="/profile-photo.jpg" type="image/jpeg" />
-            <img
-              src="/profile-photo.png"
-              alt={`${bio?.display_name || 'Profile'}'s profile photo`}
-              className="profile-photo"
-            />
-          </picture>
+          <img
+            src={profilePhoto}
+            alt={`${bio?.display_name || 'Profile'}'s profile photo`}
+            className="profile-photo"
+          />
           <div className="header-text">
             <h1>{bio?.display_name || 'Loading...'}</h1>
             <div className="contact-header">
@@ -160,17 +172,26 @@ export function HomePage() {
                 </a>
               </p>
             </div>
-            {bio?.welcome_message && (
-              <div className="welcome-message">
-                <Typewriter
-                  text={bio.welcome_message}
-                  speed={40}
-                  delay={500}
-                  className="welcome-typewriter"
-                  showSkip={false}
-                />
-              </div>
-            )}
+            <div className="welcome-message">
+              <TypewriterLoop
+                messages={[
+                  "hey there!",
+                  "welcome to my website",
+                  "i use this as a bit of a portfolio / digital resume / hobby page",
+                  "it's crazy, you can just make #$%@ in 2026!!!",
+                  "anyways, take a look around at what ive been up to",
+                  "i try to keep this relatively up to date...",
+                  "there are some easter eggs if you go exploring",
+                  "hope you enjoy!",
+                  "have a nice day =)"
+                ]}
+                typeSpeed={25}
+                deleteSpeed={15}
+                pauseTime={2000}
+                initialDelay={1000}
+                className="welcome-typewriter"
+              />
+            </div>
           </div>
         </div>
       </header>

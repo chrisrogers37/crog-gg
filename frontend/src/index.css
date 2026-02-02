@@ -10,8 +10,10 @@
 
   body {
     @apply bg-slate-50 text-slate-800 antialiased;
+    @apply dark:bg-slate-900 dark:text-slate-200;
     @apply min-h-screen w-full m-0;
     @apply overflow-x-hidden;
+    @apply transition-colors duration-200;
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   }
 
@@ -39,6 +41,8 @@
   .btn-secondary {
     @apply bg-slate-100 text-slate-700;
     @apply hover:bg-slate-200;
+    @apply dark:bg-slate-700 dark:text-slate-200;
+    @apply dark:hover:bg-slate-600;
     @apply focus-visible:ring-slate-500;
   }
 
@@ -50,10 +54,12 @@
 
   .card {
     @apply bg-white rounded-xl border border-slate-200 shadow-soft;
+    @apply dark:bg-slate-800 dark:border-slate-700;
   }
 
   .section-heading {
     @apply text-2xl font-bold text-slate-900;
+    @apply dark:text-slate-100;
   }
 
   .link {
@@ -64,6 +70,7 @@
   .input {
     @apply w-full px-4 py-2 rounded-lg;
     @apply border border-slate-300 bg-white;
+    @apply dark:border-slate-600 dark:bg-slate-800;
     @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20;
     @apply transition-colors;
   }
