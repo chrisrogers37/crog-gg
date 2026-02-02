@@ -17,8 +17,8 @@ test.describe('Home Page', () => {
   });
 
   test('displays welcome message', async ({ page }) => {
-    // Wait for typewriter effect or welcome message
-    await expect(page.getByText(/Hey, I'm Chris/i)).toBeVisible({ timeout: 10000 });
+    // Wait for typewriter effect - first message is "hey there!"
+    await expect(page.getByText(/hey there/i)).toBeVisible({ timeout: 10000 });
   });
 
   test('displays section navigation buttons', async ({ page }) => {
@@ -48,7 +48,7 @@ test.describe('Section Navigation', () => {
     await page.getByRole('button', { name: /About/i }).click();
 
     // Wait for content to appear
-    await expect(page.getByText(/What makes me tick/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/alright, here goes/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('clicking Experience section displays experience content', async ({ page }) => {
@@ -72,23 +72,23 @@ test.describe('Section Navigation', () => {
 
     // First click - show section
     await aboutButton.click();
-    await expect(page.getByText(/What makes me tick/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/alright, here goes/i)).toBeVisible({ timeout: 5000 });
 
     // Second click - hide section
     await aboutButton.click();
-    await expect(page.getByText(/What makes me tick/i)).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/alright, here goes/i)).not.toBeVisible({ timeout: 5000 });
   });
 
   test('switching between sections works correctly', async ({ page }) => {
     // Click About section
     await page.getByRole('button', { name: /About/i }).click();
-    await expect(page.getByText(/What makes me tick/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/alright, here goes/i)).toBeVisible({ timeout: 5000 });
 
     // Switch to Experience section
     await page.getByRole('button', { name: /Experience/i }).click();
 
     // About content should be hidden, Experience should be visible
-    await expect(page.getByText(/What makes me tick/i)).not.toBeVisible();
+    await expect(page.getByText(/alright, here goes/i)).not.toBeVisible();
   });
 
   test('active section button has active class', async ({ page }) => {
@@ -115,7 +115,7 @@ test.describe('Action Buttons', () => {
     await page.getByRole('button', { name: /About/i }).click();
 
     // Wait for content to load
-    await expect(page.getByText(/What makes me tick/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/alright, here goes/i)).toBeVisible({ timeout: 5000 });
 
     // Action buttons should be visible (SUMMON NEW LORE and DISPEL ENCHANTMENT)
     await expect(page.getByRole('button', { name: /SUMMON NEW LORE/i })).toBeVisible();
