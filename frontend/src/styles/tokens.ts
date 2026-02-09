@@ -9,18 +9,18 @@ export const tokens = {
   // Colors (matching Tailwind config)
   colors: {
     primary: {
-      main: '#2563eb',
-      light: '#3b82f6',
-      dark: '#1d4ed8',
+      main: "#2563eb",
+      light: "#3b82f6",
+      dark: "#1d4ed8",
     },
     accent: {
-      main: '#7c3aed',
-      light: '#8b5cf6',
-      dark: '#6b21a8',
+      main: "#7c3aed",
+      light: "#8b5cf6",
+      dark: "#6b21a8",
     },
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444',
+    success: "#10b981",
+    warning: "#f59e0b",
+    error: "#ef4444",
   },
 
   // Spacing scale (in pixels, for JS usage)
@@ -30,8 +30,8 @@ export const tokens = {
     md: 16,
     lg: 24,
     xl: 32,
-    '2xl': 48,
-    '3xl': 64,
+    "2xl": 48,
+    "3xl": 64,
   },
 
   // Animation durations
@@ -55,7 +55,7 @@ export const tokens = {
     md: 768,
     lg: 1024,
     xl: 1280,
-    '2xl': 1536,
+    "2xl": 1536,
   },
 
   // Z-index scale

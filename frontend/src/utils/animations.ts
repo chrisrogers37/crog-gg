@@ -1,4 +1,4 @@
-import { Variants, Transition } from 'framer-motion';
+import { Variants, Transition } from "framer-motion";
 
 /**
  * Common animation variants for Framer Motion.
@@ -21,7 +21,7 @@ export const fadeInUp: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: "easeOut" },
   },
   exit: { opacity: 0, y: -20 },
 };
@@ -32,7 +32,7 @@ export const fadeInDown: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: "easeOut" },
   },
 };
 
@@ -42,7 +42,7 @@ export const scaleIn: Variants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
@@ -52,7 +52,7 @@ export const slideInRight: Variants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
@@ -62,7 +62,7 @@ export const slideInLeft: Variants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
@@ -84,7 +84,7 @@ export const staggerItem: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: 'easeOut' },
+    transition: { duration: 0.4, ease: "easeOut" },
   },
 };
 
@@ -101,7 +101,7 @@ export const tapScale = {
 
 // Spring transition preset
 export const springTransition: Transition = {
-  type: 'spring',
+  type: "spring",
   stiffness: 300,
   damping: 30,
 };

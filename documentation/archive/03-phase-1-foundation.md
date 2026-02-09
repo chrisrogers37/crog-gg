@@ -7,11 +7,13 @@
 **Estimated Effort**: 13 story points
 
 **Prerequisites**:
+
 - Read [01-current-state-analysis.md](./01-current-state-analysis.md)
 - Read [02-architecture-roadmap.md](./02-architecture-roadmap.md)
 - Local development environment running
 
 **Deliverables**:
+
 1. React Router installed and configured
 2. HomePage component created (refactored from App.tsx)
 3. `any` types replaced with proper interfaces
@@ -21,6 +23,7 @@
 ---
 
 ## Table of Contents
+
 1. [Task 1.1: Install React Router](#task-11-install-react-router)
 2. [Task 1.2: Create Router Configuration](#task-12-create-router-configuration)
 3. [Task 1.3: Create ContentState Interface](#task-13-create-contentstate-interface)
@@ -36,17 +39,20 @@
 ## Task 1.1: Install React Router
 
 ### What We're Doing
+
 Installing React Router v6 to enable multi-page navigation.
 
 ### Steps
 
 1. **Install the package**:
+
    ```bash
    cd frontend
    npm install react-router-dom
    ```
 
 2. **Install types** (included in package, but verify):
+
    ```bash
    npm install @types/react-router-dom --save-dev
    ```
@@ -61,6 +67,7 @@ Installing React Router v6 to enable multi-page navigation.
    ```
 
 ### Why React Router v6
+
 - Data APIs (loaders, actions) for future use
 - Nested routes for layout composition
 - Better TypeScript support than v5
@@ -71,6 +78,7 @@ Installing React Router v6 to enable multi-page navigation.
 ## Task 1.2: Create Router Configuration
 
 ### What We're Doing
+
 Creating a centralized router configuration file.
 
 ### Create New File: `frontend/src/router.tsx`
@@ -108,6 +116,7 @@ mkdir -p frontend/src/pages/NotFound
 ```
 
 ### Why This Structure
+
 - Separates routing concerns from components
 - Easy to add new routes
 - `errorElement` handles route-level errors
@@ -118,13 +127,15 @@ mkdir -p frontend/src/pages/NotFound
 ## Task 1.3: Create ContentState Interface
 
 ### What We're Doing
+
 Replacing the `any` type on `currentContent` with a proper TypeScript interface.
 
 ### Current Problem
 
 **Location**: `frontend/src/App.tsx:29`
+
 ```typescript
-const [currentContent, setCurrentContent] = useState<any>(null);  // BAD: 'any' type
+const [currentContent, setCurrentContent] = useState<any>(null); // BAD: 'any' type
 ```
 
 ### Create New File: `frontend/src/types/content.ts`
@@ -135,11 +146,11 @@ const [currentContent, setCurrentContent] = useState<any>(null);  // BAD: 'any' 
  * This replaces the 'any' type previously used in App.tsx.
  */
 
-import { BioData } from './Bio';
-import { ExperienceItem } from './Experience';
-import { EducationItem } from './Education';
-import { SkillItem } from './Skills';
-import { Project } from './Project';
+import { BioData } from "./Bio";
+import { ExperienceItem } from "./Experience";
+import { EducationItem } from "./Education";
+import { SkillItem } from "./Skills";
+import { Project } from "./Project";
 
 /**
  * The complete content state loaded from YAML files.
@@ -182,12 +193,16 @@ Create this file to enable cleaner imports:
 
 ```typescript
 // Barrel export for all types
-export type { BioData } from './Bio';
-export type { ExperienceItem } from './Experience';
-export type { EducationItem } from './Education';
-export type { SkillItem } from './Skills';
-export type { Project } from './Project';
-export type { ContentState, PartialContentState, ContentProps } from './content';
+export type { BioData } from "./Bio";
+export type { ExperienceItem } from "./Experience";
+export type { EducationItem } from "./Education";
+export type { SkillItem } from "./Skills";
+export type { Project } from "./Project";
+export type {
+  ContentState,
+  PartialContentState,
+  ContentProps,
+} from "./content";
 ```
 
 ### Update Usage in Components
@@ -199,7 +214,7 @@ After creating these types, update App.tsx (this will be done in Task 1.4):
 const [currentContent, setCurrentContent] = useState<any>(null);
 
 // After
-import { ContentState } from './types';
+import { ContentState } from "./types";
 const [currentContent, setCurrentContent] = useState<ContentState | null>(null);
 ```
 
@@ -208,11 +223,13 @@ const [currentContent, setCurrentContent] = useState<ContentState | null>(null);
 ## Task 1.4: Create HomePage Component
 
 ### What We're Doing
+
 Extracting the main page content from App.tsx into a dedicated HomePage component.
 
 ### Current State of App.tsx
 
 The current `App.tsx` has 354 lines and handles:
+
 - State management (lines 29-34)
 - Data loading (lines 37-53)
 - Content regeneration (lines 78-141)
@@ -559,7 +576,7 @@ export function HomePage() {
 ### Create Index File: `frontend/src/pages/Home/index.ts`
 
 ```typescript
-export { HomePage } from './HomePage';
+export { HomePage } from "./HomePage";
 ```
 
 ---
@@ -567,6 +584,7 @@ export { HomePage } from './HomePage';
 ## Task 1.5: Extract ActionButtons Component
 
 ### What We're Doing
+
 Extracting the duplicated action button JSX into a reusable component.
 
 ### Current Problem
@@ -574,6 +592,7 @@ Extracting the duplicated action button JSX into a reusable component.
 **Location**: `frontend/src/App.tsx:277-344`
 
 The same button pattern appears 3 times with minor variations:
+
 - Lines 277-294 (when about is active)
 - Lines 304-321 (when portfolio sections are active)
 - Lines 327-344 (when skills is active)
@@ -813,7 +832,7 @@ export function ActionButtons({
 ### Create Index File: `frontend/src/components/ActionButtons/index.ts`
 
 ```typescript
-export { ActionButtons } from './ActionButtons';
+export { ActionButtons } from "./ActionButtons";
 ```
 
 ---
@@ -821,6 +840,7 @@ export { ActionButtons } from './ActionButtons';
 ## Task 1.6: Update App.tsx to Use Router
 
 ### What We're Doing
+
 Converting the original App.tsx to a minimal shell that renders the router.
 
 ### Update `frontend/src/App.tsx`
@@ -844,6 +864,7 @@ export default App;
 ```
 
 ### Why This Change
+
 - App.tsx becomes a thin wrapper
 - All routing logic is centralized in router.tsx
 - Page components handle their own state and rendering
@@ -854,6 +875,7 @@ export default App;
 ## Task 1.7: Add NotFoundPage
 
 ### What We're Doing
+
 Creating a 404 page for unknown routes.
 
 ### Create New File: `frontend/src/pages/NotFound/NotFoundPage.tsx`
@@ -947,7 +969,7 @@ export function NotFoundPage() {
 ### Create Index File: `frontend/src/pages/NotFound/index.ts`
 
 ```typescript
-export { NotFoundPage } from './NotFoundPage';
+export { NotFoundPage } from "./NotFoundPage";
 ```
 
 ---
@@ -1024,6 +1046,7 @@ frontend/src/
 **Cause**: Package not installed correctly.
 
 **Solution**:
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -1046,8 +1069,9 @@ npm install
 **Cause**: CSS file not imported.
 
 **Solution**: Verify the CSS import at the top of the component file:
+
 ```typescript
-import './ActionButtons.css';
+import "./ActionButtons.css";
 ```
 
 ### Issue: 404 page shows on home route
@@ -1055,6 +1079,7 @@ import './ActionButtons.css';
 **Cause**: Router configuration issue.
 
 **Solution**: Check that the home route uses `index: true` or `path: '/'`:
+
 ```typescript
 {
   path: '/',
@@ -1069,6 +1094,7 @@ import './ActionButtons.css';
 After completing Phase 1:
 
 1. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "Phase 1: Add React Router and extract initial components"
@@ -1080,5 +1106,5 @@ After completing Phase 1:
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

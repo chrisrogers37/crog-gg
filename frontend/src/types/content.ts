@@ -1,7 +1,7 @@
-import { BioData } from './Bio';
-import { Employment } from './Experience';
-import { Education } from './Education';
-import { Skill } from './Skills';
+import { BioData } from "./Bio";
+import { Employment } from "./Experience";
+import { Education } from "./Education";
+import { Skill } from "./Skills";
 
 /**
  * Portfolio content state containing experience and education data
@@ -37,7 +37,13 @@ export interface ContentProps {
 /**
  * Section identifiers for navigation
  */
-export type SectionId = 'about' | 'experience' | 'education' | 'projects' | 'music' | 'skills';
+export type SectionId =
+  | "about"
+  | "experience"
+  | "education"
+  | "projects"
+  | "music"
+  | "skills";
 
 /**
  * Props for action buttons

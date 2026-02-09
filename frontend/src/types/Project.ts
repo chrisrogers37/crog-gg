@@ -11,6 +11,6 @@ export interface Project {
   image?: string;
   github?: string;
   demo?: string;
-  status?: 'active' | 'archived' | 'experimental';
+  status?: "active" | "archived" | "experimental";
   tags?: string[];
 }

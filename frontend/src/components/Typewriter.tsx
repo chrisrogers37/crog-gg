@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 interface TypewriterProps {
   text: string;
@@ -9,15 +9,15 @@ interface TypewriterProps {
   showSkip?: boolean;
 }
 
-export default function Typewriter({ 
-  text, 
-  speed = 50, 
-  delay = 500, 
-  onComplete, 
-  className = '', 
-  showSkip = true 
+export default function Typewriter({
+  text,
+  speed = 50,
+  delay = 500,
+  onComplete,
+  className = "",
+  showSkip = true,
 }: TypewriterProps) {
-  const [displayText, setDisplayText] = useState('');
+  const [displayText, setDisplayText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
@@ -33,7 +33,7 @@ export default function Typewriter({
 
   useEffect(() => {
     // Reset when text changes
-    setDisplayText('');
+    setDisplayText("");
     setCurrentIndex(0);
     setIsTyping(false);
 
@@ -50,8 +50,8 @@ export default function Typewriter({
 
     if (currentIndex < text.length) {
       const timer = setTimeout(() => {
-        setDisplayText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
+        setDisplayText((prev) => prev + text[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
       }, speed);
 
       return () => clearTimeout(timer);
@@ -71,27 +71,27 @@ export default function Typewriter({
   return (
     <div className={`typewriter ${className}`}>
       {/* Hidden element to calculate final height */}
-      <div 
+      <div
         ref={hiddenRef}
         className="typewriter-hidden-calc"
-        style={{ 
-          position: 'absolute', 
-          visibility: 'hidden', 
-          whiteSpace: 'pre-wrap',
-          wordWrap: 'break-word',
-          lineHeight: '1.7',
-          color: 'var(--text-color)'
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          whiteSpace: "pre-wrap",
+          wordWrap: "break-word",
+          lineHeight: "1.7",
+          color: "var(--text-color)",
         }}
       >
         {text}
       </div>
-      
+
       {/* Visible container with fixed height */}
-      <div 
+      <div
         className="typewriter-text"
-        style={{ 
-          height: containerHeight ? `${containerHeight}px` : 'auto',
-          overflow: 'hidden'
+        style={{
+          height: containerHeight ? `${containerHeight}px` : "auto",
+          overflow: "hidden",
         }}
       >
         {isTyping ? (
@@ -103,10 +103,10 @@ export default function Typewriter({
           text
         )}
       </div>
-      
+
       {isTyping && showSkip && (
         <div className="typewriter-skip-container">
-          <button 
+          <button
             className="typewriter-skip-btn"
             onClick={handleSkip}
             title="Skip typing animation"
@@ -117,4 +117,4 @@ export default function Typewriter({
       )}
     </div>
   );
-} 
+}

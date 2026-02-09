@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { CSSTransition } from 'react-transition-group';
-import { BioData } from '../types/Bio';
-import '../styles/transitions.css';
+import { useState, useEffect } from "react";
+import { CSSTransition } from "react-transition-group";
+import { BioData } from "../types/Bio";
+import "../styles/transitions.css";
 
 interface AboutProps {
   onRegenerate: () => void;
@@ -11,7 +11,9 @@ interface AboutProps {
 type AboutContent = BioData;
 
 function About({ onRegenerate, content: propContent }: AboutProps) {
-  const [content, setContent] = useState<AboutContent | null>(propContent || null);
+  const [content, setContent] = useState<AboutContent | null>(
+    propContent || null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [bioInProp, setBioInProp] = useState(true);
 
@@ -25,17 +27,17 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
   useEffect(() => {
     // Listen for content regeneration events
     const handleContentRegenerated = (event: CustomEvent) => {
-      if (event.detail.section === 'about') {
+      if (event.detail.section === "about") {
         setBioInProp(false);
         setIsLoading(true);
         setTimeout(() => {
           const newContent = event.detail.content;
           setContent(newContent);
-          const updateEvent = new CustomEvent('contentUpdated', {
+          const updateEvent = new CustomEvent("contentUpdated", {
             detail: {
-              section: 'about',
-              content: newContent
-            }
+              section: "about",
+              content: newContent,
+            },
           });
           window.dispatchEvent(updateEvent);
           setTimeout(() => {
@@ -46,18 +48,24 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
         }, 500);
       }
     };
-    window.addEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+    window.addEventListener(
+      "contentRegenerated",
+      handleContentRegenerated as EventListener,
+    );
     return () => {
-      window.removeEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+      window.removeEventListener(
+        "contentRegenerated",
+        handleContentRegenerated as EventListener,
+      );
     };
   }, [onRegenerate]);
 
   useEffect(() => {
-    const event = new CustomEvent('contentUpdated', {
+    const event = new CustomEvent("contentUpdated", {
       detail: {
-        section: 'about',
-        content
-      }
+        section: "about",
+        content,
+      },
     });
     window.dispatchEvent(event);
   }, [content]);
@@ -74,7 +82,7 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
           >
             <div className="bio">
               {content && (
-                <div style={{ whiteSpace: 'pre-line' }}>
+                <div style={{ whiteSpace: "pre-line" }}>
                   {content.about_text}
                 </div>
               )}
@@ -92,4 +100,4 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
   );
 }
 
-export default About; 
+export default About;

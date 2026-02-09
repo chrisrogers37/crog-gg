@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useProjects } from '../../../store';
-import { ProjectCard } from './ProjectCard';
-import { GitHubStats } from './GitHubStats';
-import './Projects.css';
+import { useState, useEffect } from "react";
+import { useProjects } from "../../../store";
+import { ProjectCard } from "./ProjectCard";
+import { GitHubStats } from "./GitHubStats";
+import "./Projects.css";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 interface Language {
   name: string;
@@ -32,19 +32,21 @@ export function Projects() {
         const response = await fetch(`${API_URL}/api/github/languages`);
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch languages');
+          throw new Error(errorData.error || "Failed to fetch languages");
         }
         const data = await response.json();
-        const formattedLanguages = data.languages.map(([name, bytes]: [string, number]) => ({
-          name,
-          bytes,
-        }));
+        const formattedLanguages = data.languages.map(
+          ([name, bytes]: [string, number]) => ({
+            name,
+            bytes,
+          }),
+        );
         setLanguages(formattedLanguages);
       } catch (err) {
         if (err instanceof Error) {
           setLanguageError(err.message);
         } else {
-          setLanguageError('An unknown error occurred');
+          setLanguageError("An unknown error occurred");
         }
       } finally {
         setLoadingLanguages(false);
@@ -63,8 +65,8 @@ export function Projects() {
   }
 
   // Separate GitHub project from others
-  const mainProjects = projects.filter((p) => p.id !== 'github');
-  const githubProject = projects.find((p) => p.id === 'github');
+  const mainProjects = projects.filter((p) => p.id !== "github");
+  const githubProject = projects.find((p) => p.id === "github");
 
   return (
     <section className="projects-section">

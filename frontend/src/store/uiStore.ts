@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, devtools } from "zustand/middleware";
 
 // ===========================================
 // TYPES
 // ===========================================
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = "light" | "dark" | "system";
 
 interface UIState {
   // Navigation
@@ -39,8 +39,8 @@ type UIStore = UIState & UIActions;
 // ===========================================
 
 const initialState: UIState = {
-  activeSection: '',
-  theme: 'light', // Default to light as per user preference
+  activeSection: "",
+  theme: "light", // Default to light as per user preference
   isMobileMenuOpen: false,
 };
 
@@ -72,7 +72,7 @@ export const useUIStore = create<UIStore>()(
          */
         toggleSection: (section: string) => {
           set((state) => ({
-            activeSection: state.activeSection === section ? '' : section,
+            activeSection: state.activeSection === section ? "" : section,
           }));
         },
 
@@ -80,7 +80,7 @@ export const useUIStore = create<UIStore>()(
          * Clear the active section.
          */
         clearActiveSection: () => {
-          set({ activeSection: '' });
+          set({ activeSection: "" });
         },
 
         // ===========================================
@@ -95,14 +95,16 @@ export const useUIStore = create<UIStore>()(
 
           // Apply theme to document
           const root = document.documentElement;
-          if (theme === 'dark') {
-            root.classList.add('dark');
-          } else if (theme === 'light') {
-            root.classList.remove('dark');
+          if (theme === "dark") {
+            root.classList.add("dark");
+          } else if (theme === "light") {
+            root.classList.remove("dark");
           } else {
             // System preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            root.classList.toggle('dark', prefersDark);
+            const prefersDark = window.matchMedia(
+              "(prefers-color-scheme: dark)",
+            ).matches;
+            root.classList.toggle("dark", prefersDark);
           }
         },
 
@@ -125,19 +127,21 @@ export const useUIStore = create<UIStore>()(
         },
       }),
       {
-        name: 'ui-storage',
+        name: "ui-storage",
         // Only persist theme preference
         partialize: (state) => ({ theme: state.theme }),
-      }
+      },
     ),
-    { name: 'ui-store' }
-  )
+    { name: "ui-store" },
+  ),
 );
 
 // ===========================================
 // SELECTORS
 // ===========================================
 
-export const useActiveSection = () => useUIStore((state) => state.activeSection);
+export const useActiveSection = () =>
+  useUIStore((state) => state.activeSection);
 export const useTheme = () => useUIStore((state) => state.theme);
-export const useIsMobileMenuOpen = () => useUIStore((state) => state.isMobileMenuOpen);
+export const useIsMobileMenuOpen = () =>
+  useUIStore((state) => state.isMobileMenuOpen);

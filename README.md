@@ -7,23 +7,27 @@ An interactive portfolio website featuring dynamic content generation using Open
 ## Features
 
 ### Dynamic Content Generation
+
 - **AI-Powered Regeneration**: Uses OpenAI's GPT-3.5 to create unique variations of content while maintaining factual accuracy
 - **Fantasy Mode**: Transform professional experiences into epic fantasy narratives
 - **Section-Specific Updates**: Ability to regenerate individual sections or the entire portfolio
 - **Smooth Transitions**: Elegant animations when content changes
 
 ### Professional Sections
+
 - **About Me**: Dynamic biography and professional summary
 - **Experience**: Interactive work history with achievements
 - **Education**: Academic background and qualifications
 - **Skills**: Comprehensive list of technical and professional skills
 
 ### Portfolio Integration
+
 - **Technical Projects**: Showcase of development work and side projects
 - **Music Portfolio**: Integration with Spotify artist profile
 - **Social Links**: Connected profiles and professional networks
 
 ### Technical Features
+
 - **Modern Stack**: React + TypeScript frontend, Flask backend
 - **Responsive Design**: Mobile-friendly layout with CSS Grid and Flexbox
 - **CORS Support**: Secure cross-origin communication between frontend and API
@@ -32,6 +36,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **Smooth Animations**: CSS transitions for content updates
 
 ### Testing & CI/CD
+
 - **Unit Testing**: Vitest with React Testing Library
 - **E2E Testing**: Playwright for browser automation
 - **Continuous Integration**: GitHub Actions for automated testing
@@ -40,6 +45,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 ## Tech Stack
 
 ### Frontend
+
 - React 18
 - TypeScript
 - Vite
@@ -47,6 +53,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - React Transition Group for animations
 
 ### Backend
+
 - Flask
 - OpenAI API
 - Python 3.10+
@@ -56,28 +63,34 @@ An interactive portfolio website featuring dynamic content generation using Open
 ## Local Development Setup
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - Python 3.10+
 - OpenAI API key
 
 ### Backend Setup
+
 1. Navigate to the backend directory:
+
    ```bash
    cd backend
    ```
 
 2. Create a virtual environment and activate it:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. Create a `.env` file with your OpenAI API key:
+
    ```
    OPENAI_API_KEY=your_api_key_here
    ```
@@ -88,22 +101,27 @@ An interactive portfolio website featuring dynamic content generation using Open
    ```
 
 ### Frontend Setup
+
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Create a `.env` file for local development:
+
    ```
    VITE_API_URL=http://localhost:5001
    ```
 
 4. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -113,6 +131,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 ## Testing
 
 ### Running Unit Tests
+
 ```bash
 cd frontend
 
@@ -130,6 +149,7 @@ npm run test:ui
 ```
 
 ### Running E2E Tests
+
 ```bash
 cd frontend
 
@@ -161,6 +181,7 @@ To manually trigger a deployment, use the "Deploy" workflow in GitHub Actions.
 ## Production Deployment
 
 ### Server Prerequisites
+
 - Ubuntu 20.04 or later
 - Nginx
 - Python 3.10+
@@ -172,17 +193,21 @@ To manually trigger a deployment, use the "Deploy" workflow in GitHub Actions.
 For automatic startup after server reboots, deploy the systemd services:
 
 #### Backend Service Setup
+
 1. SSH into the backend server:
+
    ```bash
    ssh crog-backend
    ```
 
 2. Navigate to the project directory:
+
    ```bash
    cd /var/www/api.crog.gg
    ```
 
 3. Deploy the systemd service:
+
    ```bash
    cd systemd
    ./deploy-services.sh backend
@@ -194,12 +219,15 @@ For automatic startup after server reboots, deploy the systemd services:
    ```
 
 #### Service Management Commands
+
 - **Check status**: `./systemd/deploy-services.sh status`
 - **Restart services**: `./systemd/deploy-services.sh restart`
 - **Stop services**: `./systemd/deploy-services.sh stop`
 
 #### Viewing Service Logs
+
 To view service logs:
+
 ```bash
 # View recent logs
 sudo journalctl -u choose-your-own-chris-backend -f
@@ -214,23 +242,28 @@ sudo journalctl -u choose-your-own-chris-backend --since "1 hour ago"
 ### Manual Deployment Process
 
 #### Frontend Deployment (crog.gg)
+
 1. SSH into the frontend server:
+
    ```bash
    ssh crog-frontend
    ```
 
 2. Navigate to the frontend repository:
+
    ```bash
    cd /var/www/crog.gg
    ```
 
 3. Update the code:
+
    ```bash
    git fetch origin
    git reset --hard origin/main
    ```
 
 4. Build the frontend:
+
    ```bash
    cd frontend
    npm install
@@ -243,17 +276,21 @@ sudo journalctl -u choose-your-own-chris-backend --since "1 hour ago"
    ```
 
 #### Backend Deployment (api.crog.gg)
+
 1. SSH into the backend server:
+
    ```bash
    ssh crog-backend
    ```
 
 2. Navigate to the backend repository:
+
    ```bash
    cd /var/www/api.crog.gg
    ```
 
 3. Update the code:
+
    ```bash
    git fetch origin
    git reset --hard origin/main
@@ -270,11 +307,13 @@ sudo journalctl -u choose-your-own-chris-backend --since "1 hour ago"
 For rapid deployment, you can use these one-line commands:
 
 #### Frontend:
+
 ```bash
 ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
 ```
 
 #### Backend:
+
 ```bash
 ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
 ```
@@ -284,11 +323,13 @@ ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --har
 After deployment, verify the services are running:
 
 #### Frontend:
+
 ```bash
 ssh crog-frontend "systemctl status nginx"
 ```
 
 #### Backend:
+
 ```bash
 ssh crog-backend "ps aux | grep gunicorn"
 ```
@@ -296,12 +337,15 @@ ssh crog-backend "ps aux | grep gunicorn"
 ### Troubleshooting
 
 If you encounter a 500 error:
+
 1. Check nginx error logs:
+
    ```bash
    ssh crog-frontend "tail -n 50 /var/log/nginx/error.log"
    ```
 
 2. Verify the dist directory exists:
+
    ```bash
    ssh crog-frontend "ls -la /var/www/crog.gg/frontend/dist"
    ```
@@ -312,12 +356,13 @@ If you encounter a 500 error:
    ```
 
 ### Common Issues and Solutions
+
 1. **502 Bad Gateway**: Usually indicates the Flask application isn't running or Nginx configuration is incorrect
    - Check Flask service status: `systemctl status flask`
    - Verify Nginx configuration: `nginx -t`
    - Check logs: `journalctl -u flask`
 
-2. **OpenAI API Issues**: 
+2. **OpenAI API Issues**:
    - Verify API key in `.env`
    - Check for rate limiting
    - Update OpenAI package if encountering import errors
@@ -330,19 +375,23 @@ If you encounter a 500 error:
 ### Gunicorn Management
 
 #### Checking Gunicorn Status
+
 ```bash
 ssh crog-backend "ps aux | grep gunicorn"
 ```
 
 #### Restarting Gunicorn
+
 If the backend is not responding or you need to restart Gunicorn:
 
 1. Kill existing Gunicorn processes:
+
    ```bash
    ssh crog-backend "pkill -f gunicorn"
    ```
 
 2. Start Gunicorn with debug logging:
+
    ```bash
    ssh crog-backend "cd /var/www/api.crog.gg && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app --log-level debug"
    ```
@@ -353,13 +402,16 @@ If the backend is not responding or you need to restart Gunicorn:
    ```
 
 #### Gunicorn Logs
+
 To check Gunicorn logs:
+
 ```bash
 ssh crog-backend "tail -f /var/log/gunicorn/error.log"
 ```
 
 #### Common Gunicorn Issues
-1. **Process not starting**: 
+
+1. **Process not starting**:
    - Check Python virtual environment activation
    - Verify app.py location and imports
    - Check for port conflicts
@@ -376,4 +428,4 @@ ssh crog-backend "tail -f /var/log/gunicorn/error.log"
 
 ## License
 
-MIT 
+MIT

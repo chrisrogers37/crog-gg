@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { useProjects } from '../../store';
-import { Project } from '../../types';
-import { SEO } from '../../components/SEO';
-import './ProjectsPage.css';
+import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { useProjects } from "../../store";
+import { Project } from "../../types";
+import { SEO } from "../../components/SEO";
+import "./ProjectsPage.css";
 
 /**
  * ProjectsPage
@@ -13,28 +13,28 @@ import './ProjectsPage.css';
  */
 export function ProjectsPage() {
   const projects = useProjects();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Extract unique categories from projects
   const categories = useMemo(() => {
     const cats = new Set(projects.map((p) => p.category).filter(Boolean));
-    return ['all', ...Array.from(cats)];
+    return ["all", ...Array.from(cats)];
   }, [projects]);
 
   // Filter projects based on search and category
   const filteredProjects = useMemo(() => {
     return projects.filter((project) => {
       const matchesSearch =
-        searchQuery === '' ||
+        searchQuery === "" ||
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.technologies?.some((tech) =>
-          tech.toLowerCase().includes(searchQuery.toLowerCase())
+          tech.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
       const matchesCategory =
-        selectedCategory === 'all' || project.category === selectedCategory;
+        selectedCategory === "all" || project.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -71,10 +71,10 @@ export function ProjectsPage() {
                 key={category}
                 onClick={() => setSelectedCategory(category)}
                 className={`category-button ${
-                  selectedCategory === category ? 'active' : ''
+                  selectedCategory === category ? "active" : ""
                 }`}
               >
-                {category === 'all' ? 'All' : category}
+                {category === "all" ? "All" : category}
               </button>
             ))}
           </div>
@@ -92,8 +92,8 @@ export function ProjectsPage() {
             <p>No projects match your search criteria.</p>
             <button
               onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('all');
+                setSearchQuery("");
+                setSelectedCategory("all");
               }}
               className="clear-filters"
             >

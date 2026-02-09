@@ -1,17 +1,17 @@
-import './GitHubStats.css';
+import "./GitHubStats.css";
 
 // A mapping of language names to colors for consistent styling
 const LANGUAGE_COLORS: { [key: string]: string } = {
-  TypeScript: '#3178C6',
-  JavaScript: '#F7DF1E',
-  Python: '#3572A5',
-  HTML: '#E34F26',
-  CSS: '#1572B6',
-  'Jupyter Notebook': '#DA5B0B',
-  Shell: '#89E051',
-  SCSS: '#C6538C',
-  Dockerfile: '#384d54',
-  Other: '#CCCCCC',
+  TypeScript: "#3178C6",
+  JavaScript: "#F7DF1E",
+  Python: "#3572A5",
+  HTML: "#E34F26",
+  CSS: "#1572B6",
+  "Jupyter Notebook": "#DA5B0B",
+  Shell: "#89E051",
+  SCSS: "#C6538C",
+  Dockerfile: "#384d54",
+  Other: "#CCCCCC",
 };
 
 interface Language {
@@ -34,7 +34,9 @@ export function GitHubStats({ languages, isLoading, error }: GitHubStatsProps) {
   if (isLoading) {
     return (
       <div className="github-stats-container">
-        <div className="loading-message">Summoning language stats from GitHub...</div>
+        <div className="loading-message">
+          Summoning language stats from GitHub...
+        </div>
       </div>
     );
   }
@@ -57,12 +59,15 @@ export function GitHubStats({ languages, isLoading, error }: GitHubStatsProps) {
     <div className="github-stats-container">
       <h4 className="stats-header">GitHub Language Stats</h4>
       <p className="skills-subtitle">
-        A dynamic overview of languages from my public repositories, sized by bytes of code.
+        A dynamic overview of languages from my public repositories, sized by
+        bytes of code.
       </p>
       <div className="skills-bar-chart">
         {languages.map((lang, index) => {
-          const percentage = totalBytes > 0 ? (lang.bytes / totalBytes) * 100 : 0;
-          const barColor = LANGUAGE_COLORS[lang.name] || LANGUAGE_COLORS['Other'];
+          const percentage =
+            totalBytes > 0 ? (lang.bytes / totalBytes) * 100 : 0;
+          const barColor =
+            LANGUAGE_COLORS[lang.name] || LANGUAGE_COLORS["Other"];
 
           return (
             <div key={index} className="skill-bar-wrapper">

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useContentStore } from '../store';
+import { useEffect } from "react";
+import { useContentStore } from "../store";
 
 /**
  * Hook to load content on component mount.

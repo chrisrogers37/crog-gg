@@ -1,5 +1,5 @@
-import { ActionButtonsProps } from '../../types';
-import './ActionButtons.css';
+import { ActionButtonsProps } from "../../types";
+import "./ActionButtons.css";
 
 /**
  * ActionButtons Component
@@ -21,7 +21,7 @@ export function ActionButtons({
         onClick={onRegenerate}
         disabled={isRegenerating}
       >
-        {isRegenerating ? 'Weaving Epic Saga...' : 'SUMMON NEW LORE'}
+        {isRegenerating ? "Weaving Epic Saga..." : "SUMMON NEW LORE"}
       </button>
 
       {hasModifiedContent && (

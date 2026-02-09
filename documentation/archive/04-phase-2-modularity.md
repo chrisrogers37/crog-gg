@@ -7,10 +7,12 @@
 **Estimated Effort**: 21 story points
 
 **Prerequisites**:
+
 - Phase 1 completed and verified
 - Understanding of Zustand basics
 
 **Deliverables**:
+
 1. Portfolio.tsx split into 4 section components
 2. Zustand store replacing CustomEvent pattern
 3. Custom hooks for data loading and regeneration
@@ -20,6 +22,7 @@
 ---
 
 ## Table of Contents
+
 1. [Task 2.1: Install Zustand](#task-21-install-zustand)
 2. [Task 2.2: Create Content Store](#task-22-create-content-store)
 3. [Task 2.3: Create UI Store](#task-23-create-ui-store)
@@ -36,6 +39,7 @@
 ## Task 2.1: Install Zustand
 
 ### What We're Doing
+
 Installing Zustand for lightweight state management.
 
 ### Steps
@@ -58,19 +62,20 @@ npm install zustand
 
 ### Why Zustand
 
-| Feature | Zustand | Redux | Context |
-|---------|---------|-------|---------|
-| Bundle size | ~1KB | ~10KB | 0 |
-| Boilerplate | Minimal | High | Medium |
-| Selective re-renders | Yes | Yes | No |
-| DevTools | Yes | Yes | No |
-| Learning curve | Low | High | Low |
+| Feature              | Zustand | Redux | Context |
+| -------------------- | ------- | ----- | ------- |
+| Bundle size          | ~1KB    | ~10KB | 0       |
+| Boilerplate          | Minimal | High  | Medium  |
+| Selective re-renders | Yes     | Yes   | No      |
+| DevTools             | Yes     | Yes   | No      |
+| Learning curve       | Low     | High  | Low     |
 
 ---
 
 ## Task 2.2: Create Content Store
 
 ### What We're Doing
+
 Creating a Zustand store to manage all content state, replacing the CustomEvent pattern.
 
 ### Create Directory Structure
@@ -82,10 +87,16 @@ mkdir -p frontend/src/store
 ### Create File: `frontend/src/store/contentStore.ts`
 
 ```typescript
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import { BioData, ExperienceItem, EducationItem, SkillItem, Project } from '../types';
-import { loadResumeData } from '../data/resume';
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import {
+  BioData,
+  ExperienceItem,
+  EducationItem,
+  SkillItem,
+  Project,
+} from "../types";
+import { loadResumeData } from "../data/resume";
 
 // ===========================================
 // TYPES
@@ -152,7 +163,7 @@ const initialState: ContentState = {
 // API HELPERS
 // ===========================================
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.crog.gg';
+const API_URL = import.meta.env.VITE_API_URL || "https://api.crog.gg";
 
 interface RegenerateRequest {
   section: string;
@@ -170,11 +181,13 @@ interface RegenerateResponse {
   education?: EducationItem[];
 }
 
-async function callRegenerateAPI(request: RegenerateRequest): Promise<RegenerateResponse> {
+async function callRegenerateAPI(
+  request: RegenerateRequest,
+): Promise<RegenerateResponse> {
   const response = await fetch(`${API_URL}/api/regenerate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(request),
   });
 
@@ -223,9 +236,9 @@ export const useContentStore = create<ContentStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Failed to load content:', error);
+          console.error("Failed to load content:", error);
           set({
-            error: 'Failed to load content. Please refresh the page.',
+            error: "Failed to load content. Please refresh the page.",
             isLoading: false,
           });
         }
@@ -261,13 +274,17 @@ export const useContentStore = create<ContentStore>()(
           const response = await callRegenerateAPI(request);
 
           // Update state based on section
-          if (section === 'about' && response.about_text) {
+          if (section === "about" && response.about_text) {
             set((state) => ({
-              bio: state.bio ? { ...state.bio, about_text: response.about_text! } : null,
+              bio: state.bio
+                ? { ...state.bio, about_text: response.about_text! }
+                : null,
               hasModifiedContent: true,
               isRegenerating: false,
             }));
-          } else if (['experience', 'education', 'portfolio'].includes(section)) {
+          } else if (
+            ["experience", "education", "portfolio"].includes(section)
+          ) {
             set({
               experience: response.experience || state.experience,
               education: response.education || state.education,
@@ -278,9 +295,9 @@ export const useContentStore = create<ContentStore>()(
             set({ isRegenerating: false });
           }
         } catch (error) {
-          console.error('Regeneration failed:', error);
+          console.error("Regeneration failed:", error);
           set({
-            error: 'Failed to regenerate content. Please try again.',
+            error: "Failed to regenerate content. Please try again.",
             isRegenerating: false,
           });
         }
@@ -308,8 +325,8 @@ export const useContentStore = create<ContentStore>()(
         set({ error: null });
       },
     }),
-    { name: 'content-store' } // Name for DevTools
-  )
+    { name: "content-store" }, // Name for DevTools
+  ),
 );
 
 // ===========================================
@@ -327,9 +344,11 @@ export const useEducation = () => useContentStore((state) => state.education);
 export const useSkills = () => useContentStore((state) => state.skills);
 export const useProjects = () => useContentStore((state) => state.projects);
 export const useIsLoading = () => useContentStore((state) => state.isLoading);
-export const useIsRegenerating = () => useContentStore((state) => state.isRegenerating);
+export const useIsRegenerating = () =>
+  useContentStore((state) => state.isRegenerating);
 export const useContentError = () => useContentStore((state) => state.error);
-export const useHasModifiedContent = () => useContentStore((state) => state.hasModifiedContent);
+export const useHasModifiedContent = () =>
+  useContentStore((state) => state.hasModifiedContent);
 ```
 
 ### Create Index File: `frontend/src/store/index.ts`
@@ -347,9 +366,9 @@ export {
   useIsRegenerating,
   useContentError,
   useHasModifiedContent,
-} from './contentStore';
+} from "./contentStore";
 
-export { useUIStore, useActiveSection, useTheme } from './uiStore';
+export { useUIStore, useActiveSection, useTheme } from "./uiStore";
 ```
 
 ---
@@ -357,19 +376,20 @@ export { useUIStore, useActiveSection, useTheme } from './uiStore';
 ## Task 2.3: Create UI Store
 
 ### What We're Doing
+
 Creating a separate store for UI state (theme, active section, etc.).
 
 ### Create File: `frontend/src/store/uiStore.ts`
 
 ```typescript
-import { create } from 'zustand';
-import { persist, devtools } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist, devtools } from "zustand/middleware";
 
 // ===========================================
 // TYPES
 // ===========================================
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = "light" | "dark" | "system";
 
 interface UIState {
   // Navigation
@@ -403,8 +423,8 @@ type UIStore = UIState & UIActions;
 // ===========================================
 
 const initialState: UIState = {
-  activeSection: '',
-  theme: 'system',
+  activeSection: "",
+  theme: "system",
   isMobileMenuOpen: false,
 };
 
@@ -436,7 +456,7 @@ export const useUIStore = create<UIStore>()(
          */
         toggleSection: (section: string) => {
           set((state) => ({
-            activeSection: state.activeSection === section ? '' : section,
+            activeSection: state.activeSection === section ? "" : section,
           }));
         },
 
@@ -444,7 +464,7 @@ export const useUIStore = create<UIStore>()(
          * Clear the active section.
          */
         clearActiveSection: () => {
-          set({ activeSection: '' });
+          set({ activeSection: "" });
         },
 
         // ===========================================
@@ -459,14 +479,16 @@ export const useUIStore = create<UIStore>()(
 
           // Apply theme to document
           const root = document.documentElement;
-          if (theme === 'dark') {
-            root.classList.add('dark');
-          } else if (theme === 'light') {
-            root.classList.remove('dark');
+          if (theme === "dark") {
+            root.classList.add("dark");
+          } else if (theme === "light") {
+            root.classList.remove("dark");
           } else {
             // System preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            root.classList.toggle('dark', prefersDark);
+            const prefersDark = window.matchMedia(
+              "(prefers-color-scheme: dark)",
+            ).matches;
+            root.classList.toggle("dark", prefersDark);
           }
         },
 
@@ -489,22 +511,24 @@ export const useUIStore = create<UIStore>()(
         },
       }),
       {
-        name: 'ui-storage',
+        name: "ui-storage",
         // Only persist theme preference
         partialize: (state) => ({ theme: state.theme }),
-      }
+      },
     ),
-    { name: 'ui-store' }
-  )
+    { name: "ui-store" },
+  ),
 );
 
 // ===========================================
 // SELECTORS
 // ===========================================
 
-export const useActiveSection = () => useUIStore((state) => state.activeSection);
+export const useActiveSection = () =>
+  useUIStore((state) => state.activeSection);
 export const useTheme = () => useUIStore((state) => state.theme);
-export const useIsMobileMenuOpen = () => useUIStore((state) => state.isMobileMenuOpen);
+export const useIsMobileMenuOpen = () =>
+  useUIStore((state) => state.isMobileMenuOpen);
 ```
 
 ---
@@ -512,6 +536,7 @@ export const useIsMobileMenuOpen = () => useUIStore((state) => state.isMobileMen
 ## Task 2.4: Split Portfolio Component
 
 ### What We're Doing
+
 Breaking the 323-line Portfolio.tsx into 4 focused section components.
 
 ### Current Problem
@@ -519,6 +544,7 @@ Breaking the 323-line Portfolio.tsx into 4 focused section components.
 **Location**: `frontend/src/components/Portfolio.tsx`
 
 This component handles:
+
 - Experience section (job cards)
 - Education section (education cards)
 - Projects section (project links + GitHub stats)
@@ -715,8 +741,8 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
 ### Create File: `frontend/src/components/sections/Experience/index.ts`
 
 ```typescript
-export { Experience } from './Experience';
-export { ExperienceCard } from './ExperienceCard';
+export { Experience } from "./Experience";
+export { ExperienceCard } from "./ExperienceCard";
 ```
 
 ### Create File: `frontend/src/components/sections/Education/Education.tsx`
@@ -846,8 +872,8 @@ export function EducationCard({ education }: EducationCardProps) {
 ### Create File: `frontend/src/components/sections/Education/index.ts`
 
 ```typescript
-export { Education } from './Education';
-export { EducationCard } from './EducationCard';
+export { Education } from "./Education";
+export { EducationCard } from "./EducationCard";
 ```
 
 ### Create File: `frontend/src/components/sections/Projects/Projects.tsx`
@@ -1075,9 +1101,9 @@ Create `Projects.css`, `ProjectCard.css`, and `GitHubStats.css` with appropriate
 ### Create File: `frontend/src/components/sections/Projects/index.ts`
 
 ```typescript
-export { Projects } from './Projects';
-export { ProjectCard } from './ProjectCard';
-export { GitHubStats } from './GitHubStats';
+export { Projects } from "./Projects";
+export { ProjectCard } from "./ProjectCard";
+export { GitHubStats } from "./GitHubStats";
 ```
 
 ### Create File: `frontend/src/components/sections/Music/Music.tsx`
@@ -1150,16 +1176,16 @@ export function Music() {
 ### Create File: `frontend/src/components/sections/Music/index.ts`
 
 ```typescript
-export { Music } from './Music';
+export { Music } from "./Music";
 ```
 
 ### Create Sections Barrel Export: `frontend/src/components/sections/index.ts`
 
 ```typescript
-export { Experience } from './Experience';
-export { Education } from './Education';
-export { Projects } from './Projects';
-export { Music } from './Music';
+export { Experience } from "./Experience";
+export { Education } from "./Education";
+export { Projects } from "./Projects";
+export { Music } from "./Music";
 ```
 
 ---
@@ -1167,6 +1193,7 @@ export { Music } from './Music';
 ## Task 2.5: Extract Layout Components
 
 ### What We're Doing
+
 Creating reusable layout components for the header and page structure.
 
 ### Create Directory Structure
@@ -1299,6 +1326,7 @@ Follow the same pattern as previous components.
 ## Task 2.6: Create Custom Hooks
 
 ### What We're Doing
+
 Creating custom hooks to encapsulate common logic patterns.
 
 ### Create Directory
@@ -1310,8 +1338,8 @@ mkdir -p frontend/src/hooks
 ### Create File: `frontend/src/hooks/useContentLoader.ts`
 
 ```typescript
-import { useEffect } from 'react';
-import { useContentStore } from '../store';
+import { useEffect } from "react";
+import { useContentStore } from "../store";
 
 /**
  * Hook to load content on component mount.
@@ -1341,8 +1369,8 @@ export function useContentLoader() {
 ### Create File: `frontend/src/hooks/useRegeneration.ts`
 
 ```typescript
-import { useCallback } from 'react';
-import { useContentStore, useUIStore } from '../store';
+import { useCallback } from "react";
+import { useContentStore, useUIStore } from "../store";
 
 /**
  * Hook for content regeneration functionality.
@@ -1365,7 +1393,9 @@ export function useRegeneration() {
   const regenerateContent = useContentStore((state) => state.regenerateContent);
   const resetContent = useContentStore((state) => state.resetContent);
   const isRegenerating = useContentStore((state) => state.isRegenerating);
-  const hasModifiedContent = useContentStore((state) => state.hasModifiedContent);
+  const hasModifiedContent = useContentStore(
+    (state) => state.hasModifiedContent,
+  );
   const activeSection = useUIStore((state) => state.activeSection);
 
   const regenerate = useCallback(
@@ -1374,7 +1404,7 @@ export function useRegeneration() {
         regenerateContent(activeSection, useFantasy);
       }
     },
-    [activeSection, regenerateContent]
+    [activeSection, regenerateContent],
   );
 
   const reset = useCallback(() => {
@@ -1394,7 +1424,7 @@ export function useRegeneration() {
 ### Create File: `frontend/src/hooks/useScrollToSection.ts`
 
 ```typescript
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback } from "react";
 
 /**
  * Hook for smooth scrolling to section content.
@@ -1426,7 +1456,7 @@ export function useScrollToSection() {
     }
 
     if (contentRef.current) {
-      contentRef.current.scrollIntoView({ behavior: 'smooth' });
+      contentRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 
@@ -1437,9 +1467,9 @@ export function useScrollToSection() {
 ### Create File: `frontend/src/hooks/index.ts`
 
 ```typescript
-export { useContentLoader } from './useContentLoader';
-export { useRegeneration } from './useRegeneration';
-export { useScrollToSection } from './useScrollToSection';
+export { useContentLoader } from "./useContentLoader";
+export { useRegeneration } from "./useRegeneration";
+export { useScrollToSection } from "./useScrollToSection";
 ```
 
 ---
@@ -1447,6 +1477,7 @@ export { useScrollToSection } from './useScrollToSection';
 ## Task 2.7: Update HomePage to Use Stores
 
 ### What We're Doing
+
 Refactoring HomePage to use Zustand stores instead of local state.
 
 ### Update File: `frontend/src/pages/Home/HomePage.tsx`
@@ -1581,6 +1612,7 @@ export function HomePage() {
 ## Task 2.8: Remove CustomEvent Pattern
 
 ### What We're Doing
+
 Removing the CustomEvent listeners now that we have Zustand.
 
 ### Files to Update
@@ -1647,6 +1679,7 @@ export function About() {
 ### File Count Verification
 
 New files created in Phase 2:
+
 - [ ] `store/contentStore.ts`
 - [ ] `store/uiStore.ts`
 - [ ] `store/index.ts`
@@ -1672,6 +1705,7 @@ New files created in Phase 2:
 **Cause**: Not using selector correctly.
 
 **Solution**: Use selector function to subscribe to specific state:
+
 ```typescript
 // Wrong - subscribes to entire store
 const store = useContentStore();
@@ -1685,6 +1719,7 @@ const bio = useContentStore((state) => state.bio);
 **Cause**: Action being called during render.
 
 **Solution**: Wrap action calls in event handlers or useEffect:
+
 ```typescript
 // Wrong
 loadContent(); // Called during render
@@ -1702,6 +1737,7 @@ useEffect(() => {
 After completing Phase 2:
 
 1. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "Phase 2: Implement Zustand stores and split components"
@@ -1711,5 +1747,5 @@ After completing Phase 2:
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

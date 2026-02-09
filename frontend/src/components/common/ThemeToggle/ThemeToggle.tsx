@@ -1,5 +1,5 @@
-import { useUIStore, useTheme } from '../../../store/uiStore';
-import './ThemeToggle.css';
+import { useUIStore, useTheme } from "../../../store/uiStore";
+import "./ThemeToggle.css";
 
 /**
  * ThemeToggle Component
@@ -12,7 +12,11 @@ export function ThemeToggle() {
   const setTheme = useUIStore((state) => state.setTheme);
 
   const cycleTheme = () => {
-    const themes: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system'];
+    const themes: Array<"light" | "dark" | "system"> = [
+      "light",
+      "dark",
+      "system",
+    ];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -20,7 +24,7 @@ export function ThemeToggle() {
 
   const getIcon = () => {
     switch (theme) {
-      case 'light':
+      case "light":
         return (
           <svg
             className="theme-icon"
@@ -42,7 +46,7 @@ export function ThemeToggle() {
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
           </svg>
         );
-      case 'dark':
+      case "dark":
         return (
           <svg
             className="theme-icon"
@@ -56,7 +60,7 @@ export function ThemeToggle() {
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
           </svg>
         );
-      case 'system':
+      case "system":
         return (
           <svg
             className="theme-icon"
@@ -77,12 +81,12 @@ export function ThemeToggle() {
 
   const getLabel = () => {
     switch (theme) {
-      case 'light':
-        return 'Light mode';
-      case 'dark':
-        return 'Dark mode';
-      case 'system':
-        return 'System preference';
+      case "light":
+        return "Light mode";
+      case "dark":
+        return "Dark mode";
+      case "system":
+        return "System preference";
     }
   };
 

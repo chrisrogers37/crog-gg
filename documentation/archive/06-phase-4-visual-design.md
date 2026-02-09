@@ -7,10 +7,12 @@
 **Estimated Effort**: 34 story points
 
 **Prerequisites**:
+
 - Phase 2 completed (component modularity)
 - Can run in parallel with Phase 3 after Phase 2
 
 **Deliverables**:
+
 1. Tailwind CSS integration
 2. Design token system
 3. Framer Motion animations
@@ -21,6 +23,7 @@
 ---
 
 ## Table of Contents
+
 1. [Task 4.1: Install Tailwind CSS](#task-41-install-tailwind-css)
 2. [Task 4.2: Create Design Tokens](#task-42-create-design-tokens)
 3. [Task 4.3: Install Framer Motion](#task-43-install-framer-motion)
@@ -38,6 +41,7 @@
 ## Task 4.1: Install Tailwind CSS
 
 ### What We're Doing
+
 Adding Tailwind CSS for utility-first styling and a consistent design system.
 
 ### Installation Steps
@@ -57,175 +61,173 @@ npx tailwindcss init -p
 ```javascript
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  darkMode: 'class', // Enable class-based dark mode
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class", // Enable class-based dark mode
   theme: {
     extend: {
       // Custom color palette
       colors: {
         // Primary blue
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
+          950: "#172554",
         },
         // Accent purple (for fantasy mode)
         accent: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7c3aed',
-          800: '#6b21a8',
-          900: '#581c87',
+          50: "#faf5ff",
+          100: "#f3e8ff",
+          200: "#e9d5ff",
+          300: "#d8b4fe",
+          400: "#c084fc",
+          500: "#a855f7",
+          600: "#9333ea",
+          700: "#7c3aed",
+          800: "#6b21a8",
+          900: "#581c87",
         },
         // Neutral grays
         slate: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          200: "#e2e8f0",
+          300: "#cbd5e1",
+          400: "#94a3b8",
+          500: "#64748b",
+          600: "#475569",
+          700: "#334155",
+          800: "#1e293b",
+          900: "#0f172a",
+          950: "#020617",
         },
       },
 
       // Typography
       fontFamily: {
         sans: [
-          'Inter',
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'sans-serif',
+          "Inter",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "sans-serif",
         ],
         mono: [
-          'JetBrains Mono',
-          'Fira Code',
-          'Consolas',
-          'Monaco',
-          'monospace',
+          "JetBrains Mono",
+          "Fira Code",
+          "Consolas",
+          "Monaco",
+          "monospace",
         ],
       },
 
       // Spacing
       spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-        '128': '32rem',
+        18: "4.5rem",
+        88: "22rem",
+        128: "32rem",
       },
 
       // Border radius
       borderRadius: {
-        '4xl': '2rem',
+        "4xl": "2rem",
       },
 
       // Animations
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-out',
-        'fade-in-up': 'fadeInUp 0.5s ease-out',
-        'fade-in-down': 'fadeInDown 0.5s ease-out',
-        'slide-in-right': 'slideInRight 0.3s ease-out',
-        'slide-in-left': 'slideInLeft 0.3s ease-out',
-        'scale-in': 'scaleIn 0.2s ease-out',
-        'spin-slow': 'spin 3s linear infinite',
-        'pulse-slow': 'pulse 3s ease-in-out infinite',
-        'bounce-slow': 'bounce 2s ease-in-out infinite',
-        'gradient': 'gradient 8s ease infinite',
+        "fade-in": "fadeIn 0.5s ease-out",
+        "fade-in-up": "fadeInUp 0.5s ease-out",
+        "fade-in-down": "fadeInDown 0.5s ease-out",
+        "slide-in-right": "slideInRight 0.3s ease-out",
+        "slide-in-left": "slideInLeft 0.3s ease-out",
+        "scale-in": "scaleIn 0.2s ease-out",
+        "spin-slow": "spin 3s linear infinite",
+        "pulse-slow": "pulse 3s ease-in-out infinite",
+        "bounce-slow": "bounce 2s ease-in-out infinite",
+        gradient: "gradient 8s ease infinite",
       },
 
       keyframes: {
         fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
         fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         fadeInDown: {
-          '0%': { opacity: '0', transform: 'translateY(-20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          "0%": { opacity: "0", transform: "translateY(-20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(20px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          "0%": { opacity: "0", transform: "translateX(20px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
         slideInLeft: {
-          '0%': { opacity: '0', transform: 'translateX(-20px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          "0%": { opacity: "0", transform: "translateX(-20px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
         scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
         gradient: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
         },
       },
 
       // Box shadows
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-        'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 2px 10px -2px rgba(0, 0, 0, 0.04)',
-        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
-        'glow': '0 0 20px rgba(59, 130, 246, 0.5)',
-        'glow-purple': '0 0 20px rgba(139, 92, 246, 0.5)',
+        soft: "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)",
+        "soft-lg":
+          "0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 2px 10px -2px rgba(0, 0, 0, 0.04)",
+        "inner-soft": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)",
+        glow: "0 0 20px rgba(59, 130, 246, 0.5)",
+        "glow-purple": "0 0 20px rgba(139, 92, 246, 0.5)",
       },
 
       // Backdrop blur
       backdropBlur: {
-        xs: '2px',
+        xs: "2px",
       },
 
       // Typography plugin configuration
       typography: (theme) => ({
         DEFAULT: {
           css: {
-            color: theme('colors.slate.700'),
+            color: theme("colors.slate.700"),
             a: {
-              color: theme('colors.primary.600'),
-              '&:hover': {
-                color: theme('colors.primary.700'),
+              color: theme("colors.primary.600"),
+              "&:hover": {
+                color: theme("colors.primary.700"),
               },
             },
-            'code::before': {
+            "code::before": {
               content: '""',
             },
-            'code::after': {
+            "code::after": {
               content: '""',
             },
           },
         },
         dark: {
           css: {
-            color: theme('colors.slate.300'),
+            color: theme("colors.slate.300"),
             a: {
-              color: theme('colors.primary.400'),
-              '&:hover': {
-                color: theme('colors.primary.300'),
+              color: theme("colors.primary.400"),
+              "&:hover": {
+                color: theme("colors.primary.300"),
               },
             },
           },
@@ -233,9 +235,7 @@ export default {
       }),
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [require("@tailwindcss/typography")],
 };
 ```
 
@@ -325,7 +325,11 @@ export default {
   }
 
   .bg-gradient-radial {
-    background: radial-gradient(ellipse at center, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+    background: radial-gradient(
+      ellipse at center,
+      var(--tw-gradient-from) 0%,
+      var(--tw-gradient-to) 100%
+    );
   }
 }
 ```
@@ -341,6 +345,7 @@ npm install -D @tailwindcss/typography
 ## Task 4.2: Create Design Tokens
 
 ### What We're Doing
+
 Establishing a consistent set of design tokens for spacing, colors, and typography.
 
 ### Create File: `frontend/src/styles/tokens.ts`
@@ -357,18 +362,18 @@ export const tokens = {
   // Colors (matching Tailwind config)
   colors: {
     primary: {
-      main: '#2563eb',
-      light: '#3b82f6',
-      dark: '#1d4ed8',
+      main: "#2563eb",
+      light: "#3b82f6",
+      dark: "#1d4ed8",
     },
     accent: {
-      main: '#7c3aed',
-      light: '#8b5cf6',
-      dark: '#6b21a8',
+      main: "#7c3aed",
+      light: "#8b5cf6",
+      dark: "#6b21a8",
     },
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444',
+    success: "#10b981",
+    warning: "#f59e0b",
+    error: "#ef4444",
   },
 
   // Spacing scale (in pixels, for JS usage)
@@ -378,8 +383,8 @@ export const tokens = {
     md: 16,
     lg: 24,
     xl: 32,
-    '2xl': 48,
-    '3xl': 64,
+    "2xl": 48,
+    "3xl": 64,
   },
 
   // Animation durations
@@ -403,7 +408,7 @@ export const tokens = {
     md: 768,
     lg: 1024,
     xl: 1280,
-    '2xl': 1536,
+    "2xl": 1536,
   },
 
   // Z-index scale
@@ -424,6 +429,7 @@ export type Tokens = typeof tokens;
 ## Task 4.3: Install Framer Motion
 
 ### What We're Doing
+
 Adding Framer Motion for smooth, declarative animations.
 
 ### Installation
@@ -435,7 +441,7 @@ npm install framer-motion
 ### Create Animation Utilities: `frontend/src/utils/animations.ts`
 
 ```typescript
-import { Variants, Transition } from 'framer-motion';
+import { Variants, Transition } from "framer-motion";
 
 /**
  * Common animation variants for Framer Motion.
@@ -458,7 +464,7 @@ export const fadeInUp: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: "easeOut" },
   },
   exit: { opacity: 0, y: -20 },
 };
@@ -469,7 +475,7 @@ export const fadeInDown: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: "easeOut" },
   },
 };
 
@@ -479,7 +485,7 @@ export const scaleIn: Variants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
@@ -489,7 +495,7 @@ export const slideInRight: Variants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
@@ -499,7 +505,7 @@ export const slideInLeft: Variants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.3, ease: "easeOut" },
   },
 };
 
@@ -521,7 +527,7 @@ export const staggerItem: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: 'easeOut' },
+    transition: { duration: 0.4, ease: "easeOut" },
   },
 };
 
@@ -538,7 +544,7 @@ export const tapScale = {
 
 // Spring transition preset
 export const springTransition: Transition = {
-  type: 'spring',
+  type: "spring",
   stiffness: 300,
   damping: 30,
 };
@@ -555,6 +561,7 @@ export const pageTransition: Transition = {
 ## Task 4.4: Implement Dark Mode
 
 ### What We're Doing
+
 Adding dark mode support with system preference detection and manual toggle.
 
 ### Update UI Store: `frontend/src/store/uiStore.ts`
@@ -712,6 +719,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 ## Task 4.5: Animate Page Transitions
 
 ### What We're Doing
+
 Adding smooth transitions when navigating between pages.
 
 ### Create AnimatedRoutes Component: `frontend/src/components/AnimatedRoutes.tsx`
@@ -775,6 +783,7 @@ export function Layout() {
 ## Task 4.6: Animate Components
 
 ### What We're Doing
+
 Adding micro-interactions and entrance animations to components.
 
 ### Example: Animated Card Component
@@ -907,6 +916,7 @@ export function Skills() {
 ## Task 4.7: Create Hero Section
 
 ### What We're Doing
+
 Designing an eye-catching hero section for the home page.
 
 ### Create File: `frontend/src/components/sections/Hero/Hero.tsx`
@@ -1137,6 +1147,7 @@ export function Hero() {
 ## Task 4.8: Refresh Card Designs
 
 ### What We're Doing
+
 Updating card components with modern design patterns.
 
 ### Example: Modern Project Card
@@ -1286,37 +1297,37 @@ Update components to use these Tailwind responsive patterns:
 
 ### Color Palette
 
-| Color | Light Mode | Dark Mode | Usage |
-|-------|------------|-----------|-------|
-| Primary | #2563eb | #3b82f6 | CTAs, links, active states |
-| Accent | #7c3aed | #8b5cf6 | Fantasy mode, highlights |
-| Background | #f8fafc | #0f172a | Page background |
-| Surface | #ffffff | #1e293b | Cards, containers |
-| Text Primary | #1e293b | #f8fafc | Headings |
-| Text Secondary | #64748b | #94a3b8 | Body text |
-| Border | #e2e8f0 | #334155 | Dividers, card borders |
+| Color          | Light Mode | Dark Mode | Usage                      |
+| -------------- | ---------- | --------- | -------------------------- |
+| Primary        | #2563eb    | #3b82f6   | CTAs, links, active states |
+| Accent         | #7c3aed    | #8b5cf6   | Fantasy mode, highlights   |
+| Background     | #f8fafc    | #0f172a   | Page background            |
+| Surface        | #ffffff    | #1e293b   | Cards, containers          |
+| Text Primary   | #1e293b    | #f8fafc   | Headings                   |
+| Text Secondary | #64748b    | #94a3b8   | Body text                  |
+| Border         | #e2e8f0    | #334155   | Dividers, card borders     |
 
 ### Typography Scale
 
-| Element | Size | Weight | Line Height |
-|---------|------|--------|-------------|
-| H1 | 2.5rem (40px) | 700 | 1.2 |
-| H2 | 1.5rem (24px) | 600 | 1.3 |
-| H3 | 1.25rem (20px) | 600 | 1.4 |
-| Body | 1rem (16px) | 400 | 1.6 |
-| Small | 0.875rem (14px) | 400 | 1.5 |
-| Caption | 0.75rem (12px) | 500 | 1.4 |
+| Element | Size            | Weight | Line Height |
+| ------- | --------------- | ------ | ----------- |
+| H1      | 2.5rem (40px)   | 700    | 1.2         |
+| H2      | 1.5rem (24px)   | 600    | 1.3         |
+| H3      | 1.25rem (20px)  | 600    | 1.4         |
+| Body    | 1rem (16px)     | 400    | 1.6         |
+| Small   | 0.875rem (14px) | 400    | 1.5         |
+| Caption | 0.75rem (12px)  | 500    | 1.4         |
 
 ### Spacing Scale
 
-| Name | Value | Usage |
-|------|-------|-------|
-| xs | 0.25rem (4px) | Tight spacing |
-| sm | 0.5rem (8px) | Compact elements |
-| md | 1rem (16px) | Default spacing |
-| lg | 1.5rem (24px) | Section padding |
-| xl | 2rem (32px) | Large gaps |
-| 2xl | 3rem (48px) | Section margins |
+| Name | Value         | Usage            |
+| ---- | ------------- | ---------------- |
+| xs   | 0.25rem (4px) | Tight spacing    |
+| sm   | 0.5rem (8px)  | Compact elements |
+| md   | 1rem (16px)   | Default spacing  |
+| lg   | 1.5rem (24px) | Section padding  |
+| xl   | 2rem (32px)   | Large gaps       |
+| 2xl  | 3rem (48px)   | Section margins  |
 
 ---
 
@@ -1349,6 +1360,7 @@ Update components to use these Tailwind responsive patterns:
 After completing Phase 4:
 
 1. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "Phase 4: Visual design refresh with Tailwind and animations"
@@ -1358,5 +1370,5 @@ After completing Phase 4:
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

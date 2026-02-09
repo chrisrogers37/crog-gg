@@ -1,11 +1,13 @@
 # 01 - Current State Analysis
 
 ## Purpose
+
 This document provides a comprehensive analysis of the existing codebase. **Read this document completely before making any changes.** Understanding the current patterns, technical debt, and design decisions will prevent introducing regressions.
 
 ---
 
 ## Table of Contents
+
 1. [Project Structure](#project-structure)
 2. [Technology Stack](#technology-stack)
 3. [Component Architecture](#component-architecture)
@@ -79,13 +81,13 @@ choose-your-own-chris/
 
 ### Frontend
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.2.0 | UI framework |
-| TypeScript | 5.0.2 | Type safety |
-| Vite | 4.4.5 | Build tool and dev server |
-| js-yaml | 4.1.0 | YAML parsing |
-| react-transition-group | 4.4.5 | CSS transitions |
+| Technology             | Version | Purpose                   |
+| ---------------------- | ------- | ------------------------- |
+| React                  | 18.2.0  | UI framework              |
+| TypeScript             | 5.0.2   | Type safety               |
+| Vite                   | 4.4.5   | Build tool and dev server |
+| js-yaml                | 4.1.0   | YAML parsing              |
+| react-transition-group | 4.4.5   | CSS transitions           |
 
 **Location**: `frontend/package.json:12-18`
 
@@ -102,24 +104,24 @@ choose-your-own-chris/
 
 ### Backend
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Flask | 3.0.0 | Web framework |
-| Gunicorn | 21.2.0 | WSGI server |
-| OpenAI | 1.3.5 | AI content generation |
-| Flask-CORS | 4.0.0 | Cross-origin requests |
-| Flask-Limiter | 3.5.0 | Rate limiting |
+| Technology    | Version | Purpose               |
+| ------------- | ------- | --------------------- |
+| Flask         | 3.0.0   | Web framework         |
+| Gunicorn      | 21.2.0  | WSGI server           |
+| OpenAI        | 1.3.5   | AI content generation |
+| Flask-CORS    | 4.0.0   | Cross-origin requests |
+| Flask-Limiter | 3.5.0   | Rate limiting         |
 
 **Location**: `backend/requirements.txt`
 
 ### Infrastructure
 
-| Component | Technology |
-|-----------|------------|
-| Web Server | Nginx (reverse proxy) |
-| Process Manager | systemd |
-| Frontend URL | https://crog.gg |
-| Backend URL | https://api.crog.gg |
+| Component       | Technology            |
+| --------------- | --------------------- |
+| Web Server      | Nginx (reverse proxy) |
+| Process Manager | systemd               |
+| Frontend URL    | https://crog.gg       |
+| Backend URL     | https://api.crog.gg   |
 
 ---
 
@@ -146,9 +148,11 @@ main.tsx
 ### Component Responsibilities
 
 #### App.tsx (Lines: 354)
+
 **Location**: `frontend/src/App.tsx`
 
 **Current Responsibilities** (too many):
+
 - State management for all content
 - Loading initial data from YAML
 - Handling content regeneration API calls
@@ -160,19 +164,22 @@ main.tsx
 - Event listener setup/cleanup
 
 **State Variables** (Line 29-34):
+
 ```typescript
-const [currentContent, setCurrentContent] = useState<any>(null);  // ⚠️ 'any' type
+const [currentContent, setCurrentContent] = useState<any>(null); // ⚠️ 'any' type
 const [isLoading, setIsLoading] = useState(true);
 const [isRegenerating, setIsRegenerating] = useState(false);
 const [error, setError] = useState<string | null>(null);
 const [hasModifiedContent, setHasModifiedContent] = useState(false);
-const [activeSection, setActiveSection] = useState<string>('');
+const [activeSection, setActiveSection] = useState<string>("");
 ```
 
 #### Portfolio.tsx (Lines: 323)
+
 **Location**: `frontend/src/components/Portfolio.tsx`
 
 **Current Responsibilities** (too many):
+
 - Rendering Experience section
 - Rendering Education section
 - Rendering Projects section
@@ -184,9 +191,11 @@ const [activeSection, setActiveSection] = useState<string>('');
 **This component should be split into 4 separate components.**
 
 #### About.tsx (Lines: 95)
+
 **Location**: `frontend/src/components/About.tsx`
 
 **Responsibilities**:
+
 - Display about text
 - Listen for `contentRegenerated` events
 - Fade transition during updates
@@ -194,9 +203,11 @@ const [activeSection, setActiveSection] = useState<string>('');
 **This component is appropriately sized.**
 
 #### Skills.tsx (Lines: 87)
+
 **Location**: `frontend/src/components/Skills.tsx`
 
 **Responsibilities**:
+
 - Render word cloud
 - Shuffle skills randomly
 - Size words by weight
@@ -204,9 +215,11 @@ const [activeSection, setActiveSection] = useState<string>('');
 **This component is appropriately sized.**
 
 #### SectionNav.tsx (Lines: 63)
+
 **Location**: `frontend/src/components/SectionNav.tsx`
 
 **Responsibilities**:
+
 - Render navigation buttons
 - Track active section
 - Handle section switching
@@ -214,9 +227,11 @@ const [activeSection, setActiveSection] = useState<string>('');
 **This component is appropriately sized.**
 
 #### Typewriter.tsx
+
 **Location**: `frontend/src/components/Typewriter.tsx`
 
 **Responsibilities**:
+
 - Animate text character-by-character
 - Provide skip functionality
 - Calculate height to prevent layout shift
@@ -282,6 +297,7 @@ const [activeSection, setActiveSection] = useState<string>('');
 | `contentUpdated` | (legacy, may be unused) | - |
 
 **Why This Is Problematic**:
+
 - Events bypass React's unidirectional data flow
 - Hard to trace where data changes originate
 - No TypeScript safety on event payloads
@@ -294,15 +310,16 @@ const [activeSection, setActiveSection] = useState<string>('');
 ### Pattern 1: YAML Content Loading
 
 **How it works**:
+
 ```typescript
 // Location: frontend/src/utils/bioLoader.ts
 
-import yaml from 'js-yaml';
-import { BioData } from '../types/Bio';
+import yaml from "js-yaml";
+import { BioData } from "../types/Bio";
 
 export const loadBio = async (): Promise<BioData> => {
   try {
-    const response = await fetch('/content/bio.yaml');
+    const response = await fetch("/content/bio.yaml");
     if (!response.ok) {
       throw new Error(`Failed to fetch bio.yaml: ${response.statusText}`);
     }
@@ -310,13 +327,14 @@ export const loadBio = async (): Promise<BioData> => {
     const bioData = yaml.load(content) as BioData;
     return bioData;
   } catch (error) {
-    console.error('Error loading bio from YAML:', error);
+    console.error("Error loading bio from YAML:", error);
     throw error;
   }
 };
 ```
 
 **Pattern Notes**:
+
 - Each loader follows identical structure
 - Type assertion (`as BioData`) provides no runtime validation
 - Error handling rethrows after logging
@@ -329,10 +347,10 @@ export const loadBio = async (): Promise<BioData> => {
 ```typescript
 function copyContentPlugin(): Plugin {
   return {
-    name: 'copy-content',
+    name: "copy-content",
     writeBundle() {
-      const srcDir = resolve(__dirname, 'src/content');
-      const destDir = resolve(__dirname, 'dist/content');
+      const srcDir = resolve(__dirname, "src/content");
+      const destDir = resolve(__dirname, "dist/content");
 
       // Recursively copy all files
       const copyRecursive = (src: string, dest: string) => {
@@ -340,12 +358,13 @@ function copyContentPlugin(): Plugin {
       };
 
       copyRecursive(srcDir, destDir);
-    }
+    },
   };
 }
 ```
 
 **Pattern Notes**:
+
 - Custom Vite plugin copies YAML at build time
 - Makes content accessible at runtime via `/content/` path
 - **Problem**: New YAML files must be manually added to plugin
@@ -389,29 +408,40 @@ function copyContentPlugin(): Plugin {
 ### Pattern 4: Window CustomEvents
 
 **Dispatching** (Location: App.tsx:125-128):
+
 ```typescript
-window.dispatchEvent(new CustomEvent('contentRegenerated', {
-  detail: { section: activeSection, content: data }
-}));
+window.dispatchEvent(
+  new CustomEvent("contentRegenerated", {
+    detail: { section: activeSection, content: data },
+  }),
+);
 ```
 
 **Listening** (Location: About.tsx:23-35):
+
 ```typescript
 useEffect(() => {
   const handleContentRegenerated = (event: CustomEvent) => {
-    if (event.detail.section === 'about') {
+    if (event.detail.section === "about") {
       setDisplayText(event.detail.content.about_text);
     }
   };
 
-  window.addEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+  window.addEventListener(
+    "contentRegenerated",
+    handleContentRegenerated as EventListener,
+  );
   return () => {
-    window.removeEventListener('contentRegenerated', handleContentRegenerated as EventListener);
+    window.removeEventListener(
+      "contentRegenerated",
+      handleContentRegenerated as EventListener,
+    );
   };
 }, []);
 ```
 
 **Why This Pattern Exists**:
+
 - Allows child components to react to API responses
 - Avoids prop drilling through multiple levels
 - **Should be replaced** with React Context or Zustand
@@ -422,37 +452,37 @@ useEffect(() => {
 
 ### Critical (Must Fix in Phase 1)
 
-| Issue | Location | Impact | Fix |
-|-------|----------|--------|-----|
-| `any` type on currentContent | App.tsx:29 | No type safety on main state | Create `ContentState` interface |
-| No routing | Entire app | Can't add project pages | Add React Router |
-| Duplicated button JSX | App.tsx:277-344 | Maintenance burden | Extract `ActionButtons` component |
+| Issue                        | Location        | Impact                       | Fix                               |
+| ---------------------------- | --------------- | ---------------------------- | --------------------------------- |
+| `any` type on currentContent | App.tsx:29      | No type safety on main state | Create `ContentState` interface   |
+| No routing                   | Entire app      | Can't add project pages      | Add React Router                  |
+| Duplicated button JSX        | App.tsx:277-344 | Maintenance burden           | Extract `ActionButtons` component |
 
 ### High (Fix in Phase 2)
 
-| Issue | Location | Impact | Fix |
-|-------|----------|--------|-----|
-| God component | App.tsx | Hard to maintain, test | Split into smaller components |
-| Portfolio handles 4 sections | Portfolio.tsx | Violates single responsibility | Split into 4 components |
-| Event-based state updates | App.tsx, About.tsx | Hard to trace data flow | Use React Context/Zustand |
-| Single CSS file (1224 lines) | App.css | No encapsulation, hard to maintain | CSS Modules or Tailwind |
+| Issue                        | Location           | Impact                             | Fix                           |
+| ---------------------------- | ------------------ | ---------------------------------- | ----------------------------- |
+| God component                | App.tsx            | Hard to maintain, test             | Split into smaller components |
+| Portfolio handles 4 sections | Portfolio.tsx      | Violates single responsibility     | Split into 4 components       |
+| Event-based state updates    | App.tsx, About.tsx | Hard to trace data flow            | Use React Context/Zustand     |
+| Single CSS file (1224 lines) | App.css            | No encapsulation, hard to maintain | CSS Modules or Tailwind       |
 
 ### Medium (Fix in Phase 3-4)
 
-| Issue | Location | Impact | Fix |
-|-------|----------|--------|-----|
-| Hardcoded project list | vite.config.ts | Manual work to add projects | Dynamic glob pattern |
-| No loading states | Various | Poor UX | Add skeleton loaders |
-| No error boundaries | Entire app | Crashes break entire app | Add React Error Boundaries |
+| Issue                  | Location        | Impact                      | Fix                          |
+| ---------------------- | --------------- | --------------------------- | ---------------------------- |
+| Hardcoded project list | vite.config.ts  | Manual work to add projects | Dynamic glob pattern         |
+| No loading states      | Various         | Poor UX                     | Add skeleton loaders         |
+| No error boundaries    | Entire app      | Crashes break entire app    | Add React Error Boundaries   |
 | Console.log statements | Various loaders | Clutters production console | Remove or use proper logging |
 
 ### Low (Fix When Convenient)
 
-| Issue | Location | Impact | Fix |
-|-------|----------|--------|-----|
-| Magic numbers in CSS | App.css | Hard to maintain consistency | CSS variables |
-| No image optimization | public/headshot.png | Performance | Use next-gen formats |
-| Inline styles in JSX | Various | Inconsistent with CSS approach | Move to CSS |
+| Issue                 | Location            | Impact                         | Fix                  |
+| --------------------- | ------------------- | ------------------------------ | -------------------- |
+| Magic numbers in CSS  | App.css             | Hard to maintain consistency   | CSS variables        |
+| No image optimization | public/headshot.png | Performance                    | Use next-gen formats |
+| Inline styles in JSX  | Various             | Inconsistent with CSS approach | Move to CSS          |
 
 ---
 
@@ -460,33 +490,33 @@ useEffect(() => {
 
 ### Files You Will Modify Most
 
-| File | Lines | Phase | Notes |
-|------|-------|-------|-------|
-| `frontend/src/App.tsx` | 354 | 1, 2 | Will be significantly refactored |
-| `frontend/src/components/Portfolio.tsx` | 323 | 2 | Will be split into 4 files |
-| `frontend/src/App.css` | 1224 | 4 | May be replaced with Tailwind |
-| `frontend/package.json` | 32 | 1, 4 | Add new dependencies |
-| `frontend/vite.config.ts` | ~50 | 3 | Update content copying |
+| File                                    | Lines | Phase | Notes                            |
+| --------------------------------------- | ----- | ----- | -------------------------------- |
+| `frontend/src/App.tsx`                  | 354   | 1, 2  | Will be significantly refactored |
+| `frontend/src/components/Portfolio.tsx` | 323   | 2     | Will be split into 4 files       |
+| `frontend/src/App.css`                  | 1224  | 4     | May be replaced with Tailwind    |
+| `frontend/package.json`                 | 32    | 1, 4  | Add new dependencies             |
+| `frontend/vite.config.ts`               | ~50   | 3     | Update content copying           |
 
 ### Files You Should NOT Modify (Initially)
 
-| File | Reason |
-|------|--------|
-| `backend/app.py` | Backend changes come in Phase 6 |
+| File                          | Reason                             |
+| ----------------------------- | ---------------------------------- |
+| `backend/app.py`              | Backend changes come in Phase 6    |
 | `frontend/src/content/*.yaml` | Content is fine, structure is fine |
-| `frontend/src/types/*.ts` | Types are well-defined |
-| `systemd/*` | Infrastructure is working |
+| `frontend/src/types/*.ts`     | Types are well-defined             |
+| `systemd/*`                   | Infrastructure is working          |
 
 ### Files You Will Create
 
-| Phase | New Files |
-|-------|-----------|
-| Phase 1 | `src/router.tsx`, `src/pages/Home.tsx`, `src/types/Content.ts` |
+| Phase   | New Files                                                           |
+| ------- | ------------------------------------------------------------------- |
+| Phase 1 | `src/router.tsx`, `src/pages/Home.tsx`, `src/types/Content.ts`      |
 | Phase 2 | `src/components/sections/*.tsx`, `src/hooks/*.ts`, `src/store/*.ts` |
-| Phase 3 | `src/pages/projects/*.tsx`, `src/components/templates/*.tsx` |
-| Phase 4 | `tailwind.config.js`, `src/components/common/*.tsx` |
-| Phase 5 | `src/components/SEO.tsx`, various meta files |
-| Phase 6 | New backend endpoints, `src/utils/github.ts` |
+| Phase 3 | `src/pages/projects/*.tsx`, `src/components/templates/*.tsx`        |
+| Phase 4 | `tailwind.config.js`, `src/components/common/*.tsx`                 |
+| Phase 5 | `src/components/SEO.tsx`, various meta files                        |
+| Phase 6 | New backend endpoints, `src/utils/github.ts`                        |
 
 ---
 
@@ -514,10 +544,11 @@ Before proceeding to Phase 1, you should be able to answer:
 ## Next Steps
 
 Once you've read and understood this document:
+
 1. Proceed to [02-architecture-roadmap.md](./02-architecture-roadmap.md)
 2. Then follow phases in order starting with [03-phase-1-foundation.md](./03-phase-1-foundation.md)
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

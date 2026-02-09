@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.crog.gg';
+const API_URL = import.meta.env.VITE_API_URL || "https://api.crog.gg";
 
 /**
  * Repository information from GitHub API
@@ -74,7 +74,10 @@ class GitHubService {
   /**
    * Get cached data or fetch fresh
    */
-  private async cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  private async cachedFetch<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+  ): Promise<T> {
     const cached = this.cache.get(key);
 
     if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
@@ -92,7 +95,7 @@ class GitHubService {
   async getRepository(repoName: string): Promise<Repository> {
     return this.cachedFetch(`repo:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/repo/${repoName}`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -109,19 +112,19 @@ class GitHubService {
   async getReadme(repoName: string): Promise<string> {
     return this.cachedFetch(`readme:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/readme/${repoName}`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
         if (response.status === 404) {
-          return ''; // No README
+          return ""; // No README
         }
         throw new Error(`Failed to fetch README: ${response.status}`);
       }
 
       const data = await response.json();
       // Decode base64 content
-      return atob(data.content.replace(/\n/g, ''));
+      return atob(data.content.replace(/\n/g, ""));
     });
   }
 
@@ -131,7 +134,7 @@ class GitHubService {
   async getLanguages(repoName: string): Promise<LanguageStats> {
     return this.cachedFetch(`languages:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/languages/${repoName}`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -146,9 +149,9 @@ class GitHubService {
    * Fetch aggregated language stats for all user repos
    */
   async getAllLanguages(): Promise<LanguageStats> {
-    return this.cachedFetch('all-languages', async () => {
+    return this.cachedFetch("all-languages", async () => {
       const response = await fetch(`${this.baseUrl}/languages`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -163,9 +166,9 @@ class GitHubService {
    * Fetch contribution data for heatmap
    */
   async getContributions(): Promise<ContributionData> {
-    return this.cachedFetch('contributions', async () => {
+    return this.cachedFetch("contributions", async () => {
       const response = await fetch(`${this.baseUrl}/contributions`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {

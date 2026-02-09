@@ -7,10 +7,12 @@
 **Estimated Effort**: 21 story points
 
 **Prerequisites**:
+
 - Phase 3 completed (project pages exist)
 - Phase 5 completed (SEO for project pages)
 
 **Deliverables**:
+
 1. GitHub README fetching and rendering
 2. Repository statistics display
 3. Contribution graph
@@ -21,6 +23,7 @@
 ---
 
 ## Table of Contents
+
 1. [Task 6.1: Install Markdown Dependencies](#task-61-install-markdown-dependencies)
 2. [Task 6.2: Create GitHub Service](#task-62-create-github-service)
 3. [Task 6.3: Add Backend Endpoints](#task-63-add-backend-endpoints)
@@ -36,6 +39,7 @@
 ## Task 6.1: Install Markdown Dependencies
 
 ### What We're Doing
+
 Adding libraries to render GitHub-flavored Markdown with syntax highlighting.
 
 ### Installation
@@ -49,24 +53,25 @@ npm install -D @types/hast
 
 ### Package Purposes
 
-| Package | Purpose |
-|---------|---------|
-| `react-markdown` | Render Markdown as React components |
-| `remark-gfm` | GitHub-flavored Markdown support (tables, task lists, etc.) |
-| `rehype-highlight` | Syntax highlighting for code blocks |
-| `rehype-raw` | Allow raw HTML in Markdown (for badges, etc.) |
+| Package            | Purpose                                                     |
+| ------------------ | ----------------------------------------------------------- |
+| `react-markdown`   | Render Markdown as React components                         |
+| `remark-gfm`       | GitHub-flavored Markdown support (tables, task lists, etc.) |
+| `rehype-highlight` | Syntax highlighting for code blocks                         |
+| `rehype-raw`       | Allow raw HTML in Markdown (for badges, etc.)               |
 
 ---
 
 ## Task 6.2: Create GitHub Service
 
 ### What We're Doing
+
 Creating a service layer to interact with GitHub API via our backend.
 
 ### Create File: `frontend/src/services/githubService.ts`
 
 ```typescript
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.crog.gg';
+const API_URL = import.meta.env.VITE_API_URL || "https://api.crog.gg";
 
 /**
  * Repository information from GitHub API
@@ -142,7 +147,10 @@ class GitHubService {
   /**
    * Get cached data or fetch fresh
    */
-  private async cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  private async cachedFetch<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+  ): Promise<T> {
     const cached = this.cache.get(key);
 
     if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
@@ -160,7 +168,7 @@ class GitHubService {
   async getRepository(repoName: string): Promise<Repository> {
     return this.cachedFetch(`repo:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/repo/${repoName}`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -177,19 +185,19 @@ class GitHubService {
   async getReadme(repoName: string): Promise<string> {
     return this.cachedFetch(`readme:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/readme/${repoName}`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
         if (response.status === 404) {
-          return ''; // No README
+          return ""; // No README
         }
         throw new Error(`Failed to fetch README: ${response.status}`);
       }
 
       const data = await response.json();
       // Decode base64 content
-      return atob(data.content.replace(/\n/g, ''));
+      return atob(data.content.replace(/\n/g, ""));
     });
   }
 
@@ -199,7 +207,7 @@ class GitHubService {
   async getLanguages(repoName: string): Promise<LanguageStats> {
     return this.cachedFetch(`languages:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/languages/${repoName}`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -214,9 +222,9 @@ class GitHubService {
    * Fetch aggregated language stats for all user repos
    */
   async getAllLanguages(): Promise<LanguageStats> {
-    return this.cachedFetch('all-languages', async () => {
+    return this.cachedFetch("all-languages", async () => {
       const response = await fetch(`${this.baseUrl}/languages`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -231,9 +239,9 @@ class GitHubService {
    * Fetch contribution data for heatmap
    */
   async getContributions(): Promise<ContributionData> {
-    return this.cachedFetch('contributions', async () => {
+    return this.cachedFetch("contributions", async () => {
       const response = await fetch(`${this.baseUrl}/contributions`, {
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -260,6 +268,7 @@ export const githubService = new GitHubService();
 ## Task 6.3: Add Backend Endpoints
 
 ### What We're Doing
+
 Adding new Flask endpoints to proxy GitHub API requests.
 
 ### Update File: `backend/app.py`
@@ -483,6 +492,7 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## Task 6.4: Create README Component
 
 ### What We're Doing
+
 Creating a component to render GitHub README files with proper styling.
 
 ### Create File: `frontend/src/components/features/GitHubReadme/GitHubReadme.tsx`
@@ -746,6 +756,7 @@ export function GitHubReadme({ repoName, className = '' }: GitHubReadmeProps) {
 ## Task 6.5: Repository Stats Component
 
 ### What We're Doing
+
 Creating a component to display repository statistics.
 
 ### Create File: `frontend/src/components/features/RepoStats/RepoStats.tsx`
@@ -960,6 +971,7 @@ function getLanguageColor(language: string): string {
 ## Task 6.6: Contribution Graph
 
 ### What We're Doing
+
 Creating a GitHub-style contribution heatmap.
 
 ### Create File: `frontend/src/components/features/ContributionGraph/ContributionGraph.tsx`
@@ -1125,6 +1137,7 @@ export function ContributionGraph({ className = '' }: ContributionGraphProps) {
 ## Task 6.7: Live Demo Embedding
 
 ### What We're Doing
+
 Creating a component to embed live project demos.
 
 ### Create File: `frontend/src/components/features/ProjectDemo/ProjectDemo.tsx`
@@ -1253,6 +1266,7 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
 ## Task 6.8: Update Project Detail Page
 
 ### What We're Doing
+
 Integrating all GitHub components into the project detail page.
 
 ### Update File: `frontend/src/pages/Projects/ProjectDetailPage.tsx`
@@ -1409,7 +1423,7 @@ id: shuffify
 title: Shuffify
 description: A Spotify playlist shuffler that creates truly random shuffles
 url: https://github.com/chrisrogers37/shuffify
-demo_url: https://shuffify.example.com  # NEW FIELD
+demo_url: https://shuffify.example.com # NEW FIELD
 icon: 🎵
 category: Web App
 technologies:
@@ -1430,7 +1444,7 @@ export interface Project {
   title: string;
   description: string;
   url?: string;
-  demo_url?: string;  // NEW FIELD
+  demo_url?: string; // NEW FIELD
   icon?: string;
   category?: string;
   technologies?: string[];
@@ -1494,6 +1508,7 @@ export interface Project {
 After completing Phase 6:
 
 1. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "Phase 6: GitHub integration with README rendering and stats"
@@ -1508,5 +1523,5 @@ After completing Phase 6:
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeRaw from 'rehype-raw';
-import { githubService } from '../../../services/githubService';
-import './GitHubReadme.css';
+import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
+import { githubService } from "../../../services/githubService";
+import "./GitHubReadme.css";
 
 // Import highlight.js theme
-import 'highlight.js/styles/github.css';
+import "highlight.js/styles/github.css";
 
 interface GitHubReadmeProps {
   repoName: string;
@@ -23,7 +23,7 @@ interface GitHubReadmeProps {
  * - Responsive images
  * - Task lists and tables
  */
-export function GitHubReadme({ repoName, className = '' }: GitHubReadmeProps) {
+export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
   const [readme, setReadme] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +36,8 @@ export function GitHubReadme({ repoName, className = '' }: GitHubReadmeProps) {
         const content = await githubService.getReadme(repoName);
         setReadme(content);
       } catch (err) {
-        console.error('Failed to fetch README:', err);
-        setError('Unable to load README');
+        console.error("Failed to fetch README:", err);
+        setError("Unable to load README");
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +63,7 @@ export function GitHubReadme({ repoName, className = '' }: GitHubReadmeProps) {
     return (
       <div className={`github-readme empty ${className}`}>
         <p className="readme-empty-message">
-          {error || 'No README available for this repository.'}
+          {error || "No README available for this repository."}
         </p>
         <a
           href={`https://github.com/chrisrogers37/${repoName}`}
@@ -88,31 +88,31 @@ export function GitHubReadme({ repoName, className = '' }: GitHubReadmeProps) {
             a: ({ href, children }) => (
               <a
                 href={href}
-                target={href?.startsWith('http') ? '_blank' : undefined}
-                rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                target={href?.startsWith("http") ? "_blank" : undefined}
+                rel={
+                  href?.startsWith("http") ? "noopener noreferrer" : undefined
+                }
               >
                 {children}
               </a>
             ),
             img: ({ src, alt }) => {
               // Handle relative GitHub URLs
-              const imageSrc = src?.startsWith('http')
+              const imageSrc = src?.startsWith("http")
                 ? src
                 : `https://raw.githubusercontent.com/chrisrogers37/${repoName}/main/${src}`;
 
               return (
                 <img
                   src={imageSrc}
-                  alt={alt || ''}
+                  alt={alt || ""}
                   loading="lazy"
                   className="readme-image"
                 />
               );
             },
             pre: ({ children }) => (
-              <pre className="readme-code-block">
-                {children}
-              </pre>
+              <pre className="readme-code-block">{children}</pre>
             ),
           }}
         >
