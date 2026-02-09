@@ -81,8 +81,8 @@ export default defineConfig({
             join(distProjects, "city-cycles.yaml"),
           );
           copyFileSync(
-            join(srcProjects, "hedwig.yaml"),
-            join(distProjects, "hedwig.yaml"),
+            join(srcProjects, "storyline-ai.yaml"),
+            join(distProjects, "storyline-ai.yaml"),
           );
           copyFileSync(
             join(srcProjects, "github.yaml"),
