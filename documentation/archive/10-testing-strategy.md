@@ -1,11 +1,13 @@
 # 10 - Testing Strategy
 
 ## Purpose
+
 This document outlines the testing approach for the portfolio enhancement project, including test types, tools, coverage requirements, and examples.
 
 ---
 
 ## Table of Contents
+
 1. [Testing Philosophy](#testing-philosophy)
 2. [Test Types](#test-types)
 3. [Tools & Setup](#tools--setup)
@@ -49,32 +51,39 @@ This document outlines the testing approach for the portfolio enhancement projec
 ## Test Types
 
 ### Unit Tests
+
 Test individual functions, components, and hooks in isolation.
 
 **What to Test:**
+
 - Pure functions (utils, helpers)
 - React components (rendering, props)
 - Custom hooks (state, effects)
 - Store actions and selectors
 
 **What NOT to Test:**
+
 - Third-party libraries
 - Simple pass-through components
 - CSS styling
 
 ### Integration Tests
+
 Test how components work together.
 
 **What to Test:**
+
 - Component with store integration
 - Form submissions
 - Navigation flows
 - API data fetching
 
 ### End-to-End Tests
+
 Test complete user journeys.
 
 **What to Test:**
+
 - Home page loads and displays content
 - Navigation between pages
 - Content regeneration flow
@@ -86,13 +95,13 @@ Test complete user journeys.
 
 ### Frontend Testing Stack
 
-| Tool | Purpose | Version |
-|------|---------|---------|
-| Vitest | Test runner | ^1.2.0 |
-| @testing-library/react | Component testing | ^14.2.0 |
+| Tool                        | Purpose                     | Version |
+| --------------------------- | --------------------------- | ------- |
+| Vitest                      | Test runner                 | ^1.2.0  |
+| @testing-library/react      | Component testing           | ^14.2.0 |
 | @testing-library/user-event | User interaction simulation | ^14.5.0 |
-| MSW | API mocking | ^2.1.0 |
-| Playwright | E2E testing | ^1.41.0 |
+| MSW                         | API mocking                 | ^2.1.0  |
+| Playwright                  | E2E testing                 | ^1.41.0 |
 
 ### Installation
 
@@ -112,40 +121,37 @@ npx playwright install
 ### Configuration
 
 **vitest.config.ts:**
+
 ```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/test/',
-        '**/*.d.ts',
-        '**/*.config.*',
-      ],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      exclude: ["node_modules/", "src/test/", "**/*.d.ts", "**/*.config.*"],
     },
   },
 });
 ```
 
 **src/test/setup.ts:**
+
 ```typescript
-import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
-import { afterEach, beforeAll, afterAll } from 'vitest';
-import { server } from './mocks/server';
+import "@testing-library/jest-dom";
+import { cleanup } from "@testing-library/react";
+import { afterEach, beforeAll, afterAll } from "vitest";
+import { server } from "./mocks/server";
 
 // Setup MSW
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => {
   cleanup();
   server.resetHandlers();
@@ -154,20 +160,22 @@ afterAll(() => server.close());
 ```
 
 **src/test/mocks/server.ts:**
+
 ```typescript
-import { setupServer } from 'msw/node';
-import { handlers } from './handlers';
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
 
 export const server = setupServer(...handlers);
 ```
 
 **src/test/mocks/handlers.ts:**
+
 ```typescript
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from "msw";
 
 export const handlers = [
   // Mock content loading
-  http.get('/content/bio.yaml', () => {
+  http.get("/content/bio.yaml", () => {
     return HttpResponse.text(`
 display_name: Test User
 email: test@example.com
@@ -183,17 +191,17 @@ social_links:
   }),
 
   // Mock API endpoints
-  http.post('*/api/regenerate', () => {
+  http.post("*/api/regenerate", () => {
     return HttpResponse.json({
-      about_text: 'Regenerated content',
+      about_text: "Regenerated content",
     });
   }),
 
-  http.get('*/api/v1/github/repo/:name', ({ params }) => {
+  http.get("*/api/v1/github/repo/:name", ({ params }) => {
     return HttpResponse.json({
       name: params.name,
       full_name: `chrisrogers37/${params.name}`,
-      description: 'Test repo description',
+      description: "Test repo description",
       stargazers_count: 42,
       forks_count: 5,
     });
@@ -207,12 +215,12 @@ social_links:
 
 ### Minimum Coverage Thresholds
 
-| Metric | Threshold | Rationale |
-|--------|-----------|-----------|
-| Statements | 70% | Basic code execution |
-| Branches | 60% | Conditional logic |
-| Functions | 70% | Feature completeness |
-| Lines | 70% | Overall coverage |
+| Metric     | Threshold | Rationale            |
+| ---------- | --------- | -------------------- |
+| Statements | 70%       | Basic code execution |
+| Branches   | 60%       | Conditional logic    |
+| Functions  | 70%       | Feature completeness |
+| Lines      | 70%       | Overall coverage     |
 
 ### Critical Path Coverage (Must be 100%)
 
@@ -230,36 +238,38 @@ social_links:
 ### Unit Test Examples
 
 **Testing a Utility Function:**
+
 ```typescript
 // src/utils/helpers.test.ts
-import { describe, it, expect } from 'vitest';
-import { formatDate, truncateText } from './helpers';
+import { describe, it, expect } from "vitest";
+import { formatDate, truncateText } from "./helpers";
 
-describe('formatDate', () => {
-  it('formats date correctly', () => {
-    const date = '2026-01-15T10:30:00Z';
-    expect(formatDate(date)).toBe('Jan 15, 2026');
+describe("formatDate", () => {
+  it("formats date correctly", () => {
+    const date = "2026-01-15T10:30:00Z";
+    expect(formatDate(date)).toBe("Jan 15, 2026");
   });
 
-  it('handles invalid date', () => {
-    expect(formatDate('invalid')).toBe('Invalid Date');
+  it("handles invalid date", () => {
+    expect(formatDate("invalid")).toBe("Invalid Date");
   });
 });
 
-describe('truncateText', () => {
-  it('truncates long text', () => {
-    const text = 'This is a very long text that should be truncated';
-    expect(truncateText(text, 20)).toBe('This is a very long...');
+describe("truncateText", () => {
+  it("truncates long text", () => {
+    const text = "This is a very long text that should be truncated";
+    expect(truncateText(text, 20)).toBe("This is a very long...");
   });
 
-  it('does not truncate short text', () => {
-    const text = 'Short text';
-    expect(truncateText(text, 20)).toBe('Short text');
+  it("does not truncate short text", () => {
+    const text = "Short text";
+    expect(truncateText(text, 20)).toBe("Short text");
   });
 });
 ```
 
 **Testing a React Component:**
+
 ```typescript
 // src/components/common/Card/Card.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -285,14 +295,15 @@ describe('Card', () => {
 ```
 
 **Testing a Custom Hook:**
+
 ```typescript
 // src/hooks/useRegeneration.test.ts
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { useRegeneration } from './useRegeneration';
+import { renderHook, act, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { useRegeneration } from "./useRegeneration";
 
 // Mock the stores
-vi.mock('../store', () => ({
+vi.mock("../store", () => ({
   useContentStore: vi.fn(() => ({
     regenerateContent: vi.fn(),
     resetContent: vi.fn(),
@@ -300,12 +311,12 @@ vi.mock('../store', () => ({
     hasModifiedContent: false,
   })),
   useUIStore: vi.fn(() => ({
-    activeSection: 'about',
+    activeSection: "about",
   })),
 }));
 
-describe('useRegeneration', () => {
-  it('calls regenerateContent with correct params', async () => {
+describe("useRegeneration", () => {
+  it("calls regenerateContent with correct params", async () => {
     const mockRegenerate = vi.fn();
     vi.mocked(useContentStore).mockReturnValue({
       regenerateContent: mockRegenerate,
@@ -320,10 +331,10 @@ describe('useRegeneration', () => {
       result.current.regenerate(true);
     });
 
-    expect(mockRegenerate).toHaveBeenCalledWith('about', true);
+    expect(mockRegenerate).toHaveBeenCalledWith("about", true);
   });
 
-  it('returns isRegenerating state', () => {
+  it("returns isRegenerating state", () => {
     vi.mocked(useContentStore).mockReturnValue({
       regenerateContent: vi.fn(),
       resetContent: vi.fn(),
@@ -340,6 +351,7 @@ describe('useRegeneration', () => {
 ### Integration Test Examples
 
 **Testing Component with Store:**
+
 ```typescript
 // src/components/sections/About/About.test.tsx
 import { render, screen, waitFor } from '@testing-library/react';
@@ -374,6 +386,7 @@ describe('About Section', () => {
 ```
 
 **Testing Navigation:**
+
 ```typescript
 // src/pages/Home/HomePage.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -424,90 +437,100 @@ describe('HomePage', () => {
 ### E2E Test Examples
 
 **playwright/home.spec.ts:**
-```typescript
-import { test, expect } from '@playwright/test';
 
-test.describe('Home Page', () => {
+```typescript
+import { test, expect } from "@playwright/test";
+
+test.describe("Home Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto("/");
   });
 
-  test('displays profile information', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /chris rogers/i })).toBeVisible();
+  test("displays profile information", async ({ page }) => {
+    await expect(
+      page.getByRole("heading", { name: /chris rogers/i }),
+    ).toBeVisible();
     await expect(page.getByText(/software engineer/i)).toBeVisible();
   });
 
-  test('section navigation works', async ({ page }) => {
+  test("section navigation works", async ({ page }) => {
     // Click About section
-    await page.getByRole('button', { name: /about/i }).click();
+    await page.getByRole("button", { name: /about/i }).click();
 
     // Verify section is visible
     await expect(page.getByText(/about me/i)).toBeVisible();
   });
 
-  test('can navigate to projects page', async ({ page }) => {
-    await page.getByRole('link', { name: /projects/i }).click();
+  test("can navigate to projects page", async ({ page }) => {
+    await page.getByRole("link", { name: /projects/i }).click();
 
-    await expect(page).toHaveURL('/projects');
-    await expect(page.getByRole('heading', { name: /projects/i })).toBeVisible();
+    await expect(page).toHaveURL("/projects");
+    await expect(
+      page.getByRole("heading", { name: /projects/i }),
+    ).toBeVisible();
   });
 });
 
-test.describe('Content Regeneration', () => {
-  test('regenerates about section content', async ({ page }) => {
-    await page.goto('/');
+test.describe("Content Regeneration", () => {
+  test("regenerates about section content", async ({ page }) => {
+    await page.goto("/");
 
     // Select About section
-    await page.getByRole('button', { name: /about/i }).click();
+    await page.getByRole("button", { name: /about/i }).click();
 
     // Get original text
-    const originalText = await page.getByTestId('about-text').textContent();
+    const originalText = await page.getByTestId("about-text").textContent();
 
     // Click regenerate
-    await page.getByRole('button', { name: /summon new lore/i }).click();
+    await page.getByRole("button", { name: /summon new lore/i }).click();
 
     // Wait for loading to complete
     await expect(page.getByText(/summoning/i)).toBeVisible();
-    await expect(page.getByText(/summoning/i)).not.toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/summoning/i)).not.toBeVisible({
+      timeout: 30000,
+    });
 
     // Verify text changed
-    const newText = await page.getByTestId('about-text').textContent();
+    const newText = await page.getByTestId("about-text").textContent();
     expect(newText).not.toBe(originalText);
   });
 });
 ```
 
 **playwright/projects.spec.ts:**
-```typescript
-import { test, expect } from '@playwright/test';
 
-test.describe('Projects Page', () => {
-  test('displays all projects', async ({ page }) => {
-    await page.goto('/projects');
+```typescript
+import { test, expect } from "@playwright/test";
+
+test.describe("Projects Page", () => {
+  test("displays all projects", async ({ page }) => {
+    await page.goto("/projects");
 
     // Wait for projects to load
-    await expect(page.getByRole('link', { name: /shuffify/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /shuffify/i })).toBeVisible();
   });
 
-  test('can filter projects by search', async ({ page }) => {
-    await page.goto('/projects');
+  test("can filter projects by search", async ({ page }) => {
+    await page.goto("/projects");
 
     // Type in search
-    await page.getByPlaceholder(/search projects/i).fill('spotify');
+    await page.getByPlaceholder(/search projects/i).fill("spotify");
 
     // Only matching projects should be visible
     await expect(page.getByText(/shuffify/i)).toBeVisible();
     await expect(page.getByText(/city cycles/i)).not.toBeVisible();
   });
 
-  test('project detail page loads README', async ({ page }) => {
-    await page.goto('/projects/shuffify');
+  test("project detail page loads README", async ({ page }) => {
+    await page.goto("/projects/shuffify");
 
     // Wait for README to load
-    await expect(page.getByRole('heading', { name: /documentation/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /documentation/i }),
+    ).toBeVisible();
 
     // README content should be visible
-    await expect(page.locator('.readme-content')).toBeVisible();
+    await expect(page.locator(".readme-content")).toBeVisible();
   });
 });
 ```
@@ -558,6 +581,7 @@ npm run test:e2e:ui
 ### GitHub Actions Workflow
 
 **.github/workflows/test.yml:**
+
 ```yaml
 name: Tests
 
@@ -576,8 +600,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
@@ -601,8 +625,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
@@ -632,6 +656,7 @@ jobs:
 ### Pre-commit Hook
 
 **package.json:**
+
 ```json
 {
   "scripts": {
@@ -641,6 +666,7 @@ jobs:
 ```
 
 **.husky/pre-commit:**
+
 ```bash
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
@@ -681,5 +707,5 @@ frontend/
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Playwright E2E Testing Configuration
@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   // Test directory
-  testDir: './e2e',
+  testDir: "./e2e",
 
   // Run tests in parallel
   fullyParallel: true,
@@ -22,28 +22,25 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter configuration
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list'],
-  ],
+  reporter: [["html", { outputFolder: "playwright-report" }], ["list"]],
 
   // Shared settings for all projects
   use: {
     // Base URL for the dev server
-    baseURL: 'http://localhost:5173',
+    baseURL: "http://localhost:5173",
 
     // Collect trace when retrying the failed test
-    trace: 'on-first-retry',
+    trace: "on-first-retry",
 
     // Take screenshot on failure
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
   },
 
   // Configure projects for major browsers
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     // Uncomment to test on more browsers
     // {
@@ -58,8 +55,8 @@ export default defineConfig({
 
   // Run local dev server before starting tests
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
+    command: "npm run dev",
+    url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

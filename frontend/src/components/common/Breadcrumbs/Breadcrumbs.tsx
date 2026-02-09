@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import './Breadcrumbs.css';
+import { Link } from "react-router-dom";
+import "./Breadcrumbs.css";
 
 interface BreadcrumbItem {
   label: string;
@@ -32,7 +32,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
               ) : (
                 <span
                   className="breadcrumb-current"
-                  aria-current={isLast ? 'page' : undefined}
+                  aria-current={isLast ? "page" : undefined}
                 >
                   {item.label}
                 </span>

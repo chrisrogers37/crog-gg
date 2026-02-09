@@ -1,5 +1,5 @@
-import './App.css';
-import { AppRouter } from './router';
+import "./App.css";
+import { AppRouter } from "./router";
 
 /**
  * App Component

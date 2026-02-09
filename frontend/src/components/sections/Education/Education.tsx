@@ -1,6 +1,6 @@
-import { useEducation, useIsRegenerating } from '../../../store';
-import { EducationCard } from './EducationCard';
-import './Education.css';
+import { useEducation, useIsRegenerating } from "../../../store";
+import { EducationCard } from "./EducationCard";
+import "./Education.css";
 
 /**
  * Education Section

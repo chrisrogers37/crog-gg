@@ -1,19 +1,27 @@
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { lazy, Suspense } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // Layout (loaded immediately as it's the shell)
-import { Layout } from './components/layout';
+import { Layout } from "./components/layout";
 
 // NotFound page loaded immediately for fast 404 response
-import { NotFoundPage } from './pages/NotFound';
+import { NotFoundPage } from "./pages/NotFound";
 
 // Lazy-loaded pages for code splitting
 // HomePage is likely first visit, so keep it eager
-import { HomePage } from './pages/Home';
+import { HomePage } from "./pages/Home";
 
 // Project pages are lazy-loaded since they have heavy dependencies (react-markdown, highlight.js)
-const ProjectsPage = lazy(() => import('./pages/Projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })));
-const ProjectDetailPage = lazy(() => import('./pages/Projects/ProjectDetailPage').then(m => ({ default: m.ProjectDetailPage })));
+const ProjectsPage = lazy(() =>
+  import("./pages/Projects/ProjectsPage").then((m) => ({
+    default: m.ProjectsPage,
+  })),
+);
+const ProjectDetailPage = lazy(() =>
+  import("./pages/Projects/ProjectDetailPage").then((m) => ({
+    default: m.ProjectDetailPage,
+  })),
+);
 
 /**
  * Loading fallback for lazy-loaded components
@@ -47,7 +55,7 @@ function LazyPage({ children }: { children: React.ReactNode }) {
  */
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Layout />,
     errorElement: <NotFoundPage />,
     children: [
@@ -56,22 +64,30 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: 'projects',
+        path: "projects",
         children: [
           {
             index: true,
-            element: <LazyPage><ProjectsPage /></LazyPage>,
+            element: (
+              <LazyPage>
+                <ProjectsPage />
+              </LazyPage>
+            ),
           },
           {
-            path: ':slug',
-            element: <LazyPage><ProjectDetailPage /></LazyPage>,
+            path: ":slug",
+            element: (
+              <LazyPage>
+                <ProjectDetailPage />
+              </LazyPage>
+            ),
           },
         ],
       },
     ],
   },
   {
-    path: '*',
+    path: "*",
     element: <NotFoundPage />,
   },
 ]);

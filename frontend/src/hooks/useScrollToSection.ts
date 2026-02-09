@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback } from "react";
 
 /**
  * Hook for smooth scrolling to section content.
@@ -30,7 +30,7 @@ export function useScrollToSection() {
     }
 
     if (contentRef.current) {
-      contentRef.current.scrollIntoView({ behavior: 'smooth' });
+      contentRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
 

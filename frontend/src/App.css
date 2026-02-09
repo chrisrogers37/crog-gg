@@ -140,10 +140,12 @@ h1 {
 }
 
 @keyframes blink {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }
@@ -736,7 +738,9 @@ a:hover {
 .slide-up-enter-active {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 500ms ease-in-out, transform 500ms ease-in-out;
+  transition:
+    opacity 500ms ease-in-out,
+    transform 500ms ease-in-out;
 }
 .slide-up-exit {
   opacity: 1;
@@ -745,7 +749,9 @@ a:hover {
 .slide-up-exit-active {
   opacity: 0;
   transform: translateY(-20px);
-  transition: opacity 500ms ease-in-out, transform 500ms ease-in-out;
+  transition:
+    opacity 500ms ease-in-out,
+    transform 500ms ease-in-out;
 }
 
 /* Education Section */
@@ -833,7 +839,10 @@ a:hover {
   background-color: var(--card-background);
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
   text-decoration: none;
   color: var(--text-color);
 }
@@ -908,7 +917,7 @@ a:hover {
 }
 
 .portfolio-link.call-to-action {
-  background-color: #f1f5f9;  /* Light gray background */
+  background-color: #f1f5f9; /* Light gray background */
   color: var(--text-color);
   border: 1px solid #e2e8f0;
 }
@@ -1016,7 +1025,7 @@ a:hover {
 
 /* Add subtle indicator that active buttons can be unselected */
 .section-nav-button.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 6px;
   left: 50%;
@@ -1040,7 +1049,10 @@ a:hover {
   opacity: 0;
   visibility: hidden;
   transform: translateY(15px);
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  transition:
+    opacity 0.3s ease-in-out,
+    transform 0.3s ease-in-out,
+    visibility 0.3s ease-in-out;
   pointer-events: none;
   background-color: var(--card-background);
   min-height: 100px;
@@ -1191,7 +1203,9 @@ main {
   background-color: #f0f0f0;
   border-radius: 20px;
   color: #333;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   cursor: default;
   font-weight: 500;
 }

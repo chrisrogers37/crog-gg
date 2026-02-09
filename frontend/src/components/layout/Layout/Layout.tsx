@@ -1,7 +1,7 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import { Navigation } from '../Navigation';
-import { Footer } from '../Footer';
-import './Layout.css';
+import { Outlet, useLocation } from "react-router-dom";
+import { Navigation } from "../Navigation";
+import { Footer } from "../Footer";
+import "./Layout.css";
 
 /**
  * Layout Component
@@ -15,7 +15,7 @@ import './Layout.css';
  */
 export function Layout() {
   const location = useLocation();
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === "/";
 
   return (
     <div className="layout">
@@ -27,7 +27,7 @@ export function Layout() {
       )}
 
       {/* Main content - renders child routes */}
-      <main className={`layout-main ${isHomePage ? 'home-layout' : ''}`}>
+      <main className={`layout-main ${isHomePage ? "home-layout" : ""}`}>
         <Outlet />
       </main>
 

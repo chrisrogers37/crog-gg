@@ -1,9 +1,9 @@
-import { useBio } from '../../../store';
-import './Music.css';
+import { useBio } from "../../../store";
+import "./Music.css";
 
 const LINKS = {
-  spotify: 'https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn',
-  hoobe: 'https://hoo.be/crog',
+  spotify: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
+  hoobe: "https://hoo.be/crog",
 } as const;
 
 /**
@@ -26,7 +26,9 @@ export function Music() {
           <i className="fab fa-spotify"></i>
           <div>
             <span className="link-title">Spotify</span>
-            <span className="link-description">Listen to my music on Spotify</span>
+            <span className="link-description">
+              Listen to my music on Spotify
+            </span>
           </div>
         </a>
         <a

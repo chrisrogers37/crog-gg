@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { useContentStore, useUIStore } from '../store';
+import { useCallback } from "react";
+import { useContentStore, useUIStore } from "../store";
 
 /**
  * Hook for content regeneration functionality.
@@ -22,14 +22,16 @@ export function useRegeneration() {
   const regenerateContent = useContentStore((state) => state.regenerateContent);
   const resetContent = useContentStore((state) => state.resetContent);
   const isRegenerating = useContentStore((state) => state.isRegenerating);
-  const hasModifiedContent = useContentStore((state) => state.hasModifiedContent);
+  const hasModifiedContent = useContentStore(
+    (state) => state.hasModifiedContent,
+  );
   const activeSection = useUIStore((state) => state.activeSection);
 
   const regenerate = useCallback(
     (useFantasy: boolean = true) => {
       regenerateContent(useFantasy);
     },
-    [regenerateContent]
+    [regenerateContent],
   );
 
   const reset = useCallback(() => {

@@ -7,10 +7,12 @@
 **Estimated Effort**: 13 story points
 
 **Prerequisites**:
+
 - Phase 3 completed (routing in place)
 - Can run in parallel with Phase 4
 
 **Deliverables**:
+
 1. Meta tags and OG images
 2. Structured data (JSON-LD)
 3. Sitemap generation
@@ -21,6 +23,7 @@
 ---
 
 ## Table of Contents
+
 1. [Task 5.1: Install React Helmet](#task-51-install-react-helmet)
 2. [Task 5.2: Create SEO Component](#task-52-create-seo-component)
 3. [Task 5.3: Add Open Graph Tags](#task-53-add-open-graph-tags)
@@ -36,6 +39,7 @@
 ## Task 5.1: Install React Helmet
 
 ### What We're Doing
+
 Adding React Helmet for dynamic document head management.
 
 ### Installation
@@ -74,6 +78,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 ## Task 5.2: Create SEO Component
 
 ### What We're Doing
+
 Creating a reusable SEO component for managing page metadata.
 
 ### Create File: `frontend/src/components/SEO/SEO.tsx`
@@ -172,7 +177,7 @@ export function SEO({
 ### Create Index: `frontend/src/components/SEO/index.ts`
 
 ```typescript
-export { SEO } from './SEO';
+export { SEO } from "./SEO";
 ```
 
 ---
@@ -180,6 +185,7 @@ export { SEO } from './SEO';
 ## Task 5.3: Add Open Graph Tags
 
 ### What We're Doing
+
 Adding OG tags to each page for better social media sharing.
 
 ### Update HomePage
@@ -259,6 +265,7 @@ export function ProjectDetailPage() {
 ### Create OG Image
 
 Create a default OG image at `frontend/public/og-image.png`:
+
 - Dimensions: 1200x630px
 - Include name, title, and visual branding
 - Use tools like Figma or Canva
@@ -268,6 +275,7 @@ Create a default OG image at `frontend/public/og-image.png`:
 ## Task 5.4: Add Structured Data
 
 ### What We're Doing
+
 Adding JSON-LD structured data for rich search results.
 
 ### Create File: `frontend/src/components/SEO/StructuredData.tsx`
@@ -386,6 +394,7 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
 ## Task 5.5: Generate Sitemap
 
 ### What We're Doing
+
 Creating a sitemap for search engine crawling.
 
 ### Create Static Sitemap: `frontend/public/sitemap.xml`
@@ -424,9 +433,9 @@ Create a build script to generate sitemap from projects:
 
 ```typescript
 // scripts/generate-sitemap.ts
-import fs from 'fs';
-import path from 'path';
-import yaml from 'js-yaml';
+import fs from "fs";
+import path from "path";
+import yaml from "js-yaml";
 
 interface Project {
   id: string;
@@ -437,16 +446,16 @@ interface ProjectIndex {
 }
 
 async function generateSitemap() {
-  const baseUrl = 'https://crog.gg';
-  const today = new Date().toISOString().split('T')[0];
+  const baseUrl = "https://crog.gg";
+  const today = new Date().toISOString().split("T")[0];
 
   // Load projects
-  const indexPath = path.join(__dirname, '../src/content/projects/index.yaml');
-  const indexContent = fs.readFileSync(indexPath, 'utf-8');
+  const indexPath = path.join(__dirname, "../src/content/projects/index.yaml");
+  const indexContent = fs.readFileSync(indexPath, "utf-8");
   const index = yaml.load(indexContent) as ProjectIndex;
 
   const projectUrls = index.projects.map((filename) => {
-    const id = filename.replace('.yaml', '');
+    const id = filename.replace(".yaml", "");
     return `
   <url>
     <loc>${baseUrl}/projects/${id}</loc>
@@ -469,11 +478,11 @@ async function generateSitemap() {
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>${projectUrls.join('')}
+  </url>${projectUrls.join("")}
 </urlset>`;
 
-  fs.writeFileSync(path.join(__dirname, '../public/sitemap.xml'), sitemap);
-  console.log('✓ Sitemap generated');
+  fs.writeFileSync(path.join(__dirname, "../public/sitemap.xml"), sitemap);
+  console.log("✓ Sitemap generated");
 }
 
 generateSitemap();
@@ -495,6 +504,7 @@ Add to package.json:
 ## Task 5.6: Add Analytics
 
 ### What We're Doing
+
 Adding privacy-friendly analytics to track visitor behavior.
 
 ### Option A: Plausible Analytics (Recommended - Privacy-Friendly)
@@ -504,7 +514,11 @@ Add to `frontend/index.html`:
 ```html
 <head>
   <!-- Plausible Analytics -->
-  <script defer data-domain="crog.gg" src="https://plausible.io/js/script.js"></script>
+  <script
+    defer
+    data-domain="crog.gg"
+    src="https://plausible.io/js/script.js"
+  ></script>
 </head>
 ```
 
@@ -513,12 +527,17 @@ Add to `frontend/index.html`:
 ```html
 <head>
   <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
+  ></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "G-XXXXXXXXXX");
   </script>
 </head>
 ```
@@ -528,8 +547,8 @@ Add to `frontend/index.html`:
 Create analytics hook: `frontend/src/hooks/useAnalytics.ts`
 
 ```typescript
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 /**
  * Track page views on route changes.
@@ -541,12 +560,12 @@ export function usePageTracking() {
   useEffect(() => {
     // Plausible
     if (window.plausible) {
-      window.plausible('pageview');
+      window.plausible("pageview");
     }
 
     // GA4
     if (window.gtag) {
-      window.gtag('event', 'page_view', {
+      window.gtag("event", "page_view", {
         page_path: location.pathname,
       });
     }
@@ -566,7 +585,7 @@ Use in Layout:
 
 ```typescript
 // frontend/src/components/layout/Layout/Layout.tsx
-import { usePageTracking } from '../../../hooks/useAnalytics';
+import { usePageTracking } from "../../../hooks/useAnalytics";
 
 export function Layout() {
   usePageTracking();
@@ -579,11 +598,13 @@ export function Layout() {
 ## Task 5.7: Performance Optimization
 
 ### What We're Doing
+
 Optimizing loading performance for better SEO and user experience.
 
 ### Image Optimization
 
 1. **Convert images to WebP**:
+
    ```bash
    # Install cwebp
    brew install webp  # macOS
@@ -593,6 +614,7 @@ Optimizing loading performance for better SEO and user experience.
    ```
 
 2. **Use responsive images**:
+
    ```typescript
    <picture>
      <source srcSet="/headshot.webp" type="image/webp" />
@@ -634,7 +656,13 @@ Add to `frontend/index.html`:
 <head>
   <!-- Preload critical assets -->
   <link rel="preload" href="/headshot.webp" as="image" type="image/webp" />
-  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
+  <link
+    rel="preload"
+    href="/fonts/inter.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin
+  />
 
   <!-- Prefetch next likely page -->
   <link rel="prefetch" href="/projects" />
@@ -646,8 +674,8 @@ Add to `frontend/index.html`:
 Update `frontend/vite.config.ts`:
 
 ```typescript
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
@@ -656,13 +684,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          animations: ['framer-motion'],
+          vendor: ["react", "react-dom", "react-router-dom"],
+          animations: ["framer-motion"],
         },
       },
     },
     // Minification
-    minify: 'terser',
+    minify: "terser",
     terserOptions: {
       compress: {
         drop_console: true,
@@ -678,6 +706,7 @@ export default defineConfig({
 ## Task 5.8: Accessibility Audit
 
 ### What We're Doing
+
 Ensuring the site is accessible to all users.
 
 ### Accessibility Checklist
@@ -730,15 +759,15 @@ export function Layout() {
 
 ```typescript
 // In animation components
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 const prefersReducedMotion = window.matchMedia(
-  '(prefers-reduced-motion: reduce)'
+  "(prefers-reduced-motion: reduce)",
 ).matches;
 
 // Use reduced motion variants
 const variants = prefersReducedMotion
-  ? { hidden: { opacity: 0 }, visible: { opacity: 1 } }  // No movement
+  ? { hidden: { opacity: 0 }, visible: { opacity: 1 } } // No movement
   : { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 ```
 
@@ -789,6 +818,7 @@ import { MotionConfig } from 'framer-motion';
 **Cause**: Image URL not absolute or wrong dimensions.
 
 **Solution**:
+
 - Use absolute URL: `https://crog.gg/og-image.png`
 - Ensure dimensions are 1200x630px
 - Clear cache in social media debuggers
@@ -804,6 +834,7 @@ import { MotionConfig } from 'framer-motion';
 **Cause**: Large bundle, unoptimized images, render-blocking resources.
 
 **Solution**:
+
 - Enable code splitting
 - Convert images to WebP
 - Defer non-critical JS
@@ -815,6 +846,7 @@ import { MotionConfig } from 'framer-motion';
 After completing Phase 5:
 
 1. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "Phase 5: SEO optimization and accessibility improvements"
@@ -824,5 +856,5 @@ After completing Phase 5:
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

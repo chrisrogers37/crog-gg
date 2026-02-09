@@ -1,11 +1,13 @@
 # 02 - Architecture Roadmap
 
 ## Purpose
+
 This document defines the target architecture and explains the reasoning behind each architectural decision. Use this as your north star when implementing changes.
 
 ---
 
 ## Table of Contents
+
 1. [Current vs Target Architecture](#current-vs-target-architecture)
 2. [Directory Structure Evolution](#directory-structure-evolution)
 3. [Technology Additions](#technology-additions)
@@ -54,6 +56,7 @@ This document defines the target architecture and explains the reasoning behind 
 ```
 
 **Problems**:
+
 - Single entry point, no deep linking
 - All logic centralized in App.tsx
 - Event-based communication is hard to trace
@@ -109,6 +112,7 @@ This document defines the target architecture and explains the reasoning behind 
 ## Directory Structure Evolution
 
 ### Current Structure
+
 ```
 frontend/src/
 ├── components/      # 5 mixed-concern components
@@ -123,6 +127,7 @@ frontend/src/
 ```
 
 ### Target Structure (After All Phases)
+
 ```
 frontend/src/
 ├── components/
@@ -197,6 +202,7 @@ frontend/src/
 ## Technology Additions
 
 ### Phase 1: Foundation
+
 ```json
 {
   "dependencies": {
@@ -206,6 +212,7 @@ frontend/src/
 ```
 
 ### Phase 2: State Management
+
 ```json
 {
   "dependencies": {
@@ -215,6 +222,7 @@ frontend/src/
 ```
 
 ### Phase 4: Visual Design
+
 ```json
 {
   "dependencies": {
@@ -230,6 +238,7 @@ frontend/src/
 ```
 
 ### Phase 5: SEO
+
 ```json
 {
   "dependencies": {
@@ -239,6 +248,7 @@ frontend/src/
 ```
 
 ### Phase 6: GitHub Integration
+
 ```json
 {
   "dependencies": {
@@ -272,6 +282,7 @@ Props passed down                 Components update independently
 ```
 
 **Problems**:
+
 - Two sources of truth (props AND events)
 - Components can get out of sync
 - Hard to debug
@@ -295,10 +306,10 @@ All subscribed components re-render
 
 ```typescript
 // store/contentStore.ts
-import { create } from 'zustand';
-import { ContentState, BioData, ExperienceItem } from '../types';
-import { loadResumeData } from '../utils/loaders';
-import { regenerateContent } from '../services/contentService';
+import { create } from "zustand";
+import { ContentState, BioData, ExperienceItem } from "../types";
+import { loadResumeData } from "../utils/loaders";
+import { regenerateContent } from "../services/contentService";
 
 interface ContentStore {
   // State
@@ -347,7 +358,7 @@ export const useContentStore = create<ContentStore>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      set({ error: 'Failed to load content', isLoading: false });
+      set({ error: "Failed to load content", isLoading: false });
     }
   },
 
@@ -366,7 +377,7 @@ export const useContentStore = create<ContentStore>((set, get) => ({
         hasModifiedContent: true,
       });
     } catch (error) {
-      set({ error: 'Failed to regenerate', isRegenerating: false });
+      set({ error: "Failed to regenerate", isRegenerating: false });
     }
   },
 
@@ -414,13 +425,13 @@ export function About() {
 
 ### Component Categories
 
-| Category | Purpose | Examples |
-|----------|---------|----------|
-| **Pages** | Route-level containers | HomePage, ProjectsPage, ProjectDetailPage |
-| **Layout** | Page structure | Header, Footer, Navigation, PageContainer |
-| **Sections** | Home page content blocks | About, Experience, Education, Skills, Projects, Music |
+| Category     | Purpose                        | Examples                                                 |
+| ------------ | ------------------------------ | -------------------------------------------------------- |
+| **Pages**    | Route-level containers         | HomePage, ProjectsPage, ProjectDetailPage                |
+| **Layout**   | Page structure                 | Header, Footer, Navigation, PageContainer                |
+| **Sections** | Home page content blocks       | About, Experience, Education, Skills, Projects, Music    |
 | **Features** | Complex interactive components | Typewriter, SkillCloud, GitHubStats, ContentRegeneration |
-| **Common** | Reusable UI primitives | Button, Card, Loading, ErrorBoundary, Input |
+| **Common**   | Reusable UI primitives         | Button, Card, Loading, ErrorBoundary, Input              |
 
 ### Component Design Principles
 
@@ -495,8 +506,8 @@ export function ExperienceCard({ experience }: ExperienceCardProps) {
 
 ```typescript
 // components/sections/Experience/index.ts
-export { Experience } from './Experience';
-export { ExperienceCard } from './ExperienceCard';
+export { Experience } from "./Experience";
+export { ExperienceCard } from "./ExperienceCard";
 ```
 
 ---
@@ -505,10 +516,10 @@ export { ExperienceCard } from './ExperienceCard';
 
 ### Store Separation
 
-| Store | Responsibility | Persistence |
-|-------|----------------|-------------|
-| `contentStore` | Bio, experience, education, skills, projects | No |
-| `uiStore` | Theme, active section, modals, sidebar | LocalStorage |
+| Store          | Responsibility                               | Persistence  |
+| -------------- | -------------------------------------------- | ------------ |
+| `contentStore` | Bio, experience, education, skills, projects | No           |
+| `uiStore`      | Theme, active section, modals, sidebar       | LocalStorage |
 
 ### Why Zustand Over Redux/Context
 
@@ -522,15 +533,15 @@ export { ExperienceCard } from './ExperienceCard';
 
 ```typescript
 // store/uiStore.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface UIStore {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   activeSection: string;
   isSidebarOpen: boolean;
 
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  setTheme: (theme: "light" | "dark" | "system") => void;
   setActiveSection: (section: string) => void;
   toggleSidebar: () => void;
 }
@@ -538,19 +549,20 @@ interface UIStore {
 export const useUIStore = create<UIStore>()(
   persist(
     (set) => ({
-      theme: 'system',
-      activeSection: '',
+      theme: "system",
+      activeSection: "",
       isSidebarOpen: false,
 
       setTheme: (theme) => set({ theme }),
       setActiveSection: (section) => set({ activeSection: section }),
-      toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      toggleSidebar: () =>
+        set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
     }),
     {
-      name: 'ui-storage',
+      name: "ui-storage",
       partialize: (state) => ({ theme: state.theme }), // Only persist theme
-    }
-  )
+    },
+  ),
 );
 ```
 
@@ -598,12 +610,12 @@ export const router = createBrowserRouter([
 
 ### Route Table
 
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/` | HomePage | Main portfolio with all sections |
-| `/projects` | ProjectsPage | Grid of all projects |
-| `/projects/:slug` | ProjectDetailPage | Individual project with README |
-| `/*` | NotFoundPage | 404 page |
+| Path              | Component         | Description                      |
+| ----------------- | ----------------- | -------------------------------- |
+| `/`               | HomePage          | Main portfolio with all sections |
+| `/projects`       | ProjectsPage      | Grid of all projects             |
+| `/projects/:slug` | ProjectDetailPage | Individual project with README   |
+| `/*`              | NotFoundPage      | 404 page                         |
 
 ### Navigation Patterns
 
@@ -630,6 +642,7 @@ const { slug } = useParams<{ slug: string }>();
 ## Styling Architecture
 
 ### Current: Single CSS File
+
 - `App.css` (1224 lines)
 - Global class names
 - Risk of collisions
@@ -638,12 +651,14 @@ const { slug } = useParams<{ slug: string }>();
 ### Target: Tailwind CSS + CSS Modules
 
 **Tailwind for**:
+
 - Utility classes
 - Responsive design
 - Dark mode
 - Consistent spacing/colors
 
 **CSS Modules for**:
+
 - Component-specific styles
 - Complex animations
 - Scoped class names
@@ -654,35 +669,30 @@ const { slug } = useParams<{ slug: string }>();
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  darkMode: 'class',
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+          50: "#eff6ff",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
         },
         // Map existing CSS variables
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
+        "fade-in": "fadeIn 0.3s ease-in-out",
+        "slide-up": "slideUp 0.3s ease-out",
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [require("@tailwindcss/typography")],
 };
 ```
 
@@ -720,28 +730,28 @@ export function Card({ children, className, hover = true }: CardProps) {
 
 ### Current Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| POST | `/api/regenerate` | AI content regeneration |
-| GET | `/api/github/languages` | Language statistics |
-| GET | `/api/limits` | Token usage (placeholder) |
+| Method | Endpoint                | Purpose                   |
+| ------ | ----------------------- | ------------------------- |
+| POST   | `/api/regenerate`       | AI content regeneration   |
+| GET    | `/api/github/languages` | Language statistics       |
+| GET    | `/api/limits`           | Token usage (placeholder) |
 
 ### Target Endpoints (After Phase 6)
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| POST | `/api/v1/regenerate` | AI content regeneration |
-| GET | `/api/v1/github/languages` | Language statistics |
-| GET | `/api/v1/github/repo/:name` | Repository details |
-| GET | `/api/v1/github/readme/:name` | Repository README |
-| GET | `/api/v1/projects` | All projects metadata |
-| GET | `/api/v1/projects/:slug` | Single project metadata |
+| Method | Endpoint                      | Purpose                 |
+| ------ | ----------------------------- | ----------------------- |
+| POST   | `/api/v1/regenerate`          | AI content regeneration |
+| GET    | `/api/v1/github/languages`    | Language statistics     |
+| GET    | `/api/v1/github/repo/:name`   | Repository details      |
+| GET    | `/api/v1/github/readme/:name` | Repository README       |
+| GET    | `/api/v1/projects`            | All projects metadata   |
+| GET    | `/api/v1/projects/:slug`      | Single project metadata |
 
 ### API Client Pattern
 
 ```typescript
 // services/api.ts
-const API_BASE = import.meta.env.VITE_API_URL || 'https://api.crog.gg';
+const API_BASE = import.meta.env.VITE_API_URL || "https://api.crog.gg";
 
 class ApiClient {
   private baseUrl: string;
@@ -752,9 +762,9 @@ class ApiClient {
 
   async get<T>(path: string): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -766,9 +776,9 @@ class ApiClient {
 
   async post<T, D>(path: string, data: D): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(data),
     });
 
@@ -796,11 +806,13 @@ export const api = new ApiClient(API_BASE);
 **Decision**: Use React Router v6 for client-side routing.
 
 **Alternatives Considered**:
+
 - Next.js: Would require rewriting entire app, overkill for current needs
 - TanStack Router: Newer, less community support
 - No router (current): Doesn't support requirements
 
 **Consequences**:
+
 - Can add new pages without restructuring
 - SEO requires additional work (pre-rendering)
 - Bundle size increases ~15KB
@@ -816,11 +828,13 @@ export const api = new ApiClient(API_BASE);
 **Decision**: Use Zustand for global state management.
 
 **Alternatives Considered**:
+
 - Redux Toolkit: More boilerplate, larger bundle
 - React Context: Re-renders all consumers on any change
 - Jotai/Recoil: Atomic model doesn't fit our data shape
 
 **Consequences**:
+
 - Simpler code than current CustomEvent approach
 - Selective subscriptions prevent unnecessary re-renders
 - Small learning curve for team
@@ -836,11 +850,13 @@ export const api = new ApiClient(API_BASE);
 **Decision**: Use Tailwind CSS with CSS Modules for complex components.
 
 **Alternatives Considered**:
+
 - styled-components: Runtime CSS-in-JS has performance cost
 - CSS Modules only: Lacks utility classes and design system
 - Keep current CSS: Unmaintainable at scale
 
 **Consequences**:
+
 - Faster development with utility classes
 - Consistent spacing, colors, typography
 - Learning curve for utility-first approach
@@ -857,12 +873,14 @@ export const api = new ApiClient(API_BASE);
 **Decision**: Keep Flask backend, add API versioning.
 
 **Rationale**:
+
 - Backend is working and stable
 - OpenAI integration already implemented
 - No compelling reason to rewrite
 - Can be replaced later if needed
 
 **Consequences**:
+
 - Two language ecosystems (Python + TypeScript)
 - Deployment remains split (Nginx + Gunicorn)
 
@@ -876,5 +894,5 @@ export const api = new ApiClient(API_BASE);
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

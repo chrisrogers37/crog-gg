@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import './ProjectDemo.css';
+import { useState } from "react";
+import "./ProjectDemo.css";
 
 interface ProjectDemoProps {
   url: string;
@@ -18,7 +18,7 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   return (
-    <div className={`project-demo ${isFullscreen ? 'fullscreen' : ''}`}>
+    <div className={`project-demo ${isFullscreen ? "fullscreen" : ""}`}>
       <div className="demo-header">
         <h3 className="demo-title">Live Demo</h3>
         <div className="demo-actions">
@@ -34,12 +34,15 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="demo-fullscreen-btn"
           >
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           </button>
         </div>
       </div>
 
-      <div className="demo-container" style={{ height: isFullscreen ? '80vh' : height }}>
+      <div
+        className="demo-container"
+        style={{ height: isFullscreen ? "80vh" : height }}
+      >
         {isLoading && (
           <div className="demo-loading">
             <div className="spinner" />

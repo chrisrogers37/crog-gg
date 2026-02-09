@@ -1,11 +1,13 @@
 # 09 - Technical Specifications
 
 ## Purpose
+
 This document defines the technical contracts, data models, and API specifications for the portfolio enhancement project. Use this as a reference when implementing features.
 
 ---
 
 ## Table of Contents
+
 1. [TypeScript Interfaces](#typescript-interfaces)
 2. [API Specifications](#api-specifications)
 3. [YAML Schemas](#yaml-schemas)
@@ -80,7 +82,7 @@ export interface Project {
   technologies?: string[];
   featured?: boolean;
   order?: number;
-  status?: 'Active' | 'Archived' | 'In Development';
+  status?: "Active" | "Archived" | "In Development";
 }
 
 /**
@@ -113,7 +115,7 @@ export interface ApiError {
  * Regenerate endpoint request
  */
 export interface RegenerateRequest {
-  section: 'about' | 'experience' | 'education' | 'portfolio';
+  section: "about" | "experience" | "education" | "portfolio";
   current_content: {
     bio: BioData;
     experience: ExperienceItem[];
@@ -224,7 +226,7 @@ export interface ContentStoreActions {
  */
 export interface UIStoreState {
   activeSection: string;
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   isMobileMenuOpen: boolean;
 }
 
@@ -235,7 +237,7 @@ export interface UIStoreActions {
   setActiveSection: (section: string) => void;
   toggleSection: (section: string) => void;
   clearActiveSection: () => void;
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  setTheme: (theme: "light" | "dark" | "system") => void;
   toggleMobileMenu: () => void;
   closeMobileMenu: () => void;
 }
@@ -247,11 +249,11 @@ export interface UIStoreActions {
 
 ### Base Configuration
 
-| Setting | Development | Production |
-|---------|-------------|------------|
-| Base URL | `http://localhost:5000` | `https://api.crog.gg` |
-| CORS Origins | `http://localhost:5173` | `https://crog.gg` |
-| Rate Limiting | Disabled | Enabled |
+| Setting       | Development             | Production            |
+| ------------- | ----------------------- | --------------------- |
+| Base URL      | `http://localhost:5000` | `https://api.crog.gg` |
+| CORS Origins  | `http://localhost:5173` | `https://crog.gg`     |
+| Rate Limiting | Disabled                | Enabled               |
 
 ### Endpoints
 
@@ -260,28 +262,41 @@ export interface UIStoreActions {
 Regenerate content using OpenAI.
 
 **Request:**
+
 ```json
 {
   "section": "about",
   "current_content": {
-    "bio": { /* BioData */ },
-    "experience": [ /* ExperienceItem[] */ ],
-    "education": [ /* EducationItem[] */ ]
+    "bio": {
+      /* BioData */
+    },
+    "experience": [
+      /* ExperienceItem[] */
+    ],
+    "education": [
+      /* EducationItem[] */
+    ]
   },
   "use_fantasy": false
 }
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "about_text": "Regenerated about text...",
-  "experience": [ /* Optional: regenerated experience */ ],
-  "education": [ /* Optional: regenerated education */ ]
+  "experience": [
+    /* Optional: regenerated experience */
+  ],
+  "education": [
+    /* Optional: regenerated education */
+  ]
 }
 ```
 
 **Error Response (500):**
+
 ```json
 {
   "error": "Failed to regenerate content",
@@ -298,9 +313,11 @@ Regenerate content using OpenAI.
 Get repository information.
 
 **Parameters:**
+
 - `name` (path): Repository name
 
 **Response (200 OK):**
+
 ```json
 {
   "name": "shuffify",
@@ -324,9 +341,11 @@ Get repository information.
 Get repository README content (base64 encoded).
 
 **Parameters:**
+
 - `name` (path): Repository name
 
 **Response (200 OK):**
+
 ```json
 {
   "content": "IyBTaHVmZmlmeQoKQSBTcG90aWZ5...",
@@ -336,6 +355,7 @@ Get repository README content (base64 encoded).
 ```
 
 **Response (404):**
+
 ```json
 {
   "error": "README not found"
@@ -351,9 +371,11 @@ Get repository README content (base64 encoded).
 Get repository language breakdown.
 
 **Parameters:**
+
 - `name` (path): Repository name
 
 **Response (200 OK):**
+
 ```json
 {
   "TypeScript": 45000,
@@ -372,6 +394,7 @@ Get repository language breakdown.
 Get aggregated language stats for all repositories.
 
 **Response (200 OK):**
+
 ```json
 {
   "Python": 150000,
@@ -391,6 +414,7 @@ Get aggregated language stats for all repositories.
 Get contribution calendar data.
 
 **Response (200 OK):**
+
 ```json
 {
   "total": 847,
@@ -427,6 +451,7 @@ social_links:
 ```
 
 **Example:**
+
 ```yaml
 display_name: Chris Rogers
 email: chris@example.com
@@ -457,6 +482,7 @@ social_links:
 ```
 
 **Example:**
+
 ```yaml
 - title: Senior Software Engineer
   company: Tech Corp
@@ -487,6 +513,7 @@ social_links:
 ```
 
 **Example:**
+
 ```yaml
 - school: University of California
   degree: B.S. Computer Science
@@ -509,6 +536,7 @@ social_links:
 ```
 
 **Example:**
+
 ```yaml
 - name: TypeScript
   weight: 9
@@ -531,6 +559,7 @@ projects:
 ```
 
 **Example:**
+
 ```yaml
 projects:
   - shuffify.yaml
@@ -540,7 +569,7 @@ projects:
 
 ---
 
-### projects/*.yaml
+### projects/\*.yaml
 
 ```yaml
 # Schema for individual project files
@@ -559,6 +588,7 @@ status: string (optional, 'Active' | 'Archived' | 'In Development')
 ```
 
 **Example:**
+
 ```yaml
 id: shuffify
 title: Shuffify
@@ -618,16 +648,17 @@ RATELIMIT_STORAGE_URL=memory://  # or redis://localhost:6379
 ## Database/Storage
 
 ### Current Storage
+
 This application uses **file-based storage** via YAML files. No database is required.
 
-| Data Type | Storage Location | Format |
-|-----------|------------------|--------|
-| Bio | `frontend/src/content/bio.yaml` | YAML |
-| Experience | `frontend/src/content/experience.yaml` | YAML |
-| Education | `frontend/src/content/education.yaml` | YAML |
-| Skills | `frontend/src/content/skills.yaml` | YAML |
-| Projects | `frontend/src/content/projects/*.yaml` | YAML |
-| User Preferences | Browser localStorage | JSON |
+| Data Type        | Storage Location                       | Format |
+| ---------------- | -------------------------------------- | ------ |
+| Bio              | `frontend/src/content/bio.yaml`        | YAML   |
+| Experience       | `frontend/src/content/experience.yaml` | YAML   |
+| Education        | `frontend/src/content/education.yaml`  | YAML   |
+| Skills           | `frontend/src/content/skills.yaml`     | YAML   |
+| Projects         | `frontend/src/content/projects/*.yaml` | YAML   |
+| User Preferences | Browser localStorage                   | JSON   |
 
 ### Browser Storage
 
@@ -735,15 +766,15 @@ def handle_validation_error(e):
 
 ### Error Messages User Guide
 
-| Error Type | User-Facing Message | Developer Action |
-|------------|---------------------|------------------|
-| Network Error | "Unable to connect. Please check your internet connection." | Retry with exponential backoff |
-| API 404 | "The requested content was not found." | Check resource exists |
-| API 429 | "Too many requests. Please wait a moment." | Implement rate limiting on client |
-| API 500 | "Something went wrong. Please try again later." | Log error, alert monitoring |
-| Validation | Show specific field error | Fix input validation |
+| Error Type    | User-Facing Message                                         | Developer Action                  |
+| ------------- | ----------------------------------------------------------- | --------------------------------- |
+| Network Error | "Unable to connect. Please check your internet connection." | Retry with exponential backoff    |
+| API 404       | "The requested content was not found."                      | Check resource exists             |
+| API 429       | "Too many requests. Please wait a moment."                  | Implement rate limiting on client |
+| API 500       | "Something went wrong. Please try again later."             | Log error, alert monitoring       |
+| Validation    | Show specific field error                                   | Fix input validation              |
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

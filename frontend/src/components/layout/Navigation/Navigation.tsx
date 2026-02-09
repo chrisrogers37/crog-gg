@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
-import { ThemeToggle } from '../../common/ThemeToggle';
-import './Navigation.css';
+import { Link, useLocation } from "react-router-dom";
+import { ThemeToggle } from "../../common/ThemeToggle";
+import "./Navigation.css";
 
 /**
  * Navigation Component
@@ -12,8 +12,8 @@ export function Navigation() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Home' },
-    { path: '/projects', label: 'Projects' },
+    { path: "/", label: "Home" },
+    { path: "/projects", label: "Projects" },
   ];
 
   return (
@@ -30,9 +30,9 @@ export function Navigation() {
                 to={item.path}
                 className={`nav-link ${
                   location.pathname === item.path ||
-                  (item.path !== '/' && location.pathname.startsWith(item.path))
-                    ? 'active'
-                    : ''
+                  (item.path !== "/" && location.pathname.startsWith(item.path))
+                    ? "active"
+                    : ""
                 }`}
               >
                 {item.label}

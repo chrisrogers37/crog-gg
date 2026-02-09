@@ -7,10 +7,12 @@
 **Estimated Effort**: 21 story points
 
 **Prerequisites**:
+
 - Phase 1 and Phase 2 completed
 - Understanding of React Router dynamic routes
 
 **Deliverables**:
+
 1. Projects listing page at `/projects`
 2. Individual project detail pages at `/projects/:slug`
 3. Dynamic YAML loading (no hardcoded file lists)
@@ -20,6 +22,7 @@
 ---
 
 ## Table of Contents
+
 1. [Task 3.1: Create Layout Component](#task-31-create-layout-component)
 2. [Task 3.2: Update Router Configuration](#task-32-update-router-configuration)
 3. [Task 3.3: Create Projects Listing Page](#task-33-create-projects-listing-page)
@@ -35,9 +38,11 @@
 ## Task 3.1: Create Layout Component
 
 ### What We're Doing
+
 Creating a shared layout component that wraps all pages with consistent header and navigation.
 
 ### Why This Is Needed
+
 - Consistent header/footer across all pages
 - Navigation visible on project detail pages
 - Outlet pattern for nested routes
@@ -211,7 +216,7 @@ export function Navigation() {
 }
 
 .nav-link.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -272,13 +277,13 @@ export function Footer() {
 
 ```typescript
 // frontend/src/components/layout/Layout/index.ts
-export { Layout } from './Layout';
+export { Layout } from "./Layout";
 
 // frontend/src/components/layout/Navigation/index.ts
-export { Navigation } from './Navigation';
+export { Navigation } from "./Navigation";
 
 // frontend/src/components/layout/Footer/index.ts
-export { Footer } from './Footer';
+export { Footer } from "./Footer";
 ```
 
 ---
@@ -286,6 +291,7 @@ export { Footer } from './Footer';
 ## Task 3.2: Update Router Configuration
 
 ### What We're Doing
+
 Adding project routes and using the Layout component.
 
 ### Update File: `frontend/src/router.tsx`
@@ -349,18 +355,19 @@ export function AppRouter() {
 
 ### Route Explanation
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | HomePage | Full portfolio with sections |
-| `/projects` | ProjectsPage | Grid of all projects |
+| Route             | Component         | Description                        |
+| ----------------- | ----------------- | ---------------------------------- |
+| `/`               | HomePage          | Full portfolio with sections       |
+| `/projects`       | ProjectsPage      | Grid of all projects               |
 | `/projects/:slug` | ProjectDetailPage | Single project (slug = project id) |
-| `*` | NotFoundPage | 404 handler |
+| `*`               | NotFoundPage      | 404 handler                        |
 
 ---
 
 ## Task 3.3: Create Projects Listing Page
 
 ### What We're Doing
+
 Creating a dedicated page that lists all projects with filtering and search.
 
 ### Create Directory
@@ -662,7 +669,9 @@ function ProjectListCard({ project }: { project: Project }) {
 .card-arrow {
   font-size: 1.25rem;
   color: #cbd5e1;
-  transition: color 0.2s, transform 0.2s;
+  transition:
+    color 0.2s,
+    transform 0.2s;
 }
 
 .project-list-card:hover .card-arrow {
@@ -706,8 +715,8 @@ function ProjectListCard({ project }: { project: Project }) {
 ### Create File: `frontend/src/pages/Projects/index.ts`
 
 ```typescript
-export { ProjectsPage } from './ProjectsPage';
-export { ProjectDetailPage } from './ProjectDetailPage';
+export { ProjectsPage } from "./ProjectsPage";
+export { ProjectDetailPage } from "./ProjectDetailPage";
 ```
 
 ---
@@ -715,6 +724,7 @@ export { ProjectDetailPage } from './ProjectDetailPage';
 ## Task 3.4: Create Project Detail Page
 
 ### What We're Doing
+
 Creating the individual project page that will show project details and (in Phase 6) README content from GitHub.
 
 ### Create File: `frontend/src/pages/Projects/ProjectDetailPage.tsx`
@@ -1027,6 +1037,7 @@ export function ProjectDetailPage() {
 ## Task 3.5: Dynamic YAML Loading
 
 ### What We're Doing
+
 Replacing hardcoded file lists with dynamic glob-based loading.
 
 ### Current Problem
@@ -1034,6 +1045,7 @@ Replacing hardcoded file lists with dynamic glob-based loading.
 **Location**: `frontend/vite.config.ts`
 
 The current Vite plugin manually copies files. We need to:
+
 1. Load project list from index.yaml
 2. Dynamically load each project's YAML
 3. No hardcoded file paths
@@ -1041,8 +1053,8 @@ The current Vite plugin manually copies files. We need to:
 ### Update File: `frontend/src/utils/projectLoader.ts`
 
 ```typescript
-import yaml from 'js-yaml';
-import { Project } from '../types';
+import yaml from "js-yaml";
+import { Project } from "../types";
 
 interface ProjectIndex {
   projects: string[];
@@ -1065,9 +1077,9 @@ interface ProjectIndex {
 export async function loadProjects(): Promise<Project[]> {
   try {
     // Step 1: Load the index file
-    const indexResponse = await fetch('/content/projects/index.yaml');
+    const indexResponse = await fetch("/content/projects/index.yaml");
     if (!indexResponse.ok) {
-      console.error('Failed to fetch projects index');
+      console.error("Failed to fetch projects index");
       return [];
     }
 
@@ -1075,7 +1087,7 @@ export async function loadProjects(): Promise<Project[]> {
     const index = yaml.load(indexContent) as ProjectIndex;
 
     if (!index.projects || !Array.isArray(index.projects)) {
-      console.error('Invalid projects index format');
+      console.error("Invalid projects index format");
       return [];
     }
 
@@ -1093,7 +1105,7 @@ export async function loadProjects(): Promise<Project[]> {
 
         // Ensure id exists (use filename without extension as fallback)
         if (!project.id) {
-          project.id = filename.replace('.yaml', '');
+          project.id = filename.replace(".yaml", "");
         }
 
         return project;
@@ -1110,7 +1122,7 @@ export async function loadProjects(): Promise<Project[]> {
       .filter((p): p is Project => p !== null)
       .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
   } catch (error) {
-    console.error('Error loading projects:', error);
+    console.error("Error loading projects:", error);
     return [];
   }
 }
@@ -1146,17 +1158,17 @@ export async function loadProjectById(id: string): Promise<Project | null> {
 The existing plugin already handles recursive copying. Verify it includes subdirectories:
 
 ```typescript
-import { defineConfig, Plugin } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
-import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'fs';
+import { defineConfig, Plugin } from "vite";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
+import { copyFileSync, mkdirSync, readdirSync, statSync, existsSync } from "fs";
 
 function copyContentPlugin(): Plugin {
   return {
-    name: 'copy-content',
+    name: "copy-content",
     writeBundle() {
-      const srcDir = resolve(__dirname, 'src/content');
-      const destDir = resolve(__dirname, 'dist/content');
+      const srcDir = resolve(__dirname, "src/content");
+      const destDir = resolve(__dirname, "dist/content");
 
       const copyRecursive = (src: string, dest: string) => {
         if (!existsSync(src)) return;
@@ -1174,7 +1186,7 @@ function copyContentPlugin(): Plugin {
       };
 
       copyRecursive(srcDir, destDir);
-      console.log('✓ Content files copied to dist/content/');
+      console.log("✓ Content files copied to dist/content/");
     },
   };
 }
@@ -1189,6 +1201,7 @@ export default defineConfig({
 ## Task 3.6: Project Template Component
 
 ### What We're Doing
+
 Creating a reusable template for project pages that can be extended in Phase 6.
 
 ### Create File: `frontend/src/components/templates/ProjectTemplate/ProjectTemplate.tsx`
@@ -1293,6 +1306,7 @@ export function ProjectTemplate({ project, children, readme }: ProjectTemplatePr
 ## Task 3.7: Navigation Breadcrumbs
 
 ### What We're Doing
+
 Creating a breadcrumb component for project page navigation.
 
 ### Create File: `frontend/src/components/common/Breadcrumbs/Breadcrumbs.tsx`
@@ -1407,7 +1421,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 ### Create Index File: `frontend/src/components/common/Breadcrumbs/index.ts`
 
 ```typescript
-export { Breadcrumbs } from './Breadcrumbs';
+export { Breadcrumbs } from "./Breadcrumbs";
 ```
 
 ---
@@ -1466,9 +1480,10 @@ frontend/src/
 **Cause**: Project ID doesn't match URL slug.
 
 **Solution**: Ensure project YAML has `id` field matching the URL:
+
 ```yaml
 # /content/projects/shuffify.yaml
-id: shuffify  # This must match /projects/shuffify URL
+id: shuffify # This must match /projects/shuffify URL
 title: Shuffify
 ```
 
@@ -1477,6 +1492,7 @@ title: Shuffify
 **Cause**: Layout component not wrapping routes.
 
 **Solution**: Verify router.tsx has Layout as parent with Outlet:
+
 ```typescript
 {
   path: '/',
@@ -1496,6 +1512,7 @@ title: Shuffify
 After completing Phase 3:
 
 1. **Commit your changes**:
+
    ```bash
    git add .
    git commit -m "Phase 3: Add project pages and dynamic content loading"
@@ -1505,5 +1522,5 @@ After completing Phase 3:
 
 ---
 
-*Document Version: 1.0.0*
-*Last Updated: January 2026*
+_Document Version: 1.0.0_
+_Last Updated: January 2026_

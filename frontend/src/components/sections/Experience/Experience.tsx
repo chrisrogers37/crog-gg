@@ -1,6 +1,6 @@
-import { useExperience, useIsRegenerating } from '../../../store';
-import { ExperienceCard } from './ExperienceCard';
-import './Experience.css';
+import { useExperience, useIsRegenerating } from "../../../store";
+import { ExperienceCard } from "./ExperienceCard";
+import "./Experience.css";
 
 /**
  * Experience Section

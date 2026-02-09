@@ -64,11 +64,13 @@ gh pr status
 ## Deployment Commands
 
 ### Frontend (crog.gg)
+
 ```sh
 ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
 ```
 
 ### Backend (api.crog.gg)
+
 ```sh
 ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
 ```

@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { githubService, ContributionData } from '../../../services/githubService';
-import './ContributionGraph.css';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  githubService,
+  ContributionData,
+} from "../../../services/githubService";
+import "./ContributionGraph.css";
 
 interface ContributionGraphProps {
   className?: string;
@@ -12,7 +15,7 @@ interface ContributionGraphProps {
  *
  * GitHub-style contribution heatmap showing daily activity.
  */
-export function ContributionGraph({ className = '' }: ContributionGraphProps) {
+export function ContributionGraph({ className = "" }: ContributionGraphProps) {
   const [data, setData] = useState<ContributionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,7 +25,7 @@ export function ContributionGraph({ className = '' }: ContributionGraphProps) {
         const contributions = await githubService.getContributions();
         setData(contributions);
       } catch (err) {
-        console.error('Failed to fetch contributions:', err);
+        console.error("Failed to fetch contributions:", err);
       } finally {
         setIsLoading(false);
       }
@@ -44,11 +47,11 @@ export function ContributionGraph({ className = '' }: ContributionGraphProps) {
   }
 
   const levelClasses = [
-    'level-0', // no contributions
-    'level-1',
-    'level-2',
-    'level-3',
-    'level-4',
+    "level-0", // no contributions
+    "level-1",
+    "level-2",
+    "level-3",
+    "level-4",
   ];
 
   return (

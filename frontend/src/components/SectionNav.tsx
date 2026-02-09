@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect } from "react";
 
 interface SectionNavProps {
   activeSection: string;
@@ -6,15 +6,18 @@ interface SectionNavProps {
 }
 
 const sections = [
-  { id: 'about', label: 'About' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'education', label: 'Education' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'music', label: 'Music' }
+  { id: "about", label: "About" },
+  { id: "experience", label: "Experience" },
+  { id: "skills", label: "Skills" },
+  { id: "education", label: "Education" },
+  { id: "projects", label: "Projects" },
+  { id: "music", label: "Music" },
 ];
 
-export default function SectionNav({ activeSection, onSectionChange }: SectionNavProps) {
+export default function SectionNav({
+  activeSection,
+  onSectionChange,
+}: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
   const hasUserInteracted = useRef(false);
 
@@ -27,7 +30,7 @@ export default function SectionNav({ activeSection, onSectionChange }: SectionNa
         const navTop = navRef.current?.offsetTop ?? 0;
         window.scrollTo({
           top: navTop - 20,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }, 100);
     }
@@ -36,10 +39,10 @@ export default function SectionNav({ activeSection, onSectionChange }: SectionNa
   const handleClick = (sectionId: string) => {
     // Mark that user has interacted with navigation
     hasUserInteracted.current = true;
-    
+
     if (activeSection === sectionId) {
       // If the same section is clicked again, unselect it
-      onSectionChange('');
+      onSectionChange("");
     } else {
       onSectionChange(sectionId);
     }
@@ -51,7 +54,7 @@ export default function SectionNav({ activeSection, onSectionChange }: SectionNa
         {sections.map((section) => (
           <button
             key={section.id}
-            className={`section-nav-button ${activeSection === section.id ? 'active' : ''}`}
+            className={`section-nav-button ${activeSection === section.id ? "active" : ""}`}
             onClick={() => handleClick(section.id)}
           >
             {section.label}
@@ -60,4 +63,4 @@ export default function SectionNav({ activeSection, onSectionChange }: SectionNa
       </div>
     </nav>
   );
-} 
+}

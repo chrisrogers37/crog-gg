@@ -1,9 +1,13 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useProjects } from '../../store';
-import { Breadcrumbs } from '../../components/common/Breadcrumbs';
-import { SEO, SoftwareSchema, BreadcrumbSchema } from '../../components/SEO';
-import { GitHubReadme, RepoStats, ProjectDemo } from '../../components/features';
-import './ProjectDetailPage.css';
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useProjects } from "../../store";
+import { Breadcrumbs } from "../../components/common/Breadcrumbs";
+import { SEO, SoftwareSchema, BreadcrumbSchema } from "../../components/SEO";
+import {
+  GitHubReadme,
+  RepoStats,
+  ProjectDemo,
+} from "../../components/features";
+import "./ProjectDetailPage.css";
 
 /**
  * ProjectDetailPage (Enhanced with GitHub Integration)
@@ -39,7 +43,7 @@ export function ProjectDetailPage() {
   const githubRepoName = githubRepoMatch ? githubRepoMatch[1] : null;
 
   // Check if project has a live demo URL
-  const hasLiveDemo = project.demo && !project.demo.includes('github.com');
+  const hasLiveDemo = project.demo && !project.demo.includes("github.com");
 
   return (
     <>
@@ -55,33 +59,36 @@ export function ProjectDetailPage() {
       />
       <BreadcrumbSchema
         items={[
-          { name: 'Home', url: 'https://crog.gg/' },
-          { name: 'Projects', url: 'https://crog.gg/projects' },
-          { name: project.title, url: `https://crog.gg/projects/${project.id}` },
+          { name: "Home", url: "https://crog.gg/" },
+          { name: "Projects", url: "https://crog.gg/projects" },
+          {
+            name: project.title,
+            url: `https://crog.gg/projects/${project.id}`,
+          },
         ]}
       />
       <div className="project-detail-page">
         {/* Breadcrumbs */}
         <Breadcrumbs
           items={[
-            { label: 'Home', path: '/' },
-            { label: 'Projects', path: '/projects' },
+            { label: "Home", path: "/" },
+            { label: "Projects", path: "/projects" },
             { label: project.title },
           ]}
         />
 
         {/* Project Header */}
         <header className="project-header">
-          <div className="project-icon-large">
-            {project.icon || '📁'}
-          </div>
+          <div className="project-icon-large">{project.icon || "📁"}</div>
           <div className="project-header-content">
             <h1 className="project-title">{project.title}</h1>
             <p className="project-description">{project.description}</p>
 
             {/* Status Badge */}
             {project.status && (
-              <span className={`status-badge status-${project.status.toLowerCase()}`}>
+              <span
+                className={`status-badge status-${project.status.toLowerCase()}`}
+              >
                 {project.status}
               </span>
             )}
@@ -95,9 +102,9 @@ export function ProjectDetailPage() {
                   rel="noopener noreferrer"
                   className="project-link primary"
                 >
-                  {project.url.includes('github.com')
-                    ? 'View on GitHub'
-                    : 'View Project'}
+                  {project.url.includes("github.com")
+                    ? "View on GitHub"
+                    : "View Project"}
                 </a>
               )}
               {project.demo && (

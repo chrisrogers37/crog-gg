@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
-import { BioData, Employment, Education, Skill, Project } from '../types';
-import { loadResumeData } from '../data/resume';
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import { BioData, Employment, Education, Skill, Project } from "../types";
+import { loadResumeData } from "../data/resume";
 
 // ===========================================
 // TYPES
@@ -73,7 +73,7 @@ const initialState: ContentState = {
 // API HELPERS
 // ===========================================
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 // ===========================================
 // STORE IMPLEMENTATION
@@ -112,9 +112,9 @@ export const useContentStore = create<ContentStore>()(
             isLoading: false,
           });
         } catch (error) {
-          console.error('Failed to load content:', error);
+          console.error("Failed to load content:", error);
           set({
-            error: 'Failed to load content. Please refresh the page.',
+            error: "Failed to load content. Please refresh the page.",
             isLoading: false,
           });
         }
@@ -137,26 +137,29 @@ export const useContentStore = create<ContentStore>()(
           set({ isRegenerating: true, error: null });
 
           // Regenerate about and portfolio sections
-          const sectionsToRegenerate = ['about', 'portfolio'];
+          const sectionsToRegenerate = ["about", "portfolio"];
           const regenerationPromises = sectionsToRegenerate.map((section) =>
             fetch(`${API_URL}/api/regenerate`, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                "Content-Type": "application/json",
+                Accept: "application/json",
               },
-              mode: 'cors',
-              credentials: 'include',
+              mode: "cors",
+              credentials: "include",
               body: JSON.stringify({
                 section,
                 content:
-                  section === 'about'
+                  section === "about"
                     ? state.bio
-                    : { experience: state.experience, education: state.education },
+                    : {
+                        experience: state.experience,
+                        education: state.education,
+                      },
                 is_full_regeneration: true,
                 use_fantasy: useFantasy,
               }),
-            })
+            }),
           );
 
           const responses = await Promise.all(regenerationPromises);
@@ -169,7 +172,8 @@ export const useContentStore = create<ContentStore>()(
 
             set({
               bio: aboutResult.content || state.bio,
-              experience: portfolioResult.content?.experience || state.experience,
+              experience:
+                portfolioResult.content?.experience || state.experience,
               education: portfolioResult.content?.education || state.education,
               hasModifiedContent: true,
               isRegenerating: false,
@@ -177,32 +181,32 @@ export const useContentStore = create<ContentStore>()(
 
             // Dispatch events for legacy components that still use CustomEvent
             window.dispatchEvent(
-              new CustomEvent('contentRegenerated', {
+              new CustomEvent("contentRegenerated", {
                 detail: {
-                  section: 'about',
+                  section: "about",
                   content: aboutResult.content,
                   is_full_regeneration: true,
                   use_fantasy: useFantasy,
                 },
-              })
+              }),
             );
             window.dispatchEvent(
-              new CustomEvent('contentRegenerated', {
+              new CustomEvent("contentRegenerated", {
                 detail: {
-                  section: 'portfolio',
+                  section: "portfolio",
                   content: portfolioResult.content,
                   is_full_regeneration: true,
                   use_fantasy: useFantasy,
                 },
-              })
+              }),
             );
           } else {
-            throw new Error('Failed to regenerate some content');
+            throw new Error("Failed to regenerate some content");
           }
         } catch (error) {
-          console.error('Regeneration failed:', error);
+          console.error("Regeneration failed:", error);
           set({
-            error: 'Failed to regenerate content. Please try again.',
+            error: "Failed to regenerate content. Please try again.",
             isRegenerating: false,
           });
         } finally {
@@ -235,29 +239,32 @@ export const useContentStore = create<ContentStore>()(
 
           // Dispatch events for legacy components
           window.dispatchEvent(
-            new CustomEvent('contentRegenerated', {
+            new CustomEvent("contentRegenerated", {
               detail: {
-                section: 'about',
+                section: "about",
                 content: data.bio,
                 is_full_regeneration: true,
                 use_fantasy: false,
               },
-            })
+            }),
           );
           window.dispatchEvent(
-            new CustomEvent('contentRegenerated', {
+            new CustomEvent("contentRegenerated", {
               detail: {
-                section: 'portfolio',
-                content: { experience: data.experience, education: data.education },
+                section: "portfolio",
+                content: {
+                  experience: data.experience,
+                  education: data.education,
+                },
                 is_full_regeneration: true,
                 use_fantasy: false,
               },
-            })
+            }),
           );
         } catch (error) {
-          console.error('Reset failed:', error);
+          console.error("Reset failed:", error);
           set({
-            error: 'Failed to reset content. Please refresh the page.',
+            error: "Failed to reset content. Please refresh the page.",
             isLoading: false,
           });
         }
@@ -291,8 +298,8 @@ export const useContentStore = create<ContentStore>()(
         set({ education, hasModifiedContent: true });
       },
     }),
-    { name: 'content-store' }
-  )
+    { name: "content-store" },
+  ),
 );
 
 // ===========================================
@@ -310,6 +317,8 @@ export const useEducation = () => useContentStore((state) => state.education);
 export const useSkills = () => useContentStore((state) => state.skills);
 export const useProjects = () => useContentStore((state) => state.projects);
 export const useIsLoading = () => useContentStore((state) => state.isLoading);
-export const useIsRegenerating = () => useContentStore((state) => state.isRegenerating);
+export const useIsRegenerating = () =>
+  useContentStore((state) => state.isRegenerating);
 export const useContentError = () => useContentStore((state) => state.error);
-export const useHasModifiedContent = () => useContentStore((state) => state.hasModifiedContent);
+export const useHasModifiedContent = () =>
+  useContentStore((state) => state.hasModifiedContent);

@@ -1,4 +1,4 @@
-import { Project } from '../../../types';
+import { Project } from "../../../types";
 
 interface ProjectCardProps {
   project: Project;
@@ -16,7 +16,7 @@ export function ProjectCard({ project, isGitHubLink }: ProjectCardProps) {
       href={project.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`portfolio-link ${isGitHubLink ? 'github-link' : ''}`}
+      className={`portfolio-link ${isGitHubLink ? "github-link" : ""}`}
     >
       <i className={project.icon}></i>
       <div>

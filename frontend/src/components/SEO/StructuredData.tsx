@@ -1,28 +1,28 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 
 /**
  * Person Schema for the home page
  */
 export function PersonSchema() {
   const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: 'Chris Rogers',
-    url: 'https://crog.gg',
-    image: 'https://crog.gg/profile-photo.jpg',
-    jobTitle: 'Builder of Things That Sometimes Work',
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Chris Rogers",
+    url: "https://crog.gg",
+    image: "https://crog.gg/profile-photo.jpg",
+    jobTitle: "Builder of Things That Sometimes Work",
     sameAs: [
-      'https://github.com/chrisrogers37',
-      'https://linkedin.com/in/chrisrogers37',
-      'https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn',
+      "https://github.com/chrisrogers37",
+      "https://linkedin.com/in/chrisrogers37",
+      "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
     ],
     knowsAbout: [
-      'Software Development',
-      'Web Development',
-      'Data Engineering',
-      'Python',
-      'TypeScript',
-      'React',
+      "Software Development",
+      "Web Development",
+      "Data Engineering",
+      "Python",
+      "TypeScript",
+      "React",
     ],
   };
 
@@ -48,21 +48,21 @@ export function SoftwareSchema({
   name,
   description,
   url,
-  applicationCategory = 'WebApplication',
-  operatingSystem = 'Any',
+  applicationCategory = "WebApplication",
+  operatingSystem = "Any",
 }: SoftwareSchemaProps) {
   const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
     name,
     description,
     url,
     applicationCategory,
     operatingSystem,
     author: {
-      '@type': 'Person',
-      name: 'Chris Rogers',
-      url: 'https://crog.gg',
+      "@type": "Person",
+      name: "Chris Rogers",
+      url: "https://crog.gg",
     },
   };
 
@@ -82,10 +82,10 @@ interface BreadcrumbSchemaProps {
 
 export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
   const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
     itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
+      "@type": "ListItem",
       position: index + 1,
       name: item.name,
       item: `https://crog.gg${item.url}`,

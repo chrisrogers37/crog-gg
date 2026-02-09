@@ -1,19 +1,19 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 
 interface SEOProps {
   title?: string;
   description?: string;
   image?: string;
   url?: string;
-  type?: 'website' | 'article' | 'profile';
+  type?: "website" | "article" | "profile";
   noIndex?: boolean;
 }
 
-const SITE_NAME = 'Chris Rogers - Builder of Things That Sometimes Work';
+const SITE_NAME = "Chris Rogers - Builder of Things That Sometimes Work";
 const DEFAULT_DESCRIPTION =
-  'Builder, data engineer, and music maker. Building web apps, data tools, and making noise.';
-const DEFAULT_IMAGE = 'https://crog.gg/og-image.png';
-const BASE_URL = 'https://crog.gg';
+  "Builder, data engineer, and music maker. Building web apps, data tools, and making noise.";
+const DEFAULT_IMAGE = "https://crog.gg/og-image.png";
+const BASE_URL = "https://crog.gg";
 
 /**
  * SEO Component
@@ -25,13 +25,13 @@ export function SEO({
   title,
   description = DEFAULT_DESCRIPTION,
   image = DEFAULT_IMAGE,
-  url = '',
-  type = 'website',
+  url = "",
+  type = "website",
   noIndex = false,
 }: SEOProps) {
   const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
   const fullUrl = `${BASE_URL}${url}`;
-  const fullImage = image.startsWith('http') ? image : `${BASE_URL}${image}`;
+  const fullImage = image.startsWith("http") ? image : `${BASE_URL}${image}`;
 
   return (
     <Helmet>

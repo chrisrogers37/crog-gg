@@ -1,1 +1,1 @@
-export { GitHubReadme } from './GitHubReadme';
+export { GitHubReadme } from "./GitHubReadme";

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface TypewriterLoopProps {
   messages: string[];
@@ -9,7 +9,7 @@ interface TypewriterLoopProps {
   className?: string;
 }
 
-type Phase = 'initial' | 'typing' | 'pausing' | 'deleting' | 'waiting';
+type Phase = "initial" | "typing" | "pausing" | "deleting" | "waiting";
 
 // Add randomness to timing (±40% variance)
 const randomize = (base: number, variance = 0.4): number => {
@@ -24,11 +24,13 @@ export default function TypewriterLoop({
   deleteSpeed = 20,
   pauseTime = 1500,
   initialDelay = 0,
-  className = '',
+  className = "",
 }: TypewriterLoopProps) {
-  const [displayText, setDisplayText] = useState('');
+  const [displayText, setDisplayText] = useState("");
   const [messageIndex, setMessageIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>(initialDelay > 0 ? 'initial' : 'typing');
+  const [phase, setPhase] = useState<Phase>(
+    initialDelay > 0 ? "initial" : "typing",
+  );
   const [charIndex, setCharIndex] = useState(0);
 
   const currentMessage = messages[messageIndex];
@@ -36,73 +38,84 @@ export default function TypewriterLoop({
 
   // Handle initial delay (random between 1-4 seconds)
   useEffect(() => {
-    if (phase !== 'initial') return;
+    if (phase !== "initial") return;
 
     const randomInitialDelay = Math.floor(Math.random() * 3000) + 1000; // 1000-4000ms
     const timer = setTimeout(() => {
-      setPhase('typing');
+      setPhase("typing");
     }, randomInitialDelay);
     return () => clearTimeout(timer);
   }, [phase]);
 
   // Handle typing
   useEffect(() => {
-    if (phase !== 'typing') return;
+    if (phase !== "typing") return;
 
     if (charIndex < currentMessage.length) {
       const timer = setTimeout(() => {
         setDisplayText(currentMessage.slice(0, charIndex + 1));
-        setCharIndex(prev => prev + 1);
+        setCharIndex((prev) => prev + 1);
       }, randomize(typeSpeed));
       return () => clearTimeout(timer);
     } else {
       // Done typing, start pausing
-      setPhase('pausing');
+      setPhase("pausing");
     }
   }, [phase, charIndex, currentMessage, typeSpeed]);
 
   // Handle pausing (blinking cursor)
   useEffect(() => {
-    if (phase !== 'pausing') return;
+    if (phase !== "pausing") return;
 
     // If last message, stay here (don't delete)
     if (isLastMessage) return;
 
-    const timer = setTimeout(() => {
-      setPhase('deleting');
-    }, randomize(pauseTime, 0.25));
+    const timer = setTimeout(
+      () => {
+        setPhase("deleting");
+      },
+      randomize(pauseTime, 0.25),
+    );
     return () => clearTimeout(timer);
   }, [phase, pauseTime, isLastMessage]);
 
   // Handle deleting
   useEffect(() => {
-    if (phase !== 'deleting') return;
+    if (phase !== "deleting") return;
 
     if (displayText.length > 0) {
-      const timer = setTimeout(() => {
-        setDisplayText(prev => prev.slice(0, -1));
-      }, randomize(deleteSpeed, 0.3));
+      const timer = setTimeout(
+        () => {
+          setDisplayText((prev) => prev.slice(0, -1));
+        },
+        randomize(deleteSpeed, 0.3),
+      );
       return () => clearTimeout(timer);
     } else {
       // Done deleting, move to next message
-      setPhase('waiting');
+      setPhase("waiting");
     }
   }, [phase, displayText, deleteSpeed]);
 
   // Handle waiting before next message (random 1-2 seconds with blinking cursor)
   useEffect(() => {
-    if (phase !== 'waiting') return;
+    if (phase !== "waiting") return;
 
     const randomWait = Math.floor(Math.random() * 1000) + 1000; // 1000-2000ms
     const timer = setTimeout(() => {
-      setMessageIndex(prev => prev + 1);
+      setMessageIndex((prev) => prev + 1);
       setCharIndex(0);
-      setPhase('typing');
+      setPhase("typing");
     }, randomWait);
     return () => clearTimeout(timer);
   }, [phase]);
 
-  const showCursor = phase === 'initial' || phase === 'typing' || phase === 'pausing' || phase === 'deleting' || phase === 'waiting';
+  const showCursor =
+    phase === "initial" ||
+    phase === "typing" ||
+    phase === "pausing" ||
+    phase === "deleting" ||
+    phase === "waiting";
 
   return (
     <div className={`typewriter ${className}`}>
@@ -112,8 +125,18 @@ export default function TypewriterLoop({
           <span
             className="typewriter-cursor"
             style={{
-              animation: (phase === 'pausing' || phase === 'initial' || phase === 'waiting') ? 'blink 0.7s infinite' : 'none',
-              opacity: (phase === 'pausing' || phase === 'initial' || phase === 'waiting') ? undefined : 1
+              animation:
+                phase === "pausing" ||
+                phase === "initial" ||
+                phase === "waiting"
+                  ? "blink 0.7s infinite"
+                  : "none",
+              opacity:
+                phase === "pausing" ||
+                phase === "initial" ||
+                phase === "waiting"
+                  ? undefined
+                  : 1,
             }}
           >
             |

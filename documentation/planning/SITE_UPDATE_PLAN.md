@@ -4,9 +4,11 @@
 > **Status**: Phases 1-3 Complete, Phase 4 In Progress
 
 ## Project Overview
+
 This is an interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. The site showcases professional experience, projects, and musical endeavors with AI-powered content regeneration capabilities.
 
 ## Current Architecture
+
 - **Frontend**: React + TypeScript + Vite (port 5173)
 - **Backend**: Flask + OpenAI API (port 5001)
 - **Deployment**: GitHub Actions CI/CD + Systemd services on Ubuntu servers
@@ -17,6 +19,7 @@ This is an interactive portfolio website featuring dynamic content generation us
 ## Phase 1: Bio Content Refactoring ✅ COMPLETED
 
 ### Implementation Status
+
 - [x] Created `frontend/public/content/` directory with YAML files
 - [x] Implemented `bioLoader.ts` utility for dynamic loading
 - [x] Bio content stored in `bio.yaml` with structured fields
@@ -24,6 +27,7 @@ This is an interactive portfolio website featuring dynamic content generation us
 - [x] Backend AI regeneration works with new content structure
 
 ### Files Created
+
 ```
 frontend/public/content/
 ├── bio.yaml           # Personal bio and social links
@@ -33,6 +37,7 @@ frontend/public/content/
 ```
 
 ### Loader Utilities
+
 ```
 frontend/src/utils/
 ├── bioLoader.ts
@@ -46,6 +51,7 @@ frontend/src/utils/
 ## Phase 2: Projects Refactoring & Update ✅ COMPLETED
 
 ### Implementation Status
+
 - [x] Created `frontend/public/content/projects/` directory
 - [x] Individual YAML files for each project
 - [x] Project interface defined in `types/Project.ts`
@@ -57,6 +63,7 @@ frontend/src/utils/
 - [ ] Technology tag color coding (not yet implemented)
 
 ### Project Files
+
 ```
 frontend/public/content/projects/
 ├── index.yaml         # Project index/metadata
@@ -69,6 +76,7 @@ frontend/public/content/projects/
 ```
 
 ### Project Interface (Implemented)
+
 ```typescript
 // frontend/src/types/Project.ts
 export interface Project {
@@ -84,12 +92,13 @@ export interface Project {
   image?: string;
   github?: string;
   demo?: string;
-  status?: 'active' | 'archived' | 'experimental';
+  status?: "active" | "archived" | "experimental";
   tags?: string[];
 }
 ```
 
 ### Future Enhancements (Pending)
+
 - [ ] Project filtering & search UI
 - [ ] Category-based grouping
 - [ ] Featured projects section
@@ -100,6 +109,7 @@ export interface Project {
 ## Phase 3: Deployment Process ✅ COMPLETED
 
 ### CI/CD Pipeline
+
 - [x] GitHub Actions CI workflow (`ci.yml`)
   - Runs on every push
   - Frontend linting, unit tests, E2E tests
@@ -110,6 +120,7 @@ export interface Project {
   - Runs CI checks before deployment
 
 ### Pre-Deployment Checklist
+
 - [x] All changes tested locally
 - [x] No console errors
 - [x] All links working
@@ -119,9 +130,11 @@ export interface Project {
 ### Deployment Commands
 
 #### Automated (Recommended)
+
 Trigger the Deploy workflow from GitHub Actions UI.
 
 #### Manual Fallback
+
 ```bash
 # Frontend (crog.gg)
 ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
@@ -131,32 +144,36 @@ ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --har
 ```
 
 ### GitHub Secrets Required
-| Secret | Description |
-|--------|-------------|
-| `FRONTEND_HOST` | Frontend server IP (209.97.158.198) |
-| `BACKEND_HOST` | Backend server IP (167.172.233.207) |
-| `DEPLOY_USER` | SSH user (root) |
-| `DEPLOY_SSH_KEY` | Contents of deploy private key |
-| `FRONTEND_PATH` | /var/www/crog.gg |
-| `BACKEND_PATH` | /var/www/api.crog.gg |
+
+| Secret           | Description                         |
+| ---------------- | ----------------------------------- |
+| `FRONTEND_HOST`  | Frontend server IP (209.97.158.198) |
+| `BACKEND_HOST`   | Backend server IP (167.172.233.207) |
+| `DEPLOY_USER`    | SSH user (root)                     |
+| `DEPLOY_SSH_KEY` | Contents of deploy private key      |
+| `FRONTEND_PATH`  | /var/www/crog.gg                    |
+| `BACKEND_PATH`   | /var/www/api.crog.gg                |
 
 ---
 
 ## Phase 4: Post-Deployment Recommendations
 
 ### Testing Infrastructure ✅ COMPLETED
+
 - [x] Vitest unit testing framework
 - [x] Playwright E2E testing
 - [x] E2E tests for navigation, home page, projects
 - [x] CI runs tests on every push
 
 ### Immediate Improvements
+
 - [ ] **Content Management**: Implement admin interface for content editing
 - [ ] **Analytics**: Add Google Analytics or similar tracking
 - [x] **Performance**: Code splitting implemented via Vite
 - [ ] **SEO**: Add meta tags, structured data, and sitemap
 
 ### Long-term Enhancements
+
 - [ ] **CMS Integration**: Consider headless CMS for non-technical content management
 - [ ] **A/B Testing**: Implement content variation testing
 - [ ] **User Analytics**: Track which content variations perform best
@@ -164,6 +181,7 @@ ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --har
 - [ ] **Content Versioning**: Implement content versioning and rollback
 
 ### Technical Debt
+
 - [ ] **Error Handling**: Improve error boundaries and user feedback
 - [ ] **Loading States**: Add skeleton loaders for better UX
 - [ ] **Accessibility**: Audit and improve accessibility compliance
@@ -175,15 +193,18 @@ ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --har
 ## Risk Assessment
 
 ### Low Risk ✅
+
 - Content structure changes (YAML files)
 - Project updates
 - Styling improvements
 
 ### Medium Risk ⚠️
+
 - Backend API changes
 - Third-party integrations (OpenAI API key management)
 
 ### High Risk 🔴
+
 - Core architecture changes
 - Authentication/authorization changes
 
@@ -205,11 +226,13 @@ ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --har
 With the current system, adding projects is simple:
 
 1. **Create new YAML file**
+
    ```bash
    touch frontend/public/content/projects/my-new-project.yaml
    ```
 
 2. **Fill in project details**
+
    ```yaml
    id: my-new-project
    title: My New Project
@@ -233,9 +256,9 @@ With the current system, adding projects is simple:
 
 ## Summary
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Phase 1: Bio Refactoring | ✅ Complete | YAML-based content system |
-| Phase 2: Projects Refactoring | ✅ Complete | Dynamic project loading, filtering pending |
-| Phase 3: Deployment | ✅ Complete | GitHub Actions CI/CD operational |
-| Phase 4: Enhancements | ⏳ In Progress | Testing done, other items pending |
+| Phase                         | Status         | Notes                                      |
+| ----------------------------- | -------------- | ------------------------------------------ |
+| Phase 1: Bio Refactoring      | ✅ Complete    | YAML-based content system                  |
+| Phase 2: Projects Refactoring | ✅ Complete    | Dynamic project loading, filtering pending |
+| Phase 3: Deployment           | ✅ Complete    | GitHub Actions CI/CD operational           |
+| Phase 4: Enhancements         | ⏳ In Progress | Testing done, other items pending          |

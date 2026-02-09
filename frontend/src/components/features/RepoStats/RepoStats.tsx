@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { githubService, Repository } from '../../../services/githubService';
-import './RepoStats.css';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { githubService, Repository } from "../../../services/githubService";
+import "./RepoStats.css";
 
 interface RepoStatsProps {
   repoName: string;
@@ -26,7 +26,7 @@ export function RepoStats({ repoName }: RepoStatsProps) {
         const data = await githubService.getRepository(repoName);
         setRepo(data);
       } catch (err) {
-        console.error('Failed to fetch repo:', err);
+        console.error("Failed to fetch repo:", err);
       } finally {
         setIsLoading(false);
       }
@@ -48,16 +48,16 @@ export function RepoStats({ repoName }: RepoStatsProps) {
   }
 
   const stats = [
-    { label: 'Stars', value: repo.stargazers_count, icon: '⭐' },
-    { label: 'Forks', value: repo.forks_count, icon: '🍴' },
-    { label: 'Watchers', value: repo.watchers_count, icon: '👀' },
-    { label: 'Issues', value: repo.open_issues_count, icon: '🐛' },
+    { label: "Stars", value: repo.stargazers_count, icon: "⭐" },
+    { label: "Forks", value: repo.forks_count, icon: "🍴" },
+    { label: "Watchers", value: repo.watchers_count, icon: "👀" },
+    { label: "Issues", value: repo.open_issues_count, icon: "🐛" },
   ];
 
-  const lastUpdated = new Date(repo.pushed_at).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+  const lastUpdated = new Date(repo.pushed_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 
   return (
@@ -83,7 +83,10 @@ export function RepoStats({ repoName }: RepoStatsProps) {
       <div className="repo-meta">
         {repo.language && (
           <span className="meta-item">
-            <span className="meta-dot" style={{ background: getLanguageColor(repo.language) }} />
+            <span
+              className="meta-dot"
+              style={{ background: getLanguageColor(repo.language) }}
+            />
             {repo.language}
           </span>
         )}
@@ -114,16 +117,16 @@ export function RepoStats({ repoName }: RepoStatsProps) {
 // Language color mapping (subset of GitHub's colors)
 function getLanguageColor(language: string): string {
   const colors: Record<string, string> = {
-    JavaScript: '#f1e05a',
-    TypeScript: '#3178c6',
-    Python: '#3572A5',
-    Java: '#b07219',
-    Go: '#00ADD8',
-    Rust: '#dea584',
-    Ruby: '#701516',
-    CSS: '#563d7c',
-    HTML: '#e34c26',
-    Shell: '#89e051',
+    JavaScript: "#f1e05a",
+    TypeScript: "#3178c6",
+    Python: "#3572A5",
+    Java: "#b07219",
+    Go: "#00ADD8",
+    Rust: "#dea584",
+    Ruby: "#701516",
+    CSS: "#563d7c",
+    HTML: "#e34c26",
+    Shell: "#89e051",
   };
-  return colors[language] || '#8b8b8b';
+  return colors[language] || "#8b8b8b";
 }
