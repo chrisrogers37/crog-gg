@@ -1,0 +1,25 @@
+# Storyline AI - Instagram Story Scheduling via Telegram
+id: storyline-ai
+title: Storyline AI
+description: |
+  a telegram bot for managing instagram story posting from a content
+  repository - smart scheduling, team collaboration, and automated
+  publishing with category-based content distribution.
+url: https://github.com/chrisrogers37/storyline-ai
+icon: fab fa-telegram
+category: ai-tools
+technologies:
+  - Python
+  - PostgreSQL
+  - Telegram Bot API
+  - Instagram Graph API
+  - Cloudinary
+featured: true
+order: 4
+status: active
+tags:
+  - automation
+  - telegram
+  - instagram
+  - scheduling
+  - social-media
