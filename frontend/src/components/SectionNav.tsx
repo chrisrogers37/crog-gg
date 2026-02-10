@@ -36,9 +36,19 @@ export default function SectionNav({
     }
   }, [activeSection]);
 
-  const handleClick = (sectionId: string) => {
+  const handleClick = (
+    sectionId: string,
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     // Mark that user has interacted with navigation
     hasUserInteracted.current = true;
+
+    // Scroll the clicked button into view within the nav
+    e.currentTarget.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
 
     if (activeSection === sectionId) {
       // If the same section is clicked again, unselect it
@@ -55,7 +65,7 @@ export default function SectionNav({
           <button
             key={section.id}
             className={`section-nav-button ${activeSection === section.id ? "active" : ""}`}
-            onClick={() => handleClick(section.id)}
+            onClick={(e) => handleClick(section.id, e)}
           >
             {section.label}
           </button>
