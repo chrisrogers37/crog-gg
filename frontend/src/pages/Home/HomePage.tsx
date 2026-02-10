@@ -30,6 +30,7 @@ import {
 import SectionNav from "../../components/SectionNav";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
+import { ThemeToggle } from "../../components/common/ThemeToggle";
 
 // Styles
 import "../../App.css";
@@ -182,6 +183,9 @@ export function HomePage() {
       />
       <PersonSchema />
       <div className="home-page">
+        <div className="home-theme-toggle">
+          <ThemeToggle />
+        </div>
         {/* Header */}
         <header>
           <div className="header-content">
