@@ -61,7 +61,7 @@ header {
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: var(--text-color);
   margin: 0;
 }
@@ -366,7 +366,6 @@ a:hover {
   }
 
   h1 {
-    font-size: 1.75rem;
     word-break: break-word;
   }
 
@@ -979,6 +978,13 @@ a:hover {
   }
 }
 
+@media (max-width: 360px) {
+  .profile-photo {
+    width: 110px;
+    height: 110px;
+  }
+}
+
 /* Section Navigation */
 .section-nav {
   position: sticky;
@@ -1013,6 +1019,17 @@ a:hover {
     width: max-content;
     min-width: 100%;
     padding: 0 0.5rem;
+  }
+
+  .section-nav {
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+
+  /* Remove fade hint when scrolled to the end */
+  .section-nav:not(:hover) {
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
   }
 }
 

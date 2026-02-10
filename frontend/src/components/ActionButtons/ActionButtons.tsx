@@ -20,6 +20,7 @@ export function ActionButtons({
         className="generate-btn"
         onClick={onRegenerate}
         disabled={isRegenerating}
+        aria-label="Regenerate content with AI"
       >
         {isRegenerating ? "Weaving Epic Saga..." : "SUMMON NEW LORE"}
       </button>
@@ -29,6 +30,7 @@ export function ActionButtons({
           className="reset-btn"
           onClick={onReset}
           disabled={isRegenerating}
+          aria-label="Reset content to original"
         >
           DISPEL ENCHANTMENT
         </button>

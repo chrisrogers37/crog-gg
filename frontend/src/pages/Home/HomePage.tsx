@@ -161,6 +161,9 @@ export function HomePage() {
               src={profilePhoto}
               alt={`${bio?.display_name || "Profile"}'s profile photo`}
               className="profile-photo"
+              width={240}
+              height={240}
+              loading="eager"
             />
             <div className="header-text">
               <h1>{bio?.display_name || "Loading..."}</h1>

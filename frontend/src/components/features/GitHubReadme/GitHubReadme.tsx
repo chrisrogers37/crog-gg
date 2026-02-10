@@ -29,21 +29,33 @@ export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let ignore = false;
+
     async function fetchReadme() {
       try {
         setIsLoading(true);
         setError(null);
         const content = await githubService.getReadme(repoName);
-        setReadme(content);
+        if (!ignore) {
+          setReadme(content);
+        }
       } catch (err) {
-        console.error("Failed to fetch README:", err);
-        setError("Unable to load README");
+        if (!ignore) {
+          console.error("Failed to fetch README:", err);
+          setError("Unable to load README");
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     }
 
     fetchReadme();
+
+    return () => {
+      ignore = true;
+    };
   }, [repoName]);
 
   if (isLoading) {
