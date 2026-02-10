@@ -18,21 +18,21 @@
 }
 
 .breadcrumb-link {
-  color: #64748b;
+  color: var(--text-color-secondary);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .breadcrumb-link:hover {
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 .breadcrumb-separator {
   margin: 0 0.5rem;
-  color: #cbd5e1;
+  color: var(--border-color);
 }
 
 .breadcrumb-current {
-  color: #1e293b;
+  color: var(--text-color);
   font-weight: 500;
 }

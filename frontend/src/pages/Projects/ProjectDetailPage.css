@@ -10,17 +10,17 @@
 
 .project-not-found h1 {
   font-size: 2rem;
-  color: #1e293b;
+  color: var(--text-color);
   margin-bottom: 1rem;
 }
 
 .project-not-found p {
-  color: #64748b;
+  color: var(--text-color-secondary);
   margin-bottom: 2rem;
 }
 
 .back-link {
-  color: #2563eb;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
@@ -35,13 +35,13 @@
   align-items: flex-start;
   margin: 2rem 0;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .project-icon-large {
   font-size: 4rem;
   flex-shrink: 0;
-  color: #64748b;
+  color: var(--text-color-secondary);
 }
 
 .project-header-content {
@@ -51,13 +51,13 @@
 .project-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-color);
   margin: 0 0 0.75rem;
 }
 
 .project-description {
   font-size: 1.125rem;
-  color: #64748b;
+  color: var(--text-color-secondary);
   margin: 0 0 1rem;
   line-height: 1.6;
 }
@@ -78,13 +78,23 @@
 }
 
 .status-archived {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--background-color);
+  color: var(--text-color-secondary);
 }
 
 .status-experimental {
   background: #fef3c7;
   color: #92400e;
+}
+
+.dark .status-active {
+  background: rgba(22, 101, 52, 0.3);
+  color: #86efac;
+}
+
+.dark .status-experimental {
+  background: rgba(146, 64, 14, 0.3);
+  color: #fcd34d;
 }
 
 .project-links {
@@ -105,12 +115,12 @@
 }
 
 .project-link.primary {
-  background: #1e293b;
-  color: white;
+  background: var(--text-color);
+  color: var(--card-background);
 }
 
 .project-link.primary:hover {
-  background: #0f172a;
+  opacity: 0.85;
 }
 
 /* Sections */
@@ -121,7 +131,7 @@
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-color);
   margin: 0 0 1rem;
 }
 
@@ -134,8 +144,8 @@
 
 .technology-badge {
   padding: 0.5rem 1rem;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--background-color);
+  color: var(--text-color-secondary);
   border-radius: 6px;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -143,18 +153,18 @@
 
 /* README Placeholder */
 .readme-section {
-  background: #f8fafc;
+  background: var(--background-color);
   border-radius: 12px;
   padding: 2rem;
 }
 
 .readme-placeholder {
   text-align: center;
-  color: #64748b;
+  color: var(--text-color-secondary);
 }
 
 .readme-placeholder a {
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 /* Footer */
@@ -164,26 +174,27 @@
   align-items: center;
   margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-color);
 }
 
 .back-button {
   padding: 0.75rem 1.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--text-color);
 }
 
 .back-button:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .all-projects-link {
-  color: #2563eb;
+  color: var(--primary-color);
   text-decoration: none;
   font-weight: 500;
 }

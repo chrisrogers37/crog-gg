@@ -1,6 +1,6 @@
 .footer {
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+  background: var(--background-color);
+  border-top: 1px solid var(--border-color);
   padding: 2rem;
   margin-top: auto;
 }
@@ -16,7 +16,7 @@
 }
 
 .footer-copyright {
-  color: #64748b;
+  color: var(--text-color-secondary);
   font-size: 0.875rem;
   margin: 0;
 }
@@ -27,14 +27,14 @@
 }
 
 .footer-links a {
-  color: #64748b;
+  color: var(--text-color-secondary);
   text-decoration: none;
   font-size: 0.875rem;
   transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 @media (max-width: 640px) {

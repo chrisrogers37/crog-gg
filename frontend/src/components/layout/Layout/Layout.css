@@ -18,8 +18,8 @@
 }
 
 .compact-header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--card-background);
+  border-bottom: 1px solid var(--border-color);
   padding: 1rem 2rem;
   position: sticky;
   top: 0;
