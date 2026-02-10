@@ -1,8 +1,8 @@
 .repo-stats {
   padding: 1rem;
   border-radius: 12px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
 }
 
 .repo-stats.loading {
@@ -11,7 +11,7 @@
 
 .stats-skeleton {
   height: 100%;
-  background-color: #e2e8f0;
+  background-color: var(--border-color);
   border-radius: 8px;
   animation: pulse 2s infinite;
 }
@@ -49,12 +49,12 @@
 .stat-value {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-color);
 }
 
 .stat-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-color-secondary);
 }
 
 /* Meta info */
@@ -64,9 +64,9 @@
   align-items: center;
   gap: 1rem;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--text-color-secondary);
   padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-color);
 }
 
 .meta-item {
@@ -99,6 +99,11 @@
   border-radius: 9999px;
   background-color: #dbeafe;
   color: #1d4ed8;
+}
+
+.dark .topic-tag {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
 }
 
 /* Responsive */

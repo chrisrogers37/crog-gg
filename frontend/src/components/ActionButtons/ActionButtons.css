@@ -37,7 +37,8 @@
 }
 
 .action-buttons .generate-btn:disabled {
-  background-color: #93c5fd;
+  background-color: var(--primary-color);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

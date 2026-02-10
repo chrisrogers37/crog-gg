@@ -1,8 +1,8 @@
 .project-demo {
   border-radius: 12px;
   overflow: hidden;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
 }
 
 .project-demo.fullscreen {
@@ -20,13 +20,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background-color: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .demo-title {
   font-weight: 500;
-  color: #475569;
+  color: var(--text-color-secondary);
   margin: 0;
 }
 
@@ -38,7 +38,7 @@
 
 .demo-link {
   font-size: 0.875rem;
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 .demo-link:hover {
@@ -49,15 +49,15 @@
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
   border-radius: 4px;
-  background-color: #e2e8f0;
-  color: #475569;
+  background-color: var(--border-color);
+  color: var(--text-color-secondary);
   border: none;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .demo-fullscreen-btn:hover {
-  background-color: #cbd5e1;
+  opacity: 0.8;
 }
 
 .demo-container {
@@ -74,15 +74,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: var(--background-color);
+  color: var(--text-color-secondary);
 }
 
 .spinner {
   width: 2rem;
   height: 2rem;
-  border: 3px solid #e2e8f0;
-  border-top-color: #2563eb;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 0.5rem;

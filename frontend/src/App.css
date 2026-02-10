@@ -61,7 +61,7 @@ header {
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: var(--text-color);
   margin: 0;
 }
@@ -209,7 +209,8 @@ h1 {
 }
 
 .generate-btn:disabled {
-  background-color: #93c5fd;
+  background-color: var(--primary-color);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -268,7 +269,7 @@ h1 {
 
 .tech-tag {
   display: inline-block;
-  background-color: #e2e8f0;
+  background-color: var(--border-color);
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
   font-size: 0.875rem;
@@ -302,7 +303,7 @@ h1 {
   justify-content: space-between;
   margin: 1rem 0;
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--text-color-secondary);
 }
 
 /* Links */
@@ -365,7 +366,6 @@ a:hover {
   }
 
   h1 {
-    font-size: 1.75rem;
     word-break: break-word;
   }
 
@@ -534,7 +534,7 @@ a:hover {
 .usage-bar {
   width: 100%;
   height: 8px;
-  background-color: #e2e8f0;
+  background-color: var(--border-color);
   border-radius: 4px;
   overflow: hidden;
   margin: 0.5rem 0;
@@ -548,7 +548,7 @@ a:hover {
 
 .tokens-remaining {
   font-size: 0.9rem;
-  color: #64748b !important;
+  color: var(--text-color-secondary) !important;
 }
 
 .error-message {
@@ -558,6 +558,11 @@ a:hover {
   border-radius: 0.5rem;
   margin-bottom: 1rem;
   text-align: center;
+}
+
+.dark .error-message {
+  background-color: rgba(153, 27, 27, 0.2);
+  color: #fca5a5;
 }
 
 /* Employment Section */
@@ -587,19 +592,19 @@ a:hover {
 .job-title-section h4 {
   margin: 0;
   font-size: 1.25rem;
-  color: #2c3e50;
+  color: var(--text-color);
 }
 
 .job-header .company {
   display: block;
   font-weight: 500;
-  color: #3498db;
+  color: var(--primary-color);
   margin-bottom: 0.25rem;
 }
 
 .job-header .period {
   display: block;
-  color: #7f8c8d;
+  color: var(--text-color-secondary);
   font-size: 0.9rem;
 }
 
@@ -650,7 +655,7 @@ a:hover {
 .section-subtitle {
   display: block;
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--text-color-secondary);
   font-style: italic;
   margin-top: 0.25rem;
 }
@@ -689,6 +694,10 @@ a:hover {
   align-items: center;
   border-radius: 0.5rem;
   z-index: 10;
+}
+
+.dark .loading-overlay {
+  background-color: rgba(15, 23, 42, 0.8);
 }
 
 .spinner {
@@ -788,7 +797,7 @@ a:hover {
 }
 
 .education-card .year {
-  color: #64748b;
+  color: var(--text-color-secondary);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -877,7 +886,7 @@ a:hover {
 
 .portfolio-link .link-description {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--text-color-secondary);
 }
 
 .project-technologies {
@@ -917,13 +926,13 @@ a:hover {
 }
 
 .portfolio-link.call-to-action {
-  background-color: #f1f5f9; /* Light gray background */
+  background-color: var(--background-color);
   color: var(--text-color);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .portfolio-link.call-to-action:hover {
-  background-color: #e2e8f0;
+  background-color: var(--border-color);
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
 }
@@ -934,7 +943,7 @@ a:hover {
 }
 
 .portfolio-link.call-to-action .link-description {
-  color: #64748b;
+  color: var(--text-color-secondary);
 }
 
 /* GitHub Project Section */
@@ -966,6 +975,13 @@ a:hover {
   .profile-photo {
     width: 140px;
     height: 140px;
+  }
+}
+
+@media (max-width: 360px) {
+  .profile-photo {
+    width: 110px;
+    height: 110px;
   }
 }
 
@@ -1004,6 +1020,17 @@ a:hover {
     min-width: 100%;
     padding: 0 0.5rem;
   }
+
+  .section-nav {
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+
+  /* Remove fade hint when scrolled to the end */
+  .section-nav:not(:hover) {
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
 }
 
 .section-nav-button {
@@ -1036,7 +1063,7 @@ a:hover {
 }
 
 .section-nav-button:not(.active):hover {
-  background-color: rgba(37, 99, 235, 0.1);
+  background-color: var(--background-color);
 }
 
 /* Add subtle indicator that active buttons can be unselected */
@@ -1122,7 +1149,7 @@ main {
 /* Skills Section */
 .skills-container {
   padding: 2rem;
-  background-color: #fff;
+  background-color: var(--card-background);
   border-radius: 8px;
   margin-top: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -1133,14 +1160,14 @@ main {
   margin-top: 0;
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
-  color: #333;
+  color: var(--text-color);
   text-align: left;
 }
 
 .skills-subtitle {
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-color-secondary);
   text-align: left;
 }
 
@@ -1160,14 +1187,14 @@ main {
   justify-content: space-between;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text-color);
   font-weight: 500;
 }
 
 .skill-bar {
   width: 100%;
   height: 12px;
-  background-color: #e0e0e0;
+  background-color: var(--border-color);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -1187,7 +1214,7 @@ main {
 .error-message {
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: var(--text-color-secondary);
   font-style: italic;
 }
 
@@ -1216,9 +1243,9 @@ main {
 .skill-tag {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
+  background-color: var(--background-color);
   border-radius: 20px;
-  color: #333;
+  color: var(--text-color);
   transition:
     transform 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out;
@@ -1234,12 +1261,12 @@ main {
 .github-stats-container {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
 }
 
 .stats-header {
   font-size: 1.2rem;
-  color: #333;
+  color: var(--text-color);
   margin-bottom: 0.25rem;
 }
 

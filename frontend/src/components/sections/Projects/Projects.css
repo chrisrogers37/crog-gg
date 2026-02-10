@@ -4,6 +4,6 @@
 
 .empty-state {
   text-align: center;
-  color: #64748b;
+  color: var(--text-color-secondary);
   padding: 2rem;
 }
