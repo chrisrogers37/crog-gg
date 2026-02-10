@@ -30,6 +30,7 @@ import {
 import SectionNav from "../../components/SectionNav";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
+import { ThemeToggle } from "../../components/common/ThemeToggle";
 
 // Styles
 import "../../App.css";
@@ -126,11 +127,39 @@ export function HomePage() {
     }
   };
 
-  // Loading state
+  // Loading skeleton - matches real layout dimensions to prevent CLS
   if (isLoading) {
     return (
       <div className="home-page">
-        <div className="loading-message">Loading content...</div>
+        <header>
+          <div className="header-content">
+            <div className="skeleton-photo" />
+            <div className="header-text">
+              <div className="skeleton-line skeleton-name" />
+              <div className="contact-header">
+                <div className="skeleton-line skeleton-detail" />
+                <div className="skeleton-line skeleton-detail" />
+                <div className="skeleton-line skeleton-detail-short" />
+              </div>
+            </div>
+          </div>
+        </header>
+        <nav className="section-nav" aria-hidden="true">
+          <div className="section-nav-container">
+            {[
+              "about",
+              "experience",
+              "skills",
+              "education",
+              "projects",
+              "music",
+            ].map((id) => (
+              <span key={id} className="section-nav-button skeleton-nav-btn">
+                &nbsp;
+              </span>
+            ))}
+          </div>
+        </nav>
       </div>
     );
   }
@@ -154,6 +183,9 @@ export function HomePage() {
       />
       <PersonSchema />
       <div className="home-page">
+        <div className="home-theme-toggle">
+          <ThemeToggle />
+        </div>
         {/* Header */}
         <header>
           <div className="header-content">

@@ -2,41 +2,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   background: transparent;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
-  color: #64748b;
-  transition: all 0.2s ease;
+  color: var(--text-color-secondary);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .theme-toggle:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #1e293b;
+  background: var(--background-color);
+  color: var(--text-color);
 }
 
 .theme-toggle:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .theme-icon {
-  width: 20px;
-  height: 20px;
-}
-
-/* Dark mode styles */
-.dark .theme-toggle {
-  border-color: #374151;
-  color: #9ca3af;
-}
-
-.dark .theme-toggle:hover {
-  background: #374151;
-  border-color: #4b5563;
-  color: #f3f4f6;
+  width: 18px;
+  height: 18px;
 }
