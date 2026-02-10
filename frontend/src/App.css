@@ -980,6 +980,13 @@ a:hover {
   margin-top: 0;
   margin-bottom: 1rem;
   transition: transform 0.3s ease-in-out;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.section-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .section-nav-container {
@@ -988,6 +995,15 @@ a:hover {
   display: flex;
   justify-content: center;
   gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .section-nav-container {
+    justify-content: flex-start;
+    width: max-content;
+    min-width: 100%;
+    padding: 0 0.5rem;
+  }
 }
 
 .section-nav-button {
