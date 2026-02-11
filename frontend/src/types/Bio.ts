@@ -4,6 +4,8 @@ export interface BioData {
   location: string;
   about_text: string;
   welcome_message: string;
+  tagline?: string;
+  role?: string;
   social_links: {
     github: string;
     hoobe: string;

@@ -1,4 +1,5 @@
 import { useRef, useMemo } from "react";
+import { motion } from "framer-motion";
 import { CSSTransition } from "react-transition-group";
 
 // Hooks
@@ -262,6 +263,19 @@ export function HomePage() {
             </div>
           </div>
         </header>
+
+        {/* Hero Identity */}
+        {bio?.tagline && (
+          <motion.div
+            className="hero-identity"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <p className="hero-tagline">{bio.tagline}</p>
+            {bio.role && <p className="hero-role">{bio.role}</p>}
+          </motion.div>
+        )}
 
         {/* Navigation */}
         <SectionNav
