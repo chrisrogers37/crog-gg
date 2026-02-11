@@ -31,6 +31,7 @@ import SectionNav from "../../components/SectionNav";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
+import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 
 // Styles
 import "../../App.css";
@@ -103,28 +104,41 @@ export function HomePage() {
 
   // Render section based on active selection
   const renderActiveSection = () => {
+    let content: React.ReactNode;
     switch (activeSection) {
       case "about":
-        return (
+        content = (
           <section className="section-content about-section">
             <div className="about-content">
               <About onRegenerate={() => {}} content={bio ?? undefined} />
             </div>
           </section>
         );
+        break;
       case "skills":
-        return <Skills skills={skills} />;
+        content = <Skills skills={skills} />;
+        break;
       case "experience":
-        return <Experience />;
+        content = <Experience />;
+        break;
       case "education":
-        return <Education />;
+        content = <Education />;
+        break;
       case "projects":
-        return <Projects />;
+        content = <Projects />;
+        break;
       case "music":
-        return <Music />;
+        content = <Music />;
+        break;
       default:
         return null;
     }
+
+    return (
+      <ErrorBoundary key={activeSection} compact>
+        {content}
+      </ErrorBoundary>
+    );
   };
 
   // Loading skeleton - matches real layout dimensions to prevent CLS

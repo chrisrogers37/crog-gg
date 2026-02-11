@@ -4,6 +4,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 // Layout (loaded immediately as it's the shell)
 import { Layout } from "./components/layout";
 
+// Error boundary for catching render errors
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+
 // NotFound page loaded immediately for fast 404 response
 import { NotFoundPage } from "./pages/NotFound";
 
@@ -56,15 +59,29 @@ function LazyPage({ children }: { children: React.ReactNode }) {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: (
+      <ErrorBoundary>
+        <Layout />
+      </ErrorBoundary>
+    ),
     errorElement: <NotFoundPage />,
     children: [
       {
         index: true,
         element: <HomePage />,
+        errorElement: (
+          <ErrorBoundary>
+            <NotFoundPage />
+          </ErrorBoundary>
+        ),
       },
       {
         path: "projects",
+        errorElement: (
+          <ErrorBoundary>
+            <NotFoundPage />
+          </ErrorBoundary>
+        ),
         children: [
           {
             index: true,
