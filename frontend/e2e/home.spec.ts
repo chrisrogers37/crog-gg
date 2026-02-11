@@ -53,6 +53,14 @@ test.describe("Home Page", () => {
     expect(count).toBeGreaterThan(3);
   });
 
+  test("displays hero identity section", async ({ page }) => {
+    const hero = page.locator(".hero-identity");
+    await expect(hero).toBeVisible({ timeout: 5000 });
+
+    const tagline = page.locator(".hero-tagline");
+    await expect(tagline).toBeVisible();
+  });
+
   test("has social links", async ({ page }) => {
     // Test that external social links exist
     const socialLinks = page.locator('a[target="_blank"]');

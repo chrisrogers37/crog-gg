@@ -19,6 +19,45 @@
   z-index: 10;
 }
 
+/* Hero Identity Section */
+.hero-identity {
+  text-align: center;
+  padding: 1.5rem 0 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
+}
+
+.hero-tagline {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.hero-role {
+  font-size: 0.95rem;
+  color: var(--text-muted, var(--text-secondary));
+  margin: 0.5rem 0 0;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .hero-identity {
+    padding: 1rem 0 0.75rem;
+  }
+
+  .hero-tagline {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-tagline {
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .home-page {
     padding: 1rem;
