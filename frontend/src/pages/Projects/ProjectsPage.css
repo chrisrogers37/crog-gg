@@ -183,6 +183,67 @@
   background: var(--secondary-color);
 }
 
+/* Loading State */
+.projects-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--text-color-secondary);
+}
+
+.projects-loading__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: projects-spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes projects-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.projects-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.projects-error__message {
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+  margin: 0 0 1rem;
+}
+
+.projects-error__retry {
+  padding: 0.5rem 1.25rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.projects-error__retry:hover {
+  background-color: var(--hover-color);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .projects-grid {

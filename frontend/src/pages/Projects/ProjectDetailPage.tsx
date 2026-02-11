@@ -7,6 +7,7 @@ import {
   RepoStats,
   ProjectDemo,
 } from "../../components/features";
+import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import "./ProjectDetailPage.css";
 
 /**
@@ -125,7 +126,9 @@ export function ProjectDetailPage() {
         {githubRepoName && (
           <section className="project-section">
             <h2 className="section-title">Repository Stats</h2>
-            <RepoStats repoName={githubRepoName} />
+            <ErrorBoundary compact>
+              <RepoStats repoName={githubRepoName} />
+            </ErrorBoundary>
           </section>
         )}
 
@@ -146,7 +149,9 @@ export function ProjectDetailPage() {
         {/* Live Demo */}
         {hasLiveDemo && (
           <section className="project-section">
-            <ProjectDemo url={project.demo!} title={project.title} />
+            <ErrorBoundary compact>
+              <ProjectDemo url={project.demo!} title={project.title} />
+            </ErrorBoundary>
           </section>
         )}
 
@@ -154,7 +159,9 @@ export function ProjectDetailPage() {
         {githubRepoName && (
           <section className="project-section">
             <h2 className="section-title">Documentation</h2>
-            <GitHubReadme repoName={githubRepoName} />
+            <ErrorBoundary compact>
+              <GitHubReadme repoName={githubRepoName} />
+            </ErrorBoundary>
           </section>
         )}
 

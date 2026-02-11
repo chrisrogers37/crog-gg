@@ -1,6 +1,11 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useProjects } from "../../store";
+import {
+  useProjects,
+  useIsLoading,
+  useContentError,
+  useContentStore,
+} from "../../store";
 import { Project } from "../../types";
 import { SEO } from "../../components/SEO";
 import "./ProjectsPage.css";
@@ -13,6 +18,9 @@ import "./ProjectsPage.css";
  */
 export function ProjectsPage() {
   const projects = useProjects();
+  const isLoading = useIsLoading();
+  const error = useContentError();
+  const loadContent = useContentStore((s) => s.loadContent);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -39,6 +47,49 @@ export function ProjectsPage() {
       return matchesSearch && matchesCategory;
     });
   }, [projects, searchQuery, selectedCategory]);
+
+  // Loading state
+  if (isLoading && projects.length === 0) {
+    return (
+      <div className="projects-page">
+        <header className="projects-header">
+          <h1 className="projects-title">Projects</h1>
+          <p className="projects-subtitle">
+            A collection of my work, side projects, and experiments.
+          </p>
+        </header>
+        <div className="projects-loading">
+          <div className="projects-loading__spinner" />
+          <p>Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && projects.length === 0) {
+    return (
+      <div className="projects-page">
+        <header className="projects-header">
+          <h1 className="projects-title">Projects</h1>
+          <p className="projects-subtitle">
+            A collection of my work, side projects, and experiments.
+          </p>
+        </header>
+        <div className="projects-error" role="alert">
+          <p className="projects-error__message">
+            Failed to load projects. Please try again.
+          </p>
+          <button
+            className="projects-error__retry"
+            onClick={() => loadContent()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
