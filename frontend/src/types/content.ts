@@ -2,6 +2,7 @@ import { BioData } from "./Bio";
 import { Employment } from "./Experience";
 import { Education } from "./Education";
 import { Skill } from "./Skills";
+import { TimelineData } from "./Timeline";
 
 /**
  * Portfolio content state containing experience and education data
@@ -18,6 +19,7 @@ export interface ContentState {
   about: BioData;
   portfolio: PortfolioContent;
   skills: Skill[];
+  timeline: TimelineData | null;
 }
 
 /**
@@ -43,7 +45,8 @@ export type SectionId =
   | "education"
   | "projects"
   | "music"
-  | "skills";
+  | "skills"
+  | "journey";
 
 /**
  * Props for action buttons

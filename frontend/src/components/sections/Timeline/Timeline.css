@@ -1,0 +1,214 @@
+/* Timeline Container */
+.timeline-container {
+  padding: 1rem 0;
+}
+
+.timeline-layout {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 2rem;
+}
+
+/* Timeline Track */
+.timeline-track {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-color);
+  transform: translateX(-50%);
+}
+
+/* Timeline Entry */
+.timeline-entry {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.timeline-left {
+  flex-direction: row;
+  padding-right: calc(50% + 1.5rem);
+}
+
+.timeline-left .timeline-card {
+  text-align: right;
+  margin-left: auto;
+}
+
+.timeline-right {
+  flex-direction: row-reverse;
+  padding-left: calc(50% + 1.5rem);
+}
+
+.timeline-right .timeline-card {
+  text-align: left;
+}
+
+/* Timeline Dot */
+.timeline-dot {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--card-background);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.timeline-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.timeline-entry-role .timeline-dot {
+  border-color: var(--primary-color);
+}
+
+.timeline-entry-education .timeline-dot {
+  border-color: #8b5cf6;
+}
+
+/* Timeline Card */
+.timeline-card {
+  max-width: calc(50% - 2.5rem);
+  padding: 1rem 1.25rem;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.timeline-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.timeline-card-header {
+  margin-bottom: 0.5rem;
+}
+
+.timeline-period {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.timeline-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0.25rem 0 0.15rem;
+}
+
+.timeline-org {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.timeline-one-liner {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Skills Sidebar */
+.timeline-skills-sidebar {
+  position: relative;
+}
+
+.timeline-skills-sticky {
+  position: sticky;
+  top: 2rem;
+}
+
+.timeline-skills-heading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+  text-transform: lowercase;
+}
+
+/* Skill Bubbles */
+.skill-bubbles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.skill-bubble {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Mobile: Single column, skills below each entry */
+@media (max-width: 768px) {
+  .timeline-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-line {
+    left: 1.25rem;
+  }
+
+  .timeline-left,
+  .timeline-right {
+    padding-left: 3.5rem;
+    padding-right: 0;
+    flex-direction: row;
+  }
+
+  .timeline-left .timeline-card,
+  .timeline-right .timeline-card {
+    text-align: left;
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .timeline-dot {
+    left: 1.25rem;
+  }
+
+  .timeline-skills-sidebar {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .timeline-skills-sticky {
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .timeline-entry {
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline-card {
+    padding: 0.75rem 1rem;
+  }
+}

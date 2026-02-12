@@ -12,3 +12,9 @@ export type {
   SectionId,
   ActionButtonsProps,
 } from "./content";
+export type {
+  TimelineData,
+  TimelineEntry,
+  TimelineEntryType,
+  SkillCategory,
+} from "./Timeline";

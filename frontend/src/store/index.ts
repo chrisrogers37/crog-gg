@@ -10,6 +10,7 @@ export {
   useIsRegenerating,
   useContentError,
   useHasModifiedContent,
+  useTimeline,
 } from "./contentStore";
 
 export {

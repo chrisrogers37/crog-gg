@@ -1,0 +1,122 @@
+# Career Timeline - Chronological journey with contextual skills
+# Entries are ordered newest-first (present at top, oldest at bottom)
+
+entries:
+  - type: role
+    title: Blockchain Data Engineer
+    organization: Citadel
+    start_date: "2023"
+    end_date: present
+    one_liner: re-architecting a multi-trillion record blockchain analytics ecosystem with dbt
+    skills:
+      - python
+      - sql
+      - dbt
+      - bigquery
+      - google cloud platform
+      - airflow
+      - kubernetes
+      - docker
+      - git
+
+  - type: role
+    title: Data Scientist
+    organization: Meta
+    start_date: "2021"
+    end_date: "2023"
+    one_liner: supported recruiting product teams with metric design, experimentation, and forecasting
+    skills:
+      - python
+      - sql
+      - statistical testing
+      - experimentation
+      - regression
+      - forecasting
+      - metric design
+      - tableau
+
+  - type: education
+    title: MS (partial), Applied Analytics
+    organization: Columbia University
+    start_date: "2020"
+    end_date: "2021"
+    one_liner: dove deeper into analytics and data science at the graduate level
+    skills:
+      - python
+      - statistical testing
+      - regression
+      - classification
+
+  - type: role
+    title: Business Intelligence Analyst II
+    organization: Memorial Sloan Kettering
+    start_date: "2018"
+    end_date: "2021"
+    one_liner: published nlp research and built analytics that informed hospital-wide policy
+    skills:
+      - python
+      - sql
+      - R
+      - tableau
+      - natural language processing
+      - classification
+      - time series analysis
+
+  - type: education
+    title: MEng, Chemical Engineering
+    organization: Cornell University
+    start_date: "2014"
+    end_date: "2015"
+    one_liner: engineering masters with a focus on process optimization
+    skills: []
+
+  - type: education
+    title: BS, Chemical Engineering
+    organization: Cornell University
+    start_date: "2010"
+    end_date: "2014"
+    one_liner: where it all started - engineering fundamentals and problem solving
+    skills: []
+
+# All skills with metadata for the bubble display
+skill_categories:
+  languages:
+    color: "#3178C6"
+    skills:
+      - python
+      - sql
+      - R
+  data_tools:
+    color: "#10B981"
+    skills:
+      - dbt
+      - bigquery
+      - tableau
+      - airflow
+  cloud_infra:
+    color: "#8B5CF6"
+    skills:
+      - google cloud platform
+      - aws
+      - kubernetes
+      - docker
+      - git
+  data_science:
+    color: "#F59E0B"
+    skills:
+      - statistical testing
+      - experimentation
+      - regression
+      - classification
+      - natural language processing
+      - forecasting
+      - time series analysis
+      - metric design
+  creative:
+    color: "#EC4899"
+    skills:
+      - llms
+      - ableton
+      - adobe premiere pro
+      - object-oriented programming
+      - data modeling
