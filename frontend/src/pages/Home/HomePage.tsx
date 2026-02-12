@@ -9,7 +9,6 @@ import {
   useContentError,
   useBio,
   useTimeline,
-  useProjects,
 } from "../../store";
 
 // SEO
@@ -24,7 +23,7 @@ import {
   ContactCTA,
 } from "../../components/sections";
 import SectionNav from "../../components/SectionNav";
-import { SectionPreviews } from "../../components/SectionPreviews";
+import { SectionFadePreview } from "../../components/SectionFadePreview";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
@@ -72,7 +71,6 @@ export function HomePage() {
   const error = useContentError();
   const bio = useBio();
   const timeline = useTimeline();
-  const projects = useProjects();
   const activeSection = useUIStore((state) => state.activeSection);
   const toggleSection = useUIStore((state) => state.toggleSection);
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
@@ -233,32 +231,70 @@ export function HomePage() {
           onSectionChange={handleSectionChange}
         />
 
-        {/* Section Previews (when no section is active) */}
-        {!activeSection && (
-          <SectionPreviews
-            bio={bio}
-            timeline={timeline}
-            projects={projects}
-            onSectionChange={handleSectionChange}
-          />
-        )}
-
         {/* Main Content */}
         <main>
-          <CSSTransition
-            nodeRef={nodeRef}
-            in={!!activeSection}
-            timeout={300}
-            classNames="fade"
-            unmountOnExit
-          >
-            <div
-              ref={nodeRef}
-              className={`content-section ${activeSection ? "visible" : ""}`}
+          {activeSection ? (
+            <CSSTransition
+              nodeRef={nodeRef}
+              in={!!activeSection}
+              timeout={300}
+              classNames="fade"
+              unmountOnExit
             >
-              {renderActiveSection()}
+              <div
+                ref={nodeRef}
+                className={`content-section ${activeSection ? "visible" : ""}`}
+              >
+                {renderActiveSection()}
+              </div>
+            </CSSTransition>
+          ) : (
+            <div className="section-fade-previews">
+              <SectionFadePreview
+                id="about"
+                label="about"
+                onExpand={handleSectionChange}
+                maxHeight={180}
+                index={0}
+              >
+                <section className="section-content about-section">
+                  <div className="about-content">
+                    <About onRegenerate={() => {}} content={bio ?? undefined} />
+                  </div>
+                </section>
+              </SectionFadePreview>
+
+              <SectionFadePreview
+                id="journey"
+                label="journey"
+                onExpand={handleSectionChange}
+                maxHeight={220}
+                index={1}
+              >
+                <Timeline data={timeline} />
+              </SectionFadePreview>
+
+              <SectionFadePreview
+                id="projects"
+                label="projects"
+                onExpand={handleSectionChange}
+                maxHeight={240}
+                index={2}
+              >
+                <Projects />
+              </SectionFadePreview>
+
+              <SectionFadePreview
+                id="music"
+                label="music"
+                onExpand={handleSectionChange}
+                maxHeight={200}
+                index={3}
+              >
+                <Music />
+              </SectionFadePreview>
             </div>
-          </CSSTransition>
+          )}
         </main>
 
         {/* Action Buttons */}
