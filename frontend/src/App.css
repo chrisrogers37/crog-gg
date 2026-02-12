@@ -495,30 +495,6 @@ a:hover {
   transform: scale(1.02);
 }
 
-.contact-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  color: var(--text-color);
-}
-
-.contact-header p {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-}
-
-.contact-header a {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.contact-header a:hover {
-  text-decoration: underline;
-}
-
 .usage-info {
   background-color: var(--card-background);
   padding: 1rem;
