@@ -49,15 +49,15 @@ describe("ContactCTA", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("renders the contact section with email and LinkedIn links", () => {
+  it("renders branded links for email and LinkedIn", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);
 
-    const emailLink = screen.getByText("send me an email");
+    const emailLink = screen.getByLabelText("Email");
     expect(emailLink).toBeInTheDocument();
     expect(emailLink).toHaveAttribute("href", "mailto:test@example.com");
 
-    const linkedinLink = screen.getByText("connect on linkedin");
+    const linkedinLink = screen.getByLabelText("LinkedIn");
     expect(linkedinLink).toBeInTheDocument();
     expect(linkedinLink).toHaveAttribute(
       "href",
@@ -66,7 +66,7 @@ describe("ContactCTA", () => {
     expect(linkedinLink).toHaveAttribute("target", "_blank");
   });
 
-  it("renders social links from bio data", () => {
+  it("renders branded social links from bio data", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);
 
@@ -77,9 +77,13 @@ describe("ContactCTA", () => {
       "https://open.spotify.com/artist/test",
     );
 
-    const hoobeLink = screen.getByLabelText("Hoobe");
+    const hoobeLink = screen.getByLabelText("hoobe");
     expect(hoobeLink).toBeInTheDocument();
     expect(hoobeLink).toHaveAttribute("href", "https://hoo.be/test");
+
+    const githubLink = screen.getByLabelText("GitHub");
+    expect(githubLink).toBeInTheDocument();
+    expect(githubLink).toHaveAttribute("href", "https://github.com/testuser");
   });
 
   it("renders the heading and description text", () => {
