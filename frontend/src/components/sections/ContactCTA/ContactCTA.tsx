@@ -15,10 +15,9 @@ export function ContactCTA() {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <h3 className="contact-cta-heading">let's connect</h3>
+      <h3 className="contact-cta-heading">connect w/ me</h3>
       <p className="contact-cta-text">
-        interested in working together, have a question, or just want to say
-        hey? i'd love to hear from you.
+        have a question, or just want to say hey? i'd love to hear from you.
       </p>
       <div className="contact-cta-links">
         <a
@@ -37,6 +36,46 @@ export function ContactCTA() {
         </a>
       </div>
       <div className="contact-cta-social">
+        {bio.social_links?.github && (
+          <a
+            href={bio.social_links.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+          >
+            GitHub
+          </a>
+        )}
+        {bio.social_links?.telegram && (
+          <a
+            href={bio.social_links.telegram}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Telegram"
+          >
+            Telegram
+          </a>
+        )}
+        {bio.social_links?.instagram_personal && (
+          <a
+            href={bio.social_links.instagram_personal}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram (@cr0g)"
+          >
+            Instagram (@cr0g)
+          </a>
+        )}
+        {bio.social_links?.instagram_music && (
+          <a
+            href={bio.social_links.instagram_music}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram (@crogmusic)"
+          >
+            Instagram (@crogmusic)
+          </a>
+        )}
         {bio.social_links?.spotify && (
           <a
             href={bio.social_links.spotify}

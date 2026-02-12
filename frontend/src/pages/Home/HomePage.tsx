@@ -32,6 +32,7 @@ import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { SectionNavigator } from "../../components/common/SectionNavigator";
+import { MobileMenu } from "../../components/layout/MobileMenu";
 
 // Styles
 import "../../App.css";
@@ -75,6 +76,7 @@ export function HomePage() {
   const timeline = useTimeline();
   const activeSection = useUIStore((state) => state.activeSection);
   const toggleSection = useUIStore((state) => state.toggleSection);
+  const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
 
   // Regeneration functionality
   const { regenerate, reset, isRegenerating, hasModifiedContent } =
@@ -179,6 +181,15 @@ export function HomePage() {
       <div className="home-page">
         <div className="home-theme-toggle">
           <ThemeToggle />
+          <button
+            className="home-hamburger"
+            onClick={toggleMobileMenu}
+            aria-label="Open menu"
+          >
+            <span className="home-hamburger-line" />
+            <span className="home-hamburger-line" />
+            <span className="home-hamburger-line" />
+          </button>
         </div>
         {/* Header */}
         <header>
@@ -216,20 +227,6 @@ export function HomePage() {
               </div>
               <div className="contact-subtle">
                 <span>{bio?.location}</span>
-                <span className="contact-separator" aria-hidden="true">
-                  ·
-                </span>
-                <a href={`mailto:${bio?.email || ""}`}>{bio?.email}</a>
-                <span className="contact-separator" aria-hidden="true">
-                  ·
-                </span>
-                <a
-                  href={bio?.social_links?.linkedin || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  linkedin
-                </a>
               </div>
             </div>
           </div>
@@ -272,6 +269,18 @@ export function HomePage() {
         {/* Contact CTA */}
         <ContactCTA />
       </div>
+
+      {/* Mobile Menu */}
+      <MobileMenu
+        sections={[
+          { id: "about", label: "About" },
+          { id: "journey", label: "Journey" },
+          { id: "projects", label: "Projects" },
+          { id: "music", label: "Music" },
+        ]}
+        onSectionChange={handleSectionChange}
+        activeSection={activeSection}
+      />
     </>
   );
 }

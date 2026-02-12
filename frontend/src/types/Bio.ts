@@ -11,5 +11,8 @@ export interface BioData {
     hoobe: string;
     spotify: string;
     linkedin: string;
+    telegram?: string;
+    instagram_personal?: string;
+    instagram_music?: string;
   };
 }

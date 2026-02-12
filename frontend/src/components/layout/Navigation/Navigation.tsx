@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "../../common/ThemeToggle";
+import { useUIStore } from "../../../store";
 import "./Navigation.css";
 
 /**
@@ -10,6 +11,7 @@ import "./Navigation.css";
  */
 export function Navigation() {
   const location = useLocation();
+  const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
 
   const navItems = [
     { path: "/", label: "Home" },
@@ -41,6 +43,17 @@ export function Navigation() {
           ))}
         </ul>
         <ThemeToggle />
+
+        {/* Hamburger button - visible on mobile only */}
+        <button
+          className="nav-hamburger"
+          onClick={toggleMobileMenu}
+          aria-label="Open menu"
+        >
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+          <span className="nav-hamburger-line" />
+        </button>
       </div>
     </nav>
   );

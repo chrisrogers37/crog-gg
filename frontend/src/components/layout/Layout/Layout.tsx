@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { Navigation } from "../Navigation";
 import { Footer } from "../Footer";
+import { MobileMenu } from "../MobileMenu";
 import "./Layout.css";
 
 /**
@@ -33,6 +34,9 @@ export function Layout() {
 
       {/* Footer on all pages */}
       <Footer />
+
+      {/* Mobile menu for non-home pages */}
+      {!isHomePage && <MobileMenu />}
     </div>
   );
 }
