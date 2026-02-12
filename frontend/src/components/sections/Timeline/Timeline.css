@@ -5,7 +5,7 @@
 
 .timeline-layout {
   display: grid;
-  grid-template-columns: 1fr 240px;
+  grid-template-columns: 1fr 220px;
   gap: 2rem;
 }
 
@@ -17,7 +17,7 @@
 
 .timeline-line {
   position: absolute;
-  left: 50%;
+  left: 1.25rem;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -25,38 +25,34 @@
   transform: translateX(-50%);
 }
 
-/* Timeline Entry */
+/* Timeline Entry - single column, cards on the right */
 .timeline-entry {
   position: relative;
   display: flex;
   align-items: flex-start;
   margin-bottom: 2rem;
   width: 100%;
-}
-
-.timeline-left {
+  padding-left: 3.5rem;
   flex-direction: row;
-  padding-right: calc(50% + 1.5rem);
 }
 
-.timeline-left .timeline-card {
-  text-align: right;
-  margin-left: auto;
-}
-
+.timeline-left,
 .timeline-right {
-  flex-direction: row-reverse;
-  padding-left: calc(50% + 1.5rem);
+  padding-left: 3.5rem;
+  padding-right: 0;
+  flex-direction: row;
 }
 
+.timeline-left .timeline-card,
 .timeline-right .timeline-card {
   text-align: left;
+  margin-left: 0;
 }
 
 /* Timeline Dot */
 .timeline-dot {
   position: absolute;
-  left: 50%;
+  left: 1.25rem;
   transform: translateX(-50%);
   width: 2.5rem;
   height: 2.5rem;
@@ -84,7 +80,7 @@
 
 /* Timeline Card */
 .timeline-card {
-  max-width: calc(50% - 2.5rem);
+  max-width: 100%;
   padding: 1rem 1.25rem;
   background: var(--card-background);
   border: 1px solid var(--border-color);
@@ -93,6 +89,7 @@
   transition:
     box-shadow 0.2s,
     transform 0.2s;
+  flex: 1;
 }
 
 .timeline-card:hover {
@@ -164,32 +161,10 @@
   white-space: nowrap;
 }
 
-/* Mobile: Single column, skills below each entry */
+/* Mobile: Single column, skills above timeline */
 @media (max-width: 768px) {
   .timeline-layout {
     grid-template-columns: 1fr;
-  }
-
-  .timeline-line {
-    left: 1.25rem;
-  }
-
-  .timeline-left,
-  .timeline-right {
-    padding-left: 3.5rem;
-    padding-right: 0;
-    flex-direction: row;
-  }
-
-  .timeline-left .timeline-card,
-  .timeline-right .timeline-card {
-    text-align: left;
-    max-width: 100%;
-    margin-left: 0;
-  }
-
-  .timeline-dot {
-    left: 1.25rem;
   }
 
   .timeline-skills-sidebar {
