@@ -263,36 +263,6 @@ export function HomePage() {
                   </div>
                 </section>
               </SectionFadePreview>
-
-              <SectionFadePreview
-                id="journey"
-                label="journey"
-                onExpand={handleSectionChange}
-                maxHeight={220}
-                index={1}
-              >
-                <Timeline data={timeline} />
-              </SectionFadePreview>
-
-              <SectionFadePreview
-                id="projects"
-                label="projects"
-                onExpand={handleSectionChange}
-                maxHeight={240}
-                index={2}
-              >
-                <Projects />
-              </SectionFadePreview>
-
-              <SectionFadePreview
-                id="music"
-                label="music"
-                onExpand={handleSectionChange}
-                maxHeight={200}
-                index={3}
-              >
-                <Music />
-              </SectionFadePreview>
             </div>
           )}
         </main>
