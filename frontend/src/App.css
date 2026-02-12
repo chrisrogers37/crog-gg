@@ -89,9 +89,11 @@ h1 {
 .typewriter-text {
   white-space: pre-wrap;
   word-wrap: break-word;
+  overflow-wrap: break-word;
   line-height: 1.7;
   color: var(--text-color);
   transition: none;
+  max-width: 100%;
 }
 
 .typewriter-hidden-calc {
@@ -335,6 +337,11 @@ a:hover {
     align-items: center;
     text-align: center;
     padding: 0;
+    gap: 1rem;
+  }
+
+  .contact-subtle {
+    justify-content: center;
   }
 
   .button-group {
@@ -380,7 +387,7 @@ a:hover {
   }
 
   .content-section {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .links-grid {
@@ -389,6 +396,10 @@ a:hover {
 
   .section-nav-container {
     gap: 0.5rem;
+  }
+
+  .header-text {
+    align-items: center;
   }
 }
 
@@ -989,6 +1000,14 @@ a:hover {
   gap: 1rem;
 }
 
+@media (max-width: 768px) {
+  .section-nav {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+  }
+}
+
 @media (max-width: 640px) {
   .section-nav-container {
     justify-content: flex-start;
@@ -1001,11 +1020,13 @@ a:hover {
     -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
     mask-image: linear-gradient(to right, black 85%, transparent 100%);
   }
+}
 
-  /* Remove fade hint when scrolled to the end */
-  .section-nav:not(:hover) {
-    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+@media (max-width: 480px) {
+  .section-nav {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    width: calc(100% + 1rem);
   }
 }
 
@@ -1268,4 +1289,14 @@ main {
   font-weight: 300;
   line-height: 1.4;
   text-align: left;
+}
+
+@media (max-width: 768px) {
+  .welcome-typewriter {
+    text-align: center;
+  }
+
+  .welcome-message {
+    text-align: center;
+  }
 }

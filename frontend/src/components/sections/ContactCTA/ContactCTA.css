@@ -89,4 +89,9 @@
     max-width: 280px;
     text-align: center;
   }
+
+  .contact-cta-social {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
 }
