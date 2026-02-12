@@ -1,8 +1,16 @@
 # Phase 05: Project Showcase Upgrade
 
+**Status:** 📋 PENDING
 **PR Title:** Upgrade project showcase with featured hierarchy, images, and richer cards
 **Risk Level:** Low
 **Estimated Effort:** Medium (4-6 hours)
+
+## Challenge Round Decisions (2026-02-12)
+
+- **Architecture:** Upgrade existing ProjectCard.tsx/Projects.tsx/Projects.css in-place rather than creating new files. Wire Portfolio.tsx to use existing Projects component.
+- **Content:** Preserve existing descriptions, URLs, and order values. Only add `gradient` field and normalize missing fields (id, icon, category, featured, status) for 30-day-abs and shitpost-alpha.
+- **CSS variables:** Fix plan's `--text-primary`/`--text-secondary` → `--text-color`/`--text-color-secondary` to match codebase.
+- **hedwig.yaml:** Left untouched (not listed in index.yaml, not part of this phase).
 
 ## Files Modified
 
@@ -15,8 +23,10 @@
 | Modified | `frontend/public/content/projects/shitpost-alpha.yaml`      |
 | Modified | `frontend/public/content/projects/github.yaml`              |
 | Modified | `frontend/src/components/Portfolio.tsx`                     |
-| Created  | `frontend/src/components/sections/Projects/ProjectCard.tsx` |
-| Created  | `frontend/src/components/sections/Projects/ProjectCard.css` |
+| Modified | `frontend/src/components/sections/Projects/ProjectCard.tsx` |
+| Modified | `frontend/src/components/sections/Projects/Projects.tsx`    |
+| Modified | `frontend/src/components/sections/Projects/Projects.css`    |
+| Modified | `frontend/src/types/Project.ts`                             |
 
 ## Context
 
