@@ -7,3 +7,128 @@
   color: var(--text-color-secondary);
   padding: 2rem;
 }
+
+/* Project card grid */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.projects-other-heading {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color-secondary);
+  margin: 1.5rem 0 0.75rem;
+  text-transform: lowercase;
+}
+
+/* Project card */
+.project-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  background: var(--card-background);
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+}
+
+/* Featured cards span 2 columns */
+.project-card-featured {
+  grid-column: span 2;
+}
+
+/* Gradient image placeholder */
+.project-card-image {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.project-card-featured .project-card-image {
+  height: 160px;
+}
+
+.project-card-icon {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Card body */
+.project-card-body {
+  padding: 1rem;
+}
+
+.project-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.project-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.project-card-status {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid;
+  border-radius: 9999px;
+  text-transform: lowercase;
+}
+
+.project-card-description {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.project-card-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.project-card-tech-pill {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--border-color);
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card-featured {
+    grid-column: span 1;
+  }
+}

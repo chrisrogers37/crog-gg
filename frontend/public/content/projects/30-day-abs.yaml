@@ -1,5 +1,10 @@
+# 30 Day A/Bs - LLM A/B Testing Simulator
+id: 30-day-abs
 title: "30 Day A/Bs"
 description: "LLM simulated experimental business scenarios. Learn A/B testing!"
+url: "https://30-day-abs.streamlit.app/"
+icon: fas fa-flask
+category: data-science
 technologies:
   - "Python"
   - "LLM"
@@ -7,8 +12,10 @@ technologies:
   - "Data Analysis"
 github_url: "https://github.com/chrisrogers37/30-day-abs"
 demo_url: "https://30-day-abs.streamlit.app/"
+featured: false
 order: 1
-image: ""
+status: active
+gradient: "linear-gradient(135deg, #EF4444 0%, #991B1B 100%)"
 tags:
   - "Machine Learning"
   - "Data Science"

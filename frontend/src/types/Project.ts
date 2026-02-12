@@ -9,6 +9,7 @@ export interface Project {
   featured: boolean;
   order: number;
   image?: string;
+  gradient?: string;
   github?: string;
   demo?: string;
   status?: "active" | "archived" | "experimental";

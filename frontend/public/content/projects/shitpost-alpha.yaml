@@ -1,5 +1,10 @@
+# Shitpost Alpha - Financial Social Media Analysis
+id: shitpost-alpha
 title: "Shitpost Alpha"
 description: "Real-time financial analysis of social media posts using LLMs to predict market movements and send trading alerts. Harvesting the President's SHITPOSTS to generate ALPHA."
+url: "https://shitpost-alpha-dash.up.railway.app/"
+icon: fas fa-chart-line
+category: data-science
 technologies:
   - "Python"
   - "LLM"
@@ -8,8 +13,10 @@ technologies:
   - "Railway"
 github_url: "https://github.com/chrisrogers37/shitpost-alpha"
 demo_url: "https://shitpost-alpha-dash.up.railway.app/"
+featured: false
 order: 2
-image: ""
+status: active
+gradient: "linear-gradient(135deg, #F59E0B 0%, #92400E 100%)"
 tags:
   - "Machine Learning"
   - "Data Science"

@@ -10,8 +10,9 @@ category: open-source
 technologies:
   - Various
 featured: false
-order: 4
+order: 99
 status: active
+gradient: "linear-gradient(135deg, #6B7280 0%, #1F2937 100%)"
 tags:
   - open-source
   - development

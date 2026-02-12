@@ -11,19 +11,12 @@ interface Language {
   bytes: number;
 }
 
-/**
- * Projects Section
- *
- * Displays project cards and GitHub language statistics.
- * GitHub stats are fetched lazily when the section is shown.
- */
 export function Projects() {
   const projects = useProjects();
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loadingLanguages, setLoadingLanguages] = useState(false);
   const [languageError, setLanguageError] = useState<string | null>(null);
 
-  // Fetch GitHub stats when component mounts
   useEffect(() => {
     const fetchLanguages = async () => {
       setLoadingLanguages(true);
@@ -64,25 +57,43 @@ export function Projects() {
     );
   }
 
-  // Separate GitHub project from others
-  const mainProjects = projects.filter((p) => p.id !== "github");
+  const featuredProjects = projects
+    .filter((p) => p.featured && p.id !== "github")
+    .sort((a, b) => a.order - b.order);
+
+  const otherProjects = projects
+    .filter((p) => !p.featured && p.id !== "github")
+    .sort((a, b) => a.order - b.order);
+
   const githubProject = projects.find((p) => p.id === "github");
 
   return (
     <section className="projects-section">
-      {/* Main Projects Grid */}
-      <div className="links-grid">
-        {mainProjects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-      </div>
+      {/* Featured Projects */}
+      {featuredProjects.length > 0 && (
+        <div className="projects-grid">
+          {featuredProjects.map((project) => (
+            <ProjectCard key={project.id} project={project} featured />
+          ))}
+        </div>
+      )}
 
-      {/* GitHub Project - Separate Section */}
+      {/* Other Projects */}
+      {otherProjects.length > 0 && (
+        <>
+          <h4 className="projects-other-heading">other projects</h4>
+          <div className="projects-grid">
+            {otherProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* GitHub link */}
       {githubProject && (
         <div className="github-project-section">
-          <div className="github-project-card">
-            <ProjectCard project={githubProject} isGitHubLink />
-          </div>
+          <ProjectCard project={githubProject} />
         </div>
       )}
 
