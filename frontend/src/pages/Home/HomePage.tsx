@@ -27,6 +27,7 @@ import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
+import { SectionNavigator } from "../../components/common/SectionNavigator";
 
 // Styles
 import "../../App.css";
@@ -63,6 +64,9 @@ const PROFILE_PHOTOS = [
   "/profile-photos/photo-4.jpg",
   "/profile-photos/photo-5.jpg",
 ];
+
+// Section order for flow navigation
+const SECTION_ORDER = ["about", "journey", "projects", "music"];
 
 export function HomePage() {
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -123,9 +127,19 @@ export function HomePage() {
         return null;
     }
 
+    const currentIndex = SECTION_ORDER.indexOf(activeSection);
+    const nextSection =
+      currentIndex >= 0 && currentIndex < SECTION_ORDER.length - 1
+        ? SECTION_ORDER[currentIndex + 1]
+        : null;
+
     return (
       <ErrorBoundary key={activeSection} compact>
         {content}
+        <SectionNavigator
+          nextSection={nextSection}
+          onNavigate={handleSectionChange}
+        />
       </ErrorBoundary>
     );
   };

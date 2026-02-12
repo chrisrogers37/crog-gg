@@ -1,5 +1,10 @@
 # Phase 04: Section Flow Navigation
 
+**Status:** ✅ COMPLETE
+**Started:** 2026-02-12
+**Completed:** 2026-02-12
+**Branch:** `claude/product-enhancement-discovery-er7gp`
+
 **PR Title:** Add section flow navigation with next-section affordances
 **Risk Level:** Low
 **Estimated Effort:** Small (2-3 hours)
@@ -36,16 +41,14 @@ import "./SectionNavigator.css";
 
 type SectionNavigatorProps = {
   nextSection: string | null;
-  nextLabel: string | null;
   onNavigate: (section: string) => void;
 };
 
 export function SectionNavigator({
   nextSection,
-  nextLabel,
   onNavigate,
 }: SectionNavigatorProps) {
-  if (!nextSection || !nextLabel) return null;
+  if (!nextSection) return null;
 
   return (
     <motion.div
@@ -58,7 +61,7 @@ export function SectionNavigator({
         className="section-navigator-btn"
         onClick={() => onNavigate(nextSection)}
       >
-        <span className="section-navigator-label">up next: {nextLabel}</span>
+        <span className="section-navigator-label">up next: {nextSection}</span>
         <span className="section-navigator-arrow">&#8595;</span>
       </button>
     </motion.div>
@@ -88,7 +91,7 @@ export function SectionNavigator({
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   transition: all 0.2s;
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
 }
 
 .section-navigator-btn:hover {
@@ -136,25 +139,21 @@ export { SectionNavigator } from "./SectionNavigator";
 import { SectionNavigator } from "../../components/common/SectionNavigator";
 ```
 
-**Define section order** as a constant inside the component (after the `handleSectionChange` function, around line 103):
+**Define section order** as a module-level constant (after `PROFILE_PHOTOS`, before the component):
 
 ```typescript
 // Section order for flow navigation
-const sectionOrder = ["about", "journey", "projects", "music"];
-const sectionLabels: Record<string, string> = {
-  about: "about",
-  journey: "journey",
-  projects: "projects",
-  music: "music",
-};
+const SECTION_ORDER = ["about", "journey", "projects", "music"];
+```
 
-const getNextSection = () => {
-  const currentIndex = sectionOrder.indexOf(activeSection);
-  if (currentIndex === -1 || currentIndex >= sectionOrder.length - 1) {
-    return null;
-  }
-  return sectionOrder[currentIndex + 1];
-};
+**Add helper** inside the `renderActiveSection` function (before the return block):
+
+```typescript
+const currentIndex = SECTION_ORDER.indexOf(activeSection);
+const nextSection =
+  currentIndex >= 0 && currentIndex < SECTION_ORDER.length - 1
+    ? SECTION_ORDER[currentIndex + 1]
+    : null;
 ```
 
 **Add SectionNavigator** inside the `renderActiveSection` function. Modify the return at the bottom of `renderActiveSection` to include it:
@@ -172,14 +171,17 @@ return (
 **After:**
 
 ```tsx
-const nextSection = getNextSection();
+const currentIndex = SECTION_ORDER.indexOf(activeSection);
+const nextSection =
+  currentIndex >= 0 && currentIndex < SECTION_ORDER.length - 1
+    ? SECTION_ORDER[currentIndex + 1]
+    : null;
 
 return (
   <ErrorBoundary key={activeSection} compact>
     {content}
     <SectionNavigator
       nextSection={nextSection}
-      nextLabel={nextSection ? sectionLabels[nextSection] : null}
       onNavigate={handleSectionChange}
     />
   </ErrorBoundary>
@@ -202,7 +204,6 @@ describe("SectionNavigator", () => {
     render(
       <SectionNavigator
         nextSection="journey"
-        nextLabel="journey"
         onNavigate={vi.fn()}
       />
     );
@@ -214,7 +215,6 @@ describe("SectionNavigator", () => {
     render(
       <SectionNavigator
         nextSection="journey"
-        nextLabel="journey"
         onNavigate={onNavigate}
       />
     );
@@ -226,7 +226,6 @@ describe("SectionNavigator", () => {
     const { container } = render(
       <SectionNavigator
         nextSection={null}
-        nextLabel={null}
         onNavigate={vi.fn()}
       />
     );
