@@ -217,3 +217,23 @@ test.describe("Action Buttons", () => {
     await expect(actionButtons).not.toBeVisible();
   });
 });
+
+test.describe("Contact CTA", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
+  test("displays contact CTA section", async ({ page }) => {
+    const cta = page.locator(".contact-cta");
+    await expect(cta).toBeVisible({ timeout: 5000 });
+
+    // Check that email link exists
+    const emailLink = cta.locator('a[href^="mailto:"]');
+    await expect(emailLink).toBeVisible();
+  });
+
+  test("homepage has footer", async ({ page }) => {
+    const footer = page.locator("footer.footer");
+    await expect(footer).toBeVisible({ timeout: 5000 });
+  });
+});

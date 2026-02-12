@@ -1,0 +1,92 @@
+.contact-cta {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.contact-cta-heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.75rem;
+}
+
+.contact-cta-text {
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+.contact-cta-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.contact-cta-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.contact-cta-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.contact-cta-primary:hover {
+  background-color: var(--hover-color);
+}
+
+.contact-cta-secondary {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.contact-cta-secondary:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.contact-cta-social {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.contact-cta-social a {
+  color: var(--text-color-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.contact-cta-social a:hover {
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .contact-cta {
+    padding: 2rem 1rem;
+  }
+
+  .contact-cta-links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-cta-btn {
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+  }
+}

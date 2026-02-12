@@ -1,6 +1,9 @@
 # Phase 02: Contact CTA + Homepage Footer
 
-**Status:** 📋 PENDING
+**Status:** ✅ COMPLETE
+**Started:** 2026-02-12
+**Completed:** 2026-02-12
+**Branch:** claude/contact-cta-footer-ayKbm
 **PR Title:** Add contact CTA section and bring footer to homepage
 **Risk Level:** Low
 **Estimated Effort:** Small (2-3 hours)
@@ -19,7 +22,7 @@
 
 The #1 success metric is "they reach out." Currently there's no conversion path on the homepage:
 
-- Email is a tiny link in the header (line 227 of HomePage.tsx)
+- Email is a tiny link in the header (line 217 of HomePage.tsx)
 - No "let's work together" or "get in touch" button anywhere
 - The footer (with GitHub/LinkedIn links) is **hidden on the homepage** (Layout.tsx line 35: `{!isHomePage && <Footer />}`)
 - Social links in the footer don't match the fuller set in bio.yaml
@@ -68,10 +71,7 @@ export function ContactCTA() {
           send me an email
         </a>
         <a
-          href={
-            bio.social_links?.linkedin ||
-            "https://linkedin.com/in/chrisrogers37"
-          }
+          href={bio.social_links?.linkedin}
           target="_blank"
           rel="noopener noreferrer"
           className="contact-cta-btn contact-cta-secondary"
@@ -241,15 +241,15 @@ export { ContactCTA } from "./ContactCTA";
 
 **File:** `frontend/src/pages/Home/HomePage.tsx`
 
-**Add import** after line 32 (after ActionButtons import):
+**Add import** after line 25 (after ActionButtons import):
 
 ```tsx
 import { ContactCTA } from "../../components/sections/ContactCTA";
 ```
 
-**Add ContactCTA** after the ActionButtons section (after line 312, before the closing `</div>`):
+**Add ContactCTA** after the ActionButtons section (after line 265, before the closing `</div>`):
 
-**Before (lines 304-313):**
+**Before (lines 257-265):**
 
 ```tsx
         {/* Action Buttons */}

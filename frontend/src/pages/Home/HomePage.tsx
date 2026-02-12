@@ -20,7 +20,12 @@ import { SEO, PersonSchema } from "../../components/SEO";
 
 // Components
 import About from "../../components/About";
-import { Projects, Music, Timeline } from "../../components/sections";
+import {
+  Projects,
+  Music,
+  Timeline,
+  ContactCTA,
+} from "../../components/sections";
 import SectionNav from "../../components/SectionNav";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
@@ -263,6 +268,9 @@ export function HomePage() {
             hasModifiedContent={hasModifiedContent}
           />
         )}
+
+        {/* Contact CTA */}
+        <ContactCTA />
       </div>
     </>
   );
