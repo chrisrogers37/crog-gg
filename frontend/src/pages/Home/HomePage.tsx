@@ -13,7 +13,7 @@ import {
   useIsLoading,
   useContentError,
   useBio,
-  useSkills,
+  useTimeline,
 } from "../../store";
 
 // SEO
@@ -21,13 +21,7 @@ import { SEO, PersonSchema } from "../../components/SEO";
 
 // Components
 import About from "../../components/About";
-import Skills from "../../components/Skills";
-import {
-  Experience,
-  Education,
-  Projects,
-  Music,
-} from "../../components/sections";
+import { Projects, Music, Timeline } from "../../components/sections";
 import SectionNav from "../../components/SectionNav";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
@@ -86,7 +80,7 @@ export function HomePage() {
   const isLoading = useIsLoading();
   const error = useContentError();
   const bio = useBio();
-  const skills = useSkills();
+  const timeline = useTimeline();
   const activeSection = useUIStore((state) => state.activeSection);
   const toggleSection = useUIStore((state) => state.toggleSection);
 
@@ -116,14 +110,8 @@ export function HomePage() {
           </section>
         );
         break;
-      case "skills":
-        content = <Skills skills={skills} />;
-        break;
-      case "experience":
-        content = <Experience />;
-        break;
-      case "education":
-        content = <Education />;
+      case "journey":
+        content = <Timeline data={timeline} />;
         break;
       case "projects":
         content = <Projects />;
@@ -161,14 +149,7 @@ export function HomePage() {
         </header>
         <nav className="section-nav" aria-hidden="true">
           <div className="section-nav-container">
-            {[
-              "about",
-              "experience",
-              "skills",
-              "education",
-              "projects",
-              "music",
-            ].map((id) => (
+            {["about", "journey", "projects", "music"].map((id) => (
               <span key={id} className="section-nav-button skeleton-nav-btn">
                 &nbsp;
               </span>

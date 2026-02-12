@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { BioData, Employment, Education, Skill, Project } from "../types";
+import { TimelineData } from "../types/Timeline";
 import { loadResumeData } from "../data/resume";
+import { loadTimeline } from "../utils/timelineLoader";
 
 // ===========================================
 // TYPES
@@ -14,6 +16,7 @@ interface ContentState {
   education: Education[];
   skills: Skill[];
   projects: Project[];
+  timeline: TimelineData | null;
 
   // Original data for reset functionality
   originalBio: BioData | null;
@@ -60,6 +63,7 @@ const initialState: ContentState = {
   education: [],
   skills: [],
   projects: [],
+  timeline: null,
   originalBio: null,
   originalExperience: [],
   originalEducation: [],
@@ -97,7 +101,10 @@ export const useContentStore = create<ContentStore>()(
         try {
           set({ isLoading: true, error: null });
 
-          const data = await loadResumeData();
+          const [data, timelineData] = await Promise.all([
+            loadResumeData(),
+            loadTimeline(),
+          ]);
 
           set({
             bio: data.bio,
@@ -105,6 +112,7 @@ export const useContentStore = create<ContentStore>()(
             education: data.education,
             skills: data.skills,
             projects: data.projects,
+            timeline: timelineData,
             // Store originals for reset
             originalBio: data.bio,
             originalExperience: data.experience,
@@ -322,3 +330,4 @@ export const useIsRegenerating = () =>
 export const useContentError = () => useContentStore((state) => state.error);
 export const useHasModifiedContent = () =>
   useContentStore((state) => state.hasModifiedContent);
+export const useTimeline = () => useContentStore((state) => state.timeline);
