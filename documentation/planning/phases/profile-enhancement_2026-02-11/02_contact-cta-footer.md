@@ -1,5 +1,6 @@
 # Phase 02: Contact CTA + Homepage Footer
 
+**Status:** 📋 PENDING
 **PR Title:** Add contact CTA section and bring footer to homepage
 **Risk Level:** Low
 **Estimated Effort:** Small (2-3 hours)
@@ -79,16 +80,6 @@ export function ContactCTA() {
         </a>
       </div>
       <div className="contact-cta-social">
-        {bio.social_links?.github && (
-          <a
-            href={bio.social_links.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub"
-          >
-            GitHub
-          </a>
-        )}
         {bio.social_links?.spotify && (
           <a
             href={bio.social_links.spotify}
@@ -130,12 +121,12 @@ export function ContactCTA() {
 .contact-cta-heading {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-color);
   margin: 0 0 0.75rem;
 }
 
 .contact-cta-text {
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
   font-size: 1rem;
   max-width: 480px;
   margin: 0 auto 1.5rem;
@@ -186,7 +177,7 @@ export function ContactCTA() {
 }
 
 .contact-cta-social a {
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
   text-decoration: none;
   font-size: 0.875rem;
   transition: color 0.2s;
@@ -250,15 +241,15 @@ export { ContactCTA } from "./ContactCTA";
 
 **File:** `frontend/src/pages/Home/HomePage.tsx`
 
-**Add import** after line 31 (after ActionButtons import):
+**Add import** after line 32 (after ActionButtons import):
 
 ```tsx
 import { ContactCTA } from "../../components/sections/ContactCTA";
 ```
 
-**Add ContactCTA** after the ActionButtons section (after line 298, before the closing `</div>`):
+**Add ContactCTA** after the ActionButtons section (after line 312, before the closing `</div>`):
 
-**Before (lines 291-300):**
+**Before (lines 304-313):**
 
 ```tsx
         {/* Action Buttons */}
@@ -306,7 +297,7 @@ describe("ContactCTA", () => {
   });
 
   it("renders social links from bio data", () => {
-    // Check GitHub, Spotify, Hoobe links render
+    // Check Spotify, Hoobe links render (GitHub is in footer, not CTA)
   });
 
   it("does not render when bio is null", () => {
