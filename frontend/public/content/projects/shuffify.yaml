@@ -15,6 +15,7 @@ technologies:
 featured: true
 order: 5
 status: active
+gradient: "linear-gradient(135deg, #1DB954 0%, #191414 100%)"
 tags:
   - music
   - spotify

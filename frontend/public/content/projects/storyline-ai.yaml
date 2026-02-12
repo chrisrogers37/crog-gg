@@ -17,6 +17,7 @@ technologies:
 featured: true
 order: 4
 status: active
+gradient: "linear-gradient(135deg, #8B5CF6 0%, #4C1D95 100%)"
 tags:
   - automation
   - telegram

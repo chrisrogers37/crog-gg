@@ -17,6 +17,7 @@ interface RawProjectData {
   featured?: boolean;
   order?: number;
   image?: string;
+  gradient?: string;
   status?: "active" | "archived" | "experimental";
   tags?: string[];
 }
@@ -59,6 +60,7 @@ export const loadProjects = async (): Promise<Project[]> => {
             featured: projectData.featured || false,
             order: projectData.order || 999,
             image: projectData.image,
+            gradient: projectData.gradient,
             github: projectData.github_url,
             demo: projectData.demo_url,
             status: projectData.status,
@@ -107,6 +109,7 @@ export const loadProjects = async (): Promise<Project[]> => {
               featured: projectData.featured || false,
               order: projectData.order || 999,
               image: projectData.image,
+              gradient: projectData.gradient,
               github: projectData.github_url,
               demo: projectData.demo_url,
               status: projectData.status,
