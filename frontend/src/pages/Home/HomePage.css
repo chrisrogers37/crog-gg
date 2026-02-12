@@ -17,6 +17,34 @@
   top: 1rem;
   right: 1rem;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Hamburger for homepage - hidden on desktop */
+.home-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.home-hamburger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text-color);
+  border-radius: 1px;
+}
+
+@media (max-width: 768px) {
+  .home-hamburger {
+    display: flex;
+  }
 }
 
 /* Header Tagline */

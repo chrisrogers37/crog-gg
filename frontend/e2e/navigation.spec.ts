@@ -83,6 +83,57 @@ test.describe("External Links", () => {
   });
 });
 
+test.describe("Mobile Menu", () => {
+  test("mobile menu opens and closes", async ({ page }) => {
+    // Set mobile viewport
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/");
+
+    // Find and click hamburger
+    const hamburger = page.locator(".home-hamburger");
+    await expect(hamburger).toBeVisible();
+    await hamburger.click();
+
+    // Menu should be visible
+    const menu = page.locator(".mobile-menu");
+    await expect(menu).toBeVisible({ timeout: 3000 });
+
+    // Close button should work
+    const closeBtn = page.locator(".mobile-menu-close");
+    await closeBtn.click();
+    await expect(menu).not.toBeVisible();
+  });
+
+  test("mobile menu section navigation works", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/");
+
+    // Open menu
+    await page.locator(".home-hamburger").click();
+
+    // Click a section
+    const journeyBtn = page.locator(".mobile-menu-section-btn", {
+      hasText: "journey",
+    });
+    await journeyBtn.click();
+
+    // Menu should close
+    await expect(page.locator(".mobile-menu")).not.toBeVisible();
+
+    // Timeline should be visible
+    const timeline = page.locator(".timeline-container");
+    await expect(timeline).toBeVisible({ timeout: 5000 });
+  });
+
+  test("hamburger hidden on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+
+    const hamburger = page.locator(".home-hamburger");
+    await expect(hamburger).not.toBeVisible();
+  });
+});
+
 test.describe("Responsive Design", () => {
   test("page renders on mobile viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });

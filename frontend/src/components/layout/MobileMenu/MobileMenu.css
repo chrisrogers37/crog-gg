@@ -1,0 +1,115 @@
+/* Backdrop */
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* Menu Panel */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  max-width: 85vw;
+  background: var(--card-background);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-menu-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.mobile-menu-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-color-secondary);
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.mobile-menu-close:hover {
+  color: var(--text-color);
+}
+
+/* Content */
+.mobile-menu-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0;
+}
+
+.mobile-menu-section {
+  padding: 0.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mobile-menu-section + .mobile-menu-section {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.mobile-menu-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  text-transform: lowercase;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.5px;
+}
+
+/* Links and buttons */
+.mobile-menu-link,
+.mobile-menu-section-btn {
+  display: block;
+  padding: 0.6rem 0;
+  font-size: 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: color 0.2s;
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-section-btn:hover {
+  color: var(--primary-color);
+}
+
+.mobile-menu-section-btn.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Theme section */
+.mobile-menu-theme {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}

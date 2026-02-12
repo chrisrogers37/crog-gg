@@ -82,11 +82,39 @@
   background: #60a5fa;
 }
 
-@media (max-width: 640px) {
-  .nav-links {
-    gap: 1rem;
+/* Hamburger button - hidden on desktop */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+.nav-hamburger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text-color);
+  border-radius: 1px;
+  transition: transform 0.2s;
+}
+
+@media (max-width: 768px) {
+  .nav-hamburger {
+    display: flex;
   }
 
+  .nav-links,
+  .nav-right > .theme-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
   .nav-right {
     gap: 1rem;
   }
