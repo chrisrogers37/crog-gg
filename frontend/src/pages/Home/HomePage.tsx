@@ -227,20 +227,6 @@ export function HomePage() {
               </div>
               <div className="contact-subtle">
                 <span>{bio?.location}</span>
-                <span className="contact-separator" aria-hidden="true">
-                  ·
-                </span>
-                <a href={`mailto:${bio?.email || ""}`}>{bio?.email}</a>
-                <span className="contact-separator" aria-hidden="true">
-                  ·
-                </span>
-                <a
-                  href={bio?.social_links?.linkedin || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  linkedin
-                </a>
               </div>
             </div>
           </div>

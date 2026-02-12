@@ -33,6 +33,9 @@ const mockBio = {
     linkedin: "https://linkedin.com/in/testuser",
     spotify: "https://open.spotify.com/artist/test",
     hoobe: "https://hoo.be/test",
+    telegram: "https://t.me/testuser",
+    instagram_personal: "https://instagram.com/testuser",
+    instagram_music: "https://instagram.com/testmusic",
   },
 };
 
@@ -83,9 +86,9 @@ describe("ContactCTA", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);
 
-    expect(screen.getByText("let's connect")).toBeInTheDocument();
+    expect(screen.getByText("connect w/ me")).toBeInTheDocument();
     expect(
-      screen.getByText(/interested in working together/),
+      screen.getByText(/have a question, or just want to say hey/),
     ).toBeInTheDocument();
   });
 });
