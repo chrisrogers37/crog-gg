@@ -1,5 +1,9 @@
 # Phase 06: AI Feature Reframing
 
+**Status:** ⏭️ SKIPPED
+**Skipped:** 2026-02-12
+**Reason:** User reviewed the plan and decided the fantasy theming ("SUMMON NEW LORE", "DISPEL ENCHANTMENT", "Weaving Epic Saga...") is the soul of the feature and should stay. The reframing would strip out personality that makes the portfolio distinctive.
+
 **PR Title:** Reframe AI regeneration as technical showcase
 **Risk Level:** Low
 **Estimated Effort:** Small (2-3 hours)
