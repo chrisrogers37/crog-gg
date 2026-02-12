@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useCallback } from "react";
 
 interface SectionNavProps {
   activeSection: string;
@@ -17,39 +17,9 @@ export default function SectionNav({
   onSectionChange,
 }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
-  const hasUserInteracted = useRef(false);
 
-  // Handle scrolling when active section changes
-  useEffect(() => {
-    // Only scroll if user has interacted with navigation (not on initial load)
-    if (activeSection && navRef.current && hasUserInteracted.current) {
-      // Small delay to allow content to render
-      setTimeout(() => {
-        const navTop = navRef.current?.offsetTop ?? 0;
-        window.scrollTo({
-          top: navTop - 20,
-          behavior: "smooth",
-        });
-      }, 100);
-    }
-  }, [activeSection]);
-
-  const handleClick = (
-    sectionId: string,
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    // Mark that user has interacted with navigation
-    hasUserInteracted.current = true;
-
-    // Scroll the clicked button into view within the nav
-    e.currentTarget.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "nearest",
-    });
-
+  const handleClick = (sectionId: string) => {
     if (activeSection === sectionId) {
-      // If the same section is clicked again, unselect it
       onSectionChange("");
     } else {
       onSectionChange(sectionId);
@@ -103,7 +73,7 @@ export default function SectionNav({
                 : -1
             }
             className={`section-nav-button ${activeSection === section.id ? "active" : ""}`}
-            onClick={(e) => handleClick(section.id, e)}
+            onClick={() => handleClick(section.id)}
           >
             {section.label}
           </button>

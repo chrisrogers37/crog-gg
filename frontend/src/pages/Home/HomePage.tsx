@@ -2,17 +2,14 @@ import { useRef, useMemo } from "react";
 import { CSSTransition } from "react-transition-group";
 
 // Hooks
-import {
-  useContentLoader,
-  useRegeneration,
-  useScrollToSection,
-} from "../../hooks";
+import { useContentLoader, useRegeneration } from "../../hooks";
 import {
   useUIStore,
   useIsLoading,
   useContentError,
   useBio,
   useTimeline,
+  useProjects,
 } from "../../store";
 
 // SEO
@@ -27,6 +24,7 @@ import {
   ContactCTA,
 } from "../../components/sections";
 import SectionNav from "../../components/SectionNav";
+import { SectionPreviews } from "../../components/SectionPreviews";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
@@ -74,6 +72,7 @@ export function HomePage() {
   const error = useContentError();
   const bio = useBio();
   const timeline = useTimeline();
+  const projects = useProjects();
   const activeSection = useUIStore((state) => state.activeSection);
   const toggleSection = useUIStore((state) => state.toggleSection);
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
@@ -82,13 +81,9 @@ export function HomePage() {
   const { regenerate, reset, isRegenerating, hasModifiedContent } =
     useRegeneration();
 
-  // Scroll behavior
-  const { contentRef, scrollToContent } = useScrollToSection();
-
-  // Handle section change with scroll
+  // Handle section change (no auto-scroll)
   const handleSectionChange = (section: string) => {
     toggleSection(section);
-    scrollToContent();
   };
 
   // Render section based on active selection
@@ -238,8 +233,18 @@ export function HomePage() {
           onSectionChange={handleSectionChange}
         />
 
+        {/* Section Previews (when no section is active) */}
+        {!activeSection && (
+          <SectionPreviews
+            bio={bio}
+            timeline={timeline}
+            projects={projects}
+            onSectionChange={handleSectionChange}
+          />
+        )}
+
         {/* Main Content */}
-        <main ref={contentRef}>
+        <main>
           <CSSTransition
             nodeRef={nodeRef}
             in={!!activeSection}

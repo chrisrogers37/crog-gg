@@ -4,7 +4,9 @@ email: christophertrogers37@gmail.com
 location: New York City, New York
 
 # Hero Identity
-tagline: builder of things that are sometimes cool. data and music.
+tagline: |
+  builder of things that are sometimes cool.
+  data and music.
 
 # Welcome Message
 welcome_message: |

@@ -9,7 +9,7 @@ interface SEOProps {
   noIndex?: boolean;
 }
 
-const SITE_NAME = "Chris Rogers - Builder of Things That Sometimes Work";
+const SITE_NAME = "Chris Rogers - builder of things that are sometimes cool";
 const DEFAULT_DESCRIPTION =
   "Builder, data engineer, and music maker. Building web apps, data tools, and making noise.";
 const DEFAULT_IMAGE = "https://crog.gg/og-image.png";
