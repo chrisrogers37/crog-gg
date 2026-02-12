@@ -31,8 +31,8 @@ export function Layout() {
         <Outlet />
       </main>
 
-      {/* Footer on all pages except home */}
-      {!isHomePage && <Footer />}
+      {/* Footer on all pages */}
+      <Footer />
     </div>
   );
 }
