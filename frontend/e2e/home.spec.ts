@@ -145,6 +145,52 @@ test.describe("Section Navigation", () => {
   });
 });
 
+test.describe("Section Flow Navigation", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+  });
+
+  test("section navigator shows next section", async ({ page }) => {
+    // Click About tab
+    await page.locator('button[data-section="about"]').click();
+
+    // Check for navigator
+    const navigator = page.locator(".section-navigator");
+    await expect(navigator).toBeVisible({ timeout: 5000 });
+
+    // Should show "up next" text
+    await expect(navigator).toContainText(/up next/i);
+  });
+
+  test("section navigator not shown on last section", async ({ page }) => {
+    // Click Music tab (last section)
+    await page.locator('button[data-section="music"]').click();
+
+    // Wait for section content to render
+    await page.waitForTimeout(1000);
+
+    // Navigator should not be visible
+    const navigator = page.locator(".section-navigator");
+    await expect(navigator).not.toBeVisible();
+  });
+
+  test("clicking section navigator switches section", async ({ page }) => {
+    // Click About tab
+    await page.locator('button[data-section="about"]').click();
+
+    // Wait for navigator to appear
+    const navigatorBtn = page.locator(".section-navigator-btn");
+    await expect(navigatorBtn).toBeVisible({ timeout: 5000 });
+
+    // Click the navigator
+    await navigatorBtn.click();
+
+    // Journey tab should now be active
+    const journeyButton = page.locator('button[data-section="journey"]');
+    await expect(journeyButton).toHaveClass(/active/);
+  });
+});
+
 test.describe("Action Buttons", () => {
   test("action buttons appear when section is active", async ({ page }) => {
     await page.goto("/");
