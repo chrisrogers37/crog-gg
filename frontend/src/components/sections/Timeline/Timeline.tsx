@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { TimelineData, TimelineEntry } from "../../../types/Timeline";
+import { parseDateToNumber } from "../../../utils/dateUtils";
+import { LogoImage } from "../../common/LogoImage";
 import { SkillBubbles } from "./SkillBubbles";
 import "./Timeline.css";
 
@@ -19,9 +21,9 @@ export function Timeline({ data }: TimelineProps) {
     () =>
       data?.entries
         ? [...data.entries].sort((a, b) => {
-            const aDate = a.end_date === "present" ? "9999" : a.end_date;
-            const bDate = b.end_date === "present" ? "9999" : b.end_date;
-            return bDate.localeCompare(aDate);
+            return (
+              parseDateToNumber(b.end_date) - parseDateToNumber(a.end_date)
+            );
           })
         : [],
     [data?.entries],
@@ -117,15 +119,31 @@ export function Timeline({ data }: TimelineProps) {
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
               <div className="timeline-dot">
-                <span className="timeline-icon">
-                  {getEntryIcon(entry.type)}
-                </span>
+                <LogoImage
+                  domain={entry.domain}
+                  alt={entry.organization}
+                  size={28}
+                  className="timeline-dot-logo"
+                  fallback={
+                    <span className="timeline-icon">
+                      {getEntryIcon(entry.type)}
+                    </span>
+                  }
+                />
               </div>
               <div className="timeline-card">
                 <div className="timeline-card-header">
                   <span className="timeline-period">{formatPeriod(entry)}</span>
                   <h4 className="timeline-title">{entry.title}</h4>
-                  <span className="timeline-org">{entry.organization}</span>
+                  <span className="timeline-org">
+                    <LogoImage
+                      domain={entry.domain}
+                      alt={entry.organization}
+                      size={18}
+                      className="timeline-org-logo"
+                    />
+                    {entry.organization}
+                  </span>
                 </div>
                 <p className="timeline-one-liner">{entry.one_liner}</p>
               </div>
