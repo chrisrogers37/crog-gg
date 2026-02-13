@@ -3,11 +3,36 @@
 
 entries:
   - type: role
-    title: Blockchain Data Engineer
-    organization: Citadel
-    start_date: "2023"
+    title: Senior Data Scientist and Engineer
+    organization: Artemis
+    start_date: "Nov 2025"
     end_date: present
-    one_liner: re-architecting a multi-trillion record blockchain analytics ecosystem with dbt
+    one_liner: building data science and engineering solutions at artemis
+    skills:
+      - python
+      - sql
+      - data modeling
+      - llms
+
+  - type: milestone
+    title: AI-Maxxing
+    organization: Independent
+    start_date: "Jul 2025"
+    end_date: "Nov 2025"
+    one_liner: went full send on ai - built production apps with llms, prompt engineering, and a whole lot of curiosity
+    skills:
+      - python
+      - llms
+      - object-oriented programming
+      - aws
+      - docker
+
+  - type: role
+    title: Senior Analytics Engineer
+    organization: Citadel
+    start_date: "Feb 2023"
+    end_date: "Jul 2025"
+    one_liner: pioneered automation in strategic finance, centralizing workflows and reducing manual processing by 90%
     skills:
       - python
       - sql
@@ -18,12 +43,13 @@ entries:
       - kubernetes
       - docker
       - git
+      - tableau
 
   - type: role
     title: Data Scientist
     organization: Meta
-    start_date: "2021"
-    end_date: "2023"
+    start_date: "Dec 2021"
+    end_date: "Feb 2023"
     one_liner: supported recruiting product teams with metric design, experimentation, and forecasting
     skills:
       - python
@@ -40,7 +66,7 @@ entries:
     organization: Columbia University
     start_date: "2020"
     end_date: "2021"
-    one_liner: dove deeper into analytics and data science at the graduate level
+    one_liner: completed 50% of coursework toward ms in applied analytics before accepting meta offer (3.83 gpa)
     skills:
       - python
       - statistical testing
@@ -50,8 +76,8 @@ entries:
   - type: role
     title: Business Intelligence Analyst II
     organization: Memorial Sloan Kettering
-    start_date: "2018"
-    end_date: "2021"
+    start_date: "Dec 2020"
+    end_date: "Dec 2021"
     one_liner: published nlp research and built analytics that informed hospital-wide policy
     skills:
       - python
@@ -62,12 +88,35 @@ entries:
       - classification
       - time series analysis
 
+  - type: role
+    title: Business Intelligence Analyst I
+    organization: Memorial Sloan Kettering
+    start_date: "Oct 2018"
+    end_date: "Dec 2020"
+    one_liner: built reporting and analytics foundations supporting clinical operations
+    skills:
+      - python
+      - sql
+      - R
+      - tableau
+
+  - type: role
+    title: Data Analyst / Senior Data Analyst
+    organization: VillageMD
+    start_date: "Feb 2016"
+    end_date: "Oct 2018"
+    one_liner: early career analytics work in healthcare, growing from data analyst to senior
+    skills:
+      - python
+      - sql
+      - R
+
   - type: education
     title: MEng, Chemical Engineering
     organization: Cornell University
     start_date: "2014"
     end_date: "2015"
-    one_liner: engineering masters with a focus on process optimization
+    one_liner: engineering masters with a focus on process optimization (3.96 gpa)
     skills: []
 
   - type: education

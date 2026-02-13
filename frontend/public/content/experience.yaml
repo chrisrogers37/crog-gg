@@ -1,27 +1,35 @@
 # Professional Experience
 experience:
-  - title: Analytics Engineer
-    company: Citadel
-    period: 2023 - Present
+  - title: Senior Data Scientist and Engineer
+    company: Artemis
+    period: November 2025 - Present
     achievements:
-      - "Worked to streamline and automate the Strategic Finance Data & Analytics team's data workflows, contributing to a cultural shift toward centralized, scalable operations. Helped establish core infrastructure and onboard the team to Google Kubernetes Engine (GKE) and Citadel's Airflow-like scheduler, significantly reducing manual processing time."
-      - "Designed and built a configurable Python orchestration framework to automate end-to-end workflows across BigQuery, Python, and Tableau, improving dependency management and reducing redundant code while making onboarding and setup easier."
-      - "Led efforts to modernize a key Tableau dashboard, improving data sourcing, calculations, and interactivity to better support decision-making. Introduced a user feedback loop, leading to refinements that increased engagement among stakeholders."
-      - "Supported the migration of 100+ tables and views from SQL Server to BigQuery, helping to redesign data flows for scalability, reduced query complexity, and improved maintainability."
-      - "Helped drive team-wide initiatives focused on improving development processes and reducing technical debt, including co-founding 'Tech Debt Friday'—a collaborative effort to modernize workflows and streamline legacy processes."
+      - "Building data science and engineering solutions at Artemis."
+
+  - title: Senior Analytics Engineer
+    company: Citadel
+    period: February 2023 - July 2025
+    achievements:
+      - "Pioneered automation in Strategic Finance's Data & Analytics team, centralizing workflows and reducing manual processing by 90%. Built core infrastructure on GKE and Citadel's Airflow-like scheduler to improve reliability and scalability."
+      - "Developed a modular Python orchestration framework to automate end-to-end workflows across BigQuery (dbt), Python, and Tableau. Reduced redundant code by 75% and cut pipeline development time by 80% through streamlined onboarding and dependency management."
+      - "Rebuilt Strategic Finance's five most-used Tableau dashboards by optimizing data sources, calculations, and visuals to enhance usability and support decision-making. Launched the team's first user feedback loop, aligning reporting with business needs and doubling stakeholder engagement."
+      - "Migrated 100+ tables and views from SQL Server to BigQuery, redesigning data flows to establish clear data lineage, reduce query complexity, and enable scalable analytics."
+      - "Founded 'Tech Debt Friday,' a collaborative initiative to modernize workflows, eliminating 60% of redundant code by migrating siloed processes to central frameworks. Recognized for leadership and selected for an executive mentorship program to develop skills in driving organizational change."
 
   - title: Data Scientist
     company: Meta
     period: December 2021 - February 2023
     achievements:
-      - "Worked with five Recruiting Product teams to support metric design, experimentation, and forecasting, helping to improve candidate experience and hiring efficiency."
-      - "Conducted a data-driven investigation into referral candidate outcomes, identifying thousands of high-value candidates stalled in the hiring pipeline. Insights from this work helped recruiters re-engage these candidates, led to software improvements that addressed root causes, and mitigated potential reputational risks in the referral process."
-      - "Used Fixed Effects modeling to quantify the variance in hiring outcomes attributable to recruiter assignment, helping inform recruiter training, assignment strategies, and tooling enhancements."
-      - "Supported numerous A/B experiments by designing metrics, analyzing results, and improving experimental methodology to drive data-informed decision-making in recruiting strategies."
+      - "Shaped data-driven product strategy across five Recruiting Product teams, leading metric design, experimentation, and forecasting to optimize candidate experience and hiring efficiency."
+      - "Redefined Meta's topline recruiting performance metric, replacing a decade-old legacy KPI with a clearer, outcome-driven measure for hiring efficiency."
+      - "Developed SARIMA-based forecasts for key recruiting metrics incorporating seasonality to support goal setting. Models remained within 3% of actuals."
+      - "Conducted a data-driven investigation into Meta's referral pipeline and surfaced 3,000+ high-value stalled candidates, enabling outreach that reactivated many and mitigated reputational risk to referrers."
+      - "Applied Fixed Effects modeling to quantify recruiter influence on hiring outcomes, revealing that assignment alone explained 35% of offer-stage variance. Insights drove targeted late-stage outreach to high-priority candidates and improved offer conversion rates."
+      - "Revamped a large-scale A/B experiment (2,500+ recruiters) by implementing balanced sampling to correct class imbalances and improve statistical power."
 
   - title: Business Intelligence Analyst II
     company: Memorial Sloan Kettering
     period: October 2018 - December 2021
     achievements:
-      - "Published author and technical lead on an NLP research study with Weill Cornell Medical College, using classification algorithms to analyze patient messages and identify patterns related to social risk factors."
-      - "Conducted a longitudinal study on patient health metrics that informed hospital-wide policy updates and optimized measurement schedules to improve medication accuracy and treatment planning."
+      - "Published author and technical lead on a natural language processing (NLP) study with Weill Cornell Medical College, applying classification algorithms on patient messages to identify high-risk patients with negative social risk factors."
+      - "Influenced leadership to update hospital-wide safety policy by conducting a longitudinal study on weight fluctuations in chemotherapy patients, optimizing measurement schedules to prevent excessive medication dosages."
