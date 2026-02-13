@@ -340,10 +340,6 @@ a:hover {
     gap: 1rem;
   }
 
-  .contact-subtle {
-    justify-content: center;
-  }
-
   .button-group {
     position: static;
     flex-direction: column;

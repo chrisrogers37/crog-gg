@@ -69,6 +69,12 @@
   letter-spacing: -0.02em;
 }
 
+.contact-location {
+  color: var(--text-color-secondary);
+  font-size: 0.8rem;
+  margin: 1.5rem 0 0;
+}
+
 @media (max-width: 768px) {
   .contact-cta {
     padding: 2rem 1rem;
