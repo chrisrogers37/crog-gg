@@ -4,7 +4,7 @@ import "./SectionFadePreview.css";
 
 type SectionFadePreviewProps = {
   id: string;
-  label: string;
+  label?: string;
   onExpand: (section: string) => void;
   children: React.ReactNode;
   maxHeight?: number;
@@ -35,7 +35,7 @@ export function SectionFadePreview({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <h3 className="section-fade-label">{label}</h3>
+      {label && <h3 className="section-fade-label">{label}</h3>}
       <div
         className="section-fade-content"
         style={{ maxHeight: `${maxHeight}px` }}

@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import { CSSTransition } from "react-transition-group";
 
 // Hooks
@@ -72,16 +72,38 @@ export function HomePage() {
   const bio = useBio();
   const timeline = useTimeline();
   const activeSection = useUIStore((state) => state.activeSection);
-  const toggleSection = useUIStore((state) => state.toggleSection);
+  const setActiveSection = useUIStore((state) => state.setActiveSection);
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
+
+  // Preview mode: starts true so About shows as a preview on load
+  const [previewMode, setPreviewMode] = useState(true);
+
+  // Default to "about" selected on mount
+  useEffect(() => {
+    if (!activeSection) {
+      setActiveSection("about");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Regeneration functionality
   const { regenerate, reset, isRegenerating, hasModifiedContent } =
     useRegeneration();
 
-  // Handle section change (no auto-scroll)
+  // Handle section change from nav buttons
   const handleSectionChange = (section: string) => {
-    toggleSection(section);
+    if (section === activeSection) {
+      // Clicking active section: return to about preview
+      setActiveSection("about");
+      setPreviewMode(true);
+    } else {
+      setActiveSection(section);
+      setPreviewMode(false);
+    }
+  };
+
+  // Handle "see more" click from preview
+  const handlePreviewExpand = () => {
+    setPreviewMode(false);
   };
 
   // Render section based on active selection
@@ -233,7 +255,7 @@ export function HomePage() {
 
         {/* Main Content */}
         <main>
-          {activeSection ? (
+          {activeSection && !previewMode ? (
             <CSSTransition
               nodeRef={nodeRef}
               in={!!activeSection}
@@ -252,8 +274,7 @@ export function HomePage() {
             <div className="section-fade-previews">
               <SectionFadePreview
                 id="about"
-                label="about"
-                onExpand={handleSectionChange}
+                onExpand={handlePreviewExpand}
                 maxHeight={180}
                 index={0}
               >
@@ -268,7 +289,7 @@ export function HomePage() {
         </main>
 
         {/* Action Buttons */}
-        {activeSection && (
+        {activeSection && !previewMode && (
           <ActionButtons
             onRegenerate={() => regenerate(true)}
             onReset={reset}

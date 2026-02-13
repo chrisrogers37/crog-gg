@@ -1033,8 +1033,8 @@ a:hover {
 .section-nav-button {
   font-size: clamp(0.8rem, 2.5vw, 1rem);
   padding: 0.75rem 1.5rem;
-  border: none;
-  background-color: transparent;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
   color: var(--text-color);
   font-weight: 500;
   cursor: pointer;
@@ -1052,6 +1052,7 @@ a:hover {
 .section-nav-button.active {
   background-color: var(--primary-color);
   color: white;
+  border-color: var(--primary-color);
   transform: translateY(-1px);
 }
 
@@ -1061,6 +1062,7 @@ a:hover {
 
 .section-nav-button:not(.active):hover {
   background-color: var(--background-color);
+  border-color: var(--primary-color);
 }
 
 /* Add subtle indicator that active buttons can be unselected */
