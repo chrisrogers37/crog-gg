@@ -5,6 +5,7 @@ entries:
   - type: role
     title: Senior Data Scientist and Engineer
     organization: Artemis
+    domain: artemis.xyz
     start_date: "Nov 2025"
     end_date: present
     one_liner: building data science and engineering solutions at artemis
@@ -30,6 +31,7 @@ entries:
   - type: role
     title: Senior Analytics Engineer
     organization: Citadel
+    domain: citadel.com
     start_date: "Feb 2023"
     end_date: "Jul 2025"
     one_liner: pioneered automation in strategic finance, centralizing workflows and reducing manual processing by 90%
@@ -48,6 +50,7 @@ entries:
   - type: role
     title: Data Scientist
     organization: Meta
+    domain: meta.com
     start_date: "Dec 2021"
     end_date: "Feb 2023"
     one_liner: supported recruiting product teams with metric design, experimentation, and forecasting
@@ -64,6 +67,7 @@ entries:
   - type: education
     title: MS (partial), Applied Analytics
     organization: Columbia University
+    domain: columbia.edu
     start_date: "2020"
     end_date: "2021"
     one_liner: completed 50% of coursework toward ms in applied analytics before accepting meta offer (3.83 gpa)
@@ -76,6 +80,7 @@ entries:
   - type: role
     title: Business Intelligence Analyst II
     organization: Memorial Sloan Kettering
+    domain: mskcc.org
     start_date: "Dec 2020"
     end_date: "Dec 2021"
     one_liner: published nlp research and built analytics that informed hospital-wide policy
@@ -91,6 +96,7 @@ entries:
   - type: role
     title: Business Intelligence Analyst I
     organization: Memorial Sloan Kettering
+    domain: mskcc.org
     start_date: "Oct 2018"
     end_date: "Dec 2020"
     one_liner: built reporting and analytics foundations supporting clinical operations
@@ -103,6 +109,7 @@ entries:
   - type: role
     title: Data Analyst / Senior Data Analyst
     organization: VillageMD
+    domain: villagemd.com
     start_date: "Feb 2016"
     end_date: "Oct 2018"
     one_liner: early career analytics work in healthcare, growing from data analyst to senior
@@ -114,6 +121,7 @@ entries:
   - type: education
     title: MEng, Chemical Engineering
     organization: Cornell University
+    domain: cornell.edu
     start_date: "2014"
     end_date: "2015"
     one_liner: engineering masters with a focus on process optimization (3.96 gpa)
@@ -122,6 +130,7 @@ entries:
   - type: education
     title: BS, Chemical Engineering
     organization: Cornell University
+    domain: cornell.edu
     start_date: "2010"
     end_date: "2014"
     one_liner: where it all started - engineering fundamentals and problem solving

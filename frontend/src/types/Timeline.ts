@@ -4,6 +4,7 @@ export type TimelineEntry = {
   type: TimelineEntryType;
   title: string;
   organization: string;
+  domain?: string;
   start_date: string;
   end_date: string;
   one_liner: string;

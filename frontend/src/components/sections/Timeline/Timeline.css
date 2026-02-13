@@ -70,6 +70,12 @@
   line-height: 1;
 }
 
+.timeline-dot-logo {
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+}
+
 .timeline-entry-role .timeline-dot {
   border-color: var(--primary-color);
 }
@@ -117,6 +123,14 @@
 .timeline-org {
   font-size: 0.9rem;
   color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.timeline-org-logo {
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
 .timeline-one-liner {
