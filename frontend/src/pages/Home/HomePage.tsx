@@ -23,7 +23,7 @@ import {
   ContactCTA,
 } from "../../components/sections";
 import SectionNav from "../../components/SectionNav";
-import { SectionTiles } from "../../components/SectionTiles";
+import { SectionFadePreview } from "../../components/SectionFadePreview";
 import { ActionButtons } from "../../components/ActionButtons";
 import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
@@ -249,7 +249,21 @@ export function HomePage() {
               </div>
             </CSSTransition>
           ) : (
-            <SectionTiles onSectionChange={handleSectionChange} />
+            <div className="section-fade-previews">
+              <SectionFadePreview
+                id="about"
+                label="about"
+                onExpand={handleSectionChange}
+                maxHeight={180}
+                index={0}
+              >
+                <section className="section-content about-section">
+                  <div className="about-content">
+                    <About onRegenerate={() => {}} content={bio ?? undefined} />
+                  </div>
+                </section>
+              </SectionFadePreview>
+            </div>
           )}
         </main>
 
