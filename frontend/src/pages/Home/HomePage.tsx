@@ -85,9 +85,16 @@ export function HomePage() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Regeneration functionality
-  const { regenerate, reset, isRegenerating, hasModifiedContent } =
-    useRegeneration();
+  // Regeneration functionality with WoW-style cooldown
+  const {
+    regenerate,
+    reset,
+    isRegenerating,
+    hasModifiedContent,
+    cooldownRemaining,
+    cooldownTotal,
+    isReady,
+  } = useRegeneration();
 
   // Handle section change from nav buttons
   const handleSectionChange = (section: string) => {
@@ -292,6 +299,9 @@ export function HomePage() {
             onReset={reset}
             isRegenerating={isRegenerating}
             hasModifiedContent={hasModifiedContent}
+            cooldownRemaining={cooldownRemaining}
+            cooldownTotal={cooldownTotal}
+            isReady={isReady}
           />
         )}
 

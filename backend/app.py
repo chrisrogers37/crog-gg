@@ -5,6 +5,7 @@ import os
 import json
 import logging
 import sys
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -54,6 +55,40 @@ else:
     logger.info("GitHub token loaded successfully")
 
 
+# ===========================================
+# RATE LIMITING
+# ===========================================
+
+COOLDOWN_SECONDS = 30
+
+# In-memory per-IP cooldown tracker
+# Maps IP -> timestamp of last regeneration
+_last_regeneration = {}
+
+
+def get_client_ip():
+    """Get the client IP, respecting X-Forwarded-For behind a proxy."""
+    forwarded = request.headers.get('X-Forwarded-For')
+    if forwarded:
+        return forwarded.split(',')[0].strip()
+    return request.remote_addr or 'unknown'
+
+
+def check_cooldown(client_ip):
+    """Check if a client is still on cooldown. Returns seconds remaining or 0."""
+    last_time = _last_regeneration.get(client_ip)
+    if last_time is None:
+        return 0
+    elapsed = time.time() - last_time
+    remaining = COOLDOWN_SECONDS - elapsed
+    return max(0, remaining)
+
+
+def record_regeneration(client_ip):
+    """Record a regeneration timestamp for rate limiting."""
+    _last_regeneration[client_ip] = time.time()
+
+
 def get_fantasy_prompt(use_fantasy=False):
     """Get the fantasy prompt addition if requested."""
     if use_fantasy:
@@ -82,6 +117,19 @@ def regenerate_content():
 
     try:
         logger.info("=== New Regenerate Request ===")
+
+        # Rate limit check
+        client_ip = get_client_ip()
+        remaining_cd = check_cooldown(client_ip)
+        if remaining_cd > 0:
+            logger.info(f"Rate limited {client_ip}: {remaining_cd:.1f}s remaining")
+            return jsonify({
+                'success': False,
+                'error': 'Ability on cooldown',
+                'cooldown_remaining': round(remaining_cd),
+                'cooldown_total': COOLDOWN_SECONDS
+            }), 429
+
         logger.info(f"Request Headers: {dict(request.headers)}")
 
         data = request.get_json()
@@ -220,9 +268,11 @@ def regenerate_content():
             try:
                 parsed_content = json.loads(new_content)
                 logger.info("Successfully parsed response as JSON")
+                record_regeneration(client_ip)
                 return jsonify({
                     'success': True,
-                    'content': parsed_content
+                    'content': parsed_content,
+                    'cooldown_total': COOLDOWN_SECONDS
                 })
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse response as JSON: {e}")
@@ -313,10 +363,12 @@ def get_github_languages():
 
 @app.route('/api/limits', methods=['GET'])
 def get_usage_info():
+    client_ip = get_client_ip()
+    remaining_cd = check_cooldown(client_ip)
     return jsonify({
-        'token_limit': 1000000,
-        'token_usage': 0,
-        'remaining_tokens': 1000000
+        'cooldown_remaining': round(remaining_cd),
+        'cooldown_total': COOLDOWN_SECONDS,
+        'is_on_cooldown': remaining_cd > 0
     })
 
 
