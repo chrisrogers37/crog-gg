@@ -218,9 +218,6 @@ export function HomePage() {
                   className="welcome-typewriter"
                 />
               </div>
-              <div className="contact-subtle">
-                <span>{bio?.location}</span>
-              </div>
             </div>
           </div>
         </header>

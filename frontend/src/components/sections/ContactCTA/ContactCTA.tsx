@@ -172,6 +172,7 @@ export function ContactCTA() {
           </a>
         ))}
       </div>
+      {bio.location && <p className="contact-location">{bio.location}</p>}
     </motion.section>
   );
 }

@@ -66,31 +66,6 @@
   white-space: pre-line;
 }
 
-/* Subtle Contact Row */
-.contact-subtle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-color-secondary);
-  margin-top: 0.25rem;
-  flex-wrap: wrap;
-}
-
-.contact-subtle a {
-  color: var(--text-color-secondary);
-  text-decoration: none;
-}
-
-.contact-subtle a:hover {
-  color: var(--primary-color);
-  text-decoration: underline;
-}
-
-.contact-separator {
-  opacity: 0.4;
-}
-
 @media (max-width: 768px) {
   .header-tagline {
     font-size: 0.95rem;
