@@ -109,20 +109,20 @@
 
 .timeline-period {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
   font-weight: 500;
 }
 
 .timeline-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-color);
   margin: 0.25rem 0 0.15rem;
 }
 
 .timeline-org {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -135,7 +135,7 @@
 
 .timeline-one-liner {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
   margin: 0;
   line-height: 1.5;
 }
@@ -153,7 +153,7 @@
 .timeline-skills-heading {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-color-secondary);
   margin: 0 0 0.75rem;
   text-transform: lowercase;
 }
