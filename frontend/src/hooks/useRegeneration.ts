@@ -1,22 +1,12 @@
 import { useCallback } from "react";
 import { useContentStore, useUIStore } from "../store";
+import { useCooldown } from "./useCooldown";
 
 /**
- * Hook for content regeneration functionality.
+ * Hook for content regeneration functionality with WoW-style cooldown.
  *
  * Provides handlers for regenerating and resetting content,
- * along with relevant state.
- *
- * @example
- * function RegenerateButton() {
- *   const { regenerate, reset, isRegenerating, hasModifiedContent } = useRegeneration();
- *
- *   return (
- *     <button onClick={() => regenerate(false)} disabled={isRegenerating}>
- *       Regenerate
- *     </button>
- *   );
- * }
+ * along with relevant state and cooldown timer info.
  */
 export function useRegeneration() {
   const regenerateContent = useContentStore((state) => state.regenerateContent);
@@ -27,11 +17,16 @@ export function useRegeneration() {
   );
   const activeSection = useUIStore((state) => state.activeSection);
 
+  const { remaining, total, isOnCooldown, isReady, startCooldown } =
+    useCooldown();
+
   const regenerate = useCallback(
     (useFantasy: boolean = true) => {
+      if (isOnCooldown) return;
       regenerateContent(useFantasy);
+      startCooldown();
     },
-    [regenerateContent],
+    [regenerateContent, isOnCooldown, startCooldown],
   );
 
   const reset = useCallback(() => {
@@ -44,5 +39,9 @@ export function useRegeneration() {
     isRegenerating,
     hasModifiedContent,
     activeSection,
+    cooldownRemaining: remaining,
+    cooldownTotal: total,
+    isReady,
+    isOnCooldown,
   };
 }

@@ -26,23 +26,190 @@
   white-space: nowrap;
 }
 
-/* Generate Button */
-.action-buttons .generate-btn {
-  background-color: var(--primary-color);
-  color: white;
+/* ========================================
+   GENERATE BUTTON - WoW Ability Style
+   ======================================== */
+
+.cooldown-btn-wrapper {
+  position: relative;
+  display: inline-flex;
 }
 
-.action-buttons .generate-btn:hover {
+.action-buttons .generate-btn {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--primary-color);
+  color: white;
+  min-width: 200px;
+  min-height: 48px;
+}
+
+.action-buttons .generate-btn .btn-text {
+  position: relative;
+  z-index: 2;
+}
+
+.action-buttons .generate-btn:hover:not(:disabled) {
   background-color: var(--hover-color);
+  transform: scale(1.02);
 }
 
 .action-buttons .generate-btn:disabled {
-  background-color: var(--primary-color);
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Reset Button */
+/* Desaturate button when on cooldown (like a WoW ability) */
+.action-buttons .generate-btn.on-cooldown {
+  background-color: var(--primary-color);
+  filter: brightness(0.6) saturate(0.5);
+}
+
+/* ========================================
+   COOLDOWN SWEEP OVERLAY
+   The signature WoW clock-hand wipe.
+   A dark conic-gradient covers the button
+   and sweeps away clockwise as time passes.
+   ======================================== */
+
+.cooldown-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.cooldown-sweep {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+}
+
+.cooldown-number {
+  position: relative;
+  z-index: 4;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-shadow:
+    0 0 8px rgba(251, 191, 36, 0.8),
+    0 0 16px rgba(251, 191, 36, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.9);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* ========================================
+   CASTING BAR
+   Shown while the API call is in flight.
+   A glowing bar sweeps left-to-right.
+   ======================================== */
+
+.casting-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0 0 0.5rem 0.5rem;
+  overflow: hidden;
+}
+
+.casting-bar {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #fbbf24,
+    #f59e0b,
+    #fbbf24,
+    transparent
+  );
+  border-radius: 0 0 0.5rem 0.5rem;
+  animation: casting-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes casting-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+/* ========================================
+   READY FLASH
+   Golden burst when cooldown finishes,
+   like a WoW ability becoming available.
+   ======================================== */
+
+.ready-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 0.65rem;
+  z-index: 1;
+  pointer-events: none;
+  animation: ready-glow-pulse 1.5s ease-out forwards;
+  background: transparent;
+  box-shadow:
+    0 0 12px 4px rgba(251, 191, 36, 0.6),
+    0 0 24px 8px rgba(251, 191, 36, 0.3),
+    inset 0 0 12px 4px rgba(251, 191, 36, 0.2);
+}
+
+@keyframes ready-glow-pulse {
+  0% {
+    opacity: 0;
+    box-shadow:
+      0 0 20px 8px rgba(251, 191, 36, 0.9),
+      0 0 40px 16px rgba(251, 191, 36, 0.5),
+      inset 0 0 20px 8px rgba(251, 191, 36, 0.4);
+  }
+  30% {
+    opacity: 1;
+    box-shadow:
+      0 0 16px 6px rgba(251, 191, 36, 0.7),
+      0 0 32px 12px rgba(251, 191, 36, 0.4),
+      inset 0 0 16px 6px rgba(251, 191, 36, 0.3);
+  }
+  100% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 0 transparent,
+      0 0 0 0 transparent,
+      inset 0 0 0 0 transparent;
+  }
+}
+
+.action-buttons .generate-btn.ready-flash {
+  animation: ready-button-flash 0.6s ease-out;
+}
+
+@keyframes ready-button-flash {
+  0% {
+    filter: brightness(2) saturate(1.5);
+  }
+  50% {
+    filter: brightness(1.5) saturate(1.2);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+/* ========================================
+   RESET BUTTON
+   ======================================== */
+
 .action-buttons .reset-btn {
   background-color: #dc2626;
   color: white;
@@ -57,7 +224,10 @@
   cursor: not-allowed;
 }
 
-/* Responsive */
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
 @media (max-width: 768px) {
   .action-buttons {
     flex-direction: column;
@@ -65,5 +235,14 @@
     width: 100%;
     margin: 1rem 0;
     padding: 1rem;
+  }
+
+  .cooldown-btn-wrapper {
+    width: 100%;
+  }
+
+  .action-buttons .generate-btn {
+    width: 100%;
+    min-width: unset;
   }
 }
