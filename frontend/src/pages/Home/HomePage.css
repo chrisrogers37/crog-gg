@@ -64,6 +64,8 @@
   letter-spacing: 0.3px;
   margin: 0;
   white-space: pre-line;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 @media (max-width: 768px) {
@@ -82,7 +84,7 @@
 
 @media (max-width: 480px) {
   .home-page {
-    padding: 0.5rem;
+    padding: 1rem;
   }
 }
 

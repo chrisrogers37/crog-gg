@@ -71,31 +71,24 @@ function About({ onRegenerate, content: propContent }: AboutProps) {
   }, [content]);
 
   return (
-    <div className="about-section">
-      <div className="about-content">
-        <div className="bio-container">
-          <CSSTransition
-            in={bioInProp}
-            timeout={500}
-            classNames="fade"
-            unmountOnExit={false}
-          >
-            <div className="bio">
-              {content && (
-                <div style={{ whiteSpace: "pre-line" }}>
-                  {content.about_text}
-                </div>
-              )}
-            </div>
-          </CSSTransition>
-          {isLoading && (
-            <div className="loading-overlay">
-              <div className="spinner" />
-            </div>
+    <div className="bio-container">
+      <CSSTransition
+        in={bioInProp}
+        timeout={500}
+        classNames="fade"
+        unmountOnExit={false}
+      >
+        <div className="bio">
+          {content && (
+            <div style={{ whiteSpace: "pre-line" }}>{content.about_text}</div>
           )}
         </div>
-        {/* Only show contact/social info here if desired */}
-      </div>
+      </CSSTransition>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="spinner" />
+        </div>
+      )}
     </div>
   );
 }
