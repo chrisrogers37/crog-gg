@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 
 interface SectionNavProps {
   activeSection: string;
@@ -17,6 +17,26 @@ export default function SectionNav({
   onSectionChange,
 }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
+  const isFirstRender = useRef(true);
+
+  // Auto-scroll the active tab into view on narrow screens
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (!activeSection || !navRef.current) return;
+
+    const activeButton = navRef.current.querySelector<HTMLButtonElement>(
+      `[data-section="${activeSection}"]`,
+    );
+    activeButton?.scrollIntoView({
+      behavior: "smooth",
+      inline: "nearest",
+      block: "nearest",
+    });
+  }, [activeSection]);
 
   const handleClick = (sectionId: string) => {
     if (activeSection === sectionId) {
