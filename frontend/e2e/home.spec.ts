@@ -84,61 +84,46 @@ test.describe("Section Navigation", () => {
     await expect(contentArea).toBeVisible({ timeout: 5000 });
   });
 
-  test("clicking same section twice toggles it", async ({ page }) => {
-    const sectionButton = page
-      .locator(".section-nav button, .section-buttons button")
-      .first();
+  test("clicking same section twice toggles it off", async ({ page }) => {
+    const journeyButton = page.locator('button[data-section="journey"]');
 
-    // First click - opens section
-    await sectionButton.click();
+    // Click journey to activate it
+    await journeyButton.click();
+    await page.waitForTimeout(500);
+    await expect(journeyButton).toHaveClass(/active/);
+
+    // Click journey again - should deactivate it
+    await journeyButton.click();
     await page.waitForTimeout(500);
 
-    // Get initial state
-    const wasActive = await sectionButton.evaluate((el) =>
-      el.classList.contains("active"),
-    );
-    expect(wasActive).toBe(true);
-
-    // Second click - closes section
-    await sectionButton.click();
-    await page.waitForTimeout(500);
-
-    const isActive = await sectionButton.evaluate((el) =>
-      el.classList.contains("active"),
-    );
-    expect(isActive).toBe(false);
+    await expect(journeyButton).not.toHaveClass(/active/);
   });
 
   test("section buttons show active state when clicked", async ({ page }) => {
-    const sectionButton = page
-      .locator(".section-nav button, .section-buttons button")
-      .first();
+    const journeyButton = page.locator('button[data-section="journey"]');
 
-    // Initially not active
-    await expect(sectionButton).not.toHaveClass(/active/);
+    // Journey starts inactive (about is auto-selected on mount)
+    await expect(journeyButton).not.toHaveClass(/active/);
 
     // Click to activate
-    await sectionButton.click();
-    await expect(sectionButton).toHaveClass(/active/);
+    await journeyButton.click();
+    await expect(journeyButton).toHaveClass(/active/);
   });
 
   test("switching sections deactivates previous", async ({ page }) => {
-    const buttons = page.locator(
-      ".section-nav button, .section-buttons button",
-    );
-    const firstButton = buttons.first();
-    const secondButton = buttons.nth(1);
+    const journeyButton = page.locator('button[data-section="journey"]');
+    const projectsButton = page.locator('button[data-section="projects"]');
 
-    // Click first button
-    await firstButton.click();
-    await expect(firstButton).toHaveClass(/active/);
+    // Click journey (not auto-selected, so clean activation)
+    await journeyButton.click();
+    await expect(journeyButton).toHaveClass(/active/);
 
-    // Click second button
-    await secondButton.click();
+    // Click projects
+    await projectsButton.click();
 
-    // First should no longer be active
-    await expect(firstButton).not.toHaveClass(/active/);
-    await expect(secondButton).toHaveClass(/active/);
+    // Journey should no longer be active
+    await expect(journeyButton).not.toHaveClass(/active/);
+    await expect(projectsButton).toHaveClass(/active/);
   });
 });
 
@@ -148,8 +133,8 @@ test.describe("Section Flow Navigation", () => {
   });
 
   test("section navigator shows next section", async ({ page }) => {
-    // Click About tab
-    await page.locator('button[data-section="about"]').click();
+    // Click journey (not auto-selected, avoids preview mode)
+    await page.locator('button[data-section="journey"]').click();
 
     // Check for navigator
     const navigator = page.locator(".section-navigator");
@@ -172,8 +157,8 @@ test.describe("Section Flow Navigation", () => {
   });
 
   test("clicking section navigator switches section", async ({ page }) => {
-    // Click About tab
-    await page.locator('button[data-section="about"]').click();
+    // Click journey (not auto-selected, avoids preview mode)
+    await page.locator('button[data-section="journey"]').click();
 
     // Wait for navigator to appear
     const navigatorBtn = page.locator(".section-navigator-btn");
@@ -182,9 +167,9 @@ test.describe("Section Flow Navigation", () => {
     // Click the navigator
     await navigatorBtn.click();
 
-    // Journey tab should now be active
-    const journeyButton = page.locator('button[data-section="journey"]');
-    await expect(journeyButton).toHaveClass(/active/);
+    // Projects tab should now be active (next after journey)
+    const projectsButton = page.locator('button[data-section="projects"]');
+    await expect(projectsButton).toHaveClass(/active/);
   });
 });
 
@@ -192,11 +177,8 @@ test.describe("Action Buttons", () => {
   test("action buttons appear when section is active", async ({ page }) => {
     await page.goto("/");
 
-    // Click a section to activate it
-    const sectionButton = page
-      .locator(".section-nav button, .section-buttons button")
-      .first();
-    await sectionButton.click();
+    // Click journey (not auto-selected, avoids preview mode)
+    await page.locator('button[data-section="journey"]').click();
 
     // Action buttons should appear
     const actionButtons = page.locator(

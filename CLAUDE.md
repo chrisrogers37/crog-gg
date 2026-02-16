@@ -80,7 +80,7 @@ git diff                # Review changes before commit
 
 ### State Management
 
-- Use Zustand stores in `frontend/src/stores/`
+- Use Zustand stores in `frontend/src/store/`
 - Follow existing store patterns for consistency
 
 ### API Integration
