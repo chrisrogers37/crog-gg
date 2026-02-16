@@ -1,5 +1,5 @@
-import { useRef, useMemo, useState, useEffect } from "react";
-import { CSSTransition } from "react-transition-group";
+import { useMemo, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Hooks
 import { useContentLoader, useRegeneration } from "../../hooks";
@@ -55,8 +55,6 @@ const PROFILE_PHOTOS = [
 const SECTION_ORDER = ["about", "journey", "projects", "music"];
 
 export function HomePage() {
-  const nodeRef = useRef<HTMLDivElement>(null);
-
   // Random profile photo (selected once on mount)
   const profilePhoto = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * PROFILE_PHOTOS.length);
@@ -259,37 +257,46 @@ export function HomePage() {
 
         {/* Main Content */}
         <main>
-          {activeSection && !previewMode ? (
-            <CSSTransition
-              nodeRef={nodeRef}
-              in={!!activeSection}
-              timeout={300}
-              classNames="fade"
-              unmountOnExit
-            >
-              <div
-                ref={nodeRef}
-                className={`content-section ${activeSection ? "visible" : ""}`}
+          <AnimatePresence mode="wait">
+            {activeSection && !previewMode ? (
+              <motion.div
+                key={activeSection}
+                className="content-section"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
                 {renderActiveSection()}
-              </div>
-            </CSSTransition>
-          ) : (
-            <div className="section-fade-previews">
-              <SectionFadePreview
-                id="about"
-                onExpand={handlePreviewExpand}
-                maxHeight={180}
-                index={0}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="preview"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
-                <section className="section-content about-section">
-                  <div className="about-content">
-                    <About onRegenerate={() => {}} content={bio ?? undefined} />
-                  </div>
-                </section>
-              </SectionFadePreview>
-            </div>
-          )}
+                <div className="section-fade-previews">
+                  <SectionFadePreview
+                    id="about"
+                    onExpand={handlePreviewExpand}
+                    maxHeight={180}
+                    index={0}
+                  >
+                    <section className="section-content about-section">
+                      <div className="about-content">
+                        <About
+                          onRegenerate={() => {}}
+                          content={bio ?? undefined}
+                        />
+                      </div>
+                    </section>
+                  </SectionFadePreview>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
 
         {/* Action Buttons */}
