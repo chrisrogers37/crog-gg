@@ -18,3 +18,4 @@ export type {
   TimelineEntryType,
   SkillCategory,
 } from "./Timeline";
+export type { ShowcaseImage } from "./Showcase";

@@ -29,6 +29,7 @@ import TypewriterLoop from "../../components/TypewriterLoop";
 import { ThemeToggle } from "../../components/common/ThemeToggle";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { SectionNavigator } from "../../components/common/SectionNavigator";
+import { ImageShowcase } from "../../components/common/ImageShowcase";
 import { MobileMenu } from "../../components/layout/MobileMenu";
 
 // Styles
@@ -311,6 +312,9 @@ export function HomePage() {
             isReady={isReady}
           />
         )}
+
+        {/* Image Showcase */}
+        <ImageShowcase />
 
         {/* Contact CTA */}
         <ContactCTA />
