@@ -1,0 +1,139 @@
+#!/usr/bin/env sh
+
+# pre-push hook: runs frontend build/tests and backend linting
+# based on which files changed. Bypass with: git push --no-verify
+
+set -e
+
+echo "Running pre-push checks..."
+
+# --- Determine changed files ---
+# Compare against upstream tracking branch, or main for new branches
+UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "")
+if [ -n "$UPSTREAM" ]; then
+  MERGE_BASE=$(git merge-base HEAD "$UPSTREAM" 2>/dev/null || echo "")
+  if [ -n "$MERGE_BASE" ]; then
+    CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"..HEAD 2>/dev/null || echo "")
+  else
+    CHANGED_FILES=""
+  fi
+else
+  # New branch with no upstream - compare against main
+  MERGE_BASE=$(git merge-base HEAD main 2>/dev/null || echo "")
+  if [ -n "$MERGE_BASE" ]; then
+    CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"..HEAD 2>/dev/null || echo "")
+  else
+    CHANGED_FILES=""
+  fi
+fi
+
+# Also include unstaged/staged changes not yet committed
+UNCOMMITTED=$(git diff --name-only HEAD 2>/dev/null || echo "")
+CHANGED_FILES="$CHANGED_FILES
+$UNCOMMITTED"
+
+# Detect which areas changed
+FRONTEND_CHANGED=false
+BACKEND_CHANGED=false
+
+if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
+  FRONTEND_CHANGED=true
+fi
+
+if echo "$CHANGED_FILES" | grep -q "^backend/"; then
+  BACKEND_CHANGED=true
+fi
+
+# If we couldn't detect changes, run everything
+if [ -z "$CHANGED_FILES" ]; then
+  echo "Could not detect changed files - running all checks"
+  FRONTEND_CHANGED=true
+  BACKEND_CHANGED=true
+fi
+
+FAILED=0
+
+# --- Frontend checks ---
+if [ "$FRONTEND_CHANGED" = true ]; then
+  echo ""
+  echo "=== Frontend checks ==="
+
+  echo "-> Running TypeScript + build..."
+  if (cd frontend && npm run build); then
+    echo "   Build passed"
+  else
+    echo "   Build FAILED"
+    FAILED=1
+  fi
+
+  echo "-> Running tests..."
+  if (cd frontend && npm run test:run); then
+    echo "   Tests passed"
+  else
+    echo "   Tests FAILED"
+    FAILED=1
+  fi
+else
+  echo ""
+  echo "=== Frontend: no changes detected, skipping ==="
+fi
+
+# --- Backend checks ---
+if [ "$BACKEND_CHANGED" = true ]; then
+  echo ""
+  echo "=== Backend checks ==="
+
+  # Check if Python tools are available
+  BACKEND_TOOLS_MISSING=""
+
+  if ! command -v flake8 >/dev/null 2>&1; then
+    BACKEND_TOOLS_MISSING="$BACKEND_TOOLS_MISSING flake8"
+  fi
+  if ! command -v black >/dev/null 2>&1; then
+    BACKEND_TOOLS_MISSING="$BACKEND_TOOLS_MISSING black"
+  fi
+  if ! command -v isort >/dev/null 2>&1; then
+    BACKEND_TOOLS_MISSING="$BACKEND_TOOLS_MISSING isort"
+  fi
+
+  if [ -n "$BACKEND_TOOLS_MISSING" ]; then
+    echo "   Skipping backend checks - missing tools:$BACKEND_TOOLS_MISSING"
+    echo "   Install with: pip install flake8 black isort"
+  else
+    echo "-> Running flake8..."
+    if (cd backend && flake8 --max-line-length 120 --exclude venv .); then
+      echo "   flake8 passed"
+    else
+      echo "   flake8 FAILED"
+      FAILED=1
+    fi
+
+    echo "-> Running black --check..."
+    if (cd backend && black --check --exclude venv .); then
+      echo "   black passed"
+    else
+      echo "   black FAILED"
+      FAILED=1
+    fi
+
+    echo "-> Running isort --check..."
+    if (cd backend && isort --check-only --skip venv .); then
+      echo "   isort passed"
+    else
+      echo "   isort FAILED"
+      FAILED=1
+    fi
+  fi
+else
+  echo ""
+  echo "=== Backend: no changes detected, skipping ==="
+fi
+
+# --- Summary ---
+echo ""
+if [ "$FAILED" -ne 0 ]; then
+  echo "Pre-push checks FAILED. Fix issues above or bypass with: git push --no-verify"
+  exit 1
+fi
+
+echo "All pre-push checks passed!"
