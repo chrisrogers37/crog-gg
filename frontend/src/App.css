@@ -1019,16 +1019,27 @@ a:hover {
   }
 
   .section-nav {
-    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    position: relative;
+  }
+
+  .section-nav::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2rem;
+    background: linear-gradient(to right, transparent, var(--card-background));
+    pointer-events: none;
+    z-index: 1;
   }
 }
 
 @media (max-width: 480px) {
   .section-nav {
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
-    width: calc(100% + 1rem);
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
   }
 }
 
