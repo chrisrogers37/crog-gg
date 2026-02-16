@@ -1,0 +1,13 @@
+# Showcase images for the marquee strip
+# Add or remove entries to change what appears in the photo strip
+images:
+  - src: /profile-photos/photo-1.jpg
+    alt: photo of chris
+  - src: /profile-photos/photo-2.jpg
+    alt: photo of chris
+  - src: /profile-photos/photo-3.jpg
+    alt: photo of chris
+  - src: /profile-photos/photo-4.jpg
+    alt: photo of chris
+  - src: /profile-photos/photo-5.jpg
+    alt: photo of chris
