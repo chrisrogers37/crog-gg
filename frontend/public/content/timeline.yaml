@@ -8,7 +8,7 @@ entries:
     domain: artemis.xyz
     start_date: "Nov 2025"
     end_date: present
-    one_liner: building data science and engineering solutions at artemis
+    one_liner: data science and engineering for blockchain analytics
     skills:
       - python
       - sql
@@ -20,7 +20,7 @@ entries:
     organization: Independent
     start_date: "Jul 2025"
     end_date: "Nov 2025"
-    one_liner: went full send on ai - built production apps with llms, prompt engineering, and a whole lot of curiosity
+    one_liner: quit my job and went full send on ai. built things, broke things, learned a ton
     skills:
       - python
       - llms
@@ -34,7 +34,7 @@ entries:
     domain: citadel.com
     start_date: "Feb 2023"
     end_date: "Jul 2025"
-    one_liner: pioneered automation in strategic finance, centralizing workflows and reducing manual processing by 90%
+    one_liner: automated a bunch of finance workflows that people were doing by hand. saved everyone a lot of time
     skills:
       - python
       - sql
@@ -53,7 +53,7 @@ entries:
     domain: meta.com
     start_date: "Dec 2021"
     end_date: "Feb 2023"
-    one_liner: supported recruiting product teams with metric design, experimentation, and forecasting
+    one_liner: helped recruiting teams figure out what metrics actually mattered and ran a bunch of experiments
     skills:
       - python
       - sql
@@ -70,7 +70,7 @@ entries:
     domain: columbia.edu
     start_date: "2020"
     end_date: "2021"
-    one_liner: completed 50% of coursework toward ms in applied analytics before accepting meta offer (3.83 gpa)
+    one_liner: got halfway through a masters before meta came calling. no regrets (3.83 gpa)
     skills:
       - python
       - statistical testing
@@ -83,7 +83,7 @@ entries:
     domain: mskcc.org
     start_date: "Dec 2020"
     end_date: "Dec 2021"
-    one_liner: published nlp research and built analytics that informed hospital-wide policy
+    one_liner: published nlp research and built dashboards that actually changed how the hospital made decisions
     skills:
       - python
       - sql
@@ -99,7 +99,7 @@ entries:
     domain: mskcc.org
     start_date: "Oct 2018"
     end_date: "Dec 2020"
-    one_liner: built reporting and analytics foundations supporting clinical operations
+    one_liner: built the reporting and analytics setup from scratch for clinical ops
     skills:
       - python
       - sql
@@ -112,7 +112,7 @@ entries:
     domain: villagemd.com
     start_date: "Feb 2016"
     end_date: "Oct 2018"
-    one_liner: early career analytics work in healthcare, growing from data analyst to senior
+    one_liner: first real data job. started as an analyst, worked my way up
     skills:
       - python
       - sql
@@ -124,7 +124,7 @@ entries:
     domain: cornell.edu
     start_date: "2014"
     end_date: "2015"
-    one_liner: engineering masters with a focus on process optimization (3.96 gpa)
+    one_liner: engineering masters, mostly spent optimizing chemical processes and wondering if i'd actually be a chemical engineer (3.96 gpa)
     skills: []
 
   - type: education
@@ -133,7 +133,7 @@ entries:
     domain: cornell.edu
     start_date: "2010"
     end_date: "2014"
-    one_liner: where it all started - engineering fundamentals and problem solving
+    one_liner: where it all started. go big red
     skills: []
 
 # All skills with metadata for the bubble display

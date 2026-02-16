@@ -36,7 +36,8 @@ const mockData = {
       domain: "citadel.com",
       start_date: "Feb 2023",
       end_date: "Jul 2025",
-      one_liner: "pioneered automation in strategic finance",
+      one_liner:
+        "automated a bunch of finance workflows that people were doing by hand. saved everyone a lot of time",
       skills: ["python", "sql"],
     },
     {
@@ -46,7 +47,7 @@ const mockData = {
       domain: "artemis.xyz",
       start_date: "Nov 2025",
       end_date: "present",
-      one_liner: "building data science and engineering solutions",
+      one_liner: "data science and engineering for blockchain analytics",
       skills: ["python"],
     },
     {
@@ -56,7 +57,7 @@ const mockData = {
       domain: "cornell.edu",
       start_date: "2010",
       end_date: "2014",
-      one_liner: "engineering fundamentals",
+      one_liner: "where it all started. go big red",
       skills: [],
     },
     {
@@ -65,7 +66,8 @@ const mockData = {
       organization: "Independent",
       start_date: "Jul 2025",
       end_date: "Nov 2025",
-      one_liner: "went full send on ai",
+      one_liner:
+        "quit my job and went full send on ai. built things, broke things, learned a ton",
       skills: ["llms"],
     },
   ],
@@ -91,9 +93,13 @@ describe("Timeline", () => {
   it("displays one-liners for each entry", () => {
     render(<Timeline data={mockData} />);
     expect(
-      screen.getByText("pioneered automation in strategic finance"),
+      screen.getByText(
+        "automated a bunch of finance workflows that people were doing by hand. saved everyone a lot of time",
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByText("engineering fundamentals")).toBeInTheDocument();
+    expect(
+      screen.getByText("where it all started. go big red"),
+    ).toBeInTheDocument();
   });
 
   it("sorts entries newest-first (present at top)", () => {
