@@ -1,5 +1,33 @@
 # Mobile Optimization Plan - Choose Your Own Chris
 
+## Status
+
+> **Last reviewed**: February 16, 2026
+> **Overall**: ~23% implemented, ~42% partial, ~35% not started
+
+| Item  | Description                        | Status                          |
+| ----- | ---------------------------------- | ------------------------------- |
+| 1     | Header vertical footprint          | 📋 Not started                  |
+| 2     | Section nav touch targets          | 🔧 Partial                      |
+| 3     | Box shadow card removal            | 🔧 Partial                      |
+| 4     | Content section padding            | 🔧 Partial                      |
+| 5     | Timeline mobile optimization       | 🔧 Partial                      |
+| 6     | Projects section cards             | 🔧 Partial                      |
+| 7     | Music/Spotify embed                | 📋 Not started                  |
+| 8     | Bio/About section                  | 📋 Not started                  |
+| 9     | Skills word cloud                  | 🔧 Partial                      |
+| 10    | Touch target sizes (44px)          | 🔧 Partial                      |
+| 11    | Active/pressed states              | 📋 Not started                  |
+| 12-13 | Projects page optimization         | 🔧 Partial                      |
+| 14-16 | Layout, footer, contact CTA        | 🔧 Partial                      |
+| 17    | iOS input zoom prevention          | 🔧 Partial                      |
+| 18    | Safe area insets                   | 📋 Not started                  |
+| 19-22 | Feature components, action buttons | 📋 Not started                  |
+| 23    | CSS variable bug (Timeline)        | ✅ Not a bug (vars are correct) |
+| 24-26 | Swipe, pull-to-refresh, tab bar    | 📋 Not started                  |
+
+---
+
 ## Overview
 
 This document provides a comprehensive, technically detailed plan for optimizing the mobile experience of crog.gg. Each item references specific files, CSS selectors, and code locations. The plan is organized by priority (P0 = critical, P1 = high, P2 = medium, P3 = nice-to-have).

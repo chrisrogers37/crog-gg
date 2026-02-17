@@ -21,6 +21,14 @@ Give Claude verification loops for 2-3x quality improvement:
 4. Lint before committing: `cd frontend && npm run lint`
 5. Before creating PR: run full lint and test suite
 
+## Git Hooks
+
+Husky pre-commit and pre-push hooks enforce quality locally:
+
+- **Pre-commit**: `lint-staged` runs ESLint on staged `.ts`/`.tsx` files
+- **Pre-push**: Runs `npm run build`, `npm run test:run`, and backend linting (flake8, black, isort)
+- Bypass with `--no-verify` when needed (e.g., WIP commits)
+
 ## Commands Reference
 
 ```sh
@@ -87,6 +95,21 @@ git diff                # Review changes before commit
 
 - API URL configured via `VITE_API_URL` env var
 - Backend runs on port 5001
+- **Note**: Vite dev proxy in `vite.config.ts` targets port 5000 (stale) — use `VITE_API_URL=http://localhost:5001` instead
+
+#### Backend Endpoints
+
+| Endpoint                          | Method | Description                                   |
+| --------------------------------- | ------ | --------------------------------------------- |
+| `/api/regenerate`                 | POST   | AI content regeneration (30s cooldown per IP) |
+| `/api/limits`                     | GET    | Current cooldown status                       |
+| `/api/v1/github/repo/<name>`      | GET    | GitHub repo details                           |
+| `/api/v1/github/readme/<name>`    | GET    | GitHub README content                         |
+| `/api/v1/github/languages/<name>` | GET    | Language stats for repo                       |
+| `/api/v1/github/languages`        | GET    | Aggregated language stats                     |
+| `/api/v1/github/contributions`    | GET    | GitHub contribution calendar (GraphQL)        |
+
+Backend env vars: `OPENAI_API_KEY` (required), `GITHUB_TOKEN` (optional, higher rate limits)
 
 ### Styling
 
@@ -128,8 +151,9 @@ await expect(welcomeArea).toBeVisible();
 ### Content Files
 
 - Content lives in `frontend/public/content/` as YAML files
-- Bio, experience, education, skills, projects all loaded from YAML
+- Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `frontend/public/content/projects/` directory
+- Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime
 
 ## Deployment
 

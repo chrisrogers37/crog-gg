@@ -33,7 +33,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **CORS Support**: Secure cross-origin communication between frontend and API
 - **Error Handling**: Robust error management for API interactions
 - **Rate Limiting**: Token usage tracking and request limiting
-- **Smooth Animations**: CSS transitions for content updates
+- **Smooth Animations**: Framer Motion transitions for content updates
 
 ### Testing & CI/CD
 
@@ -41,6 +41,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **E2E Testing**: Playwright for browser automation
 - **Continuous Integration**: GitHub Actions for automated testing
 - **Code Quality**: ESLint + TypeScript strict mode
+- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (build, tests, backend lint)
 
 ## Tech Stack
 
@@ -49,8 +50,8 @@ An interactive portfolio website featuring dynamic content generation using Open
 - React 18
 - TypeScript
 - Vite
-- CSS Variables for theming
-- React Transition Group for animations
+- Tailwind CSS + CSS Variables for theming
+- Framer Motion for animations
 
 ### Backend
 
@@ -64,7 +65,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v18 or higher)
 - Python 3.10+
 - OpenAI API key
 
@@ -185,7 +186,7 @@ To manually trigger a deployment, use the "Deploy" workflow in GitHub Actions.
 - Ubuntu 20.04 or later
 - Nginx
 - Python 3.10+
-- Node.js 14+
+- Node.js 18+
 - SSL certificates (Let's Encrypt)
 
 ### Systemd Services Setup (Recommended)
