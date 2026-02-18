@@ -1,20 +1,19 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import {
   useProjects,
   useIsLoading,
   useContentError,
   useContentStore,
 } from "../../store";
-import { Project } from "../../types";
+import { ProjectCard } from "../../components/sections/Projects/ProjectCard";
 import { SEO } from "../../components/SEO";
 import "./ProjectsPage.css";
 
 /**
  * ProjectsPage
  *
- * Displays all projects in a grid with filtering capabilities.
- * Each project card links to its detail page.
+ * Displays all projects in a tile grid with filtering capabilities.
+ * Each project tile links to its detail page.
  */
 export function ProjectsPage() {
   const projects = useProjects();
@@ -135,7 +134,11 @@ export function ProjectsPage() {
         {filteredProjects.length > 0 ? (
           <div className="projects-grid">
             {filteredProjects.map((project) => (
-              <ProjectListCard key={project.id} project={project} />
+              <ProjectCard
+                key={project.id}
+                project={project}
+                linkTo={`/projects/${project.id}`}
+              />
             ))}
           </div>
         ) : (
@@ -154,43 +157,5 @@ export function ProjectsPage() {
         )}
       </div>
     </>
-  );
-}
-
-/**
- * ProjectListCard
- *
- * Card component for the projects listing page.
- * Links to the project detail page.
- */
-function ProjectListCard({ project }: { project: Project }) {
-  return (
-    <Link to={`/projects/${project.id}`} className="project-list-card">
-      <div className="card-icon">
-        <i className={project.icon}></i>
-      </div>
-
-      <div className="card-content">
-        <h2 className="card-title">{project.title}</h2>
-        <p className="card-description">{project.description}</p>
-
-        {project.technologies && project.technologies.length > 0 && (
-          <div className="card-technologies">
-            {project.technologies.slice(0, 4).map((tech) => (
-              <span key={tech} className="tech-tag">
-                {tech}
-              </span>
-            ))}
-            {project.technologies.length > 4 && (
-              <span className="tech-tag more">
-                +{project.technologies.length - 4}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="card-arrow">→</div>
-    </Link>
   );
 }
