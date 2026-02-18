@@ -3,9 +3,10 @@
 # Add new projects by adding their YAML filenames to this list
 
 projects:
-  - 30-day-abs.yaml
-  - shitpost-alpha.yaml
   - shuffify.yaml
-  - city-cycles.yaml
   - storyline-ai.yaml
+  - dead-redux.yaml
+  - shitpost-alpha.yaml
+  - 30-day-abs.yaml
+  - city-cycles.yaml
   - github.yaml
