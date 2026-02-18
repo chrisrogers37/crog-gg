@@ -94,6 +94,53 @@
   opacity: 0.7;
 }
 
+/* Skeleton Loading */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-tile {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+}
+
+.skeleton-header {
+  background: var(--border-color);
+}
+
+.skeleton-line {
+  border-radius: 4px;
+  background: var(--border-color);
+}
+
+.skeleton-title-line {
+  width: 60%;
+  height: 14px;
+}
+
+.skeleton-desc-line-1 {
+  width: 90%;
+  height: 10px;
+}
+
+.skeleton-desc-line-2 {
+  width: 70%;
+  height: 10px;
+}
+
+.skeleton-pill {
+  width: 40px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--border-color);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .projects-grid {

@@ -97,32 +97,6 @@
   background: var(--secondary-color);
 }
 
-/* Loading State */
-.projects-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  color: var(--text-color-secondary);
-}
-
-.projects-loading__spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: projects-spin 1s ease-in-out infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes projects-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Error State */
 .projects-error {
   display: flex;

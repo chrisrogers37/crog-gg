@@ -6,6 +6,7 @@ import {
   useContentStore,
 } from "../../store";
 import { ProjectCard } from "../../components/sections/Projects/ProjectCard";
+import { ProjectSkeletonGrid } from "../../components/sections/Projects/Projects";
 import { SEO } from "../../components/SEO";
 import "./ProjectsPage.css";
 
@@ -57,10 +58,7 @@ export function ProjectsPage() {
             A collection of my work, side projects, and experiments.
           </p>
         </header>
-        <div className="projects-loading">
-          <div className="projects-loading__spinner" />
-          <p>Loading projects...</p>
-        </div>
+        <ProjectSkeletonGrid />
       </div>
     );
   }
