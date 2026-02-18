@@ -205,6 +205,11 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+  .project-detail-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .project-header {
     flex-direction: column;
     text-align: center;

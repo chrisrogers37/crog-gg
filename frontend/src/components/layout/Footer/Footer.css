@@ -38,6 +38,10 @@
 }
 
 @media (max-width: 640px) {
+  .footer {
+    padding: 2rem 1rem;
+  }
+
   .footer-content {
     flex-direction: column;
     text-align: center;
