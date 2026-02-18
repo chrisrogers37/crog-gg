@@ -1015,7 +1015,7 @@ a:hover {
     justify-content: flex-start;
     width: max-content;
     min-width: 100%;
-    padding: 0 0.5rem;
+    padding: 0 1.5rem;
   }
 
   .section-nav {
@@ -1140,6 +1140,8 @@ main {
 @media (max-width: 480px) {
   .section-nav-button {
     padding: 0.5rem 0.75rem;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 }
 

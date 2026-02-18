@@ -246,6 +246,11 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+  .projects-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .projects-grid {
     grid-template-columns: 1fr;
   }
