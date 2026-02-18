@@ -10,8 +10,8 @@ technologies:
   - "LLM"
   - "A/B Testing"
   - "Data Analysis"
-github_url: "https://github.com/chrisrogers37/30-day-abs"
-demo_url: "https://30-day-abs.streamlit.app/"
+github: "https://github.com/chrisrogers37/30-day-abs"
+demo: "https://30-day-abs.streamlit.app/"
 featured: false
 order: 1
 status: active

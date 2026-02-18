@@ -9,7 +9,9 @@ interface RawProjectData {
   title: string;
   description: string;
   url?: string;
+  demo?: string;
   demo_url?: string;
+  github?: string;
   github_url?: string;
   icon: string;
   category: string;
@@ -51,7 +53,9 @@ export const loadProjects = async (): Promise<Project[]> => {
             description: projectData.description,
             url:
               projectData.url ||
+              projectData.demo ||
               projectData.demo_url ||
+              projectData.github ||
               projectData.github_url ||
               "#",
             icon: projectData.icon,
@@ -61,8 +65,8 @@ export const loadProjects = async (): Promise<Project[]> => {
             order: projectData.order || 999,
             image: projectData.image,
             gradient: projectData.gradient,
-            github: projectData.github_url,
-            demo: projectData.demo_url,
+            github: projectData.github || projectData.github_url,
+            demo: projectData.demo || projectData.demo_url,
             status: projectData.status,
             tags: projectData.tags || [],
           };
@@ -100,7 +104,9 @@ export const loadProjects = async (): Promise<Project[]> => {
               description: projectData.description,
               url:
                 projectData.url ||
+                projectData.demo ||
                 projectData.demo_url ||
+                projectData.github ||
                 projectData.github_url ||
                 "#",
               icon: projectData.icon,
@@ -110,8 +116,8 @@ export const loadProjects = async (): Promise<Project[]> => {
               order: projectData.order || 999,
               image: projectData.image,
               gradient: projectData.gradient,
-              github: projectData.github_url,
-              demo: projectData.demo_url,
+              github: projectData.github || projectData.github_url,
+              demo: projectData.demo || projectData.demo_url,
               status: projectData.status,
               tags: projectData.tags || [],
             };
