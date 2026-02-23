@@ -12,7 +12,7 @@
   },
   "lint-staged": {
     "frontend/src/**/*.{ts,tsx}": [
-      "frontend/node_modules/.bin/eslint --max-warnings 0"
+      "frontend/node_modules/.bin/eslint --max-warnings 0 --config frontend/eslint.config.js"
     ]
   }
 }
