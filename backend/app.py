@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import openai
 import os
 import json
 import logging
+import re
 import sys
 import time
 import requests
@@ -45,6 +48,24 @@ CORS(app,
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "OPTIONS"])
+
+# Initialize rate limiter (in-memory storage, no default limits)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    """Return JSON instead of HTML for rate limit errors."""
+    return jsonify({
+        'error': 'Rate limit exceeded',
+        'message': str(e.description),
+    }), 429
+
 
 # Configure OpenAI
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
@@ -93,6 +114,42 @@ def check_cooldown(client_ip):
 def record_regeneration(client_ip):
     """Record a regeneration timestamp for rate limiting."""
     _last_regeneration[client_ip] = time.time()
+
+
+# ===========================================
+# INPUT VALIDATION
+# ===========================================
+
+REPO_NAME_PATTERN = re.compile(r'^[a-zA-Z0-9._-]+$')
+MAX_REPO_NAME_LENGTH = 100
+
+
+def validate_repo_name(repo_name):
+    """
+    Validate a GitHub repository name.
+    Returns (is_valid, error_message) tuple.
+    """
+    if not repo_name:
+        return False, 'Repository name cannot be empty'
+
+    if len(repo_name) > MAX_REPO_NAME_LENGTH:
+        return False, (
+            f'Repository name too long (max {MAX_REPO_NAME_LENGTH} characters)'
+        )
+
+    if repo_name in ('.', '..'):
+        return False, 'Invalid repository name'
+
+    if repo_name.startswith('.'):
+        return False, 'Repository name cannot start with a period'
+
+    if not REPO_NAME_PATTERN.match(repo_name):
+        return False, (
+            'Repository name contains invalid characters '
+            '(allowed: alphanumeric, hyphens, underscores, periods)'
+        )
+
+    return True, None
 
 
 def get_fantasy_prompt(use_fantasy=False):
@@ -312,6 +369,7 @@ def regenerate_content():
 
 
 @app.route('/api/github/languages', methods=['GET'])
+@limiter.limit("30/minute")
 def get_github_languages():
     logger.info("=== New GitHub Languages Request ===")
     github_username = "chrisrogers37"
@@ -395,12 +453,18 @@ def github_headers():
 
 
 @app.route('/api/v1/github/repo/<repo_name>', methods=['GET'])
+@limiter.limit("30/minute")
 def get_repository(repo_name):
     """
     Get repository information.
 
     GET /api/v1/github/repo/shuffify
     """
+    is_valid, error_msg = validate_repo_name(repo_name)
+    if not is_valid:
+        logger.warning(f"Invalid repo name rejected: {repr(repo_name)}")
+        return jsonify({'error': error_msg}), 400
+
     logger.info(f"=== GitHub Repo Request: {repo_name} ===")
     try:
         response = requests.get(
@@ -416,12 +480,18 @@ def get_repository(repo_name):
 
 
 @app.route('/api/v1/github/readme/<repo_name>', methods=['GET'])
+@limiter.limit("30/minute")
 def get_readme(repo_name):
     """
     Get repository README content.
 
     GET /api/v1/github/readme/shuffify
     """
+    is_valid, error_msg = validate_repo_name(repo_name)
+    if not is_valid:
+        logger.warning(f"Invalid repo name rejected: {repr(repo_name)}")
+        return jsonify({'error': error_msg}), 400
+
     logger.info(f"=== GitHub README Request: {repo_name} ===")
     try:
         response = requests.get(
@@ -441,12 +511,18 @@ def get_readme(repo_name):
 
 
 @app.route('/api/v1/github/languages/<repo_name>', methods=['GET'])
+@limiter.limit("30/minute")
 def get_repo_languages(repo_name):
     """
     Get repository language statistics.
 
     GET /api/v1/github/languages/shuffify
     """
+    is_valid, error_msg = validate_repo_name(repo_name)
+    if not is_valid:
+        logger.warning(f"Invalid repo name rejected: {repr(repo_name)}")
+        return jsonify({'error': error_msg}), 400
+
     logger.info(f"=== GitHub Languages Request: {repo_name} ===")
     try:
         response = requests.get(
@@ -462,6 +538,7 @@ def get_repo_languages(repo_name):
 
 
 @app.route('/api/v1/github/languages', methods=['GET'])
+@limiter.limit("30/minute")
 def get_all_languages_v1():
     """
     Get aggregated language statistics for all public repos.
@@ -500,6 +577,7 @@ def get_all_languages_v1():
 
 
 @app.route('/api/v1/github/contributions', methods=['GET'])
+@limiter.limit("30/minute")
 def get_contributions():
     """
     Get contribution data for heatmap visualization.
