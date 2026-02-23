@@ -99,9 +99,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "http://localhost:5001",
         changeOrigin: true,
-        secure: false,
         ws: true,
         configure: (proxy, _options) => {
           proxy.on("error", (err, _req, _res) => {

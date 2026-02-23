@@ -25,6 +25,12 @@ if not logger.handlers:
 
 load_dotenv()
 
+# Debug mode flag: controls verbose logging and Flask debug mode.
+# Set FLASK_DEBUG=true in .env or environment for local development only.
+_flask_debug = os.getenv('FLASK_DEBUG', 'false').lower() in ('true', '1', 'yes')
+if _flask_debug:
+    logger.setLevel(logging.DEBUG)
+
 app = Flask(__name__)
 
 # Configure CORS
@@ -130,10 +136,10 @@ def regenerate_content():
                 'cooldown_total': COOLDOWN_SECONDS
             }), 429
 
-        logger.info(f"Request Headers: {dict(request.headers)}")
+        logger.debug(f"Request Headers: {dict(request.headers)}")
 
         data = request.get_json()
-        logger.info(f"Raw request data: {json.dumps(data, indent=2)}")
+        logger.debug(f"Raw request data: {json.dumps(data, indent=2)}")
 
         if not data:
             logger.error("Error: No JSON data received")
@@ -152,7 +158,7 @@ def regenerate_content():
         logger.info(f"Is full regeneration: {is_full_regeneration}")
         logger.info(f"Use fantasy: {use_fantasy}")
         logger.info(f"Regenerate target: {regenerate_target}")
-        logger.info(f"Content to regenerate: {json.dumps(content, indent=2)}")
+        logger.debug(f"Content to regenerate: {json.dumps(content, indent=2)}")
 
         if not section:
             logger.error("Error: No section specified")
@@ -240,7 +246,7 @@ def regenerate_content():
             elif regenerate_target == 'msk':
                 section_prompt['format'] += "\nOnly rewrite the achievements for the Memorial Sloan Kettering employment entry, keeping all other content exactly the same."
 
-        logger.info(f"Using prompt: {json.dumps(section_prompt, indent=2)}")
+        logger.debug(f"Using prompt: {json.dumps(section_prompt, indent=2)}")
 
         try:
             logger.info("Making OpenAI API request...")
@@ -249,7 +255,7 @@ def regenerate_content():
                 {"role": "user", "content": f"Original content: {json.dumps(content)}\n\nFormatting instructions: {section_prompt['format']}\n\nPlease rewrite this content, paying special attention to achievements if they exist. Each achievement should be rewritten to be more impactful while maintaining the same core accomplishments and metrics."}
             ]
 
-            logger.info(f"OpenAI request messages: {json.dumps(messages, indent=2)}")
+            logger.debug(f"OpenAI request messages: {json.dumps(messages, indent=2)}")
 
             response = openai_client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -258,11 +264,11 @@ def regenerate_content():
             )
 
             logger.info("OpenAI API response received successfully")
-            logger.info(f"Raw OpenAI response: {response}")
+            logger.debug(f"Raw OpenAI response: {response}")
 
             # Get the generated content
             new_content = response.choices[0].message.content
-            logger.info(f"Generated content: {new_content}")
+            logger.debug(f"Generated content: {new_content}")
 
             # Try to parse the response as JSON
             try:
@@ -574,4 +580,4 @@ def get_contributions():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=_flask_debug, port=5001)

@@ -95,7 +95,7 @@ git diff                # Review changes before commit
 
 - API URL configured via `VITE_API_URL` env var
 - Backend runs on port 5001
-- **Note**: Vite dev proxy in `vite.config.ts` targets port 5000 (stale) — use `VITE_API_URL=http://localhost:5001` instead
+- Vite dev proxy in `vite.config.ts` forwards `/api` requests to `http://localhost:5001`
 
 #### Backend Endpoints
 
