@@ -6,9 +6,22 @@ entries:
     title: Data Platform Lead
     organization: Artemis
     domain: artemis.xyz
-    start_date: "Nov 2025"
+    start_date: "Mar 2026"
     end_date: present
-    one_liner: leading the data platform for blockchain analytics
+    one_liner: promoted to lead the data platform for blockchain analytics
+    skills:
+      - python
+      - sql
+      - data modeling
+      - llms
+
+  - type: role
+    title: Senior Data Scientist and Engineer
+    organization: Artemis
+    domain: artemis.xyz
+    start_date: "Nov 2025"
+    end_date: "Mar 2026"
+    one_liner: data science and engineering for blockchain analytics
     skills:
       - python
       - sql
