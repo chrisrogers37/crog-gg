@@ -8,7 +8,7 @@ entries:
     domain: artemis.xyz
     start_date: "Mar 2026"
     end_date: present
-    one_liner: now leading the data platform for blockchain analytics
+    one_liner: now leading the data platform for blockchain and equities analytics
     skills:
       - python
       - sql
@@ -21,7 +21,7 @@ entries:
     domain: artemis.xyz
     start_date: "Nov 2025"
     end_date: "Mar 2026"
-    one_liner: data science and engineering for blockchain analytics
+    one_liner: data science and engineering for blockchain and equities analytics
     skills:
       - python
       - sql
