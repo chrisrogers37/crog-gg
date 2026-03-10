@@ -3,6 +3,7 @@
 # Add new projects by adding their YAML filenames to this list
 
 projects:
+  - benzo.yaml
   - shuffify.yaml
   - storyline-ai.yaml
   - dead-redux.yaml
