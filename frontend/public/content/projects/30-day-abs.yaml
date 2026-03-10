@@ -13,7 +13,7 @@ technologies:
 github: "https://github.com/chrisrogers37/30-day-abs"
 demo: "https://30-day-abs.streamlit.app/"
 featured: false
-order: 5
+order: 6
 status: active
 gradient: "linear-gradient(135deg, #EF4444 0%, #991B1B 100%)"
 tags:
