@@ -69,9 +69,9 @@ export function HomePage() {
         <ScrollRevealSection id="hero" fullHeight divider>
           <div className="hero-section">
             <h1 className="hero-name">Christopher Rogers</h1>
-            <p className="hero-headline">i build things that build things</p>
+            <p className="hero-headline">building things that build things</p>
             <p className="hero-subline">
-              data, music, and too many side projects
+              data, music, side quests
             </p>
             <CompassRose rotation={scrollProgress * 360} />
           </div>
@@ -80,7 +80,7 @@ export function HomePage() {
         {/* Journey */}
         <ScrollRevealSection
           id="journey"
-          atmosphere={{ accentSecondary: "#B8A04A" }}
+          atmosphere={{ accentSecondary: "#B8A04A", bgTexture: "parchment" }}
           divider
         >
           <div className="section-content">

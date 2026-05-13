@@ -10,14 +10,7 @@ type ProjectCardProps = {
 export function ProjectCard({ project, linkTo }: ProjectCardProps) {
   const content = (
     <>
-      <div
-        className="project-tile-header"
-        style={{
-          background:
-            project.gradient ||
-            "linear-gradient(135deg, #6B7280 0%, #374151 100%)",
-        }}
-      >
+      <div className="project-tile-header">
         {project.icon && <i className={`${project.icon} project-tile-icon`} />}
       </div>
       <div className="project-tile-body">

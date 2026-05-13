@@ -3,6 +3,17 @@
   overflow: hidden;
 }
 
+.scroll-reveal-section[data-section="journey"] {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(184, 160, 74, 0.03) 20%,
+    rgba(184, 160, 74, 0.05) 50%,
+    rgba(184, 160, 74, 0.03) 80%,
+    transparent 100%
+  );
+}
+
 /* Imperfect divider — applied to 2-3 section breaks */
 .scroll-reveal-section.has-divider::after {
   content: "";

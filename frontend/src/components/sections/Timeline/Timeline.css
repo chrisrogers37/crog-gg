@@ -133,13 +133,13 @@
 
 /* Quest-log title — Cinzel small-caps */
 .timeline-title {
-  font-family: "Cinzel", serif;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin: 0.25rem 0 0.15rem;
-  font-variant: small-caps;
-  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .timeline-org {
@@ -160,7 +160,7 @@
   color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.5;
-  font-style: italic;
+  font-style: normal;
 }
 
 /* Skills Sidebar */

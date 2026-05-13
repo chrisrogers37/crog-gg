@@ -53,7 +53,7 @@ const SOCIAL_LINKS: { icon: any; href: string; label: string }[] = [
     href: "https://linkedin.com/in/chrisrogers37",
     label: "LinkedIn",
   },
-  { icon: Send, href: "https://t.me/crogers37", label: "Telegram" },
+  { icon: Send, href: "https://t.me/crogcrogcrog", label: "Telegram" },
   {
     icon: Music,
     href: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
@@ -122,7 +122,7 @@ export function Sidebar() {
           <div className="sidebar-identity">
             <h1 className="sidebar-name">Christopher Rogers</h1>
             <p className="sidebar-headline">
-              i build things that build things
+              building things that build things
             </p>
           </div>
 

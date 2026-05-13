@@ -45,7 +45,6 @@ export default {
           "Monaco",
           "monospace",
         ],
-        quest: ["Cinzel", "serif"],
       },
 
       animation: {
@@ -85,7 +84,7 @@ export default {
           "100%": { opacity: "1", transform: "scale(1)" },
         },
         cortanaPulse: {
-          "0%, 100%": { opacity: "0.6" },
+          "0%, 100%": { opacity: "0.7" },
           "50%": { opacity: "1" },
         },
         compassSpin: {
