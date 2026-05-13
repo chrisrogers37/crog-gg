@@ -1,0 +1,23 @@
+.scroll-reveal-section {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Imperfect divider — applied to 2-3 section breaks */
+.scroll-reveal-section.has-divider::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: var(--color-border);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='2'%3E%3Cpath d='M0,1 Q20,0 40,1 T80,1 T120,1 T160,1 T200,1 T240,1 T280,1 T320,1 T360,1 T400,1' stroke='white' fill='none' stroke-width='2'/%3E%3C/svg%3E");
+  mask-size: 400px 2px;
+  mask-repeat: repeat-x;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='2'%3E%3Cpath d='M0,1 Q20,0 40,1 T80,1 T120,1 T160,1 T200,1 T240,1 T280,1 T320,1 T360,1 T400,1' stroke='white' fill='none' stroke-width='2'/%3E%3C/svg%3E");
+  -webkit-mask-size: 400px 2px;
+  -webkit-mask-repeat: repeat-x;
+  opacity: 0.6;
+}

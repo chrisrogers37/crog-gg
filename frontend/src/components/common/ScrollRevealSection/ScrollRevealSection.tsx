@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { useUIStore } from "../../../store/uiStore";
+import "./ScrollRevealSection.css";
 
 interface SectionAtmosphere {
   bgTexture?: string;
@@ -14,6 +15,7 @@ interface ScrollRevealSectionProps {
   className?: string;
   atmosphere?: SectionAtmosphere;
   fullHeight?: boolean;
+  divider?: boolean;
 }
 
 export function ScrollRevealSection({
@@ -22,6 +24,7 @@ export function ScrollRevealSection({
   className = "",
   atmosphere,
   fullHeight = false,
+  divider = false,
 }: ScrollRevealSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { amount: 0.3 });
@@ -45,7 +48,7 @@ export function ScrollRevealSection({
     <section
       id={id}
       ref={ref}
-      className={`scroll-reveal-section ${fullHeight ? "min-h-screen" : ""} ${className}`}
+      className={`scroll-reveal-section ${fullHeight ? "min-h-screen" : ""} ${divider ? "has-divider" : ""} ${className}`}
       style={sectionStyle}
       data-section={id}
     >

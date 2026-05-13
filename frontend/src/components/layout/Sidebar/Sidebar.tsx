@@ -56,7 +56,7 @@ const SOCIAL_LINKS: { icon: any; href: string; label: string }[] = [
   { icon: Send, href: "https://t.me/crogers37", label: "Telegram" },
   {
     icon: Music,
-    href: "https://open.spotify.com/artist/crog",
+    href: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
     label: "Spotify",
   },
 ];

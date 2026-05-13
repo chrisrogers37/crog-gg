@@ -63,11 +63,11 @@ describe("Music", () => {
     expect(link).toHaveAttribute("href", "https://instagram.com/crogmusic");
   });
 
-  it("renders Hoobe link", () => {
+  it("renders all-links link pointing to Spotify", () => {
     useContentStore.setState({ bio: mockBio });
     render(<Music />);
     const link = screen.getByLabelText("all music links");
-    expect(link).toHaveAttribute("href", "https://hoo.be/test");
+    expect(link).toHaveAttribute("href", "https://open.spotify.com/artist/testid");
   });
 
   it("renders Spotify embed", () => {

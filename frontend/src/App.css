@@ -1,22 +1,13 @@
-/* Legacy CSS variable mappings — consumed by existing section components */
+/* Legacy CSS variable aliases — point to canonical --color-* tokens in index.css */
 :root {
-  --primary-color: #2DD4BF;
-  --secondary-color: #1A7A6D;
-  --background-color: #0A0F14;
-  --text-color: #E2E8F0;
-  --text-color-secondary: #94A3B8;
-  --card-background: #111921;
-  --hover-color: #D4915C;
-  --border-color: #1E2A35;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-  min-height: 100vh;
-  width: 100%;
-  overflow-x: hidden;
+  --primary-color: var(--color-teal-primary);
+  --secondary-color: var(--color-teal-muted);
+  --background-color: var(--color-base);
+  --text-color: var(--color-text-primary);
+  --text-color-secondary: var(--color-text-secondary);
+  --card-background: var(--color-surface);
+  --hover-color: var(--color-warm-accent);
+  --border-color: var(--color-border);
 }
 
 #root {
@@ -24,19 +15,12 @@ body {
   overflow-x: hidden;
 }
 
-/* Legacy component compat — section components reference these */
-.section-divider {
-  border: none;
-  border-top: 1px solid var(--border-color);
-  margin: 2rem 0;
-}
-
 a {
-  color: var(--primary-color);
+  color: var(--color-teal-primary);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 a:hover {
-  color: var(--hover-color);
+  color: var(--color-warm-accent);
 }

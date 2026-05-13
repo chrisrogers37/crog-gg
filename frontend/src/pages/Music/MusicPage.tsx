@@ -1,9 +1,15 @@
 import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
 import { Music as MusicSection } from "../../components/sections/Music";
 
 export function MusicPage() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-20">
+    <motion.div
+      className="max-w-3xl mx-auto px-6 py-20"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <Helmet>
         <title>Music — crog</title>
       </Helmet>
@@ -14,6 +20,6 @@ export function MusicPage() {
         i make electronic music under the name crog.
       </p>
       <MusicSection />
-    </div>
+    </motion.div>
   );
 }
