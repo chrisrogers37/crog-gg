@@ -126,7 +126,9 @@ test.describe("Scroll Sections", () => {
   });
 
   test("home page has scroll-reveal sections", async ({ page }) => {
-    const sections = page.locator(".scroll-reveal-section");
+    // Wait for hero section to render before counting
+    await expect(page.locator('[data-section="hero"]')).toBeVisible();
+    const sections = page.locator("[data-section]");
     const count = await sections.count();
     // Hero, Journey, Projects, About
     expect(count).toBeGreaterThanOrEqual(3);
