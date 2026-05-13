@@ -70,13 +70,12 @@ describe("ProjectCard", () => {
     expect(link).not.toHaveAttribute("target");
   });
 
-  it("uses fallback gradient when gradient is undefined", () => {
+  it("renders header without inline gradient style (CSS-controlled)", () => {
     const projectNoGradient = { ...mockProject, gradient: undefined };
     const { container } = render(<ProjectCard project={projectNoGradient} />);
     const headerDiv = container.querySelector(".project-tile-header");
-    expect(headerDiv).toHaveStyle({
-      background: "linear-gradient(135deg, #6B7280 0%, #374151 100%)",
-    });
+    expect(headerDiv).toBeInTheDocument();
+    expect(headerDiv).not.toHaveAttribute("style");
   });
 
   it("renders tile with correct class structure", () => {
