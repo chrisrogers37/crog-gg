@@ -1,38 +1,18 @@
 .layout {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   overflow-x: hidden;
 }
 
 .layout-main {
   flex: 1;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin-left: 260px;
+  min-height: 100vh;
 }
 
-.layout-main.home-layout {
-  max-width: none;
-  padding: 0;
-}
-
-.compact-header {
-  background: var(--card-background);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .layout-main {
-    padding: 1rem;
-  }
-
-  .compact-header {
-    padding: 1rem;
+    margin-left: 0;
+    padding-top: 56px;
   }
 }
