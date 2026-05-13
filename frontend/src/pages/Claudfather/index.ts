@@ -1,0 +1,1 @@
+export { ClaudfatherPage } from "./ClaudfatherPage";

@@ -21,11 +21,11 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--border-color);
+  background: var(--color-border);
   transform: translateX(-50%);
 }
 
-/* Timeline Entry - single column, cards on the right */
+/* Timeline Entry */
 .timeline-entry {
   position: relative;
   display: flex;
@@ -49,58 +49,75 @@
   margin-left: 0;
 }
 
-/* Timeline Dot */
+/* Angular Waypoint Markers */
 .timeline-dot {
   position: absolute;
   left: 1.25rem;
-  transform: translateX(-50%);
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: var(--card-background);
-  border: 2px solid var(--border-color);
+  transform: translateX(-50%) rotate(45deg);
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
 }
 
+.timeline-dot-inner {
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .timeline-icon {
-  font-size: 1rem;
+  font-size: 0.75rem;
   line-height: 1;
 }
 
 .timeline-dot-logo {
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  border-radius: 0;
+  width: 20px;
+  height: 20px;
 }
 
+/* Role markers — teal border */
 .timeline-entry-role .timeline-dot {
-  border-color: var(--primary-color);
+  border-color: var(--color-teal-primary);
 }
 
+/* Education markers — purple border */
 .timeline-entry-education .timeline-dot {
   border-color: #8b5cf6;
+}
+
+/* Milestone markers — larger, warm accent, filled */
+.timeline-entry-milestone .timeline-dot {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-color: var(--color-warm-accent);
+  background: var(--color-warm-accent);
+}
+
+.timeline-entry-milestone .timeline-dot .timeline-icon {
+  color: var(--color-base);
 }
 
 /* Timeline Card */
 .timeline-card {
   max-width: 100%;
   padding: 1rem 1.25rem;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
   flex: 1;
 }
 
 .timeline-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-teal-muted);
 }
 
 .timeline-card-header {
@@ -108,21 +125,26 @@
 }
 
 .timeline-period {
-  font-size: 0.8rem;
-  color: var(--text-color-secondary);
+  font-size: 0.75rem;
+  color: var(--color-warm-accent);
   font-weight: 500;
+  font-family: "JetBrains Mono", monospace;
 }
 
+/* Quest-log title — Cinzel small-caps */
 .timeline-title {
+  font-family: "Rajdhani", sans-serif;
   font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-color);
+  font-weight: 700;
+  color: var(--color-text-primary);
   margin: 0.25rem 0 0.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .timeline-org {
-  font-size: 0.9rem;
-  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -134,10 +156,11 @@
 }
 
 .timeline-one-liner {
-  font-size: 0.9rem;
-  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.5;
+  font-style: normal;
 }
 
 /* Skills Sidebar */
@@ -151,11 +174,13 @@
 }
 
 .timeline-skills-heading {
+  font-family: "Rajdhani", sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-color-secondary);
+  color: var(--color-text-secondary);
   margin: 0 0 0.75rem;
-  text-transform: lowercase;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Skill Bubbles */
@@ -167,10 +192,11 @@
 
 .skill-bubble {
   display: inline-block;
-  padding: 0.3rem 0.7rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
   font-weight: 500;
+  font-family: "JetBrains Mono", monospace;
   border: 1px solid;
   white-space: nowrap;
 }

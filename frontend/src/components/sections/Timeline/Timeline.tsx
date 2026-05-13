@@ -76,13 +76,13 @@ export function Timeline({ data }: TimelineProps) {
   const getEntryIcon = (type: TimelineEntry["type"]) => {
     switch (type) {
       case "role":
-        return "\uD83D\uDCBC";
+        return "\u25C6";
       case "education":
-        return "\uD83C\uDF93";
+        return "\u25B2";
       case "milestone":
-        return "\u2B50";
+        return "\u2726";
       default:
-        return "\u25CF";
+        return "\u25C6";
     }
   };
 
@@ -119,17 +119,11 @@ export function Timeline({ data }: TimelineProps) {
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
               <div className="timeline-dot">
-                <LogoImage
-                  domain={entry.domain}
-                  alt={entry.organization}
-                  size={28}
-                  className="timeline-dot-logo"
-                  fallback={
-                    <span className="timeline-icon">
-                      {getEntryIcon(entry.type)}
-                    </span>
-                  }
-                />
+                <span className="timeline-dot-inner">
+                  <span className="timeline-icon">
+                    {getEntryIcon(entry.type)}
+                  </span>
+                </span>
               </div>
               <div className="timeline-card">
                 <div className="timeline-card-header">

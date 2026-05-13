@@ -1,0 +1,199 @@
+/* Fixed left sidebar — Brittany v4 structure */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 2.5rem 1.5rem;
+}
+
+/* Identity block */
+.sidebar-identity {
+  margin-bottom: 2.5rem;
+}
+
+.sidebar-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.sidebar-headline {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+/* Nav links */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: auto;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+  width: 100%;
+}
+
+.sidebar-nav-item:hover {
+  color: var(--color-text-primary);
+}
+
+.sidebar-nav-item--active {
+  color: var(--color-teal-primary);
+}
+
+/* Compass indicator */
+.sidebar-compass {
+  transition: transform 0.3s ease-out;
+  flex-shrink: 0;
+}
+
+/* Social links */
+.sidebar-social {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.sidebar-social-link {
+  color: var(--color-text-secondary);
+  transition: color 0.2s ease;
+}
+
+.sidebar-social-link:hover {
+  color: var(--color-warm-accent);
+}
+
+/* Cortana avatar placeholder */
+.sidebar-cortana {
+  margin-top: 1.5rem;
+}
+
+.cortana-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.cortana-avatar-inner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--color-teal-primary) 0%,
+    rgba(45, 212, 191, 0.3) 50%,
+    transparent 70%
+  );
+  border: 1px solid var(--color-teal-muted);
+  animation: cortanaPulse 4s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes cortanaPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Mobile top bar */
+.sidebar-mobile-bar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 50;
+}
+
+.sidebar-mobile-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  height: 100%;
+}
+
+.sidebar-mobile-toggle {
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* Mobile overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 35;
+}
+
+/* Responsive: sidebar → top nav on mobile */
+@media (max-width: 1023px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  .sidebar-mobile-bar {
+    display: block;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+}
