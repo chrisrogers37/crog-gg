@@ -22,18 +22,39 @@ test.describe("Site Navigation", () => {
     await expect(page.locator("h1")).toBeVisible();
   });
 
-  test("can navigate between pages using links", async ({ page }) => {
-    // Start on projects page (has navigation header)
-    await page.goto("/projects");
+  test("can navigate between pages using sidebar", async ({ page }) => {
+    await page.goto("/");
 
-    // Find home/logo link
-    const homeLink = page
-      .locator('a[href="/"], .nav-logo, [class*="logo"]')
-      .first();
-    if (await homeLink.isVisible()) {
-      await homeLink.click();
-      await expect(page).toHaveURL("/");
-    }
+    // Click Projects in sidebar
+    const projectsItem = page.locator(".sidebar-nav-item", {
+      hasText: "Projects",
+    });
+    await projectsItem.click();
+    await expect(page).toHaveURL(/\/projects/);
+
+    // Click About to go back to home
+    const aboutItem = page.locator(".sidebar-nav-item", {
+      hasText: "About",
+    });
+    await aboutItem.click();
+    await expect(page).toHaveURL("/");
+  });
+});
+
+test.describe("Route Navigation", () => {
+  test("journey route loads", async ({ page }) => {
+    await page.goto("/journey");
+    await expect(page.getByRole("main")).toBeVisible();
+  });
+
+  test("claudfather route loads", async ({ page }) => {
+    await page.goto("/claudfather");
+    await expect(page.getByRole("main")).toBeVisible();
+  });
+
+  test("music route loads", async ({ page }) => {
+    await page.goto("/music");
+    await expect(page.getByRole("main")).toBeVisible();
   });
 });
 
@@ -50,11 +71,13 @@ test.describe("404 Page", () => {
 });
 
 test.describe("Layout Components", () => {
-  test("header is present on projects page", async ({ page }) => {
+  test("sidebar is present on all pages", async ({ page }) => {
+    await page.goto("/");
+    const sidebar = page.locator(".sidebar");
+    await expect(sidebar).toBeVisible();
+
     await page.goto("/projects");
-    // Projects page should have header/nav
-    const header = page.locator("header, nav, .navigation");
-    await expect(header.first()).toBeVisible();
+    await expect(sidebar).toBeVisible();
   });
 
   test("main content area exists", async ({ page }) => {
@@ -70,13 +93,12 @@ test.describe("External Links", () => {
   test("social links open in new tab", async ({ page }) => {
     await page.goto("/");
 
-    // Find any external link
-    const externalLinks = page.locator('a[target="_blank"]');
-    const count = await externalLinks.count();
+    // Sidebar social links should have target="_blank" and rel="noopener"
+    const socialLinks = page.locator(".sidebar-social-link");
+    const count = await socialLinks.count();
 
     if (count > 0) {
-      // External links should have rel="noopener" or similar for security
-      const firstLink = externalLinks.first();
+      const firstLink = socialLinks.first();
       const rel = await firstLink.getAttribute("rel");
       expect(rel).toContain("noopener");
     }
@@ -89,48 +111,45 @@ test.describe("Mobile Menu", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
 
-    // Find and click hamburger
-    const hamburger = page.locator(".home-hamburger");
-    await expect(hamburger).toBeVisible();
-    await hamburger.click();
+    // Find and click hamburger toggle
+    const toggle = page.locator(".sidebar-mobile-toggle");
+    await expect(toggle).toBeVisible();
+    await toggle.click();
 
-    // Menu should be visible
-    const menu = page.locator(".mobile-menu");
-    await expect(menu).toBeVisible({ timeout: 3000 });
+    // Sidebar should be visible with --open class
+    const sidebar = page.locator(".sidebar.sidebar--open");
+    await expect(sidebar).toBeVisible({ timeout: 3000 });
 
-    // Close button should work
-    const closeBtn = page.locator(".mobile-menu-close");
-    await closeBtn.click();
-    await expect(menu).not.toBeVisible();
+    // Click overlay to close
+    const overlay = page.locator(".sidebar-overlay");
+    await overlay.click();
+    await expect(sidebar).not.toBeVisible();
   });
 
-  test("mobile menu section navigation works", async ({ page }) => {
+  test("mobile menu navigation works", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
 
     // Open menu
-    await page.locator(".home-hamburger").click();
+    await page.locator(".sidebar-mobile-toggle").click();
 
-    // Click a section
-    const journeyBtn = page.locator(".mobile-menu-section-btn", {
-      hasText: "journey",
+    // Click Journey nav item
+    const journeyItem = page.locator(".sidebar-nav-item", {
+      hasText: "Journey",
     });
-    await journeyBtn.click();
+    await journeyItem.click();
 
-    // Menu should close
-    await expect(page.locator(".mobile-menu")).not.toBeVisible();
-
-    // Timeline should be visible
-    const timeline = page.locator(".timeline-container");
-    await expect(timeline).toBeVisible({ timeout: 5000 });
+    // Menu should close and navigate to /journey
+    await expect(page.locator(".sidebar.sidebar--open")).not.toBeVisible();
+    await expect(page).toHaveURL(/\/journey/);
   });
 
-  test("hamburger hidden on desktop", async ({ page }) => {
+  test("mobile toggle hidden on desktop", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
 
-    const hamburger = page.locator(".home-hamburger");
-    await expect(hamburger).not.toBeVisible();
+    const toggle = page.locator(".sidebar-mobile-toggle");
+    await expect(toggle).not.toBeVisible();
   });
 });
 
@@ -139,19 +158,16 @@ test.describe("Responsive Design", () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/");
 
-    // Page should still render main elements
-    await expect(
-      page.locator('h1, .profile-name, [class*="name"]').first(),
-    ).toBeVisible();
+    // Mobile bar should show name
+    await expect(page.locator(".sidebar-mobile-bar").first()).toBeVisible();
   });
 
   test("page renders on tablet viewport", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
 
-    await expect(
-      page.locator('h1, .profile-name, [class*="name"]').first(),
-    ).toBeVisible();
+    // Page should render main elements
+    await expect(page.getByRole("main")).toBeVisible();
   });
 
   test("projects page renders on mobile", async ({ page }) => {

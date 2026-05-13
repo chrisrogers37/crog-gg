@@ -13,209 +13,168 @@ test.describe("Home Page", () => {
     await page.goto("/");
   });
 
-  test("displays profile section with name heading", async ({ page }) => {
+  test("displays hero section with name heading", async ({ page }) => {
     // Test that a main heading exists (the name), not its exact content
     const mainHeading = page.locator("h1").first();
     await expect(mainHeading).toBeVisible();
   });
 
-  test("displays location information", async ({ page }) => {
-    // Test that location text exists (city name visible on page)
-    await expect(
-      page.getByText(/New York|NYC|Location/i).first(),
-    ).toBeVisible();
+  test("displays hero headline", async ({ page }) => {
+    // Hero section has the headline "i build things that build things"
+    const headline = page.locator(".hero-headline");
+    await expect(headline).toBeVisible({ timeout: 5000 });
   });
 
-  test("displays contact information", async ({ page }) => {
-    // Test that email link exists (mailto: link)
-    const emailLink = page.locator('a[href^="mailto:"]');
-    await expect(emailLink).toBeVisible();
+  test("displays about section with bio text", async ({ page }) => {
+    // Scroll to about section
+    await page.locator('[data-section="about"]').scrollIntoViewIfNeeded();
+    const aboutText = page.locator(".about-text");
+    await expect(aboutText).toBeVisible({ timeout: 5000 });
   });
 
-  test("displays typewriter or welcome section", async ({ page }) => {
-    // Test that some welcome/typewriter element exists
-    // Don't test specific text since it cycles and changes
-    const welcomeArea = page
-      .locator(".welcome-typewriter, .typewriter")
-      .first();
-    await expect(welcomeArea).toBeVisible({ timeout: 5000 });
+  test("displays contact link in about section", async ({ page }) => {
+    // About section has a mailto link
+    await page.locator('[data-section="about"]').scrollIntoViewIfNeeded();
+    const emailLink = page.locator('.about-links a[href^="mailto:"]');
+    await expect(emailLink).toBeVisible({ timeout: 5000 });
   });
 
-  test("displays section navigation buttons", async ({ page }) => {
-    // Test that section nav buttons exist
-    const sectionButtons = page.locator(
-      ".section-nav button, .section-buttons button",
-    );
-    await expect(sectionButtons.first()).toBeVisible();
+  test("displays sidebar navigation", async ({ page }) => {
+    // Fixed sidebar with nav items
+    const sidebarNav = page.locator(".sidebar-nav-item");
+    await expect(sidebarNav.first()).toBeVisible();
 
-    // Should have multiple section buttons
-    const count = await sectionButtons.count();
+    // Should have multiple nav items (About, Journey, Projects, Claudfather, Music)
+    const count = await sidebarNav.count();
     expect(count).toBeGreaterThan(3);
   });
 
-  test("displays tagline in header", async ({ page }) => {
-    const tagline = page.locator(".header-tagline");
-    await expect(tagline).toBeVisible({ timeout: 5000 });
+  test("displays sidebar headline", async ({ page }) => {
+    const headline = page.locator(".sidebar-headline");
+    await expect(headline).toBeVisible({ timeout: 5000 });
   });
 
   test("has social links", async ({ page }) => {
-    // Test that external social links exist
-    const socialLinks = page.locator('a[target="_blank"]');
+    // Test that external social links exist in sidebar
+    const socialLinks = page.locator(".sidebar-social-link");
     await expect(socialLinks.first()).toBeVisible();
   });
 });
 
-test.describe("Section Navigation", () => {
+test.describe("Sidebar Navigation", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("clicking a section button reveals content", async ({ page }) => {
-    // Find any section button and click it
-    const sectionButton = page
-      .locator(".section-nav button, .section-buttons button")
-      .first();
-    await sectionButton.click();
+  test("clicking a sidebar nav item navigates", async ({ page }) => {
+    // Click Journey nav item — navigates to /journey route
+    const journeyItem = page.locator(".sidebar-nav-item", {
+      hasText: "Journey",
+    });
+    await journeyItem.click();
 
-    // Some content area should become visible
-    const contentArea = page
-      .locator('.section-content, .portfolio-section, [class*="section"]')
-      .first();
-    await expect(contentArea).toBeVisible({ timeout: 5000 });
+    // Should navigate to /journey
+    await expect(page).toHaveURL(/\/journey/);
   });
 
-  test("clicking same section twice toggles it off", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
+  test("sidebar nav shows active state", async ({ page }) => {
+    // Navigate to /projects
+    await page.goto("/projects");
 
-    // Click journey to activate it
-    await journeyButton.click();
-    await page.waitForTimeout(500);
-    await expect(journeyButton).toHaveClass(/active/);
-
-    // Click journey again - should deactivate it
-    await journeyButton.click();
-    await page.waitForTimeout(500);
-
-    await expect(journeyButton).not.toHaveClass(/active/);
+    // Projects nav item should have active class
+    const projectsItem = page.locator(".sidebar-nav-item", {
+      hasText: "Projects",
+    });
+    await expect(projectsItem).toHaveClass(/sidebar-nav-item--active/);
   });
 
-  test("section buttons show active state when clicked", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
+  test("switching pages updates active nav item", async ({ page }) => {
+    // Navigate to /journey
+    await page.goto("/journey");
 
-    // Journey starts inactive (about is auto-selected on mount)
-    await expect(journeyButton).not.toHaveClass(/active/);
+    const journeyItem = page.locator(".sidebar-nav-item", {
+      hasText: "Journey",
+    });
+    await expect(journeyItem).toHaveClass(/sidebar-nav-item--active/);
 
-    // Click to activate
-    await journeyButton.click();
-    await expect(journeyButton).toHaveClass(/active/);
+    // Click Projects
+    const projectsItem = page.locator(".sidebar-nav-item", {
+      hasText: "Projects",
+    });
+    await projectsItem.click();
+
+    // Journey should no longer be active, Projects should be
+    await expect(journeyItem).not.toHaveClass(/sidebar-nav-item--active/);
+    await expect(projectsItem).toHaveClass(/sidebar-nav-item--active/);
   });
 
-  test("switching sections deactivates previous", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
-    const projectsButton = page.locator('button[data-section="projects"]');
+  test("active nav item shows compass icon", async ({ page }) => {
+    // Navigate to /projects so Projects is active
+    await page.goto("/projects");
 
-    // Click journey (not auto-selected, so clean activation)
-    await journeyButton.click();
-    await expect(journeyButton).toHaveClass(/active/);
-
-    // Click projects
-    await projectsButton.click();
-
-    // Journey should no longer be active
-    await expect(journeyButton).not.toHaveClass(/active/);
-    await expect(projectsButton).toHaveClass(/active/);
+    const projectsItem = page.locator(".sidebar-nav-item", {
+      hasText: "Projects",
+    });
+    const compass = projectsItem.locator(".sidebar-compass");
+    await expect(compass).toBeVisible();
   });
 });
 
-test.describe("Section Flow Navigation", () => {
+test.describe("Scroll Sections", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("section navigator shows next section", async ({ page }) => {
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
-
-    // Check for navigator
-    const navigator = page.locator(".section-navigator");
-    await expect(navigator).toBeVisible({ timeout: 5000 });
-
-    // Should show "up next" text
-    await expect(navigator).toContainText(/up next/i);
+  test("home page has scroll-reveal sections", async ({ page }) => {
+    const sections = page.locator(".scroll-reveal-section");
+    const count = await sections.count();
+    // Hero, Journey, Projects, About
+    expect(count).toBeGreaterThanOrEqual(3);
   });
 
-  test("section navigator not shown on last section", async ({ page }) => {
-    // Click Music tab (last section)
-    await page.locator('button[data-section="music"]').click();
-
-    // Wait for section content to render
-    await page.waitForTimeout(1000);
-
-    // Navigator should not be visible
-    const navigator = page.locator(".section-navigator");
-    await expect(navigator).not.toBeVisible();
+  test("sections have data-section attributes", async ({ page }) => {
+    await expect(page.locator('[data-section="hero"]')).toBeVisible();
+    await expect(page.locator('[data-section="journey"]')).toBeAttached();
+    await expect(page.locator('[data-section="projects"]')).toBeAttached();
+    await expect(page.locator('[data-section="about"]')).toBeAttached();
   });
 
-  test("clicking section navigator switches section", async ({ page }) => {
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
+  test("journey section has timeline content", async ({ page }) => {
+    // Scroll to journey section
+    await page.locator('[data-section="journey"]').scrollIntoViewIfNeeded();
+    const sectionTitle = page.locator(".section-title", { hasText: "Journey" });
+    await expect(sectionTitle).toBeVisible({ timeout: 5000 });
+  });
 
-    // Wait for navigator to appear
-    const navigatorBtn = page.locator(".section-navigator-btn");
-    await expect(navigatorBtn).toBeVisible({ timeout: 5000 });
-
-    // Click the navigator
-    await navigatorBtn.click();
-
-    // Projects tab should now be active (next after journey)
-    const projectsButton = page.locator('button[data-section="projects"]');
-    await expect(projectsButton).toHaveClass(/active/);
+  test("projects section has content", async ({ page }) => {
+    await page.locator('[data-section="projects"]').scrollIntoViewIfNeeded();
+    const sectionTitle = page.locator(".section-title", {
+      hasText: "Projects",
+    });
+    await expect(sectionTitle).toBeVisible({ timeout: 5000 });
   });
 });
 
-test.describe("Action Buttons", () => {
-  test("action buttons appear when section is active", async ({ page }) => {
-    await page.goto("/");
-
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
-
-    // Action buttons should appear
-    const actionButtons = page.locator(
-      '.action-buttons button, [class*="action"] button',
-    );
-
-    // Wait for action buttons (may take a moment to appear)
-    await expect(actionButtons.first()).toBeVisible({ timeout: 5000 });
-  });
-
-  test("action buttons hidden when no section active", async ({ page }) => {
-    await page.goto("/");
-
-    // Without clicking any section, action buttons should not be visible
-    const actionButtons = page.locator(
-      '.action-buttons, [class*="action-buttons"]',
-    );
-    await expect(actionButtons).not.toBeVisible();
-  });
-});
-
-test.describe("Contact CTA", () => {
+test.describe("About Section", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("displays contact CTA section", async ({ page }) => {
-    const cta = page.locator(".contact-cta");
-    await expect(cta).toBeVisible({ timeout: 5000 });
+  test("displays about section with email link", async ({ page }) => {
+    await page.locator('[data-section="about"]').scrollIntoViewIfNeeded();
+
+    const aboutSection = page.locator(".about-section");
+    await expect(aboutSection).toBeVisible({ timeout: 5000 });
 
     // Check that email link exists
-    const emailLink = cta.locator('a[href^="mailto:"]');
+    const emailLink = aboutSection.locator('a[href^="mailto:"]');
     await expect(emailLink).toBeVisible();
   });
 
-  test("homepage has footer", async ({ page }) => {
-    const footer = page.locator("footer.footer");
-    await expect(footer).toBeVisible({ timeout: 5000 });
+  test("about section has bio text", async ({ page }) => {
+    await page.locator('[data-section="about"]').scrollIntoViewIfNeeded();
+
+    const aboutText = page.locator(".about-text p").first();
+    await expect(aboutText).toBeVisible({ timeout: 5000 });
   });
 });
