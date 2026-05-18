@@ -16,6 +16,6 @@ export {
 export {
   useUIStore,
   useActiveSection,
-  useScrollProgress,
+  useTheme,
   useIsMobileMenuOpen,
 } from "./uiStore";

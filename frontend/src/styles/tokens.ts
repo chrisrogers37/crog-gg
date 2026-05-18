@@ -9,14 +9,14 @@ export const tokens = {
   // Colors (matching Tailwind config)
   colors: {
     primary: {
-      main: "#2DD4BF",
-      light: "#5EEAD4",
-      dark: "#1A7A6D",
+      main: "#2563eb",
+      light: "#3b82f6",
+      dark: "#1d4ed8",
     },
     accent: {
-      main: "#D4915C",
-      light: "#E0A878",
-      dark: "#B07A4A",
+      main: "#7c3aed",
+      light: "#8b5cf6",
+      dark: "#6b21a8",
     },
     success: "#10b981",
     warning: "#f59e0b",

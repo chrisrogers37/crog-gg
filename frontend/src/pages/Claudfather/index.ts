@@ -1,1 +1,0 @@
-export { ClaudfatherPage } from "./ClaudfatherPage";

@@ -2,13 +2,13 @@
 .music-intro {
   font-size: 1rem;
   line-height: 1.6;
-  color: var(--color-text-secondary);
+  color: var(--text-color-secondary);
   margin: 0;
   max-width: 480px;
 }
 
 .music-artist-name {
-  color: var(--color-teal-primary);
+  color: var(--primary-color);
   font-weight: 600;
 }
 
@@ -26,27 +26,27 @@
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  color: var(--text-color-secondary);
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
   border-radius: 2rem;
   text-decoration: none;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .music-link:hover {
-  color: var(--color-teal-primary);
-  border-color: var(--color-teal-primary);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  text-decoration: none;
 }
 
-/* Spotify embed */
-.spotify-embed {
-  border-radius: 0.75rem;
-  overflow: hidden;
-}
-
-.spotify-embed iframe {
-  border-radius: 0.75rem;
+.music-link i {
+  font-size: 1rem;
+  color: inherit;
 }
 
 /* Responsive */

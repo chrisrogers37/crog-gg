@@ -1,10 +1,20 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+// Layout (loaded immediately as it's the shell)
 import { Layout } from "./components/layout";
+
+// Error boundary for catching render errors
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
+
+// NotFound page loaded immediately for fast 404 response
 import { NotFoundPage } from "./pages/NotFound";
+
+// Lazy-loaded pages for code splitting
+// HomePage is likely first visit, so keep it eager
 import { HomePage } from "./pages/Home";
 
+// Project pages are lazy-loaded since they have heavy dependencies (react-markdown, highlight.js)
 const ProjectsPage = lazy(() =>
   import("./pages/Projects/ProjectsPage").then((m) => ({
     default: m.ProjectsPage,
@@ -15,37 +25,37 @@ const ProjectDetailPage = lazy(() =>
     default: m.ProjectDetailPage,
   })),
 );
-const ClaudfatherPage = lazy(() =>
-  import("./pages/Claudfather/ClaudfatherPage").then((m) => ({
-    default: m.ClaudfatherPage,
-  })),
-);
-const JourneyPage = lazy(() =>
-  import("./pages/Journey/JourneyPage").then((m) => ({
-    default: m.JourneyPage,
-  })),
-);
-const MusicPage = lazy(() =>
-  import("./pages/Music/MusicPage").then((m) => ({
-    default: m.MusicPage,
-  })),
-);
 
+/**
+ * Loading fallback for lazy-loaded components
+ */
 function PageLoading() {
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal-primary border-t-transparent mx-auto mb-4" />
-        <p className="text-text-secondary">Loading...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
       </div>
     </div>
   );
 }
 
+/**
+ * Suspense wrapper for lazy-loaded pages
+ */
 function LazyPage({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageLoading />}>{children}</Suspense>;
 }
 
+/**
+ * Application Router Configuration
+ *
+ * Routes:
+ * /                    - Home page (portfolio)
+ * /projects            - Projects listing
+ * /projects/:slug      - Individual project detail
+ * /*                   - 404 Not Found
+ */
 const router = createBrowserRouter([
   {
     path: "/",
@@ -59,9 +69,19 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+        errorElement: (
+          <ErrorBoundary>
+            <NotFoundPage />
+          </ErrorBoundary>
+        ),
       },
       {
         path: "projects",
+        errorElement: (
+          <ErrorBoundary>
+            <NotFoundPage />
+          </ErrorBoundary>
+        ),
         children: [
           {
             index: true,
@@ -81,43 +101,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-      {
-        path: "claudfather",
-        children: [
-          {
-            index: true,
-            element: (
-              <LazyPage>
-                <ClaudfatherPage />
-              </LazyPage>
-            ),
-          },
-          {
-            path: ":sub",
-            element: (
-              <LazyPage>
-                <ClaudfatherPage />
-              </LazyPage>
-            ),
-          },
-        ],
-      },
-      {
-        path: "journey",
-        element: (
-          <LazyPage>
-            <JourneyPage />
-          </LazyPage>
-        ),
-      },
-      {
-        path: "music",
-        element: (
-          <LazyPage>
-            <MusicPage />
-          </LazyPage>
-        ),
-      },
     ],
   },
   {
@@ -126,6 +109,11 @@ const router = createBrowserRouter([
   },
 ]);
 
+/**
+ * AppRouter Component
+ *
+ * Provides the router context to the application.
+ */
 export function AppRouter() {
   return <RouterProvider router={router} />;
 }

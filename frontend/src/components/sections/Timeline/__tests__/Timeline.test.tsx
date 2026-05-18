@@ -122,13 +122,14 @@ describe("Timeline", () => {
 
   it("renders logo images for entries with domains", () => {
     render(<Timeline data={mockData} />);
-    // Entries with domains should have img elements (org header only, dots are angular markers)
+    // Entries with domains should have img elements
     const logos = screen.getAllByRole("img");
     expect(logos.length).toBeGreaterThan(0);
+    // Citadel should have logo (dot + card = 2 per entry with domain)
     const citadelLogos = logos.filter(
       (img) => img.getAttribute("alt") === "Citadel",
     );
-    expect(citadelLogos.length).toBe(1); // org header only
+    expect(citadelLogos.length).toBe(2); // dot + card header
   });
 
   it("renders emoji fallback for entries without domain", () => {

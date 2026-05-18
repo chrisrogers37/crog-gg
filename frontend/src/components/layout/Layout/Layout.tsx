@@ -1,31 +1,42 @@
-import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
-import { Sidebar } from "../Sidebar";
-import { useUIStore } from "../../../store/uiStore";
+import { Outlet, useLocation } from "react-router-dom";
+import { Navigation } from "../Navigation";
+import { Footer } from "../Footer";
+import { MobileMenu } from "../MobileMenu";
 import "./Layout.css";
 
+/**
+ * Layout Component
+ *
+ * Provides consistent structure across all pages:
+ * - Compact header with navigation on non-home pages
+ * - Main content area (via Outlet)
+ * - Footer
+ *
+ * Note: The home page handles its own full header.
+ */
 export function Layout() {
-  const setScrollProgress = useUIStore((s) => s.setScrollProgress);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docHeight > 0 ? scrollTop / docHeight : 0;
-      setScrollProgress(Math.min(progress, 1));
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [setScrollProgress]);
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   return (
     <div className="layout">
-      <Sidebar />
-      <main className="layout-main">
+      {/* Show navigation header on non-home pages */}
+      {!isHomePage && (
+        <header className="compact-header">
+          <Navigation />
+        </header>
+      )}
+
+      {/* Main content - renders child routes */}
+      <main className={`layout-main ${isHomePage ? "home-layout" : ""}`}>
         <Outlet />
       </main>
+
+      {/* Footer on all pages */}
+      <Footer />
+
+      {/* Mobile menu for non-home pages */}
+      {!isHomePage && <MobileMenu />}
     </div>
   );
 }

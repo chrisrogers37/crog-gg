@@ -1,19 +1,36 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
+      // Custom color palette - Clean, professional light theme
       colors: {
-        base: "#0A0F14",
-        surface: "#111921",
-        border: "#1E2A35",
-        "teal-primary": "#2DD4BF",
-        "teal-muted": "#1A7A6D",
-        "warm-accent": "#D4915C",
-        "warm-accent-subtle": "rgba(212,145,92,0.15)",
-        "text-primary": "#E2E8F0",
-        "text-secondary": "#94A3B8",
-        // Keep slate for utility classes that reference it
+        primary: {
+          50: "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
+          950: "#172554",
+        },
+        accent: {
+          50: "#faf5ff",
+          100: "#f3e8ff",
+          200: "#e9d5ff",
+          300: "#d8b4fe",
+          400: "#c084fc",
+          500: "#a855f7",
+          600: "#9333ea",
+          700: "#7c3aed",
+          800: "#6b21a8",
+          900: "#581c87",
+        },
         slate: {
           50: "#f8fafc",
           100: "#f1f5f9",
@@ -31,13 +48,14 @@ export default {
 
       fontFamily: {
         sans: [
-          "Plus Jakarta Sans",
           "Inter",
           "system-ui",
           "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
           "sans-serif",
         ],
-        heading: ["Rajdhani", "sans-serif"],
         mono: [
           "JetBrains Mono",
           "Fira Code",
@@ -49,13 +67,12 @@ export default {
 
       animation: {
         "fade-in": "fadeIn 0.5s ease-out",
-        "fade-in-up": "fadeInUp 0.6s ease-out",
+        "fade-in-up": "fadeInUp 0.5s ease-out",
         "fade-in-down": "fadeInDown 0.5s ease-out",
         "slide-in-right": "slideInRight 0.3s ease-out",
         "slide-in-left": "slideInLeft 0.3s ease-out",
         "scale-in": "scaleIn 0.2s ease-out",
-        "pulse-slow": "cortanaPulse 4s ease-in-out infinite",
-        "compass-spin": "compassSpin 20s linear infinite",
+        "pulse-slow": "pulse 3s ease-in-out infinite",
       },
 
       keyframes: {
@@ -64,7 +81,7 @@ export default {
           "100%": { opacity: "1" },
         },
         fadeInUp: {
-          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         fadeInDown: {
@@ -83,31 +100,22 @@ export default {
           "0%": { opacity: "0", transform: "scale(0.95)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
-        cortanaPulse: {
-          "0%, 100%": { opacity: "0.7" },
-          "50%": { opacity: "1" },
-        },
-        compassSpin: {
-          "0%": { transform: "rotate(0deg)" },
-          "100%": { transform: "rotate(360deg)" },
-        },
       },
 
       boxShadow: {
-        soft: "0 2px 15px -3px rgba(0, 0, 0, 0.2), 0 10px 20px -2px rgba(0, 0, 0, 0.1)",
+        soft: "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)",
         "soft-lg":
-          "0 10px 40px -10px rgba(0, 0, 0, 0.3), 0 2px 10px -2px rgba(0, 0, 0, 0.1)",
-        "inner-teal": "inset 0 0 20px rgba(45, 212, 191, 0.1)",
+          "0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 2px 10px -2px rgba(0, 0, 0, 0.04)",
       },
 
-      typography: () => ({
+      typography: (theme) => ({
         DEFAULT: {
           css: {
-            color: "#E2E8F0",
+            color: theme("colors.slate.700"),
             a: {
-              color: "#2DD4BF",
+              color: theme("colors.primary.600"),
               "&:hover": {
-                color: "#D4915C",
+                color: theme("colors.primary.700"),
               },
             },
             "code::before": {
