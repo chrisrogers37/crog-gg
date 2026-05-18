@@ -8,7 +8,7 @@ import time
 import openai
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -37,16 +37,18 @@ if _flask_debug:
 
 app = Flask(__name__)
 
-# Configure CORS
-CORS(
-    app,
-    origins=[
-        "http://localhost:5173",  # Development
+# Configure CORS. Localhost origins are only allowed in debug mode so prod
+# can't be tricked into reflecting a dev origin with credentials.
+_cors_origins = ["https://crog.gg", "https://www.crog.gg"]
+if _flask_debug:
+    _cors_origins += [
+        "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
-        "https://crog.gg",  # Production
-        "https://www.crog.gg",  # Production www subdomain
-    ],
+    ]
+CORS(
+    app,
+    origins=_cors_origins,
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "OPTIONS"],
@@ -177,21 +179,10 @@ def get_fantasy_prompt(use_fantasy=False):
     return ""
 
 
-@app.route("/api/regenerate", methods=["POST", "OPTIONS"])
+@app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
-    # Handle preflight requests
-    if request.method == "OPTIONS":
-        response = make_response()
-        response.headers.add(
-            "Access-Control-Allow-Origin", request.headers.get("Origin", "*")
-        )
-        response.headers.add(
-            "Access-Control-Allow-Headers", "Content-Type,Authorization"
-        )
-        response.headers.add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-        response.headers.add("Access-Control-Allow-Credentials", "true")
-        return response, 204
-
+    # Flask-CORS handles OPTIONS preflight automatically; no manual reflection
+    # of the Origin header (was allowing any origin to pass).
     try:
         logger.info("=== New Regenerate Request ===")
 
@@ -374,7 +365,7 @@ def regenerate_content():
                     jsonify(
                         {
                             "success": False,
-                            "error": f"Failed to parse OpenAI response as JSON: {str(e)}",
+                            "error": "Invalid response from upstream service",
                             "raw_content": new_content,
                         }
                     ),
@@ -383,18 +374,21 @@ def regenerate_content():
 
         except openai.OpenAIError as e:
             logger.error(f"OpenAI Error: {str(e)}")
-            return jsonify({"success": False, "error": f"OpenAI error: {str(e)}"}), 500
+            return (
+                jsonify({"success": False, "error": "Content generation failed"}),
+                500,
+            )
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}", exc_info=True)
             return (
-                jsonify({"success": False, "error": f"Unexpected error: {str(e)}"}),
+                jsonify({"success": False, "error": "An unexpected error occurred"}),
                 500,
             )
 
     except Exception as e:
         logger.error(f"Request processing error: {str(e)}", exc_info=True)
         return (
-            jsonify({"success": False, "error": f"Request processing error: {str(e)}"}),
+            jsonify({"success": False, "error": "Request processing failed"}),
             500,
         )
 
@@ -447,17 +441,18 @@ def get_github_languages():
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error fetching data from GitHub: {e}", exc_info=True)
-        error_message = f"Error fetching data from GitHub: {e}"
         status_code = e.response.status_code if e.response else 500
 
         if status_code == 403:
-            error_message = "GitHub API rate limit exceeded. Please try again later or provide a GITHUB_TOKEN."
+            error_message = "GitHub API rate limit exceeded. Please try again later."
+        else:
+            error_message = "Failed to fetch data from GitHub"
 
         return jsonify({"success": False, "error": error_message}), status_code
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}", exc_info=True)
         return (
-            jsonify({"success": False, "error": f"An unexpected error occurred: {e}"}),
+            jsonify({"success": False, "error": "An unexpected error occurred"}),
             500,
         )
 
@@ -517,7 +512,7 @@ def get_repository(repo_name):
         status_code = (
             e.response.status_code if hasattr(e, "response") and e.response else 500
         )
-        return jsonify({"error": str(e)}), status_code
+        return jsonify({"error": "Failed to fetch repository from GitHub"}), status_code
 
 
 @app.route("/api/v1/github/readme/<repo_name>", methods=["GET"])
@@ -550,7 +545,7 @@ def get_readme(repo_name):
         status_code = (
             e.response.status_code if hasattr(e, "response") and e.response else 500
         )
-        return jsonify({"error": str(e)}), status_code
+        return jsonify({"error": "Failed to fetch README from GitHub"}), status_code
 
 
 @app.route("/api/v1/github/languages/<repo_name>", methods=["GET"])
@@ -579,7 +574,7 @@ def get_repo_languages(repo_name):
         status_code = (
             e.response.status_code if hasattr(e, "response") and e.response else 500
         )
-        return jsonify({"error": str(e)}), status_code
+        return jsonify({"error": "Failed to fetch languages from GitHub"}), status_code
 
 
 @app.route("/api/v1/github/languages", methods=["GET"])
@@ -618,7 +613,7 @@ def get_all_languages_v1():
         return jsonify(all_languages)
     except requests.RequestException as e:
         logger.error(f"GitHub API error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to aggregate languages from GitHub"}), 500
 
 
 @app.route("/api/v1/github/contributions", methods=["GET"])
@@ -697,7 +692,7 @@ def get_contributions():
         return jsonify({"total": calendar["totalContributions"], "weeks": weeks})
     except requests.RequestException as e:
         logger.error(f"GitHub API error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to fetch contributions from GitHub"}), 500
 
 
 if __name__ == "__main__":

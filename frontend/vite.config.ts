@@ -17,7 +17,6 @@ export default defineConfig({
             "react-markdown",
             "remark-gfm",
             "rehype-highlight",
-            "rehype-raw",
           ],
           // Animation library
           "vendor-motion": ["framer-motion"],
