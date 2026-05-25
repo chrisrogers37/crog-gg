@@ -5,7 +5,7 @@ description: |
   A better way to manage your Spotify playlists with advanced 
   filtering, organization, and discovery features.
 url: https://shuffify.app
-icon: fas fa-music
+icon: "\U0001F3B6"
 category: web-app
 technologies:
   - React

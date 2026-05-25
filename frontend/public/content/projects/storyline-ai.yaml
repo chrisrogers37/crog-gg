@@ -6,7 +6,7 @@ description: |
   repository - smart scheduling, team collaboration, and automated
   publishing with category-based content distribution.
 url: https://github.com/chrisrogers37/storyline-ai
-icon: fab fa-telegram
+icon: "\U0001F4F1"
 category: ai-tools
 technologies:
   - Python

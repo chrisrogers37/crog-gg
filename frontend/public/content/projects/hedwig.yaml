@@ -5,7 +5,7 @@ description: |
   RAG-assisted LLM chatbot for generating email outreach templates.
   Combines retrieval-augmented generation with email automation.
 url: https://hedwig.streamlit.app/
-icon: fas fa-feather
+icon: "\U0001FAB6"
 category: ai-tools
 technologies:
   - Python

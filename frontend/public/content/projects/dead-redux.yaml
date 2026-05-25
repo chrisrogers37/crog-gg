@@ -3,7 +3,7 @@ id: dead-redux
 title: Dead Redux
 description: a new grateful dead show hosted each day
 url: https://dead-redux.vercel.app
-icon: fas fa-record-vinyl
+icon: "\U0001F3B5"
 category: web-app
 technologies:
   - TypeScript
