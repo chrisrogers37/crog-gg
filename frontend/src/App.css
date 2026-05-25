@@ -851,11 +851,14 @@ a:hover {
   text-decoration: none;
 }
 
-.portfolio-link i {
+.portfolio-link i,
+.portfolio-link-icon {
   font-size: 1.75rem;
   color: var(--primary-color);
   width: 40px;
+  height: 40px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .portfolio-link div {
