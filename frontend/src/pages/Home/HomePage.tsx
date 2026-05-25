@@ -194,7 +194,7 @@ export function HomePage() {
   return (
     <>
       <SEO
-        description="Software engineer and creator. Explore my portfolio, projects, and music."
+        description="Agentic AI builder. Creator of Claudlobby (open-source fleet compositor for Claude Code). Data platform lead at Artemis."
         url="/"
         type="profile"
       />

@@ -9,9 +9,9 @@ interface SEOProps {
   noIndex?: boolean;
 }
 
-const SITE_NAME = "Chris Rogers - builder of things that are sometimes cool";
+const SITE_NAME = "Chris Rogers - i build things that build things";
 const DEFAULT_DESCRIPTION =
-  "Builder, data engineer, and music maker. Building web apps, data tools, and making noise.";
+  "Agentic AI builder. Creator of Claudlobby (open-source fleet compositor for Claude Code). Data platform lead at Artemis.";
 const DEFAULT_IMAGE = "https://crog.gg/og-image.png";
 const BASE_URL = "https://crog.gg";
 
