@@ -3,7 +3,7 @@ id: shitpost-alpha
 title: "Shitpost Alpha"
 description: "Real-time financial analysis of social media posts using LLMs to predict market movements and send trading alerts. Harvesting the President's SHITPOSTS to generate ALPHA."
 url: "https://shitpost-alpha-dash.up.railway.app/"
-icon: fas fa-chart-line
+icon: "\U0001F4C8"
 category: data-science
 technologies:
   - "Python"

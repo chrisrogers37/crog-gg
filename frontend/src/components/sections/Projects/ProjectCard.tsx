@@ -18,7 +18,7 @@ export function ProjectCard({ project, linkTo }: ProjectCardProps) {
             "linear-gradient(135deg, #6B7280 0%, #374151 100%)",
         }}
       >
-        {project.icon && <i className={`${project.icon} project-tile-icon`} />}
+        {project.icon && <span className="project-tile-icon">{project.icon}</span>}
       </div>
       <div className="project-tile-body">
         <h3 className="project-tile-title">{project.title}</h3>

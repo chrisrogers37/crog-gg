@@ -6,7 +6,7 @@ description: |
   eliminating heat, fan noise, and battery drain from usb-c docks.
   one-click toggle with built-in diagnostics.
 url: https://benzo-gules.vercel.app/
-icon: fas fa-moon
+icon: "\U0001F319"
 category: native-app
 technologies:
   - Swift

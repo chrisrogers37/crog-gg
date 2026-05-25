@@ -39,9 +39,8 @@
 }
 
 .project-tile-icon {
-  font-size: 1.5rem;
-  color: white;
-  opacity: 0.9;
+  font-size: 1.75rem;
+  line-height: 1;
 }
 
 /* Tile Body */

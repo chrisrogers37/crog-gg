@@ -3,7 +3,7 @@ id: 30-day-abs
 title: "30 Day A/Bs"
 description: "LLM simulated experimental business scenarios. Learn A/B testing!"
 url: "https://30-day-abs.streamlit.app/"
-icon: fas fa-flask
+icon: "\U0001F9EA"
 category: data-science
 technologies:
   - "Python"
