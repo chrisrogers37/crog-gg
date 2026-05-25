@@ -496,7 +496,7 @@ a:hover {
   border-radius: 50%;
   object-fit: cover;
   object-position: top;
-  border: 3px solid var(--card-background);
+  border: 3px solid var(--border-color);
   box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
   transition: transform 0.2s ease;
   image-rendering: -webkit-optimize-contrast;
@@ -847,7 +847,7 @@ a:hover {
 
 .portfolio-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgb(0 0 0 / 0.15);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
   text-decoration: none;
 }
 
@@ -1077,8 +1077,9 @@ a:hover {
 }
 
 .section-nav-button:not(.active):hover {
-  background-color: var(--background-color);
+  background-color: var(--card-background);
   border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 /* Add subtle indicator that active buttons can be unselected */
