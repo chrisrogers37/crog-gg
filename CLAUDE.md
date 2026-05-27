@@ -4,10 +4,10 @@ This file provides project-specific guidance for Claude Code. Update this file w
 
 ## Project Overview
 
-**Choose Your Own Chris** - An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. Built with React + TypeScript frontend and Flask backend.
+**Choose Your Own Chris** - An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
-- **Backend**: Flask, OpenAI API, Python 3.10+, Gunicorn
+- **Backend**: Flask (`api/index.py`) on Vercel Python runtime, OpenAI API, Upstash Redis for rate limiting
 - **Testing**: Vitest + React Testing Library (unit), Playwright (E2E)
 - **Deployment**: Full Vercel — frontend (static) + Python API functions (`api/index.py`) on crog.gg, rate-limit/cooldown state in Upstash Redis
 
@@ -26,7 +26,7 @@ Give Claude verification loops for 2-3x quality improvement:
 Husky pre-commit and pre-push hooks enforce quality locally:
 
 - **Pre-commit**: `lint-staged` runs ESLint on staged `.ts`/`.tsx` files
-- **Pre-push**: Runs `npm run build`, `npm run test:run`, and backend linting (flake8, black, isort)
+- **Pre-push**: Runs `npm run build`, `npm run test:run`, and Python linting on `api/` (flake8, black, isort) when `api/` files changed
 - Bypass with `--no-verify` when needed (e.g., WIP commits)
 
 ## Commands Reference
@@ -42,9 +42,9 @@ npm run test:coverage    # Vitest with coverage
 npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:headed  # E2E tests with visible browser
 
-# Backend commands (run from /backend directory)
-python app.py            # Start Flask dev server
-source venv/bin/activate # Activate Python venv
+# Backend commands (run from repo root)
+python api/index.py      # Start Flask dev server on :5001 (Vite proxies /api to it)
+pip install -r requirements.txt  # Install Python deps (flask, flask-cors, openai, requests)
 
 # Git workflow
 git status              # Check current state
@@ -61,11 +61,13 @@ git diff                # Review changes before commit
 - Use Zustand for global state management
 - Follow existing patterns in the codebase
 
-### Python/Flask
+### Python/Flask (`api/`)
 
-- Follow PEP 8 style guide
-- Use type hints where possible
+- Follow PEP 8 style guide; enforced via `flake8 api --max-line-length=120 --ignore=E501,W503`
+- Format with `black --line-length=120 api` and `isort --profile black api` (CI checks both)
+- Use type hints where possible (Python 3.10+ syntax like `tuple[str, str | None]` is fine — CI runs 3.12)
 - Keep Flask routes clean and focused
+- Share helpers via `api/_lib/` (underscore prefix so Vercel doesn't treat them as separate functions)
 
 ### General
 
@@ -93,9 +95,9 @@ git diff                # Review changes before commit
 
 ### API Integration
 
-- API URL configured via `VITE_API_URL` env var
-- Backend runs on port 5001
-- Vite dev proxy in `vite.config.ts` forwards `/api` requests to `http://localhost:5001`
+- In production, frontend calls same-origin `/api/*` (Flask function on the same Vercel domain). `VITE_API_URL` should be empty/unset in Vercel so the code default kicks in.
+- For local dev: run `python api/index.py` on port 5001; Vite dev proxy in `vite.config.ts` forwards `/api` requests there.
+- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`); helpers fall open on Redis errors so the site stays up if Upstash is unavailable.
 
 #### Backend Endpoints
 
@@ -109,7 +111,7 @@ git diff                # Review changes before commit
 | `/api/v1/github/languages`        | GET    | Aggregated language stats                     |
 | `/api/v1/github/contributions`    | GET    | GitHub contribution calendar (GraphQL)        |
 
-Backend env vars: `OPENAI_API_KEY` (required), `GITHUB_TOKEN` (optional, higher rate limits)
+Backend env vars (set in Vercel project settings): `OPENAI_API_KEY` (required for `/api/regenerate`), `GITHUB_TOKEN` (required for `/api/v1/github/contributions`; bumps REST rate limits for other GitHub endpoints), `KV_REST_API_URL` + `KV_REST_API_TOKEN` (auto-injected by Upstash marketplace; client also accepts `UPSTASH_REDIS_REST_*` as fallbacks).
 
 ### Styling
 

@@ -2,7 +2,9 @@
 
 **Date:** 2026-02-01
 **Author:** Claude (with Chris)
-**Status:** Exploratory
+**Status:** Exploratory (not built)
+
+> **Note (2026-05-27):** the architecture diagrams and implementation sketches in this doc reference the pre-Vercel-migration stack (Flask in `backend/`, GitHub Actions + SSH deploy, no Upstash). The conceptual analysis is unchanged, but any actual implementation today would slot into `api/index.py` as new Flask routes (or a separate function) and use Upstash/Marketplace storage rather than a self-hosted SQLite file.
 
 ---
 

@@ -28,11 +28,11 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ### Technical Features
 
-- **Modern Stack**: React + TypeScript frontend, Flask backend
+- **Modern Stack**: React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function
 - **Responsive Design**: Mobile-friendly layout with CSS Grid and Flexbox
-- **CORS Support**: Secure cross-origin communication between frontend and API
+- **Same-Origin API**: Frontend and `/api/*` served from the same Vercel domain — no CORS in production
 - **Error Handling**: Robust error management for API interactions
-- **Rate Limiting**: Token usage tracking and request limiting
+- **Rate Limiting**: Per-IP cooldown on `/api/regenerate` (30s) and sliding-window limiter (30/min) on GitHub endpoints, backed by Upstash Redis
 - **Smooth Animations**: Framer Motion transitions for content updates
 
 ### Testing & CI/CD
@@ -40,8 +40,8 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **Unit Testing**: Vitest with React Testing Library
 - **E2E Testing**: Playwright for browser automation
 - **Continuous Integration**: GitHub Actions for automated testing
-- **Code Quality**: ESLint + TypeScript strict mode
-- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (build, tests, backend lint)
+- **Code Quality**: ESLint + TypeScript strict mode; flake8 / black / isort for Python (`api/`)
+- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (build, tests, Python lint when `api/` files changed)
 
 ## Tech Stack
 
@@ -55,50 +55,49 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ### Backend
 
-- Flask
+- Flask (`api/index.py`) deployed as a single Vercel Python Function under Fluid Compute
 - OpenAI API
-- Python 3.10+
-- Gunicorn for production serving
-- Nginx for reverse proxy
+- Python 3.12 (CI), `requirements.txt` at repo root: `flask`, `flask-cors`, `openai`, `requests`
+- Upstash Redis (via Vercel Marketplace) for rate-limit and cooldown state
 
 ## Local Development Setup
 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- Python 3.10+
+- Python 3.10+ (CI runs 3.12)
 - OpenAI API key
+- (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
+- (Optional) Upstash Redis credentials — without them, rate-limit/cooldown silently no-op locally
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
-
-   ```bash
-   cd backend
-   ```
-
-2. Create a virtual environment and activate it:
+1. From the repo root, create a virtual environment and activate it:
 
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install dependencies:
+2. Install dependencies (`requirements.txt` lives at the repo root):
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file with your OpenAI API key:
+3. Set env vars (use a `.env` loader of your choice, or export them directly):
 
    ```
    OPENAI_API_KEY=your_api_key_here
+   GITHUB_TOKEN=optional_but_recommended
+   KV_REST_API_URL=optional_upstash_rest_url
+   KV_REST_API_TOKEN=optional_upstash_rest_token
    ```
 
-5. Start the Flask server:
+4. Start the Flask dev server (binds to `:5001`; Vite proxies `/api/*` to it):
+
    ```bash
-   python app.py
+   python api/index.py
    ```
 
 ### Frontend Setup
@@ -175,257 +174,50 @@ The project uses GitHub Actions for continuous integration. On every push to `ma
 2. **Frontend Unit Tests**: Runs Vitest with coverage reporting
 3. **Frontend E2E Tests**: Runs Playwright browser tests
 4. **Frontend Build**: Verifies production build succeeds
-5. **Backend Lint**: Runs flake8, black, and isort checks
+5. **API Lint**: Runs flake8, black, and isort against `api/`
 
-To manually trigger a deployment, use the "Deploy" workflow in GitHub Actions.
+There is no manually-triggered deploy workflow. Vercel deploys directly from the Git integration.
 
 ## Production Deployment
 
-### Server Prerequisites
+Deployed on Vercel. Every push to `main` auto-deploys to https://crog.gg; every push to any branch gets a preview URL posted on the PR.
 
-- Ubuntu 20.04 or later
-- Nginx
-- Python 3.10+
-- Node.js 18+
-- SSL certificates (Let's Encrypt)
+### Layout
 
-### Systemd Services Setup (Recommended)
+- Frontend: `frontend/` → Vite build → `frontend/dist`, served as static assets by Vercel
+- Backend: `api/index.py` — Flask app deployed as a single Vercel Python Function under Fluid Compute. `vercel.json` rewrites `/api/(.*)` → `/api/index` so Flask handles all internal routing.
+- Shared helpers: `api/_lib/` (Upstash REST client, sliding-window rate limiter, request utils). Underscore prefix keeps Vercel from treating them as separate functions.
+- Python deps: `requirements.txt` at the repo root.
 
-For automatic startup after server reboots, deploy the systemd services:
+### Vercel project env vars
 
-#### Backend Service Setup
+| Var                                     | Required          | Notes                                                                                                                                                                                           |
+| --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`                        | yes               | `/api/regenerate` won't work without it                                                                                                                                                         |
+| `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints                                                                                    |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them, rate-limit/cooldown silently no-op. Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
+| `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 
-1. SSH into the backend server:
+### Provisioning Upstash Redis
 
-   ```bash
-   ssh crog-backend
-   ```
+1. Vercel → project → **Storage** → **Create Database** → **Marketplace** → **Upstash for Redis**
+2. Pick the free tier (or Pay As You Go with **Auto Upgrade off** to bound cost)
+3. Region: us-east-1 (matches Vercel `iad1`)
+4. Connect to the project, all 3 environments (Production / Preview / Development)
+5. Redeploy so the function picks up the new env vars
 
-2. Navigate to the project directory:
+### Rollback
 
-   ```bash
-   cd /var/www/api.crog.gg
-   ```
-
-3. Deploy the systemd service:
-
-   ```bash
-   cd systemd
-   ./deploy-services.sh backend
-   ```
-
-4. Verify the service is running:
-   ```bash
-   ./deploy-services.sh status
-   ```
-
-#### Service Management Commands
-
-- **Check status**: `./systemd/deploy-services.sh status`
-- **Restart services**: `./systemd/deploy-services.sh restart`
-- **Stop services**: `./systemd/deploy-services.sh stop`
-
-#### Viewing Service Logs
-
-To view service logs:
-
-```bash
-# View recent logs
-sudo journalctl -u choose-your-own-chris-backend -f
-
-# View logs from today
-sudo journalctl -u choose-your-own-chris-backend --since today
-
-# View logs from last hour
-sudo journalctl -u choose-your-own-chris-backend --since "1 hour ago"
-```
-
-### Manual Deployment Process
-
-#### Frontend Deployment (crog.gg)
-
-1. SSH into the frontend server:
-
-   ```bash
-   ssh crog-frontend
-   ```
-
-2. Navigate to the frontend repository:
-
-   ```bash
-   cd /var/www/crog.gg
-   ```
-
-3. Update the code:
-
-   ```bash
-   git fetch origin
-   git reset --hard origin/main
-   ```
-
-4. Build the frontend:
-
-   ```bash
-   cd frontend
-   npm install
-   npm run build
-   ```
-
-5. Restart nginx:
-   ```bash
-   sudo systemctl restart nginx
-   ```
-
-#### Backend Deployment (api.crog.gg)
-
-1. SSH into the backend server:
-
-   ```bash
-   ssh crog-backend
-   ```
-
-2. Navigate to the backend repository:
-
-   ```bash
-   cd /var/www/api.crog.gg
-   ```
-
-3. Update the code:
-
-   ```bash
-   git fetch origin
-   git reset --hard origin/main
-   ```
-
-4. Restart the Gunicorn service:
-   ```bash
-   pkill -f gunicorn
-   cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &
-   ```
-
-### Quick Deployment Commands
-
-For rapid deployment, you can use these one-line commands:
-
-#### Frontend:
-
-```bash
-ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
-```
-
-#### Backend:
-
-```bash
-ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
-```
-
-### Deployment Verification
-
-After deployment, verify the services are running:
-
-#### Frontend:
-
-```bash
-ssh crog-frontend "systemctl status nginx"
-```
-
-#### Backend:
-
-```bash
-ssh crog-backend "ps aux | grep gunicorn"
-```
+Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Promote to Production on any prior build.
 
 ### Troubleshooting
 
-If you encounter a 500 error:
-
-1. Check nginx error logs:
-
-   ```bash
-   ssh crog-frontend "tail -n 50 /var/log/nginx/error.log"
-   ```
-
-2. Verify the dist directory exists:
-
-   ```bash
-   ssh crog-frontend "ls -la /var/www/crog.gg/frontend/dist"
-   ```
-
-3. Check the build output:
-   ```bash
-   ssh crog-frontend "cd /var/www/crog.gg/frontend && npm run build 2>&1"
-   ```
-
-### Common Issues and Solutions
-
-1. **502 Bad Gateway**: Usually indicates the Flask application isn't running or Nginx configuration is incorrect
-   - Check Flask service status: `systemctl status flask`
-   - Verify Nginx configuration: `nginx -t`
-   - Check logs: `journalctl -u flask`
-
-2. **OpenAI API Issues**:
-   - Verify API key in `.env`
-   - Check for rate limiting
-   - Update OpenAI package if encountering import errors
-
-3. **CORS Issues**:
-   - Verify allowed origins in Flask CORS configuration
-   - Check Nginx headers
-   - Confirm frontend API URL configuration
-
-### Gunicorn Management
-
-#### Checking Gunicorn Status
-
-```bash
-ssh crog-backend "ps aux | grep gunicorn"
-```
-
-#### Restarting Gunicorn
-
-If the backend is not responding or you need to restart Gunicorn:
-
-1. Kill existing Gunicorn processes:
-
-   ```bash
-   ssh crog-backend "pkill -f gunicorn"
-   ```
-
-2. Start Gunicorn with debug logging:
-
-   ```bash
-   ssh crog-backend "cd /var/www/api.crog.gg && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app --log-level debug"
-   ```
-
-3. For production deployment (background process):
-   ```bash
-   ssh crog-backend "cd /var/www/api.crog.gg && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
-   ```
-
-#### Gunicorn Logs
-
-To check Gunicorn logs:
-
-```bash
-ssh crog-backend "tail -f /var/log/gunicorn/error.log"
-```
-
-#### Common Gunicorn Issues
-
-1. **Process not starting**:
-   - Check Python virtual environment activation
-   - Verify app.py location and imports
-   - Check for port conflicts
-
-2. **Workers not responding**:
-   - Increase worker timeout
-   - Check system resources
-   - Verify application code for blocking operations
-
-3. **Memory issues**:
-   - Monitor worker memory usage
-   - Adjust number of workers based on available RAM
-   - Consider using worker recycling
+| Symptom                                                                                | Likely cause                                                                                                                            |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/regenerate` returns `"OpenAI API key not configured"`                            | `OPENAI_API_KEY` missing in Vercel env vars or last deploy predates the env var being set — set it and redeploy                         |
+| `/api/v1/github/contributions` returns `"GitHub token required for contribution data"` | `GITHUB_TOKEN` missing — same fix                                                                                                       |
+| Rate limit / cooldown never enforces                                                   | Upstash env vars missing or DB not connected to the project; the client falls open on Redis errors so the site stays up but unprotected |
+| Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
 
 ## License
 
