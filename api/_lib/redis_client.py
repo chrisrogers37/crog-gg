@@ -1,8 +1,10 @@
 """Minimal Upstash Redis REST client.
 
-Uses urllib so we don't pull in extra deps. Env vars
-UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are auto-injected
-by the Vercel Marketplace integration.
+Uses urllib so we don't pull in extra deps. Auto-detects env vars from
+either naming convention used by the Vercel Marketplace integration:
+  - UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN (direct Upstash)
+  - KV_REST_API_URL / KV_REST_API_TOKEN (legacy Vercel KV naming,
+    still used by the marketplace install today)
 """
 
 import json
@@ -11,8 +13,16 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-_URL = os.environ.get("UPSTASH_REDIS_REST_URL", "").rstrip("/")
-_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN", "")
+_URL = (
+    os.environ.get("UPSTASH_REDIS_REST_URL")
+    or os.environ.get("KV_REST_API_URL")
+    or ""
+).rstrip("/")
+_TOKEN = (
+    os.environ.get("UPSTASH_REDIS_REST_TOKEN")
+    or os.environ.get("KV_REST_API_TOKEN")
+    or ""
+)
 _TIMEOUT = 5
 
 
