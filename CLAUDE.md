@@ -9,7 +9,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
 - **Backend**: Flask, OpenAI API, Python 3.10+, Gunicorn
 - **Testing**: Vitest + React Testing Library (unit), Playwright (E2E)
-- **Deployment**: Frontend on crog.gg, Backend API on api.crog.gg
+- **Deployment**: Full Vercel — frontend (static) + Python API functions (`api/index.py`) on crog.gg, rate-limit/cooldown state in Upstash Redis
 
 ## Development Workflow
 
@@ -157,19 +157,26 @@ await expect(welcomeArea).toBeVisible();
 
 ## Deployment
 
-### CI/CD Workflows
+Deployed on Vercel. Every push to `main` auto-deploys to production at https://crog.gg; every push to any other branch gets a preview URL posted on the PR.
 
-- **CI** (`ci.yml`): Runs automatically on push - lint, test, build
-- **Deploy** (`deploy.yml`): Manual trigger (`workflow_dispatch`)
-  - Requires GitHub secrets: `DEPLOY_SSH_KEY`, `FRONTEND_HOST`, `BACKEND_HOST`, `DEPLOY_USER`, `FRONTEND_PATH`, `BACKEND_PATH`
-  - Frontend deploys to: 209.97.158.198 at /var/www/crog.gg
-  - Backend deploys to: 167.172.233.207 at /var/www/api.crog.gg
+### Layout
 
-### Manual Deploy Command
+- Frontend: `frontend/` — Vite build, output at `frontend/dist`, served as static assets
+- Backend: `api/index.py` — Flask app deployed as a single Vercel Function under Fluid Compute; all `/api/*` routes are rewritten to it by `vercel.json`
+- Shared helpers: `api/_lib/` (Upstash REST client, rate limiter, request utils)
+- Python deps: `requirements.txt` at repo root
 
-```bash
-ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
-```
+### Vercel project env vars
+
+- `OPENAI_API_KEY` — required for `/api/regenerate`
+- `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints
+- `KV_REST_API_URL` / `KV_REST_API_TOKEN` — auto-injected by the Upstash Marketplace integration; client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks
+- `VITE_API_URL` — leave empty/unset so the frontend defaults to same-origin `/api/*`
+
+### CI
+
+- **CI** (`ci.yml`): Runs automatically on push — lint, test, build
+- No separate deploy workflow; Vercel handles deploys directly from the Git integration
 
 ## Tone & Content Style
 

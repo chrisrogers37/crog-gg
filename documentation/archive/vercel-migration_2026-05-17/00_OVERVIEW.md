@@ -1,8 +1,16 @@
 # Vercel Migration — Overview
 
+**Status:** ✅ COMPLETE (2026-05-27)
 **Created:** 2026-05-17
 **Goal:** Migrate crog.gg fully to Vercel (frontend + backend) for platform consolidation.
-**Current state:** Site is offline. Repo is `chrisrogers37/crog-gg`. Main is on pre-Halo "more me" version (`7f3e5fd`). Halo redesign preserved on `origin/halo-redesign` for separate iteration.
+
+## Outcome
+
+Frontend + all 7 backend endpoints live on crog.gg via Vercel. Backend deployed as a single Flask function under Fluid Compute (instead of the originally-planned 7 separate Python files — Vercel natively transforms a Flask `app` instance into one Vercel Function, which cut Phase 03 from ~3h to ~30min while preserving identical routing behavior). Upstash Redis (Marketplace integration) backs the `/api/regenerate` 30s cooldown and the 30/min GitHub rate limiter; sliding-window rate limit verified by tripping it in production (req 31 → HTTP 429). DigitalOcean droplets and `api.crog.gg` DNS decommissioned. `backend/` directory and `.github/workflows/deploy.yml` removed in the cleanup PR.
+
+## Original framing
+
+Site is offline. Repo is `chrisrogers37/crog-gg`. Main is on pre-Halo "more me" version (`7f3e5fd`). Halo redesign preserved on `origin/halo-redesign` for separate iteration.
 
 ## Decision: Full Vercel
 

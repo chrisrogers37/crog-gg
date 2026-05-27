@@ -8,7 +8,7 @@ on:
 
 env:
   NODE_VERSION: "20"
-  PYTHON_VERSION: "3.11"
+  PYTHON_VERSION: "3.12"
 
 jobs:
   frontend-lint:
@@ -140,12 +140,9 @@ jobs:
           path: frontend/dist/
           retention-days: 7
 
-  backend-lint:
-    name: Backend Lint
+  api-lint:
+    name: API Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
 
     steps:
       - name: Checkout repository
@@ -156,7 +153,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip"
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
@@ -165,13 +162,13 @@ jobs:
           pip install flake8 black isort
 
       - name: Run flake8
-        run: flake8 app.py --max-line-length=120 --ignore=E501,W503
+        run: flake8 api --max-line-length=120 --ignore=E501,W503
 
       - name: Check formatting with black
-        run: black --check --line-length=120 app.py || echo "Black formatting check completed"
+        run: black --check --line-length=120 api || echo "Black formatting check completed"
 
       - name: Check import sorting with isort
-        run: isort --check-only --profile black app.py || echo "isort check completed"
+        run: isort --check-only --profile black api || echo "isort check completed"
 
   # Summary job that depends on all other jobs
   ci-success:
@@ -182,7 +179,7 @@ jobs:
       - frontend-unit-tests
       - frontend-e2e-tests
       - frontend-build
-      - backend-lint
+      - api-lint
     if: always()
     steps:
       - name: Check all jobs passed
@@ -191,7 +188,7 @@ jobs:
              [[ "${{ needs.frontend-unit-tests.result }}" != "success" ]] || \
              [[ "${{ needs.frontend-e2e-tests.result }}" != "success" ]] || \
              [[ "${{ needs.frontend-build.result }}" != "success" ]] || \
-             [[ "${{ needs.backend-lint.result }}" != "success" ]]; then
+             [[ "${{ needs.api-lint.result }}" != "success" ]]; then
             echo "One or more jobs failed"
             exit 1
           fi

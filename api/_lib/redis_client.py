@@ -13,16 +13,8 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-_URL = (
-    os.environ.get("UPSTASH_REDIS_REST_URL")
-    or os.environ.get("KV_REST_API_URL")
-    or ""
-).rstrip("/")
-_TOKEN = (
-    os.environ.get("UPSTASH_REDIS_REST_TOKEN")
-    or os.environ.get("KV_REST_API_TOKEN")
-    or ""
-)
+_URL = (os.environ.get("UPSTASH_REDIS_REST_URL") or os.environ.get("KV_REST_API_URL") or "").rstrip("/")
+_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN") or os.environ.get("KV_REST_API_TOKEN") or ""
 _TIMEOUT = 5
 
 

@@ -69,9 +69,7 @@ def _gh_rate_key(ip: str, endpoint: str) -> str:
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
     ip = get_client_ip()
-    allowed, count = rate_limit.check_and_consume(
-        _gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW
-    )
+    allowed, count = rate_limit.check_and_consume(_gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW)
     if not allowed:
         return (
             jsonify(
