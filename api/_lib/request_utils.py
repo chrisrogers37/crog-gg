@@ -50,7 +50,6 @@ def validate_repo_name(repo_name: str) -> tuple[bool, str | None]:
         return False, "Repository name cannot start with a period"
     if not REPO_NAME_PATTERN.match(repo_name):
         return False, (
-            "Repository name contains invalid characters "
-            "(allowed: alphanumeric, hyphens, underscores, periods)"
+            "Repository name contains invalid characters " "(allowed: alphanumeric, hyphens, underscores, periods)"
         )
     return True, None
