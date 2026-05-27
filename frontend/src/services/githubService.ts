@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "https://api.crog.gg";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 /**
  * Repository information from GitHub API
