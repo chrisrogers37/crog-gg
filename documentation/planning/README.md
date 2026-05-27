@@ -1,12 +1,14 @@
-# Portfolio Website Enhancement - Planning Complete
+# Portfolio Planning Index
 
-## Status: ✅ ALL PHASES COMPLETE
-
-All planned enhancement phases have been successfully implemented. The planning documents have been moved to `documentation/archive/` for historical reference.
+This directory holds active development plans. Completed plans are archived to `documentation/archive/`. As of 2026-05-27 there are no active plans — all known initiatives are complete.
 
 ---
 
-## What Was Built
+## Completed initiatives (all archived)
+
+### Foundation work (Feb 2026)
+
+The original 6-phase enhancement plan that transformed the codebase from a single-page app into a modular, routed, content-aware React app.
 
 | Phase                       | Description                                       | Status      |
 | --------------------------- | ------------------------------------------------- | ----------- |
@@ -16,6 +18,18 @@ All planned enhancement phases have been successfully implemented. The planning 
 | Phase 4: Visual Design      | Tailwind CSS, Framer Motion, design system        | ✅ Complete |
 | Phase 5: SEO & Content      | react-helmet-async, SEO component, StructuredData | ✅ Complete |
 | Phase 6: GitHub Integration | GitHub service, README rendering, repo stats      | ✅ Complete |
+
+Archived as `documentation/archive/01-current-state-analysis.md` through `documentation/archive/11-migration-checklist.md`.
+
+### Follow-on initiatives
+
+| Initiative                                                    | Archive directory                         | Status      |
+| ------------------------------------------------------------- | ----------------------------------------- | ----------- |
+| Profile enhancement (hero, timeline, CTA)                     | `archive/profile-enhancement_2026-02-11/` | ✅ Complete |
+| Design polish (mobile clipping, music, copy)                  | `archive/design-polish_2026-02-15/`       | ✅ Complete |
+| Projects redesign (YAML normalization, grid tiles, skeletons) | `archive/projects-redesign_2026-02-17/`   | ✅ Complete |
+| Security audit (Flask hardening, validation, rate limiting)   | `archive/security-audit_2026-02-22/`      | ✅ Complete |
+| Vercel migration (DO → Vercel + Upstash)                      | `archive/vercel-migration_2026-05-17/`    | ✅ Complete |
 
 ---
 
@@ -40,17 +54,6 @@ frontend/src/
 
 ---
 
-## Archived Documentation
-
-All original planning documents are preserved in `documentation/archive/`:
-
-- `01-current-state-analysis.md` - Original codebase analysis
-- `02-architecture-roadmap.md` - Target architecture design
-- `03-phase-1-foundation.md` through `08-phase-6-github-integration.md` - Implementation guides
-- `09-technical-specifications.md` - API contracts and data models
-- `10-testing-strategy.md` - Testing approach
-- `11-migration-checklist.md` - Step-by-step verification
-
 ---
 
-_Completed: February 2026_
+_Last updated: 2026-05-27_
