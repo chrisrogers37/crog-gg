@@ -45,8 +45,7 @@ if _DEBUG:
 CORS(
     app,
     origins=_cors_origins,
-    supports_credentials=True,
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type"],
     methods=["GET", "POST", "OPTIONS"],
 )
 
@@ -461,7 +460,7 @@ def ratelimit_handler(e):
         jsonify(
             {
                 "error": "Rate limit exceeded",
-                "message": str(getattr(e, "description", "")),
+                "message": "Too many requests",
             }
         ),
         429,
