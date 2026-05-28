@@ -69,7 +69,9 @@ def _gh_rate_key(ip: str, endpoint: str) -> str:
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
     ip = get_client_ip()
-    allowed, count = rate_limit.check_and_consume(_gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW)
+    allowed, count = rate_limit.check_and_consume(
+        _gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW
+    )
     if not allowed:
         return (
             jsonify(
@@ -162,7 +164,9 @@ def regenerate_content():
         )
 
     if openai_client is None:
-        return jsonify({"success": False, "error": "OpenAI API key not configured"}), 500
+        return jsonify(
+            {"success": False, "error": "OpenAI API key not configured"}
+        ), 500
 
     data = request.get_json(silent=True)
     if not data:
@@ -219,15 +223,15 @@ def regenerate_content():
     try:
         parsed = json.loads(new_content)
     except json.JSONDecodeError:
+        logger.warning("OpenAI returned non-JSON: %.200s", new_content)
         return (
             jsonify(
                 {
                     "success": False,
-                    "error": "Invalid response from upstream service",
-                    "raw_content": new_content,
+                    "error": "Content generation returned invalid format",
                 }
             ),
-            400,
+            500,
         )
 
     rate_limit.start_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
@@ -275,7 +279,9 @@ def get_repository(repo_name):
         r.raise_for_status()
         return jsonify(r.json())
     except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
+        status = (
+            e.response.status_code if getattr(e, "response", None) is not None else 500
+        )
         return jsonify({"error": "Failed to fetch repository from GitHub"}), status
 
 
@@ -298,7 +304,9 @@ def get_readme(repo_name):
         r.raise_for_status()
         return jsonify(r.json())
     except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
+        status = (
+            e.response.status_code if getattr(e, "response", None) is not None else 500
+        )
         return jsonify({"error": "Failed to fetch README from GitHub"}), status
 
 
@@ -319,7 +327,9 @@ def get_repo_languages(repo_name):
         r.raise_for_status()
         return jsonify(r.json())
     except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
+        status = (
+            e.response.status_code if getattr(e, "response", None) is not None else 500
+        )
         return jsonify({"error": "Failed to fetch languages from GitHub"}), status
 
 
@@ -398,7 +408,9 @@ def get_contributions():
         if "errors" in data:
             return jsonify({"error": "GraphQL query failed"}), 500
 
-        calendar = data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+        calendar = data["data"]["user"]["contributionsCollection"][
+            "contributionCalendar"
+        ]
         level_map = {
             "NONE": 0,
             "FIRST_QUARTILE": 1,
@@ -425,7 +437,12 @@ def get_contributions():
 @app.errorhandler(429)
 def ratelimit_handler(e):
     return (
-        jsonify({"error": "Rate limit exceeded", "message": str(getattr(e, "description", ""))}),
+        jsonify(
+            {
+                "error": "Rate limit exceeded",
+                "message": str(getattr(e, "description", "")),
+            }
+        ),
         429,
     )
 
