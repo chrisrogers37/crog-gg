@@ -244,15 +244,15 @@ def regenerate_content():
     try:
         parsed = json.loads(new_content)
     except json.JSONDecodeError:
+        logger.warning("OpenAI returned non-JSON: %.200s", new_content)
         return (
             jsonify(
                 {
                     "success": False,
-                    "error": "Invalid response from upstream service",
-                    "raw_content": new_content,
+                    "error": "Content generation returned invalid format",
                 }
             ),
-            400,
+            500,
         )
 
     rate_limit.start_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
