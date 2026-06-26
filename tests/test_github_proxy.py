@@ -79,11 +79,24 @@ def test_get_repository_private_returns_generic_404(client):
     assert r.get_json() == {"error": "Repository not found"}
 
 
-def test_get_repository_missing_returns_404(client):
+def test_get_repository_missing_returns_generic_404(client):
     # Truly-nonexistent repo: upstream 404 -> raise_for_status -> except branch.
+    # Must return the SAME generic body as a private repo (no existence oracle).
     with patch("api.index.requests.get", return_value=_make_response(404, {})):
         r = client.get("/api/v1/github/repo/nope")
     assert r.status_code == 404
+    assert r.get_json() == {"error": "Repository not found"}
+
+
+def test_get_repository_private_and_missing_no_oracle(client):
+    """The repo endpoint must return byte-identical 404s for a private vs a
+    missing repo, so it can't be used to confirm which private repo names exist."""
+    with patch("api.index.requests.get", return_value=_make_response(200, {"private": True})):
+        r_private = client.get("/api/v1/github/repo/secret")
+    with patch("api.index.requests.get", return_value=_make_response(404, {})):
+        r_missing = client.get("/api/v1/github/repo/nope")
+    assert r_private.status_code == r_missing.status_code == 404
+    assert r_private.get_json() == r_missing.get_json() == {"error": "Repository not found"}
 
 
 # --- get_readme ------------------------------------------------------------
@@ -145,17 +158,9 @@ def test_private_and_missing_are_indistinguishable_no_oracle(client):
     so the endpoint is not an oracle for which private repo names exist."""
     private_meta = _make_response(200, {"private": True})
     missing_meta = _make_response(404, {})
-    with patch(
-        "api.index.requests.get", side_effect=_metadata_then_payload(private_meta)
-    ):
+    with patch("api.index.requests.get", side_effect=_metadata_then_payload(private_meta)):
         r_private = client.get("/api/v1/github/readme/secret")
-    with patch(
-        "api.index.requests.get", side_effect=_metadata_then_payload(missing_meta)
-    ):
+    with patch("api.index.requests.get", side_effect=_metadata_then_payload(missing_meta)):
         r_missing = client.get("/api/v1/github/readme/nope")
     assert r_private.status_code == r_missing.status_code == 404
-    assert (
-        r_private.get_json()
-        == r_missing.get_json()
-        == {"error": "Repository not found"}
-    )
+    assert r_private.get_json() == r_missing.get_json() == {"error": "Repository not found"}

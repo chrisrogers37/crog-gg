@@ -323,6 +323,10 @@ def get_repository(repo_name):
         status = (
             e.response.status_code if getattr(e, "response", None) is not None else 500
         )
+        # A missing repo must return the SAME generic 404 as a private one, so
+        # the endpoint can't be used as an oracle for private repo names.
+        if status == 404:
+            return jsonify({"error": "Repository not found"}), 404
         return jsonify({"error": "Failed to fetch repository from GitHub"}), status
 
 
