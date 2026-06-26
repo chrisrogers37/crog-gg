@@ -171,7 +171,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to production at https://c
 ### Vercel project env vars
 
 - `OPENAI_API_KEY` — required for `/api/regenerate`
-- `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints
+- `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Scope to **public repositories only**: a classic PAT with `public_repo` (NOT `repo`), or a fine-grained token with read-only access to public repos (Contents: Read, Metadata: Read) and no private-repo access. `public_repo` already grants the 5000/hr REST quota and authorizes the GraphQL contributions query, so private scope is never needed. The per-repo proxy endpoints (`repo` / `readme` / `languages`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
 - `KV_REST_API_URL` / `KV_REST_API_TOKEN` — auto-injected by the Upstash Marketplace integration; client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks
 - `VITE_API_URL` — leave empty/unset so the frontend defaults to same-origin `/api/*`
 
