@@ -90,6 +90,23 @@ def _gh_rate_limit_or_429(endpoint: str):
     return None
 
 
+def _repo_is_public_or_404(repo_name: str):
+    """Returns None if repo_name is a public repo of the owner, else a 404
+    response. Defense-in-depth so the proxy never serves private-repo data
+    even if GITHUB_TOKEN is over-scoped."""
+    try:
+        r = requests.get(
+            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}",
+            headers=github_headers(),
+            timeout=10,
+        )
+    except requests.RequestException:
+        return jsonify({"error": "Repository not found"}), 404
+    if r.status_code != 200 or r.json().get("private"):
+        return jsonify({"error": "Repository not found"}), 404
+    return None
+
+
 # ---------------------------------------------------------------------------
 # /api/regenerate — OpenAI proxy with 30s per-IP cooldown
 # ---------------------------------------------------------------------------
@@ -297,11 +314,19 @@ def get_repository(repo_name):
             timeout=10,
         )
         r.raise_for_status()
-        return jsonify(r.json())
+        data = r.json()
+        if data.get("private"):
+            # Proxy only exposes the owner's public portfolio repos.
+            return jsonify({"error": "Repository not found"}), 404
+        return jsonify(data)
     except requests.RequestException as e:
         status = (
             e.response.status_code if getattr(e, "response", None) is not None else 500
         )
+        # A missing repo must return the SAME generic 404 as a private one, so
+        # the endpoint can't be used as an oracle for private repo names.
+        if status == 404:
+            return jsonify({"error": "Repository not found"}), 404
         return jsonify({"error": "Failed to fetch repository from GitHub"}), status
 
 
@@ -312,6 +337,9 @@ def get_readme(repo_name):
     is_valid, error_msg = validate_repo_name(repo_name)
     if not is_valid:
         return jsonify({"error": error_msg}), 400
+
+    if (resp := _repo_is_public_or_404(repo_name)) is not None:
+        return resp
 
     try:
         r = requests.get(
@@ -337,6 +365,9 @@ def get_repo_languages(repo_name):
     is_valid, error_msg = validate_repo_name(repo_name)
     if not is_valid:
         return jsonify({"error": error_msg}), 400
+
+    if (resp := _repo_is_public_or_404(repo_name)) is not None:
+        return resp
 
     try:
         r = requests.get(
