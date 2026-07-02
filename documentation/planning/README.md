@@ -1,6 +1,12 @@
 # Portfolio Planning Index
 
-This directory holds active development plans. Completed plans are archived to `documentation/archive/`. As of 2026-05-27 there are no active plans — all known initiatives are complete.
+This directory holds active development plans. Completed plans are archived to `documentation/archive/`.
+
+## Active
+
+| Tracker                                                              | Description                                                                    | Status         |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------- |
+| [`tech-debt-triage_2026-07-02.md`](./tech-debt-triage_2026-07-02.md) | Full-system review: triaged bugs, tech debt, testing/CI gaps, and enhancements | 🔧 In progress |
 
 ---
 
@@ -56,4 +62,4 @@ frontend/src/
 
 ---
 
-_Last updated: 2026-05-27_
+_Last updated: 2026-07-02_
