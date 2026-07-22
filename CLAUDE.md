@@ -170,11 +170,7 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 ### Core Tokens
 
-- **primary (brand blue):** `primary.600` = `#2563eb`, full 50..950 ramp.
-- **accent (purple):** `accent.700` = `#7c3aed`, with `accent.600` = `#9333ea` as the lighter step.
-- **neutral:** the `slate` ramp for text, borders, and backgrounds; light and dark themes swap shades.
-- **type:** `Inter` (sans), `JetBrains Mono` (mono).
-- **spacing:** 4 / 8 / 16 / 24 / 32 / 48 / 64 px scale (`tokens.ts` `spacing`).
+- read exact values from source, don't restate them here (a second copy drifts): color ramps in `frontend/src/styles/palette.ts`, spacing in `frontend/src/styles/tokens.ts` (`spacing`), fonts/type in `frontend/tailwind.config.js` (`fontFamily`).
 
 ### Do's and Don'ts (from design review)
 
