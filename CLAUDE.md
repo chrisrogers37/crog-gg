@@ -157,6 +157,34 @@ await expect(welcomeArea).toBeVisible();
 - Projects are in `frontend/public/content/projects/` directory
 - Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime
 
+## Design System
+
+the site runs on a small, deliberate visual system. work inside it instead of defaulting to generic ui.
+
+### Color Source of Truth
+
+- the palette is defined ONCE in `frontend/src/styles/palette.ts` (the `primary` / `accent` / `slate` ramps).
+- `frontend/tailwind.config.js` imports that palette, so every `bg-primary-600` / `text-slate-500` utility resolves back to the one file. tailwind is the canonical palette surface.
+- `frontend/src/styles/tokens.ts` imports the same palette for js-side values, and `frontend/src/App.css` mirrors the shades by hand as css variables (plain css can't import js) with each var tagged by its shade.
+- never hand-edit a color in only one of these. change `palette.ts` and let the rest follow; if you touch an `App.css` var, match it to the shade it tracks.
+
+### Core Tokens
+
+- **primary (brand blue):** `primary.600` = `#2563eb`, full 50..950 ramp.
+- **accent (purple):** `accent.700` = `#7c3aed`, with `accent.600` = `#9333ea` as the lighter step.
+- **neutral:** the `slate` ramp for text, borders, and backgrounds; light and dark themes swap shades.
+- **type:** `Inter` (sans), `JetBrains Mono` (mono).
+- **spacing:** 4 / 8 / 16 / 24 / 32 / 48 / 64 px scale (`tokens.ts` `spacing`).
+
+### Do's and Don'ts (from design review)
+
+- one filled primary button and one ghost / secondary button. don't add a third button style.
+- one corner radius: 8px (`rounded-lg`). don't introduce new radii.
+- subtract before you add. remove chrome that hasn't earned its place instead of layering more on.
+- keep shadows minimal. whitespace separates sections, not stacked drop-shadows.
+- icon-only buttons need an `aria-label`.
+- respect the existing light / dark theming. every color has to work in both.
+
 ## Deployment
 
 Deployed on Vercel. Every push to `main` auto-deploys to production at https://crog.gg; every push to any other branch gets a preview URL posted on the PR.

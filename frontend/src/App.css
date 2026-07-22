@@ -1,24 +1,32 @@
+/*
+ * Theme custom properties.
+ *
+ * Color source of truth is the Tailwind palette (frontend/tailwind.config.js,
+ * defined in frontend/src/styles/palette.ts). Plain CSS cannot import JS, so
+ * these vars mirror palette shades by hand, and each is tagged with the shade
+ * it tracks. If a palette shade changes, update the matching var here too.
+ */
 :root {
-  --primary-color: #2563eb;
-  --secondary-color: #1e40af;
-  --background-color: #f8fafc;
-  --text-color: #1e293b;
-  --text-color-secondary: #64748b;
-  --card-background: #ffffff;
-  --hover-color: #3b82f6;
-  --border-color: #e2e8f0;
+  --primary-color: #2563eb; /* primary.600 */
+  --secondary-color: #1e40af; /* primary.800 */
+  --background-color: #f8fafc; /* slate.50 */
+  --text-color: #1e293b; /* slate.800 */
+  --text-color-secondary: #64748b; /* slate.500 */
+  --card-background: #ffffff; /* white */
+  --hover-color: #3b82f6; /* primary.500 */
+  --border-color: #e2e8f0; /* slate.200 */
 }
 
 /* Dark mode overrides */
 .dark {
-  --primary-color: #60a5fa;
-  --secondary-color: #3b82f6;
-  --background-color: #0f172a;
-  --text-color: #f1f5f9;
-  --text-color-secondary: #94a3b8;
-  --card-background: #1e293b;
-  --hover-color: #93c5fd;
-  --border-color: #334155;
+  --primary-color: #60a5fa; /* primary.400 */
+  --secondary-color: #3b82f6; /* primary.500 */
+  --background-color: #0f172a; /* slate.900 */
+  --text-color: #f1f5f9; /* slate.100 */
+  --text-color-secondary: #94a3b8; /* slate.400 */
+  --card-background: #1e293b; /* slate.800 */
+  --hover-color: #93c5fd; /* primary.300 */
+  --border-color: #334155; /* slate.700 */
 }
 
 .app {
