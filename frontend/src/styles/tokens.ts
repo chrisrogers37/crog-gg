@@ -1,22 +1,27 @@
 /**
  * Design Tokens
  *
- * Central source of truth for design values.
- * Use these in JavaScript when Tailwind classes aren't suitable.
+ * Semantic design values for use in JavaScript when Tailwind classes aren't
+ * suitable. Colors are NOT redefined here. They derive from the palette
+ * single source of truth (src/styles/palette.ts), the same module
+ * tailwind.config.js consumes, so brand colors can never drift between the
+ * two. Pick the palette shade whose meaning matches the semantic slot.
  */
 
+import { primary, accent } from "./palette";
+
 export const tokens = {
-  // Colors (matching Tailwind config)
+  // Colors: derived from the palette SSOT (src/styles/palette.ts).
   colors: {
     primary: {
-      main: "#2563eb",
-      light: "#3b82f6",
-      dark: "#1d4ed8",
+      main: primary[600], // #2563eb
+      light: primary[500], // #3b82f6
+      dark: primary[700], // #1d4ed8
     },
     accent: {
-      main: "#7c3aed",
-      light: "#8b5cf6",
-      dark: "#6b21a8",
+      main: accent[700], // #7c3aed
+      light: accent[600], // #9333ea (was #8b5cf6, a non-palette violet)
+      dark: accent[800], // #6b21a8
     },
     success: "#10b981",
     warning: "#f59e0b",
