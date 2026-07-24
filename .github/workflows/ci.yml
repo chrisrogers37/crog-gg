@@ -165,10 +165,10 @@ jobs:
         run: flake8 api --max-line-length=120 --ignore=E501,W503
 
       - name: Check formatting with black
-        run: black --check --line-length=120 api || echo "Black formatting check completed"
+        run: black --check --line-length=120 api
 
       - name: Check import sorting with isort
-        run: isort --check-only --profile black api || echo "isort check completed"
+        run: isort --check-only --profile black api
 
   api-tests:
     name: API Tests
