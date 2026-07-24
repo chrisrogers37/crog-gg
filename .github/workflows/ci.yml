@@ -165,10 +165,33 @@ jobs:
         run: flake8 api --max-line-length=120 --ignore=E501,W503
 
       - name: Check formatting with black
-        run: black --check --line-length=120 api || echo "Black formatting check completed"
+        run: black --check --line-length=120 api
 
       - name: Check import sorting with isort
-        run: isort --check-only --profile black api || echo "isort check completed"
+        run: isort --check-only --profile black api
+
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+
+      - name: Run API tests
+        run: pytest -q
 
   # Summary job that depends on all other jobs
   ci-success:
@@ -180,6 +203,7 @@ jobs:
       - frontend-e2e-tests
       - frontend-build
       - api-lint
+      - api-tests
     if: always()
     steps:
       - name: Check all jobs passed
@@ -188,7 +212,8 @@ jobs:
              [[ "${{ needs.frontend-unit-tests.result }}" != "success" ]] || \
              [[ "${{ needs.frontend-e2e-tests.result }}" != "success" ]] || \
              [[ "${{ needs.frontend-build.result }}" != "success" ]] || \
-             [[ "${{ needs.api-lint.result }}" != "success" ]]; then
+             [[ "${{ needs.api-lint.result }}" != "success" ]] || \
+             [[ "${{ needs.api-tests.result }}" != "success" ]]; then
             echo "One or more jobs failed"
             exit 1
           fi
