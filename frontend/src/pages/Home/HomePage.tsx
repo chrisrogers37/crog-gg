@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Hooks
-import { useContentLoader, useRegeneration } from "../../hooks";
+import { useRegeneration } from "../../hooks";
 import {
   useUIStore,
   useIsLoading,
@@ -61,9 +61,6 @@ export function HomePage() {
     const randomIndex = Math.floor(Math.random() * PROFILE_PHOTOS.length);
     return PROFILE_PHOTOS[randomIndex];
   }, []);
-
-  // Load content on mount
-  useContentLoader();
 
   // Get state from stores
   const isLoading = useIsLoading();
