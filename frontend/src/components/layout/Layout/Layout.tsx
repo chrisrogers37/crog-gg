@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router";
 import { Navigation } from "../Navigation";
 import { Footer } from "../Footer";
 import { MobileMenu } from "../MobileMenu";

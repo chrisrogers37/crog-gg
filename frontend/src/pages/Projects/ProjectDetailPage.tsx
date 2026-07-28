@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router";
 import { useProjects } from "../../store";
 import { Breadcrumbs } from "../../components/common/Breadcrumbs";
 import { SEO, SoftwareSchema, BreadcrumbSchema } from "../../components/SEO";
