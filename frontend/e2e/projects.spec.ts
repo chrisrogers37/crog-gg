@@ -11,6 +11,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Projects Page Structure", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
   });
 
   test("displays page header", async ({ page }) => {
@@ -79,9 +80,7 @@ test.describe("Projects Page with Data", () => {
     await page.waitForLoadState("networkidle");
 
     // Check if any project cards loaded
-    const projectCards = page.locator(
-      '.project-list-card, [class*="project-card"]',
-    );
+    const projectCards = page.locator("a.project-tile");
     const hasProjects = await projectCards
       .first()
       .isVisible({ timeout: 3000 })
@@ -106,9 +105,7 @@ test.describe("Projects Page with Data", () => {
     await page.goto("/projects");
     await page.waitForLoadState("networkidle");
 
-    const projectCards = page.locator(
-      '.project-list-card, [class*="project-card"]',
-    );
+    const projectCards = page.locator("a.project-tile");
     const hasProjects = await projectCards
       .first()
       .isVisible({ timeout: 3000 })
@@ -127,6 +124,7 @@ test.describe("Projects Page with Data", () => {
 test.describe("Projects Filtering Behavior", () => {
   test("filter buttons toggle active state", async ({ page }) => {
     await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
 
     const filterButtons = page.locator(
       ".category-button, .category-filters button",
@@ -151,6 +149,7 @@ test.describe("Projects Filtering Behavior", () => {
 
   test("search clears properly", async ({ page }) => {
     await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
 
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="earch"]',
@@ -175,6 +174,7 @@ test.describe("Projects Filtering Behavior", () => {
 
   test("no results state shows message or empty grid", async ({ page }) => {
     await page.goto("/projects");
+    await page.waitForLoadState("networkidle");
 
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="earch"]',
@@ -198,9 +198,7 @@ test.describe("Projects Filtering Behavior", () => {
     const noResults = page.locator(
       '.no-results, [class*="no-results"], [class*="empty"]',
     );
-    const projectCards = page.locator(
-      '.project-list-card, [class*="project-card"]',
-    );
+    const projectCards = page.locator("a.project-tile");
 
     const hasNoResultsMessage = await noResults.isVisible().catch(() => false);
     const cardCount = await projectCards.count();
@@ -215,9 +213,7 @@ test.describe("Project Detail Page", () => {
     await page.goto("/projects");
     await page.waitForLoadState("networkidle");
 
-    const projectCards = page.locator(
-      '.project-list-card, [class*="project-card"]',
-    );
+    const projectCards = page.locator("a.project-tile");
     const hasProjects = await projectCards
       .first()
       .isVisible({ timeout: 3000 })
