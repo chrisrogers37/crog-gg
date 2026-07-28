@@ -74,9 +74,7 @@ def _gh_rate_key(ip: str, endpoint: str) -> str:
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
     ip = get_client_ip()
-    allowed, count = rate_limit.check_and_consume(
-        _gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW
-    )
+    allowed, count = rate_limit.check_and_consume(_gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW)
     if not allowed:
         return (
             jsonify(
@@ -185,9 +183,7 @@ def regenerate_content():
             429,
         )
 
-    allowed, _count = rate_limit.check_and_consume(
-        _regen_daily_key(client_ip), REGEN_DAILY_MAX, REGEN_DAILY_WINDOW
-    )
+    allowed, _count = rate_limit.check_and_consume(_regen_daily_key(client_ip), REGEN_DAILY_MAX, REGEN_DAILY_WINDOW)
     if not allowed:
         return (
             jsonify(
@@ -201,9 +197,7 @@ def regenerate_content():
         )
 
     if openai_client is None:
-        return jsonify(
-            {"success": False, "error": "OpenAI API key not configured"}
-        ), 500
+        return jsonify({"success": False, "error": "OpenAI API key not configured"}), 500
 
     data = request.get_json(silent=True)
     if not data:
@@ -320,9 +314,7 @@ def get_repository(repo_name):
             return jsonify({"error": "Repository not found"}), 404
         return jsonify(data)
     except requests.RequestException as e:
-        status = (
-            e.response.status_code if getattr(e, "response", None) is not None else 500
-        )
+        status = e.response.status_code if getattr(e, "response", None) is not None else 500
         # A missing repo must return the SAME generic 404 as a private one, so
         # the endpoint can't be used as an oracle for private repo names.
         if status == 404:
@@ -352,9 +344,7 @@ def get_readme(repo_name):
         r.raise_for_status()
         return jsonify(r.json())
     except requests.RequestException as e:
-        status = (
-            e.response.status_code if getattr(e, "response", None) is not None else 500
-        )
+        status = e.response.status_code if getattr(e, "response", None) is not None else 500
         return jsonify({"error": "Failed to fetch README from GitHub"}), status
 
 
@@ -378,9 +368,7 @@ def get_repo_languages(repo_name):
         r.raise_for_status()
         return jsonify(r.json())
     except requests.RequestException as e:
-        status = (
-            e.response.status_code if getattr(e, "response", None) is not None else 500
-        )
+        status = e.response.status_code if getattr(e, "response", None) is not None else 500
         return jsonify({"error": "Failed to fetch languages from GitHub"}), status
 
 
@@ -459,9 +447,7 @@ def get_contributions():
         if "errors" in data:
             return jsonify({"error": "GraphQL query failed"}), 500
 
-        calendar = data["data"]["user"]["contributionsCollection"][
-            "contributionCalendar"
-        ]
+        calendar = data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
         level_map = {
             "NONE": 0,
             "FIRST_QUARTILE": 1,
