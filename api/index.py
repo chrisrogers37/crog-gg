@@ -343,6 +343,18 @@ def regenerate_content():
             500,
         )
 
+    # The model does not author URLs. `social_links` values are rendered straight
+    # into <a href> by the client, and the section prompts instruct a rewrite of
+    # every text field with no carve-out for links, so pin them back to the
+    # caller-supplied input rather than trusting what came back. `content` is
+    # already known to be an object; the model output is not.
+    if isinstance(parsed, dict):
+        original_links = content.get("social_links")
+        if isinstance(original_links, dict):
+            parsed["social_links"] = original_links
+        else:
+            parsed.pop("social_links", None)
+
     return jsonify(
         {
             "success": True,
