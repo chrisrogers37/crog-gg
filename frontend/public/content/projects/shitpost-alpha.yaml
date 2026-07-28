@@ -2,7 +2,7 @@
 id: shitpost-alpha
 title: "Shitpost Alpha"
 description: "Real-time financial analysis of social media posts using LLMs to predict market movements and send trading alerts. Harvesting the President's SHITPOSTS to generate ALPHA."
-url: "https://shitpost-alpha-dash.up.railway.app/"
+url: "https://shitpost-alpha-web-production.up.railway.app/"
 icon: "\U0001F4C8"
 category: data-science
 technologies:
@@ -12,7 +12,7 @@ technologies:
   - "AWS S3"
   - "Railway"
 github: "https://github.com/chrisrogers37/shitpost-alpha"
-demo: "https://shitpost-alpha-dash.up.railway.app/"
+demo: "https://shitpost-alpha-web-production.up.railway.app/"
 featured: false
 order: 5
 status: active

@@ -38,7 +38,9 @@ def _metadata_then_payload(metadata):
     readme/languages fetch returns a benign public payload."""
 
     def _side_effect(url, **kwargs):
-        if url.endswith("/readme"):
+        # The readme route asks for the root README.md first and only falls back
+        # to GitHub's /readme resolution when that 404s, so both are served here.
+        if url.endswith("/contents/README.md") or url.endswith("/readme"):
             return _make_response(200, {"content": "aGVsbG8=", "encoding": "base64"})
         if url.endswith("/languages"):
             return _make_response(200, {"Python": 1234})
@@ -106,6 +108,66 @@ def test_get_readme_public_returns_200(client):
         r = client.get("/api/v1/github/readme/shuffify")
     assert r.status_code == 200
     assert r.get_json()["encoding"] == "base64"
+
+
+def test_get_readme_prefers_root_over_dot_github(client):
+    """GitHub's /readme resolves .github/README.md ahead of the root file, which
+    surfaces a repo's CI notes as its project documentation. The route must ask
+    for the root README.md explicitly (issue #123 D2)."""
+    meta = _make_response(200, {"name": "storydump", "private": False})
+    requested = []
+
+    def _side_effect(url, **kwargs):
+        requested.append(url)
+        if url.endswith("/contents/README.md"):
+            return _make_response(200, {"path": "README.md", "content": "cm9vdA==", "encoding": "base64"})
+        if url.endswith("/readme"):
+            return _make_response(
+                200,
+                {"path": ".github/README.md", "content": "Y2k=", "encoding": "base64"},
+            )
+        return meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get("/api/v1/github/readme/storydump")
+
+    assert r.status_code == 200
+    assert r.get_json()["path"] == "README.md"
+    assert any(u.endswith("/contents/README.md") for u in requested)
+    # the fallback must not be consulted when the root file exists
+    assert not any(u.endswith("/readme") for u in requested)
+
+
+def test_get_readme_falls_back_when_no_root_readme(client):
+    """Repos with README.rst, lowercase readme, or docs-only layouts still work."""
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/contents/README.md"):
+            return _make_response(404, {"message": "Not Found"})
+        if url.endswith("/readme"):
+            return _make_response(200, {"path": "README.rst", "content": "cnN0", "encoding": "base64"})
+        return meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get("/api/v1/github/readme/shuffify")
+
+    assert r.status_code == 200
+    assert r.get_json()["path"] == "README.rst"
+
+
+def test_get_readme_404_when_neither_exists(client):
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/contents/README.md") or url.endswith("/readme"):
+            return _make_response(404, {"message": "Not Found"})
+        return meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get("/api/v1/github/readme/shuffify")
+
+    assert r.status_code == 404
 
 
 def test_get_readme_private_returns_generic_404(client):

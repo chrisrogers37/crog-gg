@@ -142,22 +142,29 @@ def _fetch_public_repo(repo_name: str):
     return data, None
 
 
-def _proxy_sub_resource(repo_name: str, path: str, label: str, missing_msg: str | None = None):
+def _proxy_sub_resource(repo_name: str, path: str | tuple[str, ...], label: str, missing_msg: str | None = None):
     """GET a sub-resource of an already-validated public repo and map failures
     to the shared generic response. ``path`` is appended to the repo URL (e.g.
-    ``/readme``); ``label`` names the resource in the failure message;
-    ``missing_msg`` (when set) returns a specific 404 if the sub-resource itself
-    is absent."""
+    ``/readme``), and a tuple of paths is tried in order so a caller can prefer a
+    specific file over GitHub's own resolution and still fall back when it is
+    absent; ``label`` names the resource in the failure message; ``missing_msg``
+    (when set) returns a specific 404 if the sub-resource itself is absent."""
+    candidates = (path,) if isinstance(path, str) else path
     try:
-        r = requests.get(
-            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}{path}",
-            headers=github_headers(),
-            timeout=10,
-        )
-        if missing_msg is not None and r.status_code == 404:
-            return jsonify({"error": missing_msg}), 404
-        r.raise_for_status()
-        return jsonify(r.json())
+        for i, candidate in enumerate(candidates):
+            r = requests.get(
+                f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}{candidate}",
+                headers=github_headers(),
+                timeout=10,
+            )
+            # A 404 on any but the last candidate just means "try the next one";
+            # only the final candidate's absence is the resource being missing.
+            if r.status_code == 404 and i < len(candidates) - 1:
+                continue
+            if missing_msg is not None and r.status_code == 404:
+                return jsonify({"error": missing_msg}), 404
+            r.raise_for_status()
+            return jsonify(r.json())
     except requests.RequestException as e:
         status = e.response.status_code if getattr(e, "response", None) is not None else 500
         return jsonify({"error": f"Failed to fetch {label} from GitHub"}), status
@@ -401,7 +408,16 @@ def get_readme(repo_name):
     _data, error = _fetch_public_repo(repo_name)
     if error is not None:
         return error
-    return _proxy_sub_resource(repo_name, "/readme", "README", missing_msg="README not found")
+    # Ask for the root README explicitly. GitHub's /readme endpoint resolves
+    # .github/README.md ahead of the root file, which surfaces a repo's CI or
+    # contributing notes as if they were the project documentation. The fallback
+    # covers repos with no root README.md (.rst/.txt, non-standard casing).
+    return _proxy_sub_resource(
+        repo_name,
+        ("/contents/README.md", "/readme"),
+        "README",
+        missing_msg="README not found",
+    )
 
 
 @app.route("/api/v1/github/languages/<repo_name>", methods=["GET"])

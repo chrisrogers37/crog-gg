@@ -1,11 +1,11 @@
-# Storyline AI - Instagram Story Scheduling via Telegram
-id: storyline-ai
-title: Storyline AI
+# Storydump - Instagram Story Scheduling via Telegram
+id: storydump
+title: Storydump
 description: |
   a telegram bot for managing instagram story posting from a content
   repository - smart scheduling, team collaboration, and automated
   publishing with category-based content distribution.
-url: https://github.com/chrisrogers37/storyline-ai
+url: https://storydump.app
 icon: "\U0001F4F1"
 category: ai-tools
 technologies:
@@ -14,8 +14,9 @@ technologies:
   - Telegram Bot API
   - Instagram Graph API
   - Cloudinary
+github: https://github.com/chrisrogers37/storydump
 featured: true
-order: 3
+order: 1
 status: active
 gradient: "linear-gradient(135deg, #8B5CF6 0%, #4C1D95 100%)"
 tags:
