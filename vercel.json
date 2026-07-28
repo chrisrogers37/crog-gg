@@ -4,7 +4,10 @@
   "outputDirectory": "frontend/dist",
   "installCommand": "echo 'skip root install; handled by buildCommand'",
   "framework": null,
-  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
