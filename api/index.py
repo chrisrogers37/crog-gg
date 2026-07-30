@@ -20,7 +20,7 @@ import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from api._lib import rate_limit
+from api._lib import cache, rate_limit
 from api._lib.request_utils import (
     GITHUB_API,
     GITHUB_USERNAME,
@@ -62,6 +62,14 @@ REGEN_DAILY_MAX = 30
 REGEN_DAILY_WINDOW = 86400
 GH_RATE_LIMIT_MAX = 30
 GH_RATE_LIMIT_WINDOW = 60
+
+# Server-side cache for the /languages aggregate fan-out (#91). That endpoint
+# makes 1 + N GitHub calls (N = non-fork repos); caching the result bounds the
+# fan-out to at most once per hour per warm cache, so a burst of client requests
+# can't exhaust the GITHUB_TOKEN quota. Language stats change rarely, so a 1h
+# staleness window is an acceptable trade.
+CACHE_ALL_LANGUAGES_KEY = "cache:all_languages"
+CACHE_ALL_LANGUAGES_TTL = 3600
 
 
 def _cooldown_key(ip: str) -> str:
@@ -398,6 +406,11 @@ def get_repo_languages(repo_name):
 def get_all_languages_v1():
     if (resp := _gh_rate_limit_or_429("languages_all")) is not None:
         return resp
+
+    cached = cache.get_json(CACHE_ALL_LANGUAGES_KEY)
+    if cached is not None:
+        return jsonify(cached)
+
     try:
         repos_response = requests.get(
             f"{GITHUB_API}/users/{GITHUB_USERNAME}/repos?per_page=100",
@@ -420,6 +433,10 @@ def get_all_languages_v1():
                 for lang, bytes_count in lang_response.json().items():
                     all_languages[lang] = all_languages.get(lang, 0) + bytes_count
 
+        # Only reached once the aggregate is fully computed (past the point the
+        # repo-list fetch could raise). Cache it so subsequent requests skip the
+        # fan-out entirely until the TTL lapses.
+        cache.set_json(CACHE_ALL_LANGUAGES_KEY, all_languages, CACHE_ALL_LANGUAGES_TTL)
         return jsonify(all_languages)
     except requests.RequestException:
         return jsonify({"error": "Failed to aggregate languages from GitHub"}), 500
