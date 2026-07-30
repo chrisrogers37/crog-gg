@@ -12,10 +12,7 @@ Coverage:
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 import requests
-
-from api.index import app
 
 
 def _make_response(status_code=200, json_data=None):
@@ -45,19 +42,6 @@ def _metadata_then_payload(metadata):
         return metadata
 
     return _side_effect
-
-
-@pytest.fixture
-def client():
-    app.config.update(TESTING=True)
-    return app.test_client()
-
-
-@pytest.fixture(autouse=True)
-def _allow_rate_limit():
-    # Keep tests hermetic: never depend on (or reach for) Redis rate limiting.
-    with patch("api.index.rate_limit.check_and_consume", return_value=(True, 0)):
-        yield
 
 
 # --- get_repository --------------------------------------------------------
