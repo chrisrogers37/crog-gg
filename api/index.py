@@ -93,10 +93,31 @@ def _gh_rate_limit_or_429(endpoint: str):
     return None
 
 
-def _repo_is_public_or_404(repo_name: str):
-    """Returns None if repo_name is a public repo of the owner, else a 404
-    response. Defense-in-depth so the proxy never serves private-repo data
-    even if GITHUB_TOKEN is over-scoped."""
+def _guard_repo_request(repo_name: str, endpoint: str):
+    """Shared entry guard for the single-repo proxy routes: per-IP rate limit
+    then repo-name validation. Returns an error response to short-circuit on,
+    or None to proceed."""
+    if (resp := _gh_rate_limit_or_429(endpoint)) is not None:
+        return resp
+    is_valid, error_msg = validate_repo_name(repo_name)
+    if not is_valid:
+        return jsonify({"error": error_msg}), 400
+    return None
+
+
+def _fetch_public_repo(repo_name: str):
+    """Fetch the owner's repo metadata, enforcing the public-only guard.
+
+    Returns ``(data, None)`` when ``repo_name`` is a public repo of the owner,
+    else ``(None, <404 response>)``. This is the single source of truth for the
+    private-repo guard (defense-in-depth so the proxy never serves private-repo
+    data even if GITHUB_TOKEN is over-scoped), and returning the fetched
+    metadata lets the /repo endpoint reuse it instead of making a second,
+    identical GitHub call.
+
+    A missing repo and a private repo both yield the SAME generic 404, so the
+    proxy can't be used as an oracle for private repo names.
+    """
     try:
         r = requests.get(
             f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}",
@@ -104,10 +125,34 @@ def _repo_is_public_or_404(repo_name: str):
             timeout=10,
         )
     except requests.RequestException:
-        return jsonify({"error": "Repository not found"}), 404
-    if r.status_code != 200 or r.json().get("private"):
-        return jsonify({"error": "Repository not found"}), 404
-    return None
+        return None, (jsonify({"error": "Repository not found"}), 404)
+    if r.status_code != 200:
+        return None, (jsonify({"error": "Repository not found"}), 404)
+    data = r.json()
+    if data.get("private"):
+        return None, (jsonify({"error": "Repository not found"}), 404)
+    return data, None
+
+
+def _proxy_sub_resource(repo_name: str, path: str, label: str, missing_msg: str | None = None):
+    """GET a sub-resource of an already-validated public repo and map failures
+    to the shared generic response. ``path`` is appended to the repo URL (e.g.
+    ``/readme``); ``label`` names the resource in the failure message;
+    ``missing_msg`` (when set) returns a specific 404 if the sub-resource itself
+    is absent."""
+    try:
+        r = requests.get(
+            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}{path}",
+            headers=github_headers(),
+            timeout=10,
+        )
+        if missing_msg is not None and r.status_code == 404:
+            return jsonify({"error": missing_msg}), 404
+        r.raise_for_status()
+        return jsonify(r.json())
+    except requests.RequestException as e:
+        status = e.response.status_code if getattr(e, "response", None) is not None else 500
+        return jsonify({"error": f"Failed to fetch {label} from GitHub"}), status
 
 
 # ---------------------------------------------------------------------------
@@ -319,81 +364,34 @@ def get_usage_info():
 
 @app.route("/api/v1/github/repo/<repo_name>", methods=["GET"])
 def get_repository(repo_name):
-    if (resp := _gh_rate_limit_or_429("repo")) is not None:
+    if (resp := _guard_repo_request(repo_name, "repo")) is not None:
         return resp
-    is_valid, error_msg = validate_repo_name(repo_name)
-    if not is_valid:
-        return jsonify({"error": error_msg}), 400
-
-    try:
-        r = requests.get(
-            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}",
-            headers=github_headers(),
-            timeout=10,
-        )
-        r.raise_for_status()
-        data = r.json()
-        if data.get("private"):
-            # Proxy only exposes the owner's public portfolio repos.
-            return jsonify({"error": "Repository not found"}), 404
-        return jsonify(data)
-    except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
-        # A missing repo must return the SAME generic 404 as a private one, so
-        # the endpoint can't be used as an oracle for private repo names.
-        if status == 404:
-            return jsonify({"error": "Repository not found"}), 404
-        return jsonify({"error": "Failed to fetch repository from GitHub"}), status
+    # The public-repo guard already fetches the repo metadata, which IS this
+    # endpoint's payload, so reuse it directly (one GitHub call, not two).
+    data, error = _fetch_public_repo(repo_name)
+    if error is not None:
+        return error
+    return jsonify(data)
 
 
 @app.route("/api/v1/github/readme/<repo_name>", methods=["GET"])
 def get_readme(repo_name):
-    if (resp := _gh_rate_limit_or_429("readme")) is not None:
+    if (resp := _guard_repo_request(repo_name, "readme")) is not None:
         return resp
-    is_valid, error_msg = validate_repo_name(repo_name)
-    if not is_valid:
-        return jsonify({"error": error_msg}), 400
-
-    if (resp := _repo_is_public_or_404(repo_name)) is not None:
-        return resp
-
-    try:
-        r = requests.get(
-            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}/readme",
-            headers=github_headers(),
-            timeout=10,
-        )
-        if r.status_code == 404:
-            return jsonify({"error": "README not found"}), 404
-        r.raise_for_status()
-        return jsonify(r.json())
-    except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
-        return jsonify({"error": "Failed to fetch README from GitHub"}), status
+    _data, error = _fetch_public_repo(repo_name)
+    if error is not None:
+        return error
+    return _proxy_sub_resource(repo_name, "/readme", "README", missing_msg="README not found")
 
 
 @app.route("/api/v1/github/languages/<repo_name>", methods=["GET"])
 def get_repo_languages(repo_name):
-    if (resp := _gh_rate_limit_or_429("languages_repo")) is not None:
+    if (resp := _guard_repo_request(repo_name, "languages_repo")) is not None:
         return resp
-    is_valid, error_msg = validate_repo_name(repo_name)
-    if not is_valid:
-        return jsonify({"error": error_msg}), 400
-
-    if (resp := _repo_is_public_or_404(repo_name)) is not None:
-        return resp
-
-    try:
-        r = requests.get(
-            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}/languages",
-            headers=github_headers(),
-            timeout=10,
-        )
-        r.raise_for_status()
-        return jsonify(r.json())
-    except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
-        return jsonify({"error": "Failed to fetch languages from GitHub"}), status
+    _data, error = _fetch_public_repo(repo_name)
+    if error is not None:
+        return error
+    return _proxy_sub_resource(repo_name, "/languages", "languages")
 
 
 @app.route("/api/v1/github/languages", methods=["GET"])

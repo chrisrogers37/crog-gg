@@ -1,10 +1,13 @@
-"""Unit tests for the GitHub proxy access-control defense-in-depth (issue #97).
+"""Unit tests for the GitHub proxy access-control defense-in-depth (issues #97,
+#106).
 
 Coverage:
-  - ``get_repository`` drops private repos via the upstream ``private`` flag.
-  - ``get_readme`` / ``get_repo_languages`` are gated on
-    ``_repo_is_public_or_404``, which returns the SAME generic 404 for a private
-    repo and a missing repo (no existence oracle).
+  - ``get_repository`` drops private repos via the upstream ``private`` flag,
+    and makes a single GitHub call — it reuses the metadata the public-repo
+    guard already fetched (#106).
+  - ``get_readme`` / ``get_repo_languages`` are gated on ``_fetch_public_repo``,
+    which returns the SAME generic 404 for a private repo and a missing repo
+    (no existence oracle).
   - Public-repo happy paths still return 200.
 
 ``requests.get`` is mocked, so no network access occurs.
@@ -81,6 +84,17 @@ def test_get_repository_private_and_missing_no_oracle(client):
         r_missing = client.get("/api/v1/github/repo/nope")
     assert r_private.status_code == r_missing.status_code == 404
     assert r_private.get_json() == r_missing.get_json() == {"error": "Repository not found"}
+
+
+def test_get_repository_makes_single_github_call(client):
+    """The /repo endpoint returns the metadata it fetched for the public-repo
+    guard directly, so it must hit GitHub exactly once (#106 — no redundant
+    re-fetch of the same repo-root URL)."""
+    payload = {"name": "shuffify", "private": False}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)) as mock_get:
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 200
+    assert mock_get.call_count == 1
 
 
 # --- get_readme ------------------------------------------------------------
