@@ -224,14 +224,20 @@ _PROMPTS = {
         "system": "You are a technical and creative writer who specializes in professional portfolios. You MUST rewrite ALL text content in the portfolio (experience, education, skills, projects, music) while preserving the core meaning and facts. Return ONLY valid JSON with no prefixes or additional text.",
         "format": "Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field in experience, education, skills, projects, and music with new wording while maintaining the same core information.\n\nFor ALL text content (titles, descriptions, achievements, etc.):\n1. EVERY single text field must be rewritten with new phrasing\n2. Maintain the same core accomplishments and facts\n3. Use varied sentence structures and strong action verbs\n4. Keep all numerical metrics (percentages, numbers) exactly the same\n5. Do not copy any full sentences from the original text\n\nFor experience, education, skills, projects, and music:\n- Experience: Rewrite job titles, company names, periods, and achievements.\n- Education: Rewrite school names, degrees, and years.\n- Skills: Rewrite each skill with a new phrasing or synonym.\n- Projects: Rewrite project titles, descriptions, and technologies.\n- Music: Rewrite track titles, album names, and years.\n",
     },
-    "projects": {
-        "system": "You are a technical writer who specializes in project descriptions. Return ONLY valid JSON with no prefixes or additional text. Keep the core project details accurate but present them in a new, engaging way.",
-        "format": "Return ONLY the JSON array with no prefixes or additional text, maintaining the same structure but with rewritten descriptions. Keep technologies and links unchanged.",
-    },
-    "music": {
-        "system": "You are a music industry writer who specializes in describing musical works and achievements. Return ONLY valid JSON with no prefixes or additional text. Keep the core details accurate but present them in a fresh, exciting way.",
-        "format": "Return ONLY the JSON array with no prefixes or additional text, maintaining the same structure but with rewritten descriptions. Keep years and links unchanged.",
-    },
+}
+
+# Fields the model is never allowed to author, by section. The section prompts
+# instruct a rewrite of EVERY text field with no carve-out, and these values are
+# rendered straight into an `href` by the client -- `social_links` into <a href>
+# and `email` into a mailto: link. A rewritten value there is a live link
+# pointing wherever the model chose, so restore the caller-supplied value after
+# parsing instead of trusting what came back.
+#
+# A prompt asking the model to leave links alone is not a substitute for an
+# entry here: the prompt is a request, this is the enforcement. Any section
+# whose payload reaches an href, src, or similar sink belongs in this table.
+_UNAUTHORED_KEYS = {
+    "about": ("social_links", "email"),
 }
 
 # Appended to the section system prompt (#89). User content is untrusted and is
@@ -287,17 +293,17 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
         logger.warning("OpenAI returned non-JSON for section %s: %.200s", section, new_content)
         return None
 
-    # The model does not author URLs. `social_links` values are rendered straight
-    # into <a href> by the client, and the section prompts instruct a rewrite of
-    # every text field with no carve-out for links, so pin them back to the
-    # caller-supplied input rather than trusting what came back. `content` is
-    # already known to be an object; the model output is not.
+    # The model does not author URLs -- see _UNAUTHORED_KEYS. Assignment is
+    # wholesale so nothing the model put under one of these keys survives, and a
+    # key the caller never sent is dropped rather than accepted as model
+    # invention. `content` is already known to be an object; the model output is
+    # not, so a non-dict parse has no keys to pin and passes through untouched.
     if isinstance(parsed, dict):
-        original_links = content.get("social_links")
-        if isinstance(original_links, dict):
-            parsed["social_links"] = original_links
-        else:
-            parsed.pop("social_links", None)
+        for key in _UNAUTHORED_KEYS.get(section, ()):
+            if key in content:
+                parsed[key] = content[key]
+            else:
+                parsed.pop(key, None)
 
     return parsed
 
