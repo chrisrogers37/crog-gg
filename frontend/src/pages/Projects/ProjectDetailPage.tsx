@@ -39,12 +39,19 @@ export function ProjectDetailPage() {
     );
   }
 
-  // Extract GitHub repo name from URL
-  const githubRepoMatch = project.url?.match(/github\.com\/[\w-]+\/([\w-]+)/);
+  // Extract GitHub repo name. Prefer the explicit `github` field; fall back to
+  // `url` for entries whose primary link is the repo itself. Reading only `url`
+  // meant a declared `github` was silently ignored, so any project pointing at a
+  // live app got no repo stats and no docs.
+  const githubSource = project.github || project.url;
+  const githubRepoMatch = githubSource?.match(/github\.com\/[\w-]+\/([\w-]+)/);
   const githubRepoName = githubRepoMatch ? githubRepoMatch[1] : null;
 
-  // Check if project has a live demo URL
-  const hasLiveDemo = project.demo && !project.demo.includes("github.com");
+  // A demo only earns its own button when it goes somewhere `url` doesn't.
+  const hasLiveDemo =
+    project.demo &&
+    !project.demo.includes("github.com") &&
+    project.demo.replace(/\/$/, "") !== project.url?.replace(/\/$/, "");
 
   return (
     <>
@@ -108,7 +115,7 @@ export function ProjectDetailPage() {
                     : "View Project"}
                 </a>
               )}
-              {project.demo && (
+              {hasLiveDemo && (
                 <a
                   href={project.demo}
                   target="_blank"

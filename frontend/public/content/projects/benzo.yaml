@@ -14,7 +14,7 @@ technologies:
   - React
   - Vite
 featured: true
-order: 1
+order: 2
 status: active
 gradient: "linear-gradient(135deg, #d4749c 0%, #1a1a2e 100%)"
 tags:
