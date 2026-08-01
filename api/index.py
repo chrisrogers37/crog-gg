@@ -14,6 +14,7 @@ in vercel.json.
 import json
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import openai
 import requests
@@ -55,7 +56,15 @@ CORS(
 )
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai_client = openai.OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+# Bounded like every other outbound call in this file. The default is 600s with
+# retries, and the request waits on the slowest section, so an unbounded hang
+# would pin the function to its max duration with the browser still waiting.
+openai_client = openai.OpenAI(api_key=OPENAI_API_KEY, timeout=20.0, max_retries=1) if OPENAI_API_KEY else None
+
+# The rewrite model. This is a public button anyone can press, so the pick is
+# governed by cost and latency per call rather than raw capability -- it is
+# rewriting a short bio, not reasoning.
+OPENAI_MODEL = "gpt-3.5-turbo"
 
 COOLDOWN_SECONDS = 30
 REGEN_DAILY_MAX = 30
@@ -229,6 +238,63 @@ _INJECTION_GUARD = (
 )
 
 
+def _regenerate_section(section: str, content: dict, use_fantasy: bool):
+    """Rewrite one section through the model.
+
+    Returns the parsed object, or None when the model errored or returned
+    something that is not JSON. Returning None rather than raising lets a
+    multi-section request keep the sections that did succeed.
+    """
+    section_prompt = dict(_PROMPTS[section])
+
+    if use_fantasy:
+        section_prompt["format"] += _fantasy_addition_for(section)
+
+    try:
+        response = openai_client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": section_prompt["system"] + _INJECTION_GUARD},
+                {
+                    "role": "user",
+                    "content": (
+                        "Rewrite the content provided between the <user_content> tags below.\n\n"
+                        f"<user_content>\n{json.dumps(content)}\n</user_content>\n\n"
+                        f"Formatting instructions: {section_prompt['format']}\n\n"
+                        "Pay special attention to achievements if they exist. Each "
+                        "achievement should be rewritten to be more impactful while "
+                        "maintaining the same core accomplishments and metrics."
+                    ),
+                },
+            ],
+            temperature=0.7,
+        )
+        new_content = response.choices[0].message.content
+    except openai.OpenAIError as e:
+        logger.error("OpenAI error on section %s: %s", section, e)
+        return None
+
+    try:
+        parsed = json.loads(new_content)
+    except json.JSONDecodeError:
+        logger.warning("OpenAI returned non-JSON for section %s: %.200s", section, new_content)
+        return None
+
+    # The model does not author URLs. `social_links` values are rendered straight
+    # into <a href> by the client, and the section prompts instruct a rewrite of
+    # every text field with no carve-out for links, so pin them back to the
+    # caller-supplied input rather than trusting what came back. `content` is
+    # already known to be an object; the model output is not.
+    if isinstance(parsed, dict):
+        original_links = content.get("social_links")
+        if isinstance(original_links, dict):
+            parsed["social_links"] = original_links
+        else:
+            parsed.pop("social_links", None)
+
+    return parsed
+
+
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
     client_ip = get_client_ip()
@@ -250,33 +316,35 @@ def regenerate_content():
     if not data:
         return jsonify({"success": False, "error": "No data provided"}), 400
 
-    section = data.get("section")
-    content = data.get("content")
-    is_full_regeneration = data.get("is_full_regeneration", False)
+    sections = data.get("sections")
     use_fantasy = data.get("use_fantasy", False)
 
-    # Validate input before metering or calling OpenAI (#89, #107). Reject an
-    # unknown section against the allowlist instead of falling through to a
-    # permissive default prompt, and require content to be an object so the
-    # `.get()` below can't raise an AttributeError -> uncaught 500.
-    if not section:
-        return jsonify({"success": False, "error": "Section not specified"}), 400
-    if section not in _PROMPTS:
-        return jsonify({"success": False, "error": "Invalid section"}), 400
-    if not isinstance(content, dict):
-        return jsonify({"success": False, "error": "content must be an object"}), 400
+    # One user action is one request. `sections` maps each section name to the
+    # content to rewrite, so a multi-section regeneration passes the cooldown
+    # gate once instead of racing its own sibling requests through it.
+    if not isinstance(sections, dict) or not sections:
+        return jsonify({"success": False, "error": "sections must be a non-empty object"}), 400
 
-    regenerate_target = content.get("regenerate_target")
+    # Validate every section before metering or calling OpenAI (#89, #107).
+    # Reject unknown names against the allowlist instead of falling through to a
+    # permissive default prompt, and require each body to be an object so the
+    # `.get()` calls downstream cannot raise an AttributeError -> uncaught 500.
+    for name, section_content in sections.items():
+        if name not in _PROMPTS:
+            return jsonify({"success": False, "error": f"Invalid section: {name}"}), 400
+        if not isinstance(section_content, dict):
+            return jsonify({"success": False, "error": f"content for {name} must be an object"}), 400
 
     if openai_client is None:
         return jsonify({"success": False, "error": "OpenAI API key not configured"}), 500
 
-    # Meter only well-formed, serviceable requests, and do it BEFORE the OpenAI
-    # call (#107). Consuming the daily slot and starting the cooldown up front
-    # means a request that then errors (OpenAI failure, non-JSON output) still
-    # burns the per-IP gate, so a caller can't retry expensive generations
-    # back-to-back by forcing errors.
-    allowed, _count = rate_limit.check_and_consume(_regen_daily_key(client_ip), REGEN_DAILY_MAX, REGEN_DAILY_WINDOW)
+    # One daily slot per section, so batching sections into a single request
+    # costs the same as the calls it replaces. Metered BEFORE the OpenAI calls
+    # (#107) so a request that then errors still burns the per-IP gate and a
+    # caller cannot retry expensive generations by forcing errors.
+    allowed, _count = rate_limit.check_and_consume(
+        _regen_daily_key(client_ip), REGEN_DAILY_MAX, REGEN_DAILY_WINDOW, cost=len(sections)
+    )
     if not allowed:
         return (
             jsonify(
@@ -290,75 +358,36 @@ def regenerate_content():
         )
     rate_limit.start_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
 
-    section_prompt = dict(_PROMPTS[section])
+    # Fan the model calls out so a multi-section rewrite costs one round trip of
+    # wall clock rather than one per section. These are I/O-bound and the OpenAI
+    # client is safe to share across threads.
+    with ThreadPoolExecutor(max_workers=len(sections)) as pool:
+        futures = {name: pool.submit(_regenerate_section, name, body, use_fantasy) for name, body in sections.items()}
+        results = {name: future.result() for name, future in futures.items()}
 
-    if use_fantasy:
-        section_prompt["format"] += _fantasy_addition_for(section)
+    regenerated = {name: parsed for name, parsed in results.items() if parsed is not None}
+    failed = sorted(name for name, parsed in results.items() if parsed is None)
 
-    if section == "about" and regenerate_target and not is_full_regeneration:
-        target_instructions = {
-            "bio": "\nOnly rewrite the 'bio' field, keeping all other fields exactly the same.",
-            "citadel": "\nOnly rewrite the achievements for the Citadel employment entry, keeping all other content exactly the same.",
-            "meta": "\nOnly rewrite the achievements for the Meta employment entry, keeping all other content exactly the same.",
-            "msk": "\nOnly rewrite the achievements for the Memorial Sloan Kettering employment entry, keeping all other content exactly the same.",
-        }
-        if regenerate_target in target_instructions:
-            section_prompt["format"] += target_instructions[regenerate_target]
-
-    try:
-        response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": section_prompt["system"] + _INJECTION_GUARD},
-                {
-                    "role": "user",
-                    "content": (
-                        "Rewrite the content provided between the <user_content> tags below.\n\n"
-                        f"<user_content>\n{json.dumps(content)}\n</user_content>\n\n"
-                        f"Formatting instructions: {section_prompt['format']}\n\n"
-                        "Pay special attention to achievements if they exist. Each "
-                        "achievement should be rewritten to be more impactful while "
-                        "maintaining the same core accomplishments and metrics."
-                    ),
-                },
-            ],
-            temperature=0.7,
-        )
-        new_content = response.choices[0].message.content
-    except openai.OpenAIError as e:
-        logger.error("OpenAI error: %s", e)
-        return jsonify({"success": False, "error": "Content generation failed"}), 500
-
-    try:
-        parsed = json.loads(new_content)
-    except json.JSONDecodeError:
-        logger.warning("OpenAI returned non-JSON: %.200s", new_content)
+    # A section that failed must not discard the ones that worked: return what
+    # was rewritten and name what was not, and fail the request only when
+    # nothing at all came back.
+    if not regenerated:
         return (
             jsonify(
                 {
                     "success": False,
-                    "error": "Content generation returned invalid format",
+                    "error": "Content generation failed",
+                    "failed_sections": failed,
                 }
             ),
             500,
         )
 
-    # The model does not author URLs. `social_links` values are rendered straight
-    # into <a href> by the client, and the section prompts instruct a rewrite of
-    # every text field with no carve-out for links, so pin them back to the
-    # caller-supplied input rather than trusting what came back. `content` is
-    # already known to be an object; the model output is not.
-    if isinstance(parsed, dict):
-        original_links = content.get("social_links")
-        if isinstance(original_links, dict):
-            parsed["social_links"] = original_links
-        else:
-            parsed.pop("social_links", None)
-
     return jsonify(
         {
             "success": True,
-            "content": parsed,
+            "content": regenerated,
+            "failed_sections": failed,
             "cooldown_total": COOLDOWN_SECONDS,
         }
     )

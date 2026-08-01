@@ -7,6 +7,7 @@ import {
   useUIStore,
   useIsLoading,
   useContentError,
+  useRegenerationError,
   useBio,
   useTimeline,
 } from "../../store";
@@ -65,6 +66,7 @@ export function HomePage() {
   // Get state from stores
   const isLoading = useIsLoading();
   const error = useContentError();
+  const regenerationError = useRegenerationError();
   const bio = useBio();
   const timeline = useTimeline();
   const activeSection = useUIStore((state) => state.activeSection);
@@ -178,7 +180,8 @@ export function HomePage() {
     );
   }
 
-  // Error state
+  // Fatal only: content never loaded, so there is no page to replace. A failed
+  // regeneration is surfaced inline next to the button instead.
   if (error) {
     return (
       <div className="home-page">
@@ -299,15 +302,22 @@ export function HomePage() {
 
         {/* Action Buttons */}
         {activeSection && !previewMode && (
-          <ActionButtons
-            onRegenerate={() => regenerate(true)}
-            onReset={reset}
-            isRegenerating={isRegenerating}
-            hasModifiedContent={hasModifiedContent}
-            cooldownRemaining={cooldownRemaining}
-            cooldownTotal={cooldownTotal}
-            isReady={isReady}
-          />
+          <>
+            <ActionButtons
+              onRegenerate={() => regenerate(true)}
+              onReset={reset}
+              isRegenerating={isRegenerating}
+              hasModifiedContent={hasModifiedContent}
+              cooldownRemaining={cooldownRemaining}
+              cooldownTotal={cooldownTotal}
+              isReady={isReady}
+            />
+            {regenerationError && (
+              <div className="regeneration-notice" role="status">
+                {regenerationError}
+              </div>
+            )}
+          </>
         )}
 
         {/* Image Showcase */}

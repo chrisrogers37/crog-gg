@@ -11,22 +11,29 @@ import uuid
 from . import redis_client
 
 
-def check_and_consume(key: str, max_requests: int, window_seconds: int) -> tuple[bool, int]:
+def check_and_consume(key: str, max_requests: int, window_seconds: int, cost: int = 1) -> tuple[bool, int]:
     """Sliding-window rate limit. Atomically prune expired, record this hit,
     then return (allowed, current_count).
+
+    ``cost`` records that many hits in the same round trip, for a request that
+    consumes more than one slot. Recording them together means the count
+    reflects the whole request, rather than however many hits a per-slot loop
+    happened to record before the cap tripped.
 
     Falls open (allows the request) if Redis is unreachable — losing rate
     limiting on a transient outage is preferable to dropping legit traffic.
     """
     now_ms = int(time.time() * 1000)
     window_start_ms = now_ms - (window_seconds * 1000)
-    member = f"{now_ms}:{uuid.uuid4().hex}"
+    zadd = ["ZADD", key]
+    for _ in range(cost):
+        zadd += [str(now_ms), f"{now_ms}:{uuid.uuid4().hex}"]
 
     try:
         results = redis_client.pipeline(
             [
                 ["ZREMRANGEBYSCORE", key, "0", str(window_start_ms)],
-                ["ZADD", key, str(now_ms), member],
+                zadd,
                 ["ZCARD", key],
                 ["EXPIRE", key, str(window_seconds + 1)],
             ]

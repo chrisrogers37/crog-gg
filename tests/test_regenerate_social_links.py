@@ -57,10 +57,10 @@ def _regenerate(client, model_returns, content, section="about"):
     with _with_model_returning(model_returns):
         response = client.post(
             "/api/regenerate",
-            json={"section": section, "content": content},
+            json={"sections": {section: content}},
         )
     assert response.status_code == 200, response.get_data(as_text=True)
-    return response.get_json()["content"]
+    return response.get_json()["content"][section]
 
 
 def test_javascript_url_from_model_is_discarded(client):
@@ -166,7 +166,7 @@ def test_non_dict_model_output_does_not_crash(client):
     with _with_model_returning(["unexpected", "shape"]):
         response = client.post(
             "/api/regenerate",
-            json={"section": "about", "content": _bio(ORIGINAL_SOCIAL_LINKS)},
+            json={"sections": {"about": _bio(ORIGINAL_SOCIAL_LINKS)}},
         )
 
     assert response.status_code == 200

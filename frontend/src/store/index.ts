@@ -9,6 +9,7 @@ export {
   useIsLoading,
   useIsRegenerating,
   useContentError,
+  useRegenerationError,
   useHasModifiedContent,
   useTimeline,
 } from "./contentStore";
