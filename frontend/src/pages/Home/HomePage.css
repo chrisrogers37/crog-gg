@@ -145,3 +145,12 @@
     height: 140px;
   }
 }
+
+/* Transient regeneration failure. Deliberately quiet: the page is intact and
+   the user can simply press the button again, so this is a note, not an alarm. */
+.regeneration-notice {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}

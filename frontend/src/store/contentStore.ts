@@ -26,7 +26,10 @@ interface ContentState {
   // Loading states
   isLoading: boolean;
   isRegenerating: boolean;
+  // Fatal: the page has no content to show. Drives the full-page error screen.
   error: string | null;
+  // Transient: the page still has content, one regeneration just did not land.
+  regenerationError: string | null;
 
   // Modification tracking
   hasModifiedContent: boolean;
@@ -41,9 +44,6 @@ interface ContentActions {
 
   // Reset to original
   resetContent: () => Promise<void>;
-
-  // Clear error
-  clearError: () => void;
 
   // Update specific content (for compatibility with existing components)
   updateBio: (bio: BioData) => void;
@@ -70,6 +70,7 @@ const initialState: ContentState = {
   isLoading: true,
   isRegenerating: false,
   error: null,
+  regenerationError: null,
   hasModifiedContent: false,
 };
 
@@ -142,86 +143,77 @@ export const useContentStore = create<ContentStore>()(
         }
 
         try {
-          set({ isRegenerating: true, error: null });
+          set({ isRegenerating: true, regenerationError: null });
 
-          // Regenerate about and portfolio sections
-          const sectionsToRegenerate = ["about", "portfolio"];
-          const regenerationPromises = sectionsToRegenerate.map((section) =>
-            fetch(`${API_URL}/api/regenerate`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
+          // One click is one request. Sending a request per section raced them
+          // against each other through the server's per-IP cooldown, so the
+          // second was rejected and the whole regeneration was discarded.
+          const response = await fetch(`${API_URL}/api/regenerate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            mode: "cors",
+            credentials: "include",
+            body: JSON.stringify({
+              sections: {
+                about: state.bio,
+                portfolio: {
+                  experience: state.experience,
+                  education: state.education,
+                },
               },
-              mode: "cors",
-              credentials: "include",
-              body: JSON.stringify({
-                section,
-                content:
-                  section === "about"
-                    ? state.bio
-                    : {
-                        experience: state.experience,
-                        education: state.education,
-                      },
-                is_full_regeneration: true,
-                use_fantasy: useFantasy,
-              }),
+              use_fantasy: useFantasy,
             }),
-          );
+          });
 
-          const responses = await Promise.all(regenerationPromises);
-          const results = await Promise.all(responses.map((r) => r.json()));
+          const result = await response.json();
 
-          if (results.every((result) => result.success)) {
-            // Update state with regenerated content
-            const aboutResult = results[0];
-            const portfolioResult = results[1];
-
-            set({
-              bio: aboutResult.content || state.bio,
-              experience:
-                portfolioResult.content?.experience || state.experience,
-              education: portfolioResult.content?.education || state.education,
-              hasModifiedContent: true,
-              isRegenerating: false,
-            });
-
-            // Dispatch events for legacy components that still use CustomEvent
-            window.dispatchEvent(
-              new CustomEvent("contentRegenerated", {
-                detail: {
-                  section: "about",
-                  content: aboutResult.content,
-                  is_full_regeneration: true,
-                  use_fantasy: useFantasy,
-                },
-              }),
-            );
-            window.dispatchEvent(
-              new CustomEvent("contentRegenerated", {
-                detail: {
-                  section: "portfolio",
-                  content: portfolioResult.content,
-                  is_full_regeneration: true,
-                  use_fantasy: useFantasy,
-                },
-              }),
-            );
-          } else {
-            throw new Error("Failed to regenerate some content");
+          if (!result.success) {
+            throw new Error(result.error || "Failed to regenerate content");
           }
+
+          // Apply whatever came back. A section the server could not rewrite is
+          // named in failed_sections and simply keeps the content it had, so a
+          // partial failure never discards the sections that did succeed.
+          const about = result.content?.about;
+          const portfolio = result.content?.portfolio;
+          const anyFailed = (result.failed_sections ?? []).length > 0;
+
+          set({
+            bio: about ?? state.bio,
+            experience: portfolio?.experience ?? state.experience,
+            education: portfolio?.education ?? state.education,
+            hasModifiedContent: true,
+            isRegenerating: false,
+            regenerationError: anyFailed
+              ? "Some of that didn't come through. Press it again for the rest."
+              : null,
+          });
+
+          // Legacy components still listen for this instead of reading the
+          // store. Only announce a section that actually came back -- these
+          // listeners assign the payload straight into their own state, so
+          // announcing an absent section would blank the content the set()
+          // above just deliberately preserved.
+          const announce = (section: string, content: unknown) => {
+            if (content === undefined) return;
+            window.dispatchEvent(
+              new CustomEvent("contentRegenerated", {
+                detail: { section, content, use_fantasy: useFantasy },
+              }),
+            );
+          };
+          announce("about", about);
+          announce("portfolio", portfolio);
         } catch (error) {
           console.error("Regeneration failed:", error);
           set({
-            error: "Failed to regenerate content. Please try again.",
+            regenerationError:
+              "Failed to regenerate content. Please try again.",
             isRegenerating: false,
           });
-        } finally {
-          // Ensure isRegenerating is set to false after a delay
-          setTimeout(() => {
-            set({ isRegenerating: false });
-          }, 1000);
         }
       },
 
@@ -242,6 +234,7 @@ export const useContentStore = create<ContentStore>()(
             projects: data.projects,
             hasModifiedContent: false,
             error: null,
+            regenerationError: null,
             isLoading: false,
           });
 
@@ -281,10 +274,6 @@ export const useContentStore = create<ContentStore>()(
       /**
        * Clear the current error message.
        */
-      clearError: () => {
-        set({ error: null });
-      },
-
       /**
        * Update bio content directly.
        */
@@ -328,6 +317,8 @@ export const useIsLoading = () => useContentStore((state) => state.isLoading);
 export const useIsRegenerating = () =>
   useContentStore((state) => state.isRegenerating);
 export const useContentError = () => useContentStore((state) => state.error);
+export const useRegenerationError = () =>
+  useContentStore((state) => state.regenerationError);
 export const useHasModifiedContent = () =>
   useContentStore((state) => state.hasModifiedContent);
 export const useTimeline = () => useContentStore((state) => state.timeline);
