@@ -43,13 +43,10 @@ def _bio(social_links=None):
     return payload
 
 
-
 def _with_model_returning(payload):
     """Patch the OpenAI client so the handler parses ``payload`` as model output."""
     fake = MagicMock()
-    fake.chat.completions.create.return_value.choices = [
-        MagicMock(message=MagicMock(content=json.dumps(payload)))
-    ]
+    fake.chat.completions.create.return_value.choices = [MagicMock(message=MagicMock(content=json.dumps(payload)))]
     return patch("api.index.openai_client", fake)
 
 
@@ -65,9 +62,7 @@ def _regenerate(client, model_returns, content, section="about"):
 
 def test_javascript_url_from_model_is_discarded(client):
     """The security case: a javascript: URL must never reach the client."""
-    mangled = _bio(
-        {**ORIGINAL_SOCIAL_LINKS, "github": "javascript:alert(document.domain)"}
-    )
+    mangled = _bio({**ORIGINAL_SOCIAL_LINKS, "github": "javascript:alert(document.domain)"})
 
     result = _regenerate(client, mangled, _bio(ORIGINAL_SOCIAL_LINKS))
 
@@ -114,9 +109,7 @@ def test_plausible_lookalike_urls_are_discarded(client):
 
 def test_model_cannot_add_new_link_keys(client):
     """A key absent from the input must not appear in the output."""
-    mangled = _bio(
-        {**ORIGINAL_SOCIAL_LINKS, "payments": "https://not-chris.example/pay"}
-    )
+    mangled = _bio({**ORIGINAL_SOCIAL_LINKS, "payments": "https://not-chris.example/pay"})
 
     result = _regenerate(client, mangled, _bio(ORIGINAL_SOCIAL_LINKS))
 
@@ -161,12 +154,22 @@ def test_portfolio_section_is_untouched(client):
     assert result == rewritten
 
 
-def test_non_dict_model_output_does_not_crash(client):
-    """A JSON array parses fine but has no keys to pin; must not 500."""
+def test_non_dict_model_output_is_refused_rather_than_returned(client):
+    """A JSON array parses fine but is not a section.
+
+    This used to assert a 200, with the array standing in for the bio -- a blank
+    section arriving from a response the server called a success (#105). The
+    shape check now refuses it, and since `about` was the only section requested
+    the request fails cleanly. Still no traceback, which is what this test has
+    always been guarding.
+    """
     with _with_model_returning(["unexpected", "shape"]):
         response = client.post(
             "/api/regenerate",
             json={"sections": {"about": _bio(ORIGINAL_SOCIAL_LINKS)}},
         )
 
-    assert response.status_code == 200
+    assert response.status_code == 500
+    body = response.get_json()
+    assert body["success"] is False
+    assert body["failed_sections"] == ["about"]
