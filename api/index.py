@@ -345,6 +345,27 @@ def _section_rejection(parsed, original: dict):
     return None
 
 
+# Appended to every section prompt alongside the injection guard.
+#
+# The client sends the CURRENT content, which after one regeneration is already
+# model output -- so each rewrite takes the previous rewrite as its input and the
+# original is never re-sent. That loop is stable only while the model compresses.
+# One that expands turns the same loop into a runaway: measured at +76% over four
+# clicks and still climbing, against +21% converging on the previous model.
+#
+# The escalation itself is intended -- the lore is supposed to get wilder the more
+# you press the button, and regenerating from the original instead would remove
+# that. So this bounds LENGTH without touching the escalation: it anchors the
+# gain per step, because per-step growth is the term that compounds. It is a
+# request rather than a guarantee, since a prompt cannot enforce a length.
+_LENGTH_ANCHOR = (
+    " Match the length of what you are given: each rewritten field must be about as long as the "
+    "field it replaces, and the response as a whole must not be longer than the content provided. "
+    "Rewrite it, do not expand it. Adding detail, framing or flourish that was not in the input is "
+    "the specific failure to avoid, because your output becomes the input to the next rewrite."
+)
+
+
 def _regenerate_section(section: str, content: dict, use_fantasy: bool):
     """Rewrite one section through the model.
 
@@ -362,7 +383,7 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
         response = openai_client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": section_prompt["system"] + _INJECTION_GUARD},
+                {"role": "system", "content": section_prompt["system"] + _INJECTION_GUARD + _LENGTH_ANCHOR},
                 {
                     "role": "user",
                     "content": (

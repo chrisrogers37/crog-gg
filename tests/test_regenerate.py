@@ -187,6 +187,31 @@ def test_multi_section_request_checks_cooldown_once(client):
     start_cd.assert_called_once()
 
 
+def test_every_section_prompt_carries_the_length_anchor(client):
+    """The rewrite must be told not to grow (#134).
+
+    The client sends the CURRENT content, so each rewrite takes the previous
+    rewrite as its input. With no length guidance the loop compounds -- measured
+    at +76% over four clicks on a model that expands. This pins that the anchor
+    reaches the model on every section.
+
+    It pins delivery, NOT compliance: a prompt cannot enforce a length, and only
+    regenerating from the original actually bounds the loop.
+    """
+    fake = _mock_openai()
+    with patch("api.index.openai_client", fake):
+        client.post(
+            "/api/regenerate",
+            json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+        )
+
+    systems = [c.kwargs["messages"][0]["content"] for c in fake.chat.completions.create.call_args_list]
+    assert len(systems) == 2, f"expected one call per section, got {len(systems)}"
+    for sys_prompt in systems:
+        assert "must not be longer than the content provided" in sys_prompt
+        assert "do not expand it" in sys_prompt.lower()
+
+
 def test_all_requested_sections_are_returned(client):
     # Each section is answered in its own shape. A rewrite that shares no key
     # with the section it replaces is now refused (#105), so one canned body
