@@ -132,10 +132,10 @@ Tests should verify **structure and behavior**, not specific content:
 - **DO**: Test that elements exist (headings, buttons, inputs)
 - **DO**: Test that interactions work (clicking toggles state, forms accept input)
 - **DO**: Use flexible selectors that match patterns, not exact classes
-- **DO**: Skip tests gracefully when optional data isn't available
+- **DO**: Skip tests gracefully when genuinely optional data (external APIs, live GitHub stats) isn't available
 - **DON'T**: Test for exact text content that changes frequently
 - **DON'T**: Hard-code copy like "hey there!" or "Welcome to my site"
-- **DON'T**: Require specific data to load (projects, etc.) - make tests resilient
+- **DON'T**: Skip or vacuously pass when repo-shipped content is missing - YAML under `frontend/public/content/` ships with the repo, so a page rendering without it is a bug to fail on, not an environment to tolerate (see #120, where skip-gates hid a live production bug)
 
 Example - Bad:
 
