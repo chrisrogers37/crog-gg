@@ -34,6 +34,17 @@ const respondWith = (body: unknown) => {
   return mock;
 };
 
+/** A 200 whose body is not JSON at all -- an HTML error page from the edge, say. */
+const respondWithUnparseableBody = () => {
+  const mock = vi.fn().mockResolvedValue({
+    json: async () => {
+      throw new SyntaxError("Unexpected token < in JSON at position 0");
+    },
+  });
+  globalThis.fetch = mock as unknown as typeof fetch;
+  return mock;
+};
+
 /** Collect every contentRegenerated event fired during `run`. */
 const captureEvents = async (run: () => Promise<void>) => {
   const seen: { section: string; content: unknown }[] = [];
@@ -137,5 +148,230 @@ describe("regenerateContent", () => {
 
     expect(useContentStore.getState().error).toBeNull();
     expect(useContentStore.getState().regenerationError).toBeTruthy();
+  });
+
+  /**
+   * One click is one request; the in-flight guard is what keeps it that way.
+   * The request count above proves a single call sends a single request, which
+   * is a different claim from a second call being refused while the first is
+   * still open -- that is the one a double-click actually exercises.
+   */
+  describe("a second click while one is in flight", () => {
+    it("does not send a second request", async () => {
+      const fetchMock = respondWith({
+        success: true,
+        content: { about: { about_text: "rewritten" } },
+        failed_sections: [],
+      });
+
+      // regenerateContent sets isRegenerating before its first await, so two
+      // synchronous calls are the faithful shape of a rapid double-click.
+      const first = useContentStore.getState().regenerateContent(true);
+      const second = useContentStore.getState().regenerateContent(true);
+      await Promise.all([first, second]);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("accepts a new click once the first has finished", async () => {
+      const fetchMock = respondWith({
+        success: true,
+        content: { about: { about_text: "rewritten" } },
+        failed_sections: [],
+      });
+
+      await useContentStore.getState().regenerateContent(true);
+      await useContentStore.getState().regenerateContent(true);
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+  });
+
+  it("sends nothing at all before content has loaded", async () => {
+    // The other half of the same guard clause, and not a concurrency case --
+    // it belongs beside the in-flight tests, not inside them.
+    useContentStore.setState({ bio: null });
+    const fetchMock = respondWith({ success: true, content: {} });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * A model swap is exactly when the shape of what comes back changes, and it
+   * is the class of failure CI cannot see: every one of these responses is a
+   * well-formed HTTP 200 that the server called a success.
+   */
+  describe("unexpected model output", () => {
+    it("keeps the prior bio when about comes back null", async () => {
+      respondWith({
+        success: true,
+        content: { about: null, portfolio: null },
+        failed_sections: [],
+      });
+
+      await useContentStore.getState().regenerateContent(true);
+
+      expect(useContentStore.getState().bio).toEqual(BIO);
+    });
+
+    it("keeps the prior bio when the content key is missing entirely", async () => {
+      respondWith({ success: true, failed_sections: [] });
+
+      await useContentStore.getState().regenerateContent(true);
+
+      expect(useContentStore.getState().bio).toEqual(BIO);
+    });
+
+    it("keeps the prior content when the response body is not JSON", async () => {
+      respondWithUnparseableBody();
+
+      await useContentStore.getState().regenerateContent(true);
+
+      const state = useContentStore.getState();
+      expect(state.bio).toEqual(BIO);
+      expect(state.error).toBeNull();
+      expect(state.regenerationError).toBeTruthy();
+    });
+
+    it("applies a longer generation than the site was written for", async () => {
+      // Worth stating the limit of this one: the store has no size branch, so
+      // it pins that nothing truncates or rejects on length, and nothing more.
+      // Whether the page survives rendering it is a component-level question
+      // this seam cannot see.
+      const long = { about_text: "lore ".repeat(200) };
+      respondWith({
+        success: true,
+        content: { about: long },
+        failed_sections: [],
+      });
+
+      await useContentStore.getState().regenerateContent(true);
+
+      const state = useContentStore.getState();
+      expect(state.bio).toEqual(long);
+      expect(state.regenerationError).toBeNull();
+    });
+
+    /**
+     * The three below are `it.fails`: the assertion states the behaviour we
+     * want, and the marker records that today's code does the opposite. They
+     * pass while the gap exists and start reporting the day it closes, so the
+     * marker has to be removed deliberately rather than rotting into a lie.
+     *
+     * One cause for all three. The store guards the applied content with `??`,
+     * which only catches null and undefined. An empty object, an empty array
+     * and a bare string are all non-nullish, so each one replaces the content
+     * the visitor was reading -- a blank section from an HTTP 200 the server
+     * called a success. The fix may well belong server-side, in validating
+     * what the model returned before calling it a success; these tests say
+     * what the visitor should experience, not where to repair it.
+     *
+     * Written up in documentation/evaluations/ai-regeneration-seam-coverage.md
+     * (issue #105), which is where the reasoning lives if one of these starts
+     * reporting because the gap closed.
+     */
+    it.fails(
+      "keeps the prior bio when about comes back as an empty object",
+      async () => {
+        respondWith({
+          success: true,
+          content: { about: {} },
+          failed_sections: [],
+        });
+
+        await useContentStore.getState().regenerateContent(true);
+
+        expect(useContentStore.getState().bio).toEqual(BIO);
+      },
+    );
+
+    it.fails(
+      "keeps the prior experience when the list comes back empty",
+      async () => {
+        useContentStore.setState({ experience: [{ title: "Engineer" }] });
+        respondWith({
+          success: true,
+          content: { portfolio: { experience: [] } },
+          failed_sections: [],
+        });
+
+        await useContentStore.getState().regenerateContent(true);
+
+        expect(useContentStore.getState().experience).toEqual([
+          { title: "Engineer" },
+        ]);
+      },
+    );
+
+    it.fails(
+      "does not put a bare string where a bio object belongs",
+      async () => {
+        respondWith({
+          success: true,
+          content: { about: "a truncated sentence with no shape at all" },
+          failed_sections: [],
+        });
+
+        await useContentStore.getState().regenerateContent(true);
+
+        // Asserted as its two siblings are -- the prior bio intact, not merely
+        // "not a string", which any other wrong non-object would also satisfy
+        // while the visitor's bio was still gone.
+        expect(useContentStore.getState().bio).toEqual(BIO);
+      },
+    );
+  });
+
+  /**
+   * The paid endpoint refuses far more often than it errors: a per-IP cooldown
+   * is the common response, not the exceptional one.
+   *
+   * Deliberately thin. That a refusal keeps the content and stays out of the
+   * fatal `error` is already pinned above, and a cooldown reaches the store
+   * through the same `!result.success` branch as any other refusal -- there is
+   * no status-code or Retry-After handling to test, because there is none in
+   * the store. Restating those here under a rate-limit name would inflate what
+   * a reader thinks is covered. What is left is the part genuinely untested:
+   * whether the visitor is told to wait or told to retry.
+   */
+  describe("cooldown and rate limits", () => {
+    const RATE_LIMITED = {
+      success: false,
+      error: "Rate limit exceeded. Try again in 30 seconds.",
+    };
+
+    it("re-enables the button after a refusal", async () => {
+      respondWith(RATE_LIMITED);
+
+      await useContentStore.getState().regenerateContent(true);
+
+      expect(useContentStore.getState().isRegenerating).toBe(false);
+    });
+
+    /**
+     * Also `it.fails`, and the one with the clearest cost. The store throws
+     * `new Error(result.error)` -- carrying the server's "try again in 30
+     * seconds" -- and the catch then discards it for a fixed "Failed to
+     * regenerate content. Please try again." So the one refusal the visitor
+     * can actually act on is the one phrased as if retrying were the answer,
+     * which is precisely what re-triggers the cooldown.
+     *
+     * Same write-up: documentation/evaluations/ai-regeneration-seam-coverage.md
+     */
+    it.fails(
+      "tells the visitor it was a cooldown, not a generic failure",
+      async () => {
+        respondWith(RATE_LIMITED);
+
+        await useContentStore.getState().regenerateContent(true);
+
+        expect(useContentStore.getState().regenerationError).toMatch(
+          /rate limit|cooldown|try again in/i,
+        );
+      },
+    );
   });
 });
