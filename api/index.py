@@ -63,8 +63,11 @@ openai_client = openai.OpenAI(api_key=OPENAI_API_KEY, timeout=20.0, max_retries=
 
 # The rewrite model. This is a public button anyone can press, so the pick is
 # governed by cost and latency per call rather than raw capability -- it is
-# rewriting a short bio, not reasoning.
-OPENAI_MODEL = "gpt-3.5-turbo"
+# rewriting a short bio, not reasoning. Prefer the current model generation's
+# small tier: it keeps cost per call below the previous pick while staying far
+# from a retirement date, so this endpoint is not re-migrated on someone else's
+# schedule.
+OPENAI_MODEL = "gpt-5.6-luna"
 
 COOLDOWN_SECONDS = 30
 REGEN_DAILY_MAX = 30
