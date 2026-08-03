@@ -81,6 +81,53 @@ const initialState: ContentState = {
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 // ===========================================
+// REGENERATED CONTENT VALIDATION
+// ===========================================
+
+/**
+ * A regenerated section is only applied if it still resembles what it replaces.
+ * Presence is not enough: `{}`, `[]` and a bare string are all non-nullish, so
+ * a nullish guard alone let each of them overwrite the content a visitor was
+ * reading -- a blank section from a response the server called a success, with
+ * no error raised anywhere to notice it by.
+ *
+ * The bar is deliberately "recognisably the same thing", not "a complete
+ * BioData". The server rewrites a section and restores only the fields the
+ * model must not author, so a legitimate response is often partial; requiring
+ * every required key of BioData would reject real rewrites, and does reject the
+ * partial this store is already pinned to apply. Sharing a key with the value
+ * being replaced separates a partial rewrite from an unrelated object, which a
+ * non-empty check alone would wave through.
+ */
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const asBioData = (
+  value: unknown,
+  prior: BioData | null,
+): BioData | undefined =>
+  isPlainObject(value) &&
+  (prior
+    ? Object.keys(value).some((key) => key in prior)
+    : Object.keys(value).length > 0)
+    ? (value as unknown as BioData)
+    : undefined;
+
+/**
+ * A non-empty list of objects, or undefined. An empty list is rejected rather
+ * than applied: the model returning nothing to say is not a reason to erase
+ * the experience or education a visitor was reading.
+ */
+const asPopulatedList = <T>(value: unknown): T[] | undefined =>
+  Array.isArray(value) && value.length > 0 && value.every(isPlainObject)
+    ? (value as T[])
+    : undefined;
+
+/** True when the server sent something for a section and validation refused it. */
+const wasRejected = (received: unknown, accepted: unknown): boolean =>
+  received !== undefined && accepted === undefined;
+
+// ===========================================
 // STORE IMPLEMENTATION
 // ===========================================
 
@@ -171,20 +218,43 @@ export const useContentStore = create<ContentStore>()(
           const result = await response.json();
 
           if (!result.success) {
-            throw new Error(result.error || "Failed to regenerate content");
+            // The server's refusals are written for a visitor and are the only
+            // ones they can act on -- a cooldown says how long to wait. The
+            // generic message told them to retry, which is exactly what
+            // re-triggers the cooldown.
+            set({
+              regenerationError:
+                typeof result.error === "string" && result.error
+                  ? result.error
+                  : "Failed to regenerate content. Please try again.",
+              isRegenerating: false,
+            });
+            return;
           }
 
-          // Apply whatever came back. A section the server could not rewrite is
-          // named in failed_sections and simply keeps the content it had, so a
-          // partial failure never discards the sections that did succeed.
-          const about = result.content?.about;
+          // Apply what came back, but only where it still has the shape this UI
+          // renders. `??` alone accepted any non-nullish value, so an empty
+          // object, an empty array or a bare string replaced what the visitor
+          // was reading -- a blank section arriving from an HTTP 200 the server
+          // called a success, with no error raised anywhere to notice it by.
+          // A section that fails validation is treated exactly like one the
+          // server named in failed_sections: keep what was there and say so.
+          const about = asBioData(result.content?.about, state.bio);
           const portfolio = result.content?.portfolio;
-          const anyFailed = (result.failed_sections ?? []).length > 0;
+          const experience = asPopulatedList<Employment>(portfolio?.experience);
+          const education = asPopulatedList<Education>(portfolio?.education);
+
+          const rejected =
+            wasRejected(result.content?.about, about) ||
+            wasRejected(portfolio?.experience, experience) ||
+            wasRejected(portfolio?.education, education);
+          const anyFailed =
+            (result.failed_sections ?? []).length > 0 || rejected;
 
           set({
             bio: about ?? state.bio,
-            experience: portfolio?.experience ?? state.experience,
-            education: portfolio?.education ?? state.education,
+            experience: experience ?? state.experience,
+            education: education ?? state.education,
             hasModifiedContent: true,
             isRegenerating: false,
             regenerationError: anyFailed
@@ -196,7 +266,9 @@ export const useContentStore = create<ContentStore>()(
           // store. Only announce a section that actually came back -- these
           // listeners assign the payload straight into their own state, so
           // announcing an absent section would blank the content the set()
-          // above just deliberately preserved.
+          // above just deliberately preserved. For the same reason they are
+          // handed the validated values: a shape the store refused would
+          // otherwise blank these listeners by the back door.
           const announce = (section: string, content: unknown) => {
             if (content === undefined) return;
             window.dispatchEvent(
@@ -206,7 +278,15 @@ export const useContentStore = create<ContentStore>()(
             );
           };
           announce("about", about);
-          announce("portfolio", portfolio);
+          announce(
+            "portfolio",
+            experience || education
+              ? {
+                  ...(experience && { experience }),
+                  ...(education && { education }),
+                }
+              : undefined,
+          );
         } catch (error) {
           console.error("Regeneration failed:", error);
           set({

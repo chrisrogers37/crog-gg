@@ -188,7 +188,19 @@ def test_multi_section_request_checks_cooldown_once(client):
 
 
 def test_all_requested_sections_are_returned(client):
-    with patch("api.index.openai_client", _mock_openai()):
+    # Each section is answered in its own shape. A rewrite that shares no key
+    # with the section it replaces is now refused (#105), so one canned body
+    # standing in for both sections would be rejected for whichever it did not
+    # match -- that is the check working, not a limit of it.
+    def _per_section(**kwargs):
+        prompt = kwargs["messages"][1]["content"]
+        body = '{"experience": [{"title": "Engineer"}]}' if "experience" in prompt else '{"bio": "rewritten"}'
+        resp = MagicMock()
+        resp.choices = [MagicMock()]
+        resp.choices[0].message.content = body
+        return resp
+
+    with patch("api.index.openai_client", _mock_openai(per_call=_per_section)):
         r = client.post(
             "/api/regenerate",
             json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},

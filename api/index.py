@@ -251,6 +251,28 @@ _INJECTION_GUARD = (
 )
 
 
+def _is_usable_section(parsed, original: dict) -> bool:
+    """Whether a parsed model response can stand in for the section it rewrites.
+
+    Well-formed JSON is not the same as a usable section. ``{}``, ``[]`` and a
+    bare string all parse, and each one reaches the page as a blank section from
+    an HTTP 200 this endpoint called a success -- no exception, no failed
+    request, nothing to notice it by. Reporting that as success is the bug.
+
+    The bar is "recognisably the section it replaces", not a full schema: a
+    rewrite legitimately returns a subset of the keys it was given, so requiring
+    a fixed key set would reject real responses. Sharing a key with the original
+    separates a partial rewrite from an unrelated object.
+
+    Field-level renderability is the client's call, not this one. A section that
+    is a section but carries one empty list still passes here, so the caller can
+    keep the fields that did come back instead of losing the whole section.
+    """
+    if not isinstance(parsed, dict) or not parsed:
+        return False
+    return any(key in original for key in parsed)
+
+
 def _regenerate_section(section: str, content: dict, use_fantasy: bool):
     """Rewrite one section through the model.
 
@@ -293,17 +315,24 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
         logger.warning("OpenAI returned non-JSON for section %s: %.200s", section, new_content)
         return None
 
+    # Validate what the MODEL returned, before anything is grafted onto it.
+    # Order is load-bearing: the unauthored-key restore below adds keys from the
+    # original, so an empty or unrelated object checked afterwards would inherit
+    # `email` and `social_links` and pass as a usable section -- shipping the
+    # blank section this check exists to stop.
+    if not _is_usable_section(parsed, content):
+        logger.warning("OpenAI returned an unusable shape for section %s: %s", section, type(parsed).__name__)
+        return None
+
     # The model does not author URLs -- see _UNAUTHORED_KEYS. Assignment is
     # wholesale so nothing the model put under one of these keys survives, and a
     # key the caller never sent is dropped rather than accepted as model
-    # invention. `content` is already known to be an object; the model output is
-    # not, so a non-dict parse has no keys to pin and passes through untouched.
-    if isinstance(parsed, dict):
-        for key in _UNAUTHORED_KEYS.get(section, ()):
-            if key in content:
-                parsed[key] = content[key]
-            else:
-                parsed.pop(key, None)
+    # invention. `parsed` is a non-empty dict by the check above.
+    for key in _UNAUTHORED_KEYS.get(section, ()):
+        if key in content:
+            parsed[key] = content[key]
+        else:
+            parsed.pop(key, None)
 
     return parsed
 
