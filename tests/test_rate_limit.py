@@ -5,7 +5,10 @@ them in one round trip, so the recorded count reflects the whole request rather
 than however many hits a per-slot loop managed before the cap tripped.
 """
 
+import logging
 from unittest.mock import patch
+
+import pytest
 
 from api._lib import rate_limit
 
@@ -14,6 +17,8 @@ from api._lib import rate_limit
 # function. Bind the real one at import time, before any fixture runs, so these
 # tests exercise the limiter instead of the stub standing in for it.
 check_and_consume = rate_limit.check_and_consume
+get_cooldown_remaining = rate_limit.get_cooldown_remaining
+start_cooldown = rate_limit.start_cooldown
 
 
 def _zadd_from(pipeline_call):
@@ -54,9 +59,42 @@ def test_batch_over_the_cap_is_denied():
     assert count == 31
 
 
-def test_falls_open_when_redis_is_down():
-    # Losing rate limiting on a transient outage beats dropping legit traffic.
+def test_falls_open_only_when_the_caller_opts_out():
+    # Free endpoints keep serving: losing rate limiting on a transient outage
+    # beats dropping legit traffic where an extra request costs nothing.
     with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
-        allowed, count = check_and_consume("k", 30, 60, cost=2)
+        allowed, count = check_and_consume("k", 30, 60, cost=2, fail_open=True)
     assert allowed is True
     assert count == 0
+
+
+def test_fails_closed_by_default():
+    # "Cannot meter" must not read as "allowed". The safe mode is the default so
+    # that forgetting the flag on a paid gate cannot silently leak money -- the
+    # direction a caller forgets in is the harmless one.
+    with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
+        with pytest.raises(rate_limit.RedisUnavailable):
+            check_and_consume("k", 30, 60, cost=2)
+
+
+def test_cooldown_read_fails_closed_by_default_and_opens_on_request():
+    # 0 already means "no cooldown in effect", so reporting 0 on an error is the
+    # collision that made the original fail-open invisible.
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("down")):
+        with pytest.raises(rate_limit.RedisUnavailable):
+            get_cooldown_remaining("k")
+        assert get_cooldown_remaining("k", fail_open=True) == 0
+
+
+def test_start_cooldown_never_raises():
+    # Runs after the daily slot is already consumed: failing the request here
+    # would reject work the caller has already been charged for.
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("down")):
+        start_cooldown("k", 30)
+
+
+def test_outage_is_logged_so_the_degradation_is_visible(caplog):
+    caplog.set_level(logging.ERROR, logger="crog")
+    with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
+        check_and_consume("k", 30, 60, fail_open=True)
+    assert any("rate limit unavailable" in r.getMessage() for r in caplog.records)

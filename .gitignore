@@ -65,3 +65,6 @@ Thumbs.db
 **/data/events/fleet-*.jsonl
 **/data/.last-tool-call
 **/data/.idle
+
+# local virtualenv (repo already ignores venv/, not .venv/)
+.venv/

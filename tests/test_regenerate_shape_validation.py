@@ -17,24 +17,32 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.index import _is_usable_section
+from api.index import (
+    FAILURE_EMPTY_OBJECT,
+    FAILURE_NOT_AN_OBJECT,
+    FAILURE_UNRELATED_OBJECT,
+    _section_rejection,
+)
 
 _ORIGINAL = {"about_text": "original", "display_name": "Chris"}
 
 
 @pytest.mark.parametrize(
-    "parsed",
+    "parsed,expected",
     [
-        pytest.param({}, id="empty-object"),
-        pytest.param([], id="empty-list"),
-        pytest.param("a truncated sentence with no shape at all", id="bare-string"),
-        pytest.param([{"about_text": "x"}], id="list-of-objects"),
-        pytest.param(0, id="number"),
-        pytest.param({"unrelated": "value"}, id="object-sharing-no-key"),
+        pytest.param({}, FAILURE_EMPTY_OBJECT, id="empty-object"),
+        pytest.param([], FAILURE_NOT_AN_OBJECT, id="empty-list"),
+        pytest.param("a truncated sentence", FAILURE_NOT_AN_OBJECT, id="bare-string"),
+        pytest.param([{"about_text": "x"}], FAILURE_NOT_AN_OBJECT, id="list-of-objects"),
+        pytest.param(0, FAILURE_NOT_AN_OBJECT, id="number"),
+        pytest.param({"unrelated": "value"}, FAILURE_UNRELATED_OBJECT, id="object-sharing-no-key"),
     ],
 )
-def test_unusable_shapes_are_rejected(parsed):
-    assert _is_usable_section(parsed, _ORIGINAL) is False
+def test_unusable_shapes_are_rejected_with_a_distinct_reason(parsed, expected):
+    # WHICH rejection fired is the point: the model ignoring the JSON-object
+    # instruction, returning nothing, and rewriting the wrong section are three
+    # different incidents pointing at three different fixes.
+    assert _section_rejection(parsed, _ORIGINAL) == expected
 
 
 @pytest.mark.parametrize(
@@ -48,7 +56,7 @@ def test_unusable_shapes_are_rejected(parsed):
 )
 def test_usable_shapes_are_accepted(parsed):
     original = {**_ORIGINAL, "experience": [{"title": "Engineer"}]}
-    assert _is_usable_section(parsed, original) is True
+    assert _section_rejection(parsed, original) is None
 
 
 def _client_returning(payload):

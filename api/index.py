@@ -63,8 +63,18 @@ openai_client = openai.OpenAI(api_key=OPENAI_API_KEY, timeout=20.0, max_retries=
 
 # The rewrite model. This is a public button anyone can press, so the pick is
 # governed by cost and latency per call rather than raw capability -- it is
-# rewriting a short bio, not reasoning.
-OPENAI_MODEL = "gpt-3.5-turbo"
+# rewriting a short bio, not reasoning. Prefer the current model generation's
+# small tier: it keeps cost per call below the previous pick while staying far
+# from a retirement date, so this endpoint is not re-migrated on someone else's
+# schedule.
+OPENAI_MODEL = "gpt-5.6-luna"
+
+# Sampling parameters belong with the model choice, not hardcoded at the call
+# site: which ones are legal depends entirely on which model is selected. The
+# current generation accepts only the default temperature and rejects any
+# explicit value outright, so passing one fails every call rather than degrading
+# -- swapping the model without revisiting this is how that happens silently.
+OPENAI_SAMPLING: dict = {}
 
 COOLDOWN_SECONDS = 30
 REGEN_DAILY_MAX = 30
@@ -96,7 +106,9 @@ def _gh_rate_key(ip: str, endpoint: str) -> str:
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
     ip = get_client_ip()
-    allowed, count = rate_limit.check_and_consume(_gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW)
+    allowed, count = rate_limit.check_and_consume(
+        _gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW, fail_open=True
+    )
     if not allowed:
         return (
             jsonify(
@@ -251,34 +263,116 @@ _INJECTION_GUARD = (
 )
 
 
-def _is_usable_section(parsed, original: dict) -> bool:
-    """Whether a parsed model response can stand in for the section it rewrites.
+# The internal failure taxonomy. Stable, enumerable tokens rather than free text,
+# because a reason you cannot count tells you about one incident instead of a
+# pattern. Every failure path emits exactly one of these.
+FAILURE_MODEL_ERROR = "model_error"
+FAILURE_NOT_JSON = "not_json"
+FAILURE_NOT_AN_OBJECT = "not_an_object"
+FAILURE_EMPTY_OBJECT = "empty_object"
+FAILURE_UNRELATED_OBJECT = "unrelated_object"
+
+
+def _describe_failure(exc) -> dict:
+    """A short, response-safe description of why a model call failed.
+
+    Configuration faults -- a rejected parameter, a model the account cannot
+    reach, an exhausted quota -- present as a total outage: every call fails
+    identically. They are also exactly the failures a bare 500 makes impossible
+    to diagnose from outside, because the cause exists only in a server log.
+
+    `code` and `param` are short machine tokens (`unsupported_value`,
+    `temperature`) that name the cause without echoing request content back to
+    the caller.
+    """
+    body = getattr(exc, "body", None)
+    err = body.get("error") if isinstance(body, dict) else None
+    err = err if isinstance(err, dict) else {}
+    return {
+        "type": type(exc).__name__,
+        "status": getattr(exc, "status_code", None),
+        "code": err.get("code"),
+        "param": err.get("param"),
+        "message": str(exc)[:300],
+    }
+
+
+def _fail(section: str, reason: str, log_only: str = "", **detail):
+    """Record a failed section and return it in the caller's shape.
+
+    Every failure routes through here, so the taxonomy reaches the log
+    unconditionally and at ONE level. Split across two levels it is not one
+    taxonomy but two half-populated ones -- readable for a single incident and
+    useless for a pattern.
+
+    ``reason`` is the token to aggregate on. ``detail`` rides along in the
+    response; ``log_only`` never leaves the server.
+    """
+    failure = {"reason": reason, **detail}
+    sample = f" sample={log_only[:200]!r}" if log_only else ""
+    logger.error("regeneration failed: section=%s %s%s", section, failure, sample)
+    return None, failure
+
+
+def _section_rejection(parsed, original: dict):
+    """Why a parsed model response cannot stand in for the section it rewrites.
+
+    Returns None when it can, or one of the taxonomy tokens when it cannot.
+    Deliberately NOT a bool: the three rejections are three different incidents
+    pointing at three different fixes -- the model ignored the JSON-object
+    instruction, the model returned nothing, or the model rewrote something
+    other than the section it was given. Collapsing them loses the only thing
+    that makes a failure actionable.
 
     Well-formed JSON is not the same as a usable section. ``{}``, ``[]`` and a
     bare string all parse, and each one reaches the page as a blank section from
-    an HTTP 200 this endpoint called a success -- no exception, no failed
-    request, nothing to notice it by. Reporting that as success is the bug.
+    an HTTP 200 this endpoint called a success.
 
     The bar is "recognisably the section it replaces", not a full schema: a
     rewrite legitimately returns a subset of the keys it was given, so requiring
-    a fixed key set would reject real responses. Sharing a key with the original
-    separates a partial rewrite from an unrelated object.
+    a fixed key set would reject real responses.
 
     Field-level renderability is the client's call, not this one. A section that
     is a section but carries one empty list still passes here, so the caller can
     keep the fields that did come back instead of losing the whole section.
     """
-    if not isinstance(parsed, dict) or not parsed:
-        return False
-    return any(key in original for key in parsed)
+    if not isinstance(parsed, dict):
+        return FAILURE_NOT_AN_OBJECT
+    if not parsed:
+        return FAILURE_EMPTY_OBJECT
+    if not any(key in original for key in parsed):
+        return FAILURE_UNRELATED_OBJECT
+    return None
+
+
+# Appended to every section prompt alongside the injection guard.
+#
+# The client sends the CURRENT content, which after one regeneration is already
+# model output -- so each rewrite takes the previous rewrite as its input and the
+# original is never re-sent. That loop is stable only while the model compresses.
+# One that expands turns the same loop into a runaway: measured at +76% over four
+# clicks and still climbing, against +21% converging on the previous model.
+#
+# The escalation itself is intended -- the lore is supposed to get wilder the more
+# you press the button, and regenerating from the original instead would remove
+# that. So this bounds LENGTH without touching the escalation: it anchors the
+# gain per step, because per-step growth is the term that compounds. It is a
+# request rather than a guarantee, since a prompt cannot enforce a length.
+_LENGTH_ANCHOR = (
+    " Match the length of what you are given: each rewritten field must be about as long as the "
+    "field it replaces, and the response as a whole must not be longer than the content provided. "
+    "Rewrite it, do not expand it. Adding detail, framing or flourish that was not in the input is "
+    "the specific failure to avoid, because your output becomes the input to the next rewrite."
+)
 
 
 def _regenerate_section(section: str, content: dict, use_fantasy: bool):
     """Rewrite one section through the model.
 
-    Returns the parsed object, or None when the model errored or returned
-    something that is not JSON. Returning None rather than raising lets a
-    multi-section request keep the sections that did succeed.
+    Returns ``(parsed, failure)``: the parsed object and None on success, or
+    None and a description of what went wrong. Returning rather than raising
+    lets a multi-section request keep the sections that did succeed; returning
+    the reason alongside is what stops a failure from being anonymous.
     """
     section_prompt = dict(_PROMPTS[section])
 
@@ -289,7 +383,7 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
         response = openai_client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": section_prompt["system"] + _INJECTION_GUARD},
+                {"role": "system", "content": section_prompt["system"] + _INJECTION_GUARD + _LENGTH_ANCHOR},
                 {
                     "role": "user",
                     "content": (
@@ -302,27 +396,25 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
                     ),
                 },
             ],
-            temperature=0.7,
+            **OPENAI_SAMPLING,
         )
         new_content = response.choices[0].message.content
     except openai.OpenAIError as e:
-        logger.error("OpenAI error on section %s: %s", section, e)
-        return None
+        return _fail(section, FAILURE_MODEL_ERROR, **_describe_failure(e))
 
     try:
         parsed = json.loads(new_content)
     except json.JSONDecodeError:
-        logger.warning("OpenAI returned non-JSON for section %s: %.200s", section, new_content)
-        return None
+        return _fail(section, FAILURE_NOT_JSON, log_only=new_content or "")
 
     # Validate what the MODEL returned, before anything is grafted onto it.
     # Order is load-bearing: the unauthored-key restore below adds keys from the
     # original, so an empty or unrelated object checked afterwards would inherit
     # `email` and `social_links` and pass as a usable section -- shipping the
     # blank section this check exists to stop.
-    if not _is_usable_section(parsed, content):
-        logger.warning("OpenAI returned an unusable shape for section %s: %s", section, type(parsed).__name__)
-        return None
+    rejection = _section_rejection(parsed, content)
+    if rejection is not None:
+        return _fail(section, rejection, output_type=type(parsed).__name__)
 
     # The model does not author URLs -- see _UNAUTHORED_KEYS. Assignment is
     # wholesale so nothing the model put under one of these keys survives, and a
@@ -334,7 +426,32 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
         else:
             parsed.pop(key, None)
 
-    return parsed
+    return parsed, None
+
+
+@app.errorhandler(rate_limit.RedisUnavailable)
+def _metering_unavailable(_exc):
+    """503 when a spend gate could not be consulted (#113).
+
+    The per-IP cooldown and the daily cap are the only spend controls on
+    /api/regenerate, and both live in Redis. If the limiter cannot be consulted,
+    an "allow" turns a public button into an unmetered proxy to a paid API, so
+    refusing is the cheaper failure: the endpoint rewrites cosmetic copy and the
+    rest of the site is unaffected while it is paused.
+
+    Registered at the app level rather than caught per call, so a gate added
+    later is covered without anyone remembering to wrap it.
+    """
+    return (
+        jsonify(
+            {
+                "success": False,
+                "error": "Regeneration temporarily unavailable",
+                "message": "Rate limiting is unavailable, so this endpoint is paused. Try again shortly.",
+            }
+        ),
+        503,
+    )
 
 
 @app.route("/api/regenerate", methods=["POST"])
@@ -407,8 +524,12 @@ def regenerate_content():
         futures = {name: pool.submit(_regenerate_section, name, body, use_fantasy) for name, body in sections.items()}
         results = {name: future.result() for name, future in futures.items()}
 
-    regenerated = {name: parsed for name, parsed in results.items() if parsed is not None}
-    failed = sorted(name for name, parsed in results.items() if parsed is None)
+    regenerated = {name: parsed for name, (parsed, _reason) in results.items() if parsed is not None}
+    failed = sorted(name for name, (parsed, _reason) in results.items() if parsed is None)
+    # Why each section failed, carried to the caller. The server log is the
+    # fuller record, but it is not reachable from a browser -- and a failure
+    # nobody can see the cause of costs a round trip per guess to diagnose.
+    failures = {name: reason for name, (parsed, reason) in results.items() if parsed is None and reason}
 
     # A section that failed must not discard the ones that worked: return what
     # was rewritten and name what was not, and fail the request only when
@@ -420,6 +541,7 @@ def regenerate_content():
                     "success": False,
                     "error": "Content generation failed",
                     "failed_sections": failed,
+                    "failures": failures,
                 }
             ),
             500,
@@ -430,6 +552,7 @@ def regenerate_content():
             "success": True,
             "content": regenerated,
             "failed_sections": failed,
+            "failures": failures,
             "cooldown_total": COOLDOWN_SECONDS,
         }
     )
@@ -438,7 +561,7 @@ def regenerate_content():
 @app.route("/api/limits", methods=["GET"])
 def get_usage_info():
     client_ip = get_client_ip()
-    remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip))
+    remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip), fail_open=True)
     return jsonify(
         {
             "cooldown_remaining": remaining,

@@ -256,24 +256,25 @@ describe("regenerateContent", () => {
     });
 
     /**
-     * The three below are `it.fails`: the assertion states the behaviour we
-     * want, and the marker records that today's code does the opposite. They
-     * pass while the gap exists and start reporting the day it closes, so the
-     * marker has to be removed deliberately rather than rotting into a lie.
+     * The three below were `it.fails` until the gap closed. The markers are
+     * gone because they had done their job: they reported the day the fix
+     * landed, and leaving them would have asserted a bug that no longer
+     * exists. The assertions themselves are unchanged.
      *
-     * One cause for all three. The store guards the applied content with `??`,
+     * One cause for all three. The store guarded the applied content with `??`,
      * which only catches null and undefined. An empty object, an empty array
-     * and a bare string are all non-nullish, so each one replaces the content
+     * and a bare string are all non-nullish, so each one replaced the content
      * the visitor was reading -- a blank section from an HTTP 200 the server
-     * called a success. The fix may well belong server-side, in validating
-     * what the model returned before calling it a success; these tests say
-     * what the visitor should experience, not where to repair it.
+     * called a success. Closed in two layers: the server refuses output that
+     * is not the section it rewrites, so it is never reported as a success,
+     * and the store validates each field is renderable before it replaces
+     * what is on the page.
      *
      * Written up in documentation/evaluations/ai-regeneration-seam-coverage.md
-     * (issue #105), which is where the reasoning lives if one of these starts
-     * reporting because the gap closed.
+     * (issue #105). If one of these starts failing again, that write-up is
+     * where the reasoning lives.
      */
-    it.fails(
+    it(
       "keeps the prior bio when about comes back as an empty object",
       async () => {
         respondWith({
@@ -288,7 +289,7 @@ describe("regenerateContent", () => {
       },
     );
 
-    it.fails(
+    it(
       "keeps the prior experience when the list comes back empty",
       async () => {
         useContentStore.setState({ experience: [{ title: "Engineer" }] });
@@ -306,7 +307,7 @@ describe("regenerateContent", () => {
       },
     );
 
-    it.fails(
+    it(
       "does not put a bare string where a bio object belongs",
       async () => {
         respondWith({
@@ -352,16 +353,17 @@ describe("regenerateContent", () => {
     });
 
     /**
-     * Also `it.fails`, and the one with the clearest cost. The store throws
-     * `new Error(result.error)` -- carrying the server's "try again in 30
-     * seconds" -- and the catch then discards it for a fixed "Failed to
+     * Also formerly `it.fails`, and the one with the clearest cost. The store
+     * threw `new Error(result.error)` -- carrying the server's "try again in
+     * 30 seconds" -- and the catch discarded it for a fixed "Failed to
      * regenerate content. Please try again." So the one refusal the visitor
-     * can actually act on is the one phrased as if retrying were the answer,
-     * which is precisely what re-triggers the cooldown.
+     * could act on was the one phrased as if retrying were the answer, which
+     * is precisely what re-triggers the cooldown. Server refusals now reach
+     * the visitor; unexpected exceptions still get the generic message.
      *
      * Same write-up: documentation/evaluations/ai-regeneration-seam-coverage.md
      */
-    it.fails(
+    it(
       "tells the visitor it was a cooldown, not a generic failure",
       async () => {
         respondWith(RATE_LIMITED);
