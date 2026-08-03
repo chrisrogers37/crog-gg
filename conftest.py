@@ -31,9 +31,13 @@ def client():
 def _hermetic_rate_limit():
     """Keep tests hermetic: never depend on (or reach for) Redis rate limiting.
 
-    All three Upstash-backed primitives fall open in production; here we stub
-    them so no test touches the network and cooldown/daily-cap gates default to
-    "allowed" unless a test overrides them.
+    Here we stub them so no test touches the network and the cooldown/daily-cap
+    gates default to "allowed" unless a test overrides them.
+
+    Production failure modes differ per call site (#113): the free GitHub
+    endpoints fall open, the paid /api/regenerate gates fail closed. Tests that
+    exercise either behaviour must patch over this fixture -- it stubs the very
+    primitives under test. See tests/test_regenerate_spend_guard.py.
     """
     with patch("api.index.rate_limit.check_and_consume", return_value=(True, 0)):
         with patch("api.index.rate_limit.get_cooldown_remaining", return_value=0):

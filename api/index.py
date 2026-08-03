@@ -96,7 +96,9 @@ def _gh_rate_key(ip: str, endpoint: str) -> str:
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
     ip = get_client_ip()
-    allowed, count = rate_limit.check_and_consume(_gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW)
+    allowed, count = rate_limit.check_and_consume(
+        _gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW, fail_open=True
+    )
     if not allowed:
         return (
             jsonify(
@@ -337,6 +339,31 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool):
     return parsed
 
 
+@app.errorhandler(rate_limit.RedisUnavailable)
+def _metering_unavailable(_exc):
+    """503 when a spend gate could not be consulted (#113).
+
+    The per-IP cooldown and the daily cap are the only spend controls on
+    /api/regenerate, and both live in Redis. If the limiter cannot be consulted,
+    an "allow" turns a public button into an unmetered proxy to a paid API, so
+    refusing is the cheaper failure: the endpoint rewrites cosmetic copy and the
+    rest of the site is unaffected while it is paused.
+
+    Registered at the app level rather than caught per call, so a gate added
+    later is covered without anyone remembering to wrap it.
+    """
+    return (
+        jsonify(
+            {
+                "success": False,
+                "error": "Regeneration temporarily unavailable",
+                "message": "Rate limiting is unavailable, so this endpoint is paused. Try again shortly.",
+            }
+        ),
+        503,
+    )
+
+
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
     client_ip = get_client_ip()
@@ -438,7 +465,7 @@ def regenerate_content():
 @app.route("/api/limits", methods=["GET"])
 def get_usage_info():
     client_ip = get_client_ip()
-    remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip))
+    remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip), fail_open=True)
     return jsonify(
         {
             "cooldown_remaining": remaining,
