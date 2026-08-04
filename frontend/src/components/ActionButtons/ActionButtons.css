@@ -1,9 +1,17 @@
 /* Action Buttons Container */
 .action-buttons {
   display: flex;
+  /* Stacked at every width, so the primary button's position does not depend on
+     whether the secondary one exists. Centring them as a row makes the primary
+     button's position a function of the secondary's presence: the first time
+     DISPEL ENCHANTMENT mounts, the row re-centres around it and drags SUMMON
+     out from under the cursor that just clicked it -- onto the destructive
+     button. The card is too narrow to hold both symmetrically, so no in-flow
+     row arrangement fixes that; taking the primary out of the shared centring
+     calculation does. */
+  flex-direction: column;
   gap: 1rem;
   align-items: center;
-  justify-content: center;
   margin-top: 2rem;
   padding: 1.5rem;
   background-color: var(--card-background);
@@ -24,6 +32,14 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  /* One reserved width for both buttons, sized to the longest label either of
+     them ever carries rather than to the resting one. The primary button's
+     label changes three times per click (idle -> casting -> bare cooldown
+     number) and a button sized to its current label resizes under the cursor
+     mid-interaction. Sharing the width also keeps the stack aligned, where two
+     intrinsic widths a few pixels apart read as a failed alignment rather than
+     a deliberate one. Raise this if a longer label is added. */
+  min-width: 272px;
 }
 
 /* ========================================
@@ -40,7 +56,6 @@
   overflow: hidden;
   background-color: var(--primary-color);
   color: white;
-  min-width: 200px;
   min-height: 48px;
 }
 
@@ -230,7 +245,6 @@
 
 @media (max-width: 768px) {
   .action-buttons {
-    flex-direction: column;
     align-items: stretch;
     width: 100%;
     margin: 1rem 0;
@@ -241,7 +255,9 @@
     width: 100%;
   }
 
-  .action-buttons .generate-btn {
+  /* Stretched to the card, so the reserved width above is redundant here */
+  .action-buttons .generate-btn,
+  .action-buttons .reset-btn {
     width: 100%;
     min-width: unset;
   }

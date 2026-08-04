@@ -76,6 +76,24 @@ export function HomePage() {
   // Preview mode: starts true so About shows as a preview on load
   const [previewMode, setPreviewMode] = useState(true);
 
+  // Whether the expanded section is actually in the DOM, as opposed to merely
+  // asked for. Leaving preview mode satisfies `!previewMode` on the same tick,
+  // but AnimatePresence holds the collapsed preview for the length of its exit
+  // transition, so the expanded content arrives a few hundred milliseconds
+  // later and grows the page under whatever already mounted. Anything that sits
+  // *below* the content has to wait for this rather than for the intent, or it
+  // renders against a layout that is about to change height and gets displaced
+  // once the real content lands.
+  const [contentMounted, setContentMounted] = useState(false);
+
+  // Collapsing back to the preview retracts the content, so the gate closes
+  // with it. Section-to-section switches keep it open: previewMode stays false
+  // and the buttons stay mounted, which is what stops them flickering out on
+  // every nav click.
+  useEffect(() => {
+    if (previewMode) setContentMounted(false);
+  }, [previewMode]);
+
   // Default to "about" selected on mount
   useEffect(() => {
     if (!activeSection) {
@@ -263,6 +281,12 @@ export function HomePage() {
               <motion.div
                 key={activeSection}
                 className="content-section"
+                // Fires when the node attaches, which is the first moment the
+                // expanded content occupies layout. Guarded on the node so the
+                // detach call on unmount does not re-open the gate.
+                ref={(node) => {
+                  if (node) setContentMounted(true);
+                }}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
@@ -300,8 +324,8 @@ export function HomePage() {
           </AnimatePresence>
         </main>
 
-        {/* Action Buttons */}
-        {activeSection && !previewMode && (
+        {/* Action Buttons — gated on the content being present, not requested */}
+        {activeSection && !previewMode && contentMounted && (
           <>
             <ActionButtons
               onRegenerate={() => regenerate(true)}
