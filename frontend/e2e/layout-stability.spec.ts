@@ -126,7 +126,7 @@ test.describe("action button layout stability", () => {
  * the sections above are, but its content keeps growing for ~500ms afterwards
  * (logo images resolve one by one and the skill-bubble row wraps to another
  * line), which moves the button a further ~57px at tablet and mobile widths.
- * That is a different defect with a different cause and it is tracked
- * separately; asserting zero travel on journey here would fail for a reason
- * these gates are not about.
+ * That is a different defect with a different cause, tracked in #146; asserting
+ * zero travel on journey here would fail for a reason these gates are not
+ * about. Extend this spec to journey once that height is reserved.
  */
