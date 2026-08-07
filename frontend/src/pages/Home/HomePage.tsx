@@ -86,13 +86,14 @@ export function HomePage() {
   // once the real content lands.
   const [contentMounted, setContentMounted] = useState(false);
 
-  // Collapsing back to the preview retracts the content, so the gate closes
-  // with it. Section-to-section switches keep it open: previewMode stays false
-  // and the buttons stay mounted, which is what stops them flickering out on
-  // every nav click.
-  useEffect(() => {
-    if (previewMode) setContentMounted(false);
-  }, [previewMode]);
+  // Nothing else needs to be consulted: the flag is set when the content node
+  // attaches and cleared when it detaches, so it says only "the expanded
+  // content is in the DOM". Both edges matter and for the same reason. Mounting
+  // anything below it on the *request* to expand put the buttons on screen
+  // ~320ms before the content that determines their position; unmounting them
+  // on the request to collapse took them away ~315ms before the content
+  // actually went, so one click moved the page below twice. Both are the same
+  // defect, and the fix for both is to follow the DOM rather than the intent.
 
   // Default to "about" selected on mount
   useEffect(() => {
@@ -281,12 +282,12 @@ export function HomePage() {
               <motion.div
                 key={activeSection}
                 className="content-section"
-                // Fires when the node attaches, which is the first moment the
-                // expanded content occupies layout. Guarded on the node so the
-                // detach call on unmount does not re-open the gate.
-                ref={(node) => {
-                  if (node) setContentMounted(true);
-                }}
+                // Attach is the first moment the expanded content occupies
+                // layout; detach is the moment it stops, which under
+                // AnimatePresence is when its exit animation has finished
+                // rather than when the collapse was asked for. Both edges are
+                // wanted, so the node is reported either way.
+                ref={(node) => setContentMounted(!!node)}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
@@ -324,8 +325,10 @@ export function HomePage() {
           </AnimatePresence>
         </main>
 
-        {/* Action Buttons — gated on the content being present, not requested */}
-        {activeSection && !previewMode && contentMounted && (
+        {/* Action Buttons — gated on the content being present, not requested.
+            previewMode is deliberately not consulted: it is the request, and
+            reading it here is what unmounted these ahead of the content. */}
+        {contentMounted && (
           <>
             <ActionButtons
               onRegenerate={() => regenerate(true)}

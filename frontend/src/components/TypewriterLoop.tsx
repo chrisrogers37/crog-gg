@@ -118,7 +118,33 @@ export default function TypewriterLoop({
     phase === "waiting";
 
   return (
-    <div className={`typewriter ${className}`}>
+    <div className={`typewriter typewriter-loop ${className}`}>
+      {/*
+        Height floor. Every message is rendered into the same grid cell as the
+        live text, so the box is always as tall as the tallest of them would be
+        at the current width, and does not change as characters are typed.
+
+        Without it the box is a function of whatever has been typed so far. The
+        message loop then walks that length across a wrap boundary twice per
+        message -- once typing, once deleting -- and every element below moves
+        with it. On a phone that is the entire page, on a timer, for as long as
+        the loop runs, with the visitor doing nothing.
+
+        Sizing in CSS rather than by measuring one string into a pinned pixel
+        height: it needs no effect and no state, it covers all nine messages
+        rather than the longest guess, and it stays correct when the viewport is
+        resized, which a measured height does not.
+      */}
+      <div className="typewriter-sizer" aria-hidden="true">
+        {messages.map((message, index) => (
+          <span key={index}>
+            {message}
+            {/* the cursor occupies width and is bold, so it has to be in the
+                reservation or the last line can wrap short of the real one */}
+            <span className="typewriter-cursor">|</span>
+          </span>
+        ))}
+      </div>
       <div className="typewriter-text">
         {displayText}
         {showCursor && (
