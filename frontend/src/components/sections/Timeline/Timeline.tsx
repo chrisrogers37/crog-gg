@@ -12,7 +12,6 @@ type TimelineProps = {
 
 export function Timeline({ data }: TimelineProps) {
   const [visibleIndex, setVisibleIndex] = useState(0);
-  const [activeSkills, setActiveSkills] = useState<string[]>([]);
   const entryRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Sort entries by end_date descending (newest first) - memoized to avoid
@@ -56,13 +55,19 @@ export function Timeline({ data }: TimelineProps) {
     return () => observer.disconnect();
   }, [sortedEntries]);
 
-  // Update active skills based on visible entries
-  useEffect(() => {
+  // Active skills are derived from the visible entries rather than stored
+  // alongside them. Computing this in an effect meant the first painted frame
+  // had an empty bubble row, which gained its first line one frame later and
+  // pushed everything below it down -- at narrow widths the bubbles sit above
+  // the timeline, so that is the whole section and the buttons beneath it. A
+  // value computed during render is present on the first paint, so there is no
+  // zero-height frame to grow out of.
+  const activeSkills = useMemo(() => {
     const skills = new Set<string>();
     sortedEntries.slice(0, visibleIndex + 1).forEach((entry) => {
       entry.skills.forEach((skill) => skills.add(skill));
     });
-    setActiveSkills(Array.from(skills));
+    return Array.from(skills);
   }, [visibleIndex, sortedEntries]);
 
   if (!data || !sortedEntries.length) {

@@ -42,8 +42,8 @@ interface ContentActions {
   // Content regeneration
   regenerateContent: (useFantasy: boolean) => Promise<void>;
 
-  // Reset to original
-  resetContent: () => Promise<void>;
+  // Restore the content captured at load, undoing a regeneration
+  resetContent: () => void;
 
   // Update specific content (for compatibility with existing components)
   updateBio: (bio: BioData) => void;
@@ -298,57 +298,67 @@ export const useContentStore = create<ContentStore>()(
       },
 
       /**
-       * Reset content to original values from YAML files.
+       * Restore the content captured at load, undoing a regeneration.
+       *
+       * Restores from the originals already held in the store rather than
+       * re-reading them. The re-read ran behind the same `isLoading` flag the
+       * first page load uses, and the page renders a loading skeleton whenever
+       * that flag is set -- so undoing a regeneration replaced the entire page,
+       * header and nav and the button that was just clicked included, in order
+       * to fetch files whose contents were already in memory.
+       *
+       * Only the three sections a regeneration can touch are restored. Skills,
+       * projects and timeline are never rewritten, so re-reading them was
+       * always a no-op.
        */
-      resetContent: async () => {
-        try {
-          set({ isLoading: true });
+      resetContent: () => {
+        const state = get();
 
-          const data = await loadResumeData();
-
-          set({
-            bio: data.bio,
-            experience: data.experience,
-            education: data.education,
-            skills: data.skills,
-            projects: data.projects,
-            hasModifiedContent: false,
-            error: null,
-            regenerationError: null,
-            isLoading: false,
-          });
-
-          // Dispatch events for legacy components
-          window.dispatchEvent(
-            new CustomEvent("contentRegenerated", {
-              detail: {
-                section: "about",
-                content: data.bio,
-                is_full_regeneration: true,
-                use_fantasy: false,
-              },
-            }),
-          );
-          window.dispatchEvent(
-            new CustomEvent("contentRegenerated", {
-              detail: {
-                section: "portfolio",
-                content: {
-                  experience: data.experience,
-                  education: data.education,
-                },
-                is_full_regeneration: true,
-                use_fantasy: false,
-              },
-            }),
-          );
-        } catch (error) {
-          console.error("Reset failed:", error);
-          set({
-            error: "Failed to reset content. Please refresh the page.",
-            isLoading: false,
-          });
+        // Nothing was ever loaded, so there is nothing to restore. Writing the
+        // empty originals here would blank the page rather than undo anything.
+        if (!state.originalBio) {
+          return;
         }
+
+        const data = {
+          bio: state.originalBio,
+          experience: state.originalExperience,
+          education: state.originalEducation,
+        };
+
+        set({
+          bio: data.bio,
+          experience: data.experience,
+          education: data.education,
+          hasModifiedContent: false,
+          error: null,
+          regenerationError: null,
+        });
+
+        // Dispatch events for legacy components
+        window.dispatchEvent(
+          new CustomEvent("contentRegenerated", {
+            detail: {
+              section: "about",
+              content: data.bio,
+              is_full_regeneration: true,
+              use_fantasy: false,
+            },
+          }),
+        );
+        window.dispatchEvent(
+          new CustomEvent("contentRegenerated", {
+            detail: {
+              section: "portfolio",
+              content: {
+                experience: data.experience,
+                education: data.education,
+              },
+              is_full_regeneration: true,
+              use_fantasy: false,
+            },
+          }),
+        );
       },
 
       /**
