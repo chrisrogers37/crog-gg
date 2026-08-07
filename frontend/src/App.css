@@ -104,6 +104,50 @@ h1 {
   max-width: 100%;
 }
 
+/* ========================================
+   LOOPING TYPEWRITER — RESERVED HEIGHT
+   The sizer and the live text share one grid cell, so the row is as tall as the
+   tallest message at the current width and never changes while typing. Scoped
+   to the looping variant: it is the one whose length is animated in both
+   directions, so it is the one that moves the page.
+   ======================================== */
+
+.typewriter-loop {
+  display: grid;
+}
+
+.typewriter-loop > .typewriter-sizer,
+.typewriter-loop > .typewriter-text {
+  grid-area: 1 / 1;
+}
+
+/* Every message stacked in one cell, so the cell takes the tallest of them
+   rather than their sum. */
+.typewriter-sizer {
+  display: grid;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.typewriter-sizer > * {
+  grid-area: 1 / 1;
+}
+
+/* The reservation only holds if the sizer wraps exactly like the visible text */
+.typewriter-sizer,
+.typewriter-sizer > * {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.7;
+  max-width: 100%;
+}
+
+/* Present for its width, not its animation */
+.typewriter-sizer .typewriter-cursor {
+  animation: none;
+}
+
 .typewriter-hidden-calc {
   position: absolute;
   visibility: hidden;
