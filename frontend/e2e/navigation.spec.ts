@@ -26,14 +26,15 @@ test.describe("Site Navigation", () => {
     // Start on projects page (has navigation header)
     await page.goto("/projects");
 
-    // Find home/logo link
+    // The nav logo is repo-shipped structure, not optional data, so it is
+    // required. Guarding this on a one-shot isVisible() meant the test passed
+    // having asserted nothing whenever the link failed to render.
     const homeLink = page
       .locator('a[href="/"], .nav-logo, [class*="logo"]')
       .first();
-    if (await homeLink.isVisible()) {
-      await homeLink.click();
-      await expect(page).toHaveURL("/");
-    }
+    await expect(homeLink).toBeVisible();
+    await homeLink.click();
+    await expect(page).toHaveURL("/");
   });
 });
 
@@ -70,16 +71,16 @@ test.describe("External Links", () => {
   test("social links open in new tab", async ({ page }) => {
     await page.goto("/");
 
-    // Find any external link
+    // Home ships social links, and home.spec.ts already requires them to be
+    // visible, so a count-gate here was inconsistent with the suite next to it.
+    // Worse, this is a security assertion: under the gate, removing every
+    // target="_blank" made the rel="noopener" check silently stop running
+    // instead of failing, which is the one outcome it exists to prevent.
     const externalLinks = page.locator('a[target="_blank"]');
-    const count = await externalLinks.count();
+    await expect(externalLinks.first()).toBeVisible();
 
-    if (count > 0) {
-      // External links should have rel="noopener" or similar for security
-      const firstLink = externalLinks.first();
-      const rel = await firstLink.getAttribute("rel");
-      expect(rel).toContain("noopener");
-    }
+    const rel = await externalLinks.first().getAttribute("rel");
+    expect(rel).toContain("noopener");
   });
 });
 
@@ -161,16 +162,14 @@ test.describe("Responsive Design", () => {
     // Should show heading
     await expect(page.locator("h1")).toBeVisible();
 
-    // Search only visible when projects load — don't require it
+    // Projects ship with the repo, so the search input is required rather than
+    // conditional. The old gate asserted visibility only after establishing it,
+    // which could not fail either way: absent, it skipped the assertion;
+    // present, it re-checked what the guard had just read.
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="earch"]',
     );
-    const isVisible = await searchInput
-      .isVisible({ timeout: 3000 })
-      .catch(() => false);
-    if (isVisible) {
-      await expect(searchInput).toBeVisible();
-    }
+    await expect(searchInput).toBeVisible();
   });
 });
 
