@@ -29,7 +29,10 @@ const ARM = () => {
       // vertical position of the row within the page, independent of scroll
       top: row ? row.offsetTop : null,
       // horizontal position of the button within its row
-      left: btn && row ? btn.getBoundingClientRect().left - row.getBoundingClientRect().left : null,
+      left:
+        btn && row
+          ? btn.getBoundingClientRect().left - row.getBoundingClientRect().left
+          : null,
       width: btn ? btn.offsetWidth : null,
       hasReset: !!document.querySelector(".reset-btn"),
       hasGenerate: !!btn,
@@ -190,7 +193,9 @@ test.describe("journey section post-mount stability", () => {
  * whole page was torn down and rebuilt to restore values held in memory.
  */
 test.describe("undoing a regeneration", () => {
-  test("does not tear the page down to a loading skeleton", async ({ page }) => {
+  test("does not tear the page down to a loading skeleton", async ({
+    page,
+  }) => {
     await stubRegenerate(page);
     await page.goto("/");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
@@ -262,5 +267,146 @@ test.describe("undoing a regeneration", () => {
     await page.click(".reset-btn");
     await page.waitForTimeout(1800);
     expect(await page.locator(".about-content").innerText()).toBe(original);
+  });
+});
+
+/**
+ * The last two causes in the cluster, and the two with no guard until now.
+ *
+ * Both assertions are the reviewer's live measurements against the deployed
+ * preview, reused rather than re-derived, and both are shaped to reject the
+ * near-miss rather than merely the bug:
+ *
+ *  - #148 asserts ZERO idle shift events, not a smaller magnitude. The defect
+ *    moved the page 25px on a loop, so "reduced" and "stopped" are different
+ *    outcomes and a magnitude threshold would accept the first as the second.
+ *  - #149 asserts the unmount and the content move land in the SAME FRAME,
+ *    not that the visible gap is small. A delay tuned to today's 300ms exit
+ *    passes a gap threshold and fails same-frame coupling, which is the
+ *    regression actually worth catching: the two are one commit or they are
+ *    two waves, and there is no useful middle.
+ *
+ * Each carries a positive control. Zero movement is also what a page that
+ * never loaded reports, and a test that cannot fail is worse than no test
+ * because it removes the prompt to look (see #137).
+ */
+
+/** Sample the idle page: nav position, typewriter box, and its text. */
+const ARM_IDLE = () => {
+  const w = window as unknown as Record<string, unknown>;
+  w.__idle = [];
+  const tick = () => {
+    const nav = document.querySelector<HTMLElement>(".section-nav");
+    const msg = document.querySelector<HTMLElement>(".welcome-message");
+    (w.__idle as unknown[]).push({
+      navTop: nav ? nav.offsetTop : null,
+      msgHeight: msg ? msg.offsetHeight : null,
+      text: msg ? msg.innerText : null,
+    });
+    w.__idleRaf = requestAnimationFrame(tick);
+  };
+  tick();
+};
+
+const READ_IDLE = () => {
+  const w = window as unknown as Record<string, unknown>;
+  cancelAnimationFrame(w.__idleRaf as number);
+  return w.__idle as {
+    navTop: number | null;
+    msgHeight: number | null;
+    text: string | null;
+  }[];
+};
+
+test.describe("idle typewriter does not reflow the page (#148)", () => {
+  test("no layout movement across 45s at 375x667 with no interaction", async ({
+    page,
+  }) => {
+    test.setTimeout(120000);
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    await page.waitForSelector(".section-nav", { timeout: 15000 });
+    await page.waitForTimeout(1500); // past the entry animation
+
+    await page.evaluate(ARM_IDLE);
+    await page.waitForTimeout(45000); // nothing is clicked; the loop runs alone
+    const samples = await page.evaluate(READ_IDLE);
+
+    const mounted = samples.filter((s) => s.navTop !== null);
+    expect(mounted.length).toBeGreaterThan(0);
+
+    // POSITIVE CONTROL. The typewriter has to have actually cycled, or the
+    // page never rendered its content and zero movement means nothing. This
+    // is the exact reading error the fix's own verification nearly shipped:
+    // a page that failed to load reports 0px travel and 0 events too.
+    const changes = mounted.filter(
+      (s, i) => i > 0 && s.text !== mounted[i - 1].text,
+    ).length;
+    expect(changes).toBeGreaterThan(50);
+
+    // The row holds the tallest message at this width, so neither the box nor
+    // anything below it moves while characters are typed and deleted.
+    expect(travel(mounted.map((s) => s.msgHeight))).toBe(0);
+    expect(travel(mounted.map((s) => s.navTop))).toBe(0);
+  });
+});
+
+/** Sample a collapse: whether the button card is present, and where the
+ *  content below the section sits. Index in the array is the frame number. */
+const ARM_COLLAPSE = () => {
+  const w = window as unknown as Record<string, unknown>;
+  w.__col = [];
+  const tick = () => {
+    const cta = document.querySelector<HTMLElement>(".contact-cta");
+    (w.__col as unknown[]).push({
+      hasButtons: !!document.querySelector(".action-buttons"),
+      ctaTop: cta ? cta.offsetTop : null,
+    });
+    w.__colRaf = requestAnimationFrame(tick);
+  };
+  tick();
+};
+
+const READ_COLLAPSE = () => {
+  const w = window as unknown as Record<string, unknown>;
+  cancelAnimationFrame(w.__colRaf as number);
+  return w.__col as { hasButtons: boolean; ctaTop: number | null }[];
+};
+
+test.describe("collapsing a section moves the page once (#149)", () => {
+  test("the button card unmounts in the same frame the content moves", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
+    await page.click(".section-fade-btn");
+    await page.waitForSelector(".generate-btn", { timeout: 10000 });
+    await page.waitForTimeout(1500); // let the expansion settle
+
+    await page.evaluate(ARM_COLLAPSE);
+    await page.locator(".section-nav-button.active").first().click(); // collapse back to the preview
+    await page.waitForTimeout(1600); // past the exit transition
+    const s = await page.evaluate(READ_COLLAPSE);
+
+    // POSITIVE CONTROLS. The card must have been present and then gone, and
+    // the content below must have actually moved. Without both, "one wave"
+    // is satisfied by nothing happening at all.
+    const unmount = s.findIndex(
+      (x, i) => i > 0 && s[i - 1].hasButtons && !x.hasButtons,
+    );
+    expect(unmount).toBeGreaterThan(0);
+
+    const moves = s
+      .map((x, i) => (i > 0 && x.ctaTop !== s[i - 1].ctaTop ? i : -1))
+      .filter((i) => i > 0);
+    expect(moves.length).toBeGreaterThan(0);
+
+    // One user action, one movement. Two waves ~315ms apart was the bug.
+    expect(moves.length).toBe(1);
+
+    // And the wave is the unmount, not a separate later event. Both DOM
+    // changes belong to one commit, so no frame can observe one without the
+    // other -- which is why this is an equality rather than a tolerance.
+    expect(moves[0]).toBe(unmount);
   });
 });
