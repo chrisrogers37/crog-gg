@@ -59,14 +59,25 @@ const READ = () => {
   }[];
 };
 
-/** Regeneration answered without calling the model: flips hasModifiedContent
- *  (so the reset button mounts) while leaving the bio untouched. */
+/** Regeneration answered without calling the model, returning one section the
+ *  store will accept so the reset button mounts.
+ *
+ *  The payload used to be an empty `content: {}`, which worked only while
+ *  hasModifiedContent was set for reaching the success path at all. It is now
+ *  derived from what was actually applied (#142), and an empty content object
+ *  is precisely the all-refused case — nothing applied, no reset button, and
+ *  these tests time out waiting for one. `about_text` is a key of the real bio
+ *  being replaced, which is what the store's validation requires before it will
+ *  apply a section. */
 const stubRegenerate = (page: import("@playwright/test").Page) =>
   page.route("**/api/regenerate", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ success: true, content: {} }),
+      body: JSON.stringify({
+        success: true,
+        content: { about: { about_text: "stubbed regeneration" } },
+      }),
     }),
   );
 

@@ -377,3 +377,63 @@ describe("regenerateContent", () => {
     );
   });
 });
+
+/**
+ * hasModifiedContent drives DISPEL ENCHANTMENT, which offers to revert a
+ * modification. It used to be set on arrival at the success path, so it
+ * answered "the request succeeded" while claiming to answer "your content
+ * changed" -- the two things it exists to tell apart.
+ *
+ * The gap is reachable because the store validates sections itself: a
+ * well-formed but wrongly-shaped section is refused here even though the
+ * server rewrote it and reported success. When every section is refused,
+ * nothing on the page changes and the reset button used to appear anyway.
+ */
+describe("hasModifiedContent reflects what was applied", () => {
+  beforeEach(() => {
+    seed();
+    useContentStore.setState({ hasModifiedContent: false });
+  });
+
+  it("stays false when every section is refused by validation", async () => {
+    // Shares no key with BIO, so the store declines to apply it.
+    respondWith({ success: true, content: { about: { foo: 1 } } });
+
+    await useContentStore.getState().regenerateContent(false);
+
+    const s = useContentStore.getState();
+    expect(s.bio).toEqual(BIO); // nothing on the page changed...
+    expect(s.hasModifiedContent).toBe(false); // ...so nothing offers to revert
+    expect(s.regenerationError).not.toBeNull(); // and the refusal is surfaced
+  });
+
+  it("becomes true when a section is actually applied", async () => {
+    // The store assigns a validated section wholesale rather than merging, so
+    // a realistic success carries the whole section -- the server restores the
+    // fields the model is not allowed to author.
+    respondWith({
+      success: true,
+      content: {
+        about: { display_name: BIO.display_name, about_text: "rewritten" },
+      },
+    });
+
+    await useContentStore.getState().regenerateContent(false);
+
+    const s = useContentStore.getState();
+    expect(s.bio).toEqual({ ...BIO, about_text: "rewritten" });
+    expect(s.hasModifiedContent).toBe(true);
+  });
+
+  it("stays true after a later all-refused attempt", async () => {
+    // A previous regeneration did apply, so the content on screen IS modified
+    // and the reset button is still legitimate. One refused attempt afterwards
+    // must not retract it.
+    useContentStore.setState({ hasModifiedContent: true });
+    respondWith({ success: true, content: { about: { foo: 1 } } });
+
+    await useContentStore.getState().regenerateContent(false);
+
+    expect(useContentStore.getState().hasModifiedContent).toBe(true);
+  });
+});

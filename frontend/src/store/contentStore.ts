@@ -251,11 +251,25 @@ export const useContentStore = create<ContentStore>()(
           const anyFailed =
             (result.failed_sections ?? []).length > 0 || rejected;
 
+          // The flag claims "your content was modified", and the reset button
+          // offers to undo that. Reaching the success path is a different
+          // claim: every section can be refused by the validation above, in
+          // which case about/experience/education are all undefined, the `??`
+          // fallbacks below deliberately keep what was already on screen, and
+          // nothing changed. Deriving the flag from what was applied rather
+          // than from where we arrived stops the UI offering to revert a
+          // modification that never happened.
+          //
+          // Sticky, because a previous regeneration that did apply is still
+          // modified content: one later all-refused attempt must not retract
+          // it and hide a reset the visitor can still legitimately use.
+          const applied = Boolean(about || experience || education);
+
           set({
             bio: about ?? state.bio,
             experience: experience ?? state.experience,
             education: education ?? state.education,
-            hasModifiedContent: true,
+            hasModifiedContent: state.hasModifiedContent || applied,
             isRegenerating: false,
             regenerationError: anyFailed
               ? "Some of that didn't come through. Press it again for the rest."
