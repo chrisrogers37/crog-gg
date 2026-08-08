@@ -24,122 +24,99 @@ interface RawProjectData {
   tags?: string[];
 }
 
+/**
+ * A 200 does not mean the file exists.
+ *
+ * The SPA rewrite serves index.html for any path it does not recognise, so a
+ * project YAML that is missing, renamed or misspelled in the index arrives as
+ * an HTML document with status 200 and content-type text/html. `response.ok`
+ * is therefore not an existence check for these assets.
+ *
+ * js-yaml does not rescue that either: given an HTML document it returns a
+ * *string* rather than throwing, so every field read off it is `undefined` and
+ * the result is a blank card rendered as though it were a project. The shape of
+ * what parsed has to be checked, because neither the status nor the parse will
+ * report the problem.
+ */
+const isRawProject = (value: unknown): value is RawProjectData =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as RawProjectData).id === "string";
+
+const isProjectIndex = (value: unknown): value is { projects: string[] } =>
+  typeof value === "object" &&
+  value !== null &&
+  Array.isArray((value as { projects?: unknown }).projects);
+
+const toProject = (projectData: RawProjectData): Project => ({
+  id: projectData.id,
+  title: projectData.title,
+  description: projectData.description,
+  url:
+    projectData.url ||
+    projectData.demo ||
+    projectData.demo_url ||
+    projectData.github ||
+    projectData.github_url ||
+    "#",
+  icon: projectData.icon,
+  category: projectData.category,
+  technologies: projectData.technologies || [],
+  featured: projectData.featured || false,
+  order: projectData.order || 999,
+  image: projectData.image,
+  gradient: projectData.gradient,
+  github: projectData.github || projectData.github_url,
+  demo: projectData.demo || projectData.demo_url,
+  status: projectData.status,
+  tags: projectData.tags || [],
+});
+
+/**
+ * index.yaml is the curated list, and it is the only one.
+ *
+ * There used to be a hardcoded fallback list here for when the index fetch
+ * failed. It was removed rather than resynced, because no correct version of it
+ * exists: a second literal list is a source of truth that must be kept in step
+ * by hand and had already drifted (it named a file that no longer exists, and
+ * omitted three that do), while deriving the list from the directory instead
+ * would surface projects the index deliberately withholds. The curation lives
+ * in the index and nowhere else, so when the index is unavailable there is
+ * nothing faithful left to render, and saying so beats quietly rendering a
+ * different portfolio.
+ */
 export const loadProjects = async (): Promise<Project[]> => {
-  try {
-    // Dynamically discover all YAML files in the projects directory
-    // We'll need to create an index file or use a different approach
-    // For now, let's try to fetch a projects index that lists all available files
-    const indexResponse = await fetch("/content/projects/index.yaml");
-
-    if (indexResponse.ok) {
-      // If we have an index file, use it to get the list of project files
-      const indexContent = await indexResponse.text();
-      const indexData = yaml.load(indexContent) as { projects: string[] };
-      const projectFiles = indexData.projects;
-
-      const projects = await Promise.all(
-        projectFiles.map(async (file: string) => {
-          const response = await fetch(`/content/projects/${file}`);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
-          }
-          const content = await response.text();
-          const projectData = yaml.load(content) as RawProjectData;
-
-          // Map YAML fields to Project interface
-          const project: Project = {
-            id: projectData.id,
-            title: projectData.title,
-            description: projectData.description,
-            url:
-              projectData.url ||
-              projectData.demo ||
-              projectData.demo_url ||
-              projectData.github ||
-              projectData.github_url ||
-              "#",
-            icon: projectData.icon,
-            category: projectData.category,
-            technologies: projectData.technologies || [],
-            featured: projectData.featured || false,
-            order: projectData.order || 999,
-            image: projectData.image,
-            gradient: projectData.gradient,
-            github: projectData.github || projectData.github_url,
-            demo: projectData.demo || projectData.demo_url,
-            status: projectData.status,
-            tags: projectData.tags || [],
-          };
-
-          return project;
-        }),
-      );
-
-      console.log("Projects data loaded from YAML:", projects);
-      return projects.sort((a, b) => a.order - b.order);
-    } else {
-      // Fallback: try to load common project files if no index exists
-      const commonFiles = [
-        "shuffify.yaml",
-        "city-cycles.yaml",
-        "hedwig.yaml",
-        "github.yaml",
-      ];
-
-      const projects = await Promise.all(
-        commonFiles.map(async (file: string) => {
-          try {
-            const response = await fetch(`/content/projects/${file}`);
-            if (!response.ok) {
-              console.warn(`Skipping ${file}: ${response.statusText}`);
-              return null;
-            }
-            const content = await response.text();
-            const projectData = yaml.load(content) as RawProjectData;
-
-            // Map YAML fields to Project interface
-            const project: Project = {
-              id: projectData.id,
-              title: projectData.title,
-              description: projectData.description,
-              url:
-                projectData.url ||
-                projectData.demo ||
-                projectData.demo_url ||
-                projectData.github ||
-                projectData.github_url ||
-                "#",
-              icon: projectData.icon,
-              category: projectData.category,
-              technologies: projectData.technologies || [],
-              featured: projectData.featured || false,
-              order: projectData.order || 999,
-              image: projectData.image,
-              gradient: projectData.gradient,
-              github: projectData.github || projectData.github_url,
-              demo: projectData.demo || projectData.demo_url,
-              status: projectData.status,
-              tags: projectData.tags || [],
-            };
-
-            return project;
-          } catch (error) {
-            console.warn(`Error loading ${file}:`, error);
-            return null;
-          }
-        }),
-      );
-
-      // Filter out null results
-      const validProjects = projects.filter(
-        (project): project is Project => project !== null,
-      );
-
-      console.log("Projects data loaded from YAML:", validProjects);
-      return validProjects.sort((a, b) => a.order - b.order);
-    }
-  } catch (error) {
-    console.error("Error loading projects from YAML:", error);
-    throw error;
+  const indexResponse = await fetch("/content/projects/index.yaml");
+  if (!indexResponse.ok) {
+    throw new Error(
+      `Failed to fetch project index: ${indexResponse.status} ${indexResponse.statusText}`,
+    );
   }
+
+  const indexData = yaml.load(await indexResponse.text());
+  if (!isProjectIndex(indexData)) {
+    throw new Error(
+      "Project index did not parse to { projects: string[] } — it was most likely served the SPA fallback HTML",
+    );
+  }
+
+  const projects = await Promise.all(
+    indexData.projects.map(async (file: string) => {
+      const response = await fetch(`/content/projects/${file}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
+      }
+
+      const parsed = yaml.load(await response.text());
+      if (!isRawProject(parsed)) {
+        throw new Error(
+          `${file} did not parse to a project object — the file is most likely missing and was served the SPA fallback HTML`,
+        );
+      }
+
+      return toProject(parsed);
+    }),
+  );
+
+  return projects.sort((a, b) => a.order - b.order);
 };
