@@ -5,7 +5,7 @@ entries:
   - type: role
     title: Data Platform Lead
     organization: Artemis
-    domain: artemis.xyz
+    domain: artemis.ai
     start_date: "Mar 2026"
     end_date: present
     one_liner: now leading the data platform for blockchain and equities analytics
@@ -18,7 +18,7 @@ entries:
   - type: role
     title: Senior Data Scientist and Engineer
     organization: Artemis
-    domain: artemis.xyz
+    domain: artemis.ai
     start_date: "Nov 2025"
     end_date: "Mar 2026"
     one_liner: data science and engineering for blockchain and equities analytics
