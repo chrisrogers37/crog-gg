@@ -1284,47 +1284,6 @@ main {
   }
 }
 
-/* Word Cloud for Skills */
-.word-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  text-align: center;
-}
-
-.skill-tag {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: var(--background-color);
-  border-radius: 20px;
-  color: var(--text-color);
-  transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
-  cursor: default;
-  font-weight: 500;
-}
-
-.skill-tag:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.github-stats-container {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.stats-header {
-  font-size: 1.2rem;
-  color: var(--text-color);
-  margin-bottom: 0.25rem;
-}
-
 /* Welcome Message */
 .welcome-message {
   margin-top: 1rem;

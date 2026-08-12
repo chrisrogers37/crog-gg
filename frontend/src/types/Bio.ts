@@ -3,7 +3,6 @@ export interface BioData {
   email: string;
   location: string;
   about_text: string;
-  welcome_message: string;
   tagline?: string;
   role?: string;
   social_links: {
