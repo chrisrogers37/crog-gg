@@ -186,6 +186,24 @@ describe("regenerateContent", () => {
       expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
+    it("reports nothing, because the press it duplicates is visibly running", async () => {
+      // The two halves of the old guard clause need OPPOSITE treatment, which
+      // is why they are no longer one condition. This one is already legible
+      // without a message: the button is disabled, reads "Weaving Epic Saga..."
+      // and is running its casting animation. A message here would report an
+      // error for a button that is working.
+      respondWith({
+        success: true,
+        content: { about: { about_text: "rewritten" } },
+        failed_sections: [],
+      });
+
+      const first = useContentStore.getState().regenerateContent(true);
+      const second = useContentStore.getState().regenerateContent(true);
+      await Promise.all([first, second]);
+
+      expect(useContentStore.getState().regenerationError).toBeNull();
+    });
   });
 
   it("sends nothing at all before content has loaded", async () => {
@@ -197,6 +215,24 @@ describe("regenerateContent", () => {
     await useContentStore.getState().regenerateContent(true);
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("says why, instead of doing nothing in silence", async () => {
+    // The silent no-op, and the only branch here that is genuinely invisible:
+    // no request, no message, no state change, and nothing anywhere else on the
+    // page that says content has not loaded. Indistinguishable from the button
+    // being broken, which is what it was reported as.
+    useContentStore.setState({ bio: null, regenerationError: null });
+    respondWith({ success: true, content: {} });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    const message = useContentStore.getState().regenerationError;
+    expect(message).toBeTruthy();
+    expect(message).toMatch(/loading/i);
+    // Transient, not fatal: `error` unmounts the page for a full-screen retry
+    // screen, and there is nothing wrong with the page.
+    expect(useContentStore.getState().error).toBeNull();
   });
 
   /**
