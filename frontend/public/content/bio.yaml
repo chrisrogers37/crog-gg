@@ -15,7 +15,9 @@ tagline: |
 # wrapped line here would be a hard break mid-sentence -- keep each paragraph on
 # a single physical line however long it gets.
 about_text: |
-  a bit about me... i make music, mess around with audio engineering, and occasionally dj around nyc.
+  a bit about me...
+
+  i make music, mess around with audio engineering, and occasionally dj around nyc.
 
   nowadays, though, i spend most of my time building with AI. i'm most interested in building systems that can build systems, using agent teams to automate and develop applications, all while optimizing themselves.
 
@@ -23,7 +25,7 @@ about_text: |
 
   work-wise, i'm a data person. i like helping businesses drive value by pushing data all the way up to the point of decision. currently i'm the data lead at artemis.ai: trillion row blockchain pipelines, equities and sec filings, and whatever alternate sources we can get our hands on, all to help investors decide what's real.
 
-  anyways, smash the SUMMON NEW LORE button to run up my openai costs. cheers.
+  anyways, smash the SUMMON NEW LORE button to run up my openai costs and have some fun. cheers.
 # Social Links
 social_links:
   github: https://github.com/chrisrogers37/

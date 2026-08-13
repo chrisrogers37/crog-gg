@@ -71,15 +71,15 @@ describe("About paragraph rendering", () => {
 
 describe("the shipped About copy", () => {
   /**
-   * Chris authored this as five beats and it shipped as one 819-character
+   * Chris authored this as six beats and it shipped as one 819-character
    * paragraph, which is the defect this file exists alongside. The count is not
-   * pinned -- he may add or drop a beat and that is a content edit, not a
-   * regression -- but re-flattening it to a single block is.
+   * pinned -- it has already moved once, from five to six, and that is a content
+   * edit rather than a regression -- but re-flattening it to a single block is.
    *
    * Parsed with js-yaml rather than matched out of the raw source, so that what
    * is pinned is the paragraph structure the page depends on and not the block
    * style it happens to be written in. `|`, `|-` and `|2` all render the same
-   * five paragraphs, and a test that failed on those would be a false red on an
+   * paragraphs, and a test that failed on those would be a false red on an
    * ordinary content edit.
    */
   it("is more than one paragraph", () => {

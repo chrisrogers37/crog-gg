@@ -405,8 +405,8 @@ _FACT_ANCHOR = (
 # handed.
 #
 # Scoped to structure rather than prose so it composes with the registers: a stat
-# block and a sea shanty can both come back in five paragraphs, and neither has to
-# be told how to sound in order to be told where the breaks go.
+# block and a sea shanty can both come back in however many paragraphs they were
+# handed, and neither has to be told how to sound to be told where the breaks go.
 _SHAPE_ANCHOR = (
     " Preserve the paragraph structure of every text field exactly as you receive it. If a field "
     "arrives as several paragraphs separated by a blank line, return the same number of paragraphs "
