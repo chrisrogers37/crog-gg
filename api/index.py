@@ -803,13 +803,38 @@ def regenerate_content():
 
 @app.route("/api/limits", methods=["GET"])
 def get_usage_info():
+    """Cooldown state for this IP, or an explicit "could not tell" (#162).
+
+    Stays available during an outage on purpose: this endpoint spends nothing,
+    so a 503 would take a free read offline for no gain, and would look the
+    same to anyone probing it as the API itself being down.
+
+    What it must not do is answer anyway. A clear result here IS ``0``, so
+    falling open to ``0`` made a total outage byte-identical to a healthy read
+    -- the collision ``rate_limit``'s docstring names, reintroduced at the
+    caller after the helper was hardened against it. So the two fields that
+    would be inferences are withheld rather than captioned: a flag beside a
+    confident ``0`` leaves the values a reader actually looks at still
+    asserting something untrue.
+
+    ``null`` is falsy in the browser, so a caller that ignores the flag still
+    degrades toward letting the visitor press the button -- and /api/regenerate
+    is the authority on that, failing closed with its own 503.
+    """
     client_ip = get_client_ip()
-    remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip), fail_open=True)
+    try:
+        remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip))
+    except rate_limit.RedisUnavailable:
+        remaining = None
     return jsonify(
         {
             "cooldown_remaining": remaining,
             "cooldown_total": COOLDOWN_SECONDS,
-            "is_on_cooldown": remaining > 0,
+            "is_on_cooldown": None if remaining is None else remaining > 0,
+            # Reported in both states, never only when degraded: a field that
+            # appears only on failure cannot be tested for the healthy case,
+            # and its absence is ambiguous with an older deploy.
+            "metering_available": remaining is not None,
         }
     )
 
