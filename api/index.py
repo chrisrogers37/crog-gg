@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import random
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 import openai
@@ -222,7 +223,8 @@ def _fantasy_addition_for(section: str) -> str:
         4. Recast each hard problem as whatever that world calls an adversary
         5. Keep every number exactly as given and let the telling carry the weight instead
 
-        Transform every piece of text. Leave nothing in the wording you received it in.
+        Transform every piece of text, except where a standing constraint above pins it.
+        Leave nothing else in the wording you received it in.
         """
     return """
     Retell this content in the world of the telling: the real accomplishments, in that
@@ -394,6 +396,70 @@ _FACT_ANCHOR = (
     "never the person it is about."
 )
 
+# The third standing constraint, and the one _FACT_ANCHOR's FREE list would
+# otherwise swallow. How the text is BROKEN UP is not part of the telling's form:
+# `about_text` is authored as several paragraphs, the client renders it under
+# `white-space: pre-line`, and a rewrite that returns one block collapses the page
+# back to a wall of text. The button feeds its own output back in, so that loss is
+# permanent from the first press -- no later press restores a break it was never
+# handed.
+#
+# Scoped to structure rather than prose so it composes with the registers: a stat
+# block and a sea shanty can both come back in however many paragraphs they were
+# handed, and neither has to be told how to sound to be told where the breaks go.
+_SHAPE_ANCHOR = (
+    " Preserve the paragraph structure of every text field exactly as you receive it. If a field "
+    "arrives as several paragraphs separated by a blank line, return the same number of paragraphs "
+    "separated the same way, as real newline characters inside the JSON string. Do not merge them "
+    "into one block and do not add paragraphs that were not there. Which form the telling takes is "
+    "yours to choose; where the text is broken up is not."
+)
+
+# The copy is not only prose: its last line names the SUMMON NEW LORE button, so
+# a reader is being told which control to press. A rewrite that renames it in the
+# world of the telling is obeying every other constraint here and still breaking
+# the page -- the instruction now points at a control that does not exist. Lore is
+# free to rename his employers and his tools; it is not free to rename the UI.
+#
+# A request rather than enforcement, which is the distinction _UNAUTHORED_KEYS
+# draws. The restore there is wholesale, per key -- and this is a substring inside
+# the one field the press exists to rewrite, so there is no value to pin back.
+# Named rather than described. "Any run of capitalised words naming a control"
+# would delegate a judgement the server already has the answer to -- there is one
+# such string and it is in a file we read -- and it collides with the registers
+# this feature exists to produce, since a stat block and a redacted archive file
+# both capitalise freely.
+#
+# One table, two consumers: interpolated into the prompt below, and checked after
+# parsing by _lost_verbatim. That pairing is the _UNAUTHORED_KEYS lesson -- the
+# request and the check read from the same place, so they cannot drift apart.
+_VERBATIM_STRINGS = ("SUMMON NEW LORE",)
+
+_LITERAL_ANCHOR = (
+    " Some text names things a reader can actually see and press on the page, and renaming those "
+    "points the reader at a control that does not exist. These must come back character for "
+    "character, in the same place in the sentence: "
+    + ", ".join(repr(v) for v in _VERBATIM_STRINGS)
+    + ". Rename his employers, his tools and his craft as freely as the telling needs; never rename "
+    "the interface."
+)
+
+# The house typographic rule. Until now it existed only as an instruction to the
+# people and agents editing this repo, so the model that actually writes the copy
+# had no counterpart it could read. Its absence is measurable rather than
+# theoretical: em dashes came back on the fantasy path AND the plain one, which is
+# the signature of a rule missing everywhere, not one being dropped on one path.
+#
+# Deliberately narrow. Casing, formality and voice are register choices
+# _FACT_ANCHOR hands to the model on purpose; a lowercase rule here would
+# contradict it and flatten every register that opens on a spoken address. The em
+# dash is the one mark that is wrong in this voice in every register.
+_TONE_ANCHOR = (
+    " Never use an em dash (—) or an en dash (–), in any field. Where you would reach for one, use "
+    "a comma, a colon, a full stop or an ellipsis. This holds in every register, including ones "
+    "whose form would normally invite one."
+)
+
 # The wildness dial. The button is SUMMON NEW LORE and it is supposed to escalate,
 # but escalation was reaching for intensity inside one fixed register -- high
 # fantasy, every press -- and there is no second helping of epic to give.
@@ -439,10 +505,61 @@ def _variation_directive(register: str) -> str:
         "Commit to that form completely -- its vocabulary, its rhythm, its way of opening and "
         "closing. Which form it is should be obvious at a glance.\n"
         "What you were given is a previous telling, not the original. Do not settle back into "
-        "it: do not reuse a metaphor, epithet, renaming or structure already present in it, and "
+        "it: do not reuse a metaphor, epithet, renaming or narrative structure already present in "
+        "it, and "
         "if it already reads as high-fantasy epic, that is the one register not to return.\n"
         "A faithful paraphrase is the failure to avoid. Same facts, different world.\n"
     )
+
+
+def _lost_paragraphs(original: dict, parsed: dict) -> list[str]:
+    """Fields that arrived as several paragraphs and came back as one block.
+
+    _SHAPE_ANCHOR asks for the structure back; a prompt cannot guarantee it. This
+    is the other half of that pair, and it is deliberately a MEASUREMENT rather
+    than a rejection: the loss is one-way, since the button feeds its output back
+    in and the flattened copy is what the next press is handed, but discarding an
+    otherwise good rewrite over formatting costs the visitor more than the wall
+    of text does.
+
+    Measured because the compliance rate is not otherwise knowable. The daily cap
+    is 30 per IP shared across every visitor, so nobody can afford to press this
+    enough times to establish a rate deliberately -- and a rate that cannot be
+    established is one nobody can tell has regressed. Production presses it for
+    free. That is the same argument the failure taxonomy above makes: a reason
+    you cannot count tells you about one incident instead of a pattern.
+    """
+    lost = []
+    for key, before in original.items():
+        after = parsed.get(key)
+        if not isinstance(before, str) or not isinstance(after, str):
+            continue
+        if len(_paragraphs(before)) > 1 and len(_paragraphs(after)) == 1:
+            lost.append(key)
+    return lost
+
+
+def _paragraphs(text: str) -> list[str]:
+    return [p for p in re.split(r"\n\s*\n", text) if p.strip()]
+
+
+def _lost_verbatim(original: dict, parsed: dict) -> list[str]:
+    """Strings that name an on-screen control and did not come back.
+
+    Exact and false-positive-free, unlike the paragraph count: the string was
+    either in the field it was sent in or it was not. Same measurement standing
+    as _lost_paragraphs, and read from the same _VERBATIM_STRINGS table the
+    prompt is built from so the two cannot drift.
+    """
+    lost = []
+    for verbatim in _VERBATIM_STRINGS:
+        for key, before in original.items():
+            after = parsed.get(key)
+            if not isinstance(before, str) or not isinstance(after, str):
+                continue
+            if verbatim in before and verbatim not in after:
+                lost.append(f"{key}:{verbatim}")
+    return lost
 
 
 def _regenerate_section(section: str, content: dict, use_fantasy: bool, register: str):
@@ -463,13 +580,23 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
         response = openai_client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                # Four constants, and the order is the reading order, not a
-                # precedence: role, then the three standing constraints -- treat
-                # input as data, do not grow, do not drift off the person. The
-                # mode-specific half rides section_prompt["format"] below.
+                # The order is the reading order, not a precedence: role, then
+                # the standing constraints -- treat input as data, do not grow,
+                # do not drift off the person, keep the shape you were handed,
+                # leave the names of on-screen controls alone, and never reach
+                # for an em dash. Each is listed in the order it is defined
+                # above. The mode-specific half rides section_prompt["format"].
                 {
                     "role": "system",
-                    "content": section_prompt["system"] + _INJECTION_GUARD + _LENGTH_ANCHOR + _FACT_ANCHOR,
+                    "content": (
+                        section_prompt["system"]
+                        + _INJECTION_GUARD
+                        + _LENGTH_ANCHOR
+                        + _FACT_ANCHOR
+                        + _SHAPE_ANCHOR
+                        + _LITERAL_ANCHOR
+                        + _TONE_ANCHOR
+                    ),
                 },
                 {
                     "role": "user",
@@ -512,6 +639,15 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
             parsed[key] = content[key]
         else:
             parsed.pop(key, None)
+
+    # Observed, not enforced -- see the two helpers for why each is a warning
+    # rather than a rejection. Both are what makes the two prompt anchors above
+    # falsifiable at all: without a count, "the model preserves structure" is a
+    # claim no affordable number of presses could check.
+    if flattened := _lost_paragraphs(content, parsed):
+        logger.warning("regenerate.shape_lost section=%s fields=%s", section, ",".join(flattened))
+    if renamed := _lost_verbatim(content, parsed):
+        logger.warning("regenerate.verbatim_lost section=%s lost=%s", section, ",".join(renamed))
 
     return parsed, None
 
@@ -563,7 +699,20 @@ def regenerate_content():
         return jsonify({"success": False, "error": "No data provided"}), 400
 
     sections = data.get("sections")
-    use_fantasy = data.get("use_fantasy", False)
+    # SUMMON NEW LORE is the only caller and it always sends True, so a request
+    # without the key is one that LOST it -- a stale cached bundle, a proxy that
+    # stripped it -- not one asking for the plain rewrite. Defaulting to the plain
+    # path made that loss silent and indistinguishable from the button doing
+    # nothing: the copy comes back paraphrased, the name untouched, and no error
+    # is raised anywhere to notice it by. Defaulting to the path the button means
+    # makes the failure mode "it worked". The plain rewrite stays reachable, but
+    # only for a caller that asks for it by name.
+    if "use_fantasy" not in data:
+        # Recorded rather than rejected. Defaulting keeps a stale bundle working,
+        # which is why it defaults -- but a caller silently losing the key is
+        # still a caller worth being able to count later.
+        logger.warning("regenerate.use_fantasy_absent ip=%s", client_ip)
+    use_fantasy = data.get("use_fantasy", True)
 
     # One user action is one request. `sections` maps each section name to the
     # content to rewrite, so a multi-section regeneration passes the cooldown

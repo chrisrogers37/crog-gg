@@ -184,8 +184,28 @@ export const useContentStore = create<ContentStore>()(
       regenerateContent: async (useFantasy: boolean) => {
         const state = get();
 
-        // Don't regenerate if no content or already regenerating
-        if (!state.bio || state.isRegenerating) {
+        // A press that cannot do anything has to say so. Both branches below
+        // used to share one bare return, which made the whole action a silent
+        // no-op: no request, no message, no state change, and nothing on screen
+        // that distinguishes it from the button being broken.
+        //
+        // They are separated because only one of them is actually silent. There
+        // is no content to rewrite yet, and nothing else on the page says so.
+        if (!state.bio) {
+          set({
+            regenerationError:
+              "Still loading the page content. Give it a second and press again.",
+          });
+          return;
+        }
+
+        // Already in flight, and this one is visible without a message: the
+        // button reads "Weaving Epic Saga...", is disabled, and is running the
+        // casting animation. A same-tick double tap still arrives here, since
+        // `disabled` only applies from the next render -- but the press it
+        // duplicates is one the visitor can watch. Saying anything here would
+        // report an error for a button that is working.
+        if (state.isRegenerating) {
           return;
         }
 
