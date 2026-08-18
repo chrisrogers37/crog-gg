@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Hooks
-import { useRegeneration } from "../../hooks";
+import { useMediaQuery, useRegeneration } from "../../hooks";
 import {
   useUIStore,
   useIsLoading,
@@ -56,6 +56,27 @@ const PROFILE_PHOTOS = [
 // Section order for flow navigation
 const SECTION_ORDER = ["about", "journey", "projects", "music"];
 
+// The About preview fades at a fixed point in the COPY rather than at a fixed
+// height: the gradient begins on the line carrying "all while optimizing
+// themselves", the end of the agent-teams paragraph.
+//
+// That anchor is width-relative, which is why there are two numbers and not
+// one. The same copy is 991px tall at 390px wide and 662px at 1280px, so the
+// phrase sits 349px down on a phone and 229px down on a desktop -- 120px
+// apart. No single clamp reaches it at both: at the wide value the phrase is
+// clipped away entirely on a phone, and at the narrow value it sits well clear
+// of the fade on a desktop, which puts the cut on a finished paragraph instead.
+//
+// Both were solved as maxHeight = (phraseTop - contentTop) + overlayHeight and
+// verified to a 0px offset against the rendered page. Re-measure both if the
+// About copy changes.
+const ABOUT_CLAMP_NARROW = 449;
+const ABOUT_CLAMP_WIDE = 329;
+
+// The breakpoint the rest of the site already parts on, including
+// SectionFadePreview.css.
+const NARROW_VIEWPORT = "(max-width: 768px)";
+
 export function HomePage() {
   // Random profile photo (selected once on mount)
   const profilePhoto = useMemo(() => {
@@ -74,6 +95,7 @@ export function HomePage() {
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
 
   // Preview mode: starts true so About shows as a preview on load
+  const isNarrowViewport = useMediaQuery(NARROW_VIEWPORT);
   const [previewMode, setPreviewMode] = useState(true);
 
   // Whether the expanded section is actually in the DOM, as opposed to merely
@@ -314,18 +336,12 @@ export function HomePage() {
                 transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
                 <div className="section-fade-previews">
-                  {/* Sized against the paragraph-broken About copy, not against
-                      one block of prose. Under `pre-line` each blank line is a
-                      real empty line box, so the same words paint roughly twice
-                      the height, and a clamp chosen for the unbroken copy lands
-                      after the first sentence. 519px is the smallest height that
-                      cuts between paragraphs rather than through a line at both
-                      the mobile and desktop widths. If the copy gains or loses
-                      paragraphs, this number has to be re-measured with it. */}
                   <SectionFadePreview
                     id="about"
                     onExpand={handlePreviewExpand}
-                    maxHeight={519}
+                    maxHeight={
+                      isNarrowViewport ? ABOUT_CLAMP_NARROW : ABOUT_CLAMP_WIDE
+                    }
                     index={0}
                   >
                     <section className="section-content about-section">
