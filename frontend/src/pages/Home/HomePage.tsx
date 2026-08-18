@@ -304,10 +304,18 @@ export function HomePage() {
                 transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
                 <div className="section-fade-previews">
+                  {/* Sized against the paragraph-broken About copy, not against
+                      one block of prose. Under `pre-line` each blank line is a
+                      real empty line box, so the same words paint roughly twice
+                      the height, and a clamp chosen for the unbroken copy lands
+                      after the first sentence. 519px is the smallest height that
+                      cuts between paragraphs rather than through a line at both
+                      the mobile and desktop widths. If the copy gains or loses
+                      paragraphs, this number has to be re-measured with it. */}
                   <SectionFadePreview
                     id="about"
                     onExpand={handlePreviewExpand}
-                    maxHeight={180}
+                    maxHeight={519}
                     index={0}
                   >
                     <section className="section-content about-section">
