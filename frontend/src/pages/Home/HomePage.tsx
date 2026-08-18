@@ -113,10 +113,20 @@ export function HomePage() {
     isReady,
   } = useRegeneration();
 
-  // Handle section change from nav buttons
+  // Handle section change from nav buttons.
+  //
+  // SectionNav signals "deselect" by passing an EMPTY id, not by echoing the
+  // active one back, so an empty string is what a collapse looks like here.
+  // Matching on `section === activeSection` therefore never fired, and the
+  // collapse fell through to the branch below -- which clears activeSection
+  // and sets previewMode false. "see more" only sets previewMode false, so
+  // from that state it had nothing left to change and went permanently inert
+  // while still rendering as a live control (#165).
+  //
+  // Collapsing returns to the landing state, which is what the reader started
+  // in: about selected, preview mode on.
   const handleSectionChange = (section: string) => {
-    if (section === activeSection) {
-      // Clicking active section: return to about preview
+    if (!section) {
       setActiveSection("about");
       setPreviewMode(true);
     } else {

@@ -196,3 +196,30 @@ test.describe("Page Load Performance", () => {
     expect(loadTime).toBeLessThan(10000);
   });
 });
+
+test.describe("see more survives a collapse (#165)", () => {
+  test("expand, collapse, expand again", async ({ page }) => {
+    await page.goto("/");
+
+    // First expansion. This is the POSITIVE CONTROL: without it the test
+    // would also pass on a page where "see more" never worked at all.
+    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
+    await page.click(".section-fade-btn");
+    await expect(page.locator(".generate-btn")).toBeVisible({ timeout: 10000 });
+
+    // Collapse the way a reader does -- clicking the tab that is already
+    // active. SectionNav reports that as an empty section id.
+    await page.locator(".section-nav-button.active").first().click();
+    await expect(page.locator(".section-fade-btn")).toBeVisible({
+      timeout: 10000,
+    });
+
+    // The regression: from here "see more" still rendered and still took
+    // clicks, but changed nothing, and SUMMON NEW LORE was gone with it. So
+    // both halves are asserted -- the control has to work AND has to put the
+    // reader back somewhere that has the primary action on it.
+    await page.click(".section-fade-btn");
+    await expect(page.locator(".generate-btn")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(".section-content")).toBeVisible();
+  });
+});
