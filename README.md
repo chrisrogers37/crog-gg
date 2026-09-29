@@ -221,4 +221,4 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 
 ## License
 
-MIT
+The code is released under the [MIT License](LICENSE). The personal content (bio, career history, photos and personal copy) isn't covered by it and stays all rights reserved; see [CONTENT-TERMS.md](CONTENT-TERMS.md). Third-party assets are credited in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
