@@ -25,7 +25,8 @@ const props = {
   isReady: false,
 };
 
-const button = () => screen.getByRole("button", { name: /regenerate/i });
+const button = () =>
+  screen.getByRole("button", { description: /regenerates the text with ai/i });
 
 describe("ActionButtons while a regeneration is in flight", () => {
   it("disables the button", () => {
@@ -45,5 +46,24 @@ describe("ActionButtons while a regeneration is in flight", () => {
     render(<ActionButtons {...props} />);
     expect(button()).toBeEnabled();
     expect(button()).toHaveTextContent(/summon new lore/i);
+  });
+});
+
+describe("ActionButtons accessible names", () => {
+  // Named by the words on them (WCAG 2.5.3), so a voice-control user can say
+  // what they see; Lighthouse flagged the old labels, which did not contain it.
+  it("names each button by its visible text", () => {
+    render(<ActionButtons {...props} hasModifiedContent />);
+    expect(
+      screen.getByRole("button", { name: "SUMMON NEW LORE" }),
+    ).toHaveAccessibleDescription(/regenerates the text with ai/i);
+    expect(
+      screen.getByRole("button", { name: "DISPEL ENCHANTMENT" }),
+    ).toHaveAccessibleDescription(/restores the original text/i);
+  });
+
+  it("names the cooldown by the number it shows", () => {
+    render(<ActionButtons {...props} cooldownRemaining={27} />);
+    expect(button()).toHaveAccessibleName("27 seconds of cooldown left");
   });
 });

@@ -26,12 +26,24 @@ export interface Repository {
 }
 
 /**
- * README content response
+ * README content response (GitHub's contents API, passed through by the proxy)
  */
 export interface ReadmeResponse {
   content: string;
   encoding: string;
   sha: string;
+  html_url: string;
+  download_url: string;
+}
+
+/**
+ * A decoded README and where it lives on GitHub, which its relative links and
+ * images resolve against (utils/readmeLinks.ts).
+ */
+export interface Readme {
+  text: string;
+  htmlUrl: string;
+  downloadUrl: string;
 }
 
 /**
@@ -109,7 +121,7 @@ class GitHubService {
   /**
    * Fetch repository README content
    */
-  async getReadme(repoName: string): Promise<string> {
+  async getReadme(repoName: string): Promise<Readme | null> {
     return this.cachedFetch(`readme:${repoName}`, async () => {
       const response = await fetch(`${this.baseUrl}/readme/${repoName}`, {
         credentials: "include",
@@ -117,14 +129,24 @@ class GitHubService {
 
       if (!response.ok) {
         if (response.status === 404) {
-          return ""; // No README
+          return null; // No README
         }
         throw new Error(`Failed to fetch README: ${response.status}`);
       }
 
-      const data = await response.json();
-      // Decode base64 content
-      return atob(data.content.replace(/\n/g, ""));
+      const data: ReadmeResponse = await response.json();
+      // GitHub sends the file's UTF-8 bytes as base64. atob() alone turns each
+      // byte into its own character, so every emoji and non-ASCII symbol came
+      // out as Latin-1 mojibake ("ð¯ Overview", #178). Decode the bytes as
+      // UTF-8 instead.
+      const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, "")), (c) =>
+        c.charCodeAt(0),
+      );
+      return {
+        text: new TextDecoder().decode(bytes),
+        htmlUrl: data.html_url,
+        downloadUrl: data.download_url,
+      };
     });
   }
 

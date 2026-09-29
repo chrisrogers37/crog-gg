@@ -1,8 +1,22 @@
-import { useState, useEffect } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useState,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { githubService } from "../../../services/githubService";
+import {
+  githubService,
+  type Readme,
+} from "../../../services/githubService";
+import {
+  isLocalDevUrl,
+  readmeHref,
+  readmeImageSrc,
+} from "../../../utils/readmeLinks";
 import "./GitHubReadme.css";
 
 // Import highlight.js theme
@@ -23,7 +37,7 @@ interface GitHubReadmeProps {
  * - Task lists and tables
  */
 export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
-  const [readme, setReadme] = useState<string | null>(null);
+  const [readme, setReadme] = useState<Readme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,39 +109,44 @@ export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeHighlight]}
           components={{
-            // Custom component rendering
-            a: ({ href, children }) => (
-              <a
-                href={href}
-                target={href?.startsWith("http") ? "_blank" : undefined}
-                rel={
-                  href?.startsWith("http") ? "noopener noreferrer" : undefined
-                }
-              >
-                {children}
-              </a>
-            ),
-            img: ({ src, alt }) => {
-              // Handle relative GitHub URLs
-              const imageSrc = src?.startsWith("http")
-                ? src
-                : `https://raw.githubusercontent.com/chrisrogers37/${repoName}/main/${src}`;
-
+            // Relative links and images resolve against the README on GitHub,
+            // not against crog.gg (utils/readmeLinks.ts).
+            a: ({ href, children }) => {
+              if (isLocalDevUrl(href)) return <span>{children}</span>;
+              const target = readmeHref(href, readme);
+              const external = target?.startsWith("http");
               return (
-                <img
-                  src={imageSrc}
-                  alt={alt || ""}
-                  loading="lazy"
-                  className="readme-image"
-                />
+                <a
+                  href={target}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
+                >
+                  {children}
+                </a>
               );
             },
+            img: ({ src, alt }) => (
+              <img
+                src={readmeImageSrc(src, readme)}
+                alt={alt || ""}
+                loading="lazy"
+                className="readme-image"
+              />
+            ),
+            // highlight.js makes the <code> inside the element that scrolls
+            // sideways, so that is what a keyboard must be able to focus.
             pre: ({ children }) => (
-              <pre className="readme-code-block">{children}</pre>
+              <pre className="readme-code-block">
+                {Children.map(children, (child) =>
+                  isValidElement<{ tabIndex?: number }>(child)
+                    ? cloneElement(child, { tabIndex: 0 })
+                    : child,
+                )}
+              </pre>
             ),
           }}
         >
-          {readme}
+          {readme.text}
         </ReactMarkdown>
       </article>
     </div>

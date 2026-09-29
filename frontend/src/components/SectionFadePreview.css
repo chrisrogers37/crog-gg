@@ -7,15 +7,6 @@
   margin-bottom: 1.5rem;
 }
 
-.section-fade-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-color-secondary);
-  text-transform: lowercase;
-  margin: 0 0 0.5rem;
-  letter-spacing: 0.02em;
-}
-
 .section-fade-content {
   overflow: hidden;
   position: relative;

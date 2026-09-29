@@ -183,7 +183,9 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 ## Deployment
 
-Deployed on Vercel. Every push to `main` auto-deploys to production at https://crog.gg; every push to any other branch gets a preview URL posted on the PR.
+Deployed on Vercel. Every push to `main` auto-deploys to production at https://www.crog.gg, the canonical host (the apex `crog.gg` 308s to it, a Vercel domain setting); every push to any other branch gets a preview URL posted on the PR.
+
+Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` and `robots.txt` are generated at build time from the prerendered page list, so there are no static copies in `public/`.
 
 ### Layout
 

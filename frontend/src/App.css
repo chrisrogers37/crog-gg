@@ -1188,7 +1188,8 @@ a:hover {
 }
 
 /* Adjust main content layout */
-main {
+main,
+.home-main {
   display: flex;
   flex-direction: column;
 }

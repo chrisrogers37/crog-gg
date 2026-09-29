@@ -11,6 +11,14 @@ describe("SectionNav", () => {
     expect(screen.getByRole("tab", { name: "Music" })).toBeInTheDocument();
   });
 
+  it("points every tab at the one section panel", () => {
+    render(<SectionNav activeSection="" onSectionChange={() => {}} />);
+    for (const tab of screen.getAllByRole("tab")) {
+      expect(tab).toHaveAttribute("aria-controls", "section-panel");
+      expect(tab.id).toMatch(/^section-tab-/);
+    }
+  });
+
   it("marks active section button as selected", () => {
     render(<SectionNav activeSection="projects" onSectionChange={vi.fn()} />);
     const projectsBtn = screen.getByRole("tab", { name: "Projects" });

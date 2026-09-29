@@ -21,7 +21,7 @@ export function ProjectCard({ project, linkTo }: ProjectCardProps) {
         {project.icon && <span className="project-tile-icon">{project.icon}</span>}
       </div>
       <div className="project-tile-body">
-        <h3 className="project-tile-title">{project.title}</h3>
+        <h2 className="project-tile-title">{project.title}</h2>
         <p className="project-tile-description">{project.description}</p>
         {project.technologies && project.technologies.length > 0 && (
           <div className="project-tile-tech">

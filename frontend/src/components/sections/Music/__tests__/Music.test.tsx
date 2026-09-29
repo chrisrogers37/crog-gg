@@ -48,7 +48,7 @@ describe("Music", () => {
   it("renders Spotify link with correct URL", () => {
     useContentStore.setState({ bio: mockBio });
     render(<Music />);
-    const link = screen.getByLabelText("Spotify");
+    const link = screen.getByRole("link", { name: "Spotify" });
     expect(link).toHaveAttribute(
       "href",
       "https://open.spotify.com/artist/testid",
@@ -59,14 +59,14 @@ describe("Music", () => {
   it("renders Instagram music link", () => {
     useContentStore.setState({ bio: mockBio });
     render(<Music />);
-    const link = screen.getByLabelText("@crogmusic");
+    const link = screen.getByRole("link", { name: "@crogmusic" });
     expect(link).toHaveAttribute("href", "https://instagram.com/crogmusic");
   });
 
   it("renders Hoobe link", () => {
     useContentStore.setState({ bio: mockBio });
     render(<Music />);
-    const link = screen.getByLabelText("all music links");
+    const link = screen.getByRole("link", { name: "all links" });
     expect(link).toHaveAttribute("href", "https://hoo.be/test");
   });
 
@@ -78,7 +78,7 @@ describe("Music", () => {
 
   it("uses fallback URLs when bio is null", () => {
     render(<Music />);
-    const link = screen.getByLabelText("Spotify");
+    const link = screen.getByRole("link", { name: "Spotify" });
     expect(link).toHaveAttribute(
       "href",
       "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",

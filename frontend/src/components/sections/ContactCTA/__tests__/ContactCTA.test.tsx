@@ -53,11 +53,11 @@ describe("ContactCTA", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);
 
-    const emailLink = screen.getByLabelText("Email");
+    const emailLink = screen.getByRole("link", { name: "Email" });
     expect(emailLink).toBeInTheDocument();
     expect(emailLink).toHaveAttribute("href", "mailto:test@example.com");
 
-    const linkedinLink = screen.getByLabelText("LinkedIn");
+    const linkedinLink = screen.getByRole("link", { name: "LinkedIn" });
     expect(linkedinLink).toBeInTheDocument();
     expect(linkedinLink).toHaveAttribute(
       "href",
@@ -70,18 +70,18 @@ describe("ContactCTA", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);
 
-    const spotifyLink = screen.getByLabelText("Spotify");
+    const spotifyLink = screen.getByRole("link", { name: "Spotify" });
     expect(spotifyLink).toBeInTheDocument();
     expect(spotifyLink).toHaveAttribute(
       "href",
       "https://open.spotify.com/artist/test",
     );
 
-    const hoobeLink = screen.getByLabelText("hoobe");
+    const hoobeLink = screen.getByRole("link", { name: "hoobe" });
     expect(hoobeLink).toBeInTheDocument();
     expect(hoobeLink).toHaveAttribute("href", "https://hoo.be/test");
 
-    const githubLink = screen.getByLabelText("GitHub");
+    const githubLink = screen.getByRole("link", { name: "GitHub" });
     expect(githubLink).toBeInTheDocument();
     expect(githubLink).toHaveAttribute("href", "https://github.com/testuser");
   });

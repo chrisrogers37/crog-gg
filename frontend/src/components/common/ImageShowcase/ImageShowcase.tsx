@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { loadShowcase } from "../../../utils/showcaseLoader";
 import type { ShowcaseImage } from "../../../types/Showcase";
+import { photoSrc, photoSrcSet } from "../../../utils/photos";
 import "./ImageShowcase.css";
 
 type ImageShowcaseProps = {
@@ -31,8 +32,8 @@ export function ImageShowcase({ images: propImages }: ImageShowcaseProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      aria-label="Photo showcase"
-      role="presentation"
+      role="group"
+      aria-label="Photos of Chris"
     >
       <div
         className="image-showcase-track"
@@ -42,18 +43,30 @@ export function ImageShowcase({ images: propImages }: ImageShowcaseProps) {
           } as React.CSSProperties
         }
       >
-        {duplicatedImages.map((image, index) => (
-          <div className="image-showcase-item" key={`${image.src}-${index}`}>
-            <img
-              src={image.src}
-              alt={image.alt}
-              className="image-showcase-photo"
-              loading="lazy"
-              width={140}
-              height={140}
-            />
-          </div>
-        ))}
+        {duplicatedImages.map((image, index) => {
+          // The second copy only exists to make the scroll loop seamless, so it
+          // is hidden from assistive tech rather than read out a second time.
+          return (
+            <div
+              className="image-showcase-item"
+              key={`${image.src}-${index}`}
+              aria-hidden={index >= images.length || undefined}
+            >
+              {/* src last, as in HomePage: set first, Safari fetches it eagerly. */}
+              <img
+                alt={image.alt}
+                className="image-showcase-photo"
+                loading="lazy"
+                width={140}
+                height={140}
+                // The .image-showcase-photo widths in ImageShowcase.css.
+                sizes="(max-width: 480px) 80px, (max-width: 768px) 100px, 140px"
+                srcSet={photoSrcSet(image.src)}
+                src={photoSrc(image.src)}
+              />
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );

@@ -76,6 +76,25 @@ test.describe("Prerendered heads", () => {
     }
   });
 
+  test("the sitemap lists every landing page on the canonical host, and robots points at it", async ({
+    request,
+  }) => {
+    const canonical = await readHead(request, "/");
+    const origin = new URL(canonical.canonical ?? "").origin;
+
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs.length).toBeGreaterThan(2);
+    for (const loc of locs) {
+      expect(new URL(loc).origin, loc).toBe(origin);
+      // Every URL it lists is a page the build wrote.
+      await expectLandingHead(request, new URL(loc).pathname);
+    }
+
+    const robots = await (await request.get("/robots.txt")).text();
+    expect(robots).toContain(`Sitemap: ${origin}/sitemap.xml`);
+  });
+
   test("the 404 page is noindex and names no canonical", async ({
     request,
   }) => {
