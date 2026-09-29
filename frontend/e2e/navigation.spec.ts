@@ -104,8 +104,8 @@ test.describe("External Links", () => {
   test("social links open in new tab", async ({ page }) => {
     await page.goto("/");
 
-    // Home ships social links, and home.spec.ts already requires them to be
-    // visible, so a count-gate here was inconsistent with the suite next to it.
+    // Home ships external links (the Claudlobby repo, in the header, hero and
+    // footer), so a count-gate here would be inconsistent with the suite.
     // Worse, this is a security assertion: under the gate, removing every
     // target="_blank" made the rel="noopener" check silently stop running
     // instead of failing, which is the one outcome it exists to prevent.
@@ -124,7 +124,7 @@ test.describe("Mobile Menu", () => {
     await page.goto("/");
 
     // Find and click hamburger
-    const hamburger = page.locator(".home-hamburger");
+    const hamburger = page.locator(".nav-hamburger");
     await expect(hamburger).toBeVisible();
     await hamburger.click();
 
@@ -140,10 +140,11 @@ test.describe("Mobile Menu", () => {
 
   test("mobile menu section navigation works", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/");
+    // The section links live on the personal page's menu.
+    await page.goto("/about");
 
     // Open menu
-    await page.locator(".home-hamburger").click();
+    await page.locator(".nav-hamburger").click();
 
     // Click a section
     const journeyBtn = page.locator(".mobile-menu-section-btn", {
@@ -163,7 +164,7 @@ test.describe("Mobile Menu", () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
 
-    const hamburger = page.locator(".home-hamburger");
+    const hamburger = page.locator(".nav-hamburger");
     await expect(hamburger).not.toBeVisible();
   });
 });
@@ -232,7 +233,7 @@ test.describe("Page Load Performance", () => {
 
 test.describe("see more survives a collapse (#165)", () => {
   test("expand, collapse, expand again", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/about");
 
     // First expansion. This is the POSITIVE CONTROL: without it the test
     // would also pass on a page where "see more" never worked at all.

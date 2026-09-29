@@ -70,9 +70,10 @@ describe("landingPages, over the shipped content", () => {
     projects = await shippedProjects();
   });
 
-  it("covers the home page, the projects page and every indexed project, in index order", () => {
+  it("covers home, about, projects and every indexed project, in index order", () => {
     expect(landingPages(projects).map((page) => page.path)).toEqual([
       "/",
+      "/about",
       "/projects",
       ...projects.map((project) => `/projects/${project.id}`),
     ]);

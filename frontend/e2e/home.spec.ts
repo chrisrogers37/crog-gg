@@ -1,221 +1,75 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * Home Page E2E Tests
+ * Home Page E2E Tests: Claudlobby's front door (#173)
  *
- * Philosophy: Test structure and behavior, not specific content.
- * Content may change frequently - tests should verify the page works,
- * not that it contains exact copy.
+ * Philosophy: test structure and behavior, not copy. The one piece of text
+ * checked is the product's name, because naming it above the fold is the
+ * point of the page. Links are found by where they go.
  */
+
+const REPO = "https://github.com/Claudfather/Claudlobby";
+
+for (const [label, viewport] of [
+  ["desktop", { width: 1366, height: 768 }],
+  ["phone", { width: 390, height: 844 }],
+] as const) {
+  test(`the first screen names Claudlobby and shows both CTAs (${label})`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+
+    await expect(page.locator(".cl-hero h1")).toBeVisible();
+    await expect(page.locator(".cl-hero")).toContainText(/claudlobby/i);
+    // Wholly on screen, without scrolling.
+    for (const cta of [`.cl-hero a[href="${REPO}"]`, '.cl-hero a[href="#quickstart"]']) {
+      await expect(page.locator(cta)).toBeInViewport({ ratio: 1 });
+    }
+  });
+}
 
 test.describe("Home Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("displays profile section with name heading", async ({ page }) => {
-    // Test that a main heading exists (the name), not its exact content
-    const mainHeading = page.locator("h1").first();
-    await expect(mainHeading).toBeVisible();
+  test("links the Claudlobby repo from the hero, header and footer", async ({
+    page,
+  }) => {
+    for (const area of [".cl-hero", "header", "footer"]) {
+      const link = page.locator(`${area} a[href="${REPO}"]`).first();
+      await expect(link, area).toBeVisible();
+      expect(await link.getAttribute("rel"), area).toContain("noopener");
+    }
   });
 
-  test("displays location information", async ({ page }) => {
-    // Test that location text exists (city name visible on page)
-    await expect(
-      page.getByText(/New York|NYC|Location/i).first(),
-    ).toBeVisible();
+  test("the Quickstart button jumps to the quickstart", async ({ page }) => {
+    await page.locator('.cl-hero a[href="#quickstart"]').click();
+    await expect(page).toHaveURL(/#quickstart$/);
+    await expect(page.locator("#quickstart pre")).toBeInViewport();
   });
 
-  test("displays contact information", async ({ page }) => {
-    // Test that email link exists (mailto: link)
-    const emailLink = page.locator('a[href^="mailto:"]');
-    await expect(emailLink).toBeVisible();
+  test("copies the quickstart commands", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.locator("#quickstart .cl-copy").click();
+    await expect(page.locator("#quickstart .cl-copy")).toHaveText(/copied/i);
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toContain(`git clone ${REPO}.git`);
   });
 
-  test("displays typewriter or welcome section", async ({ page }) => {
-    // Test that some welcome/typewriter element exists
-    // Don't test specific text since it cycles and changes
-    const welcomeArea = page
-      .locator(".welcome-typewriter, .typewriter")
-      .first();
-    await expect(welcomeArea).toBeVisible({ timeout: 5000 });
+  test("shows the library counts with their source", async ({ page }) => {
+    const counts = page.locator(".cl-counts dd");
+    await expect(counts.first()).toBeVisible();
+    for (const value of await counts.allTextContents()) {
+      expect(value).toMatch(/^\d+$/);
+    }
+    await expect(page.locator(`.cl-source a[href^="${REPO}/blob/"]`)).toBeVisible();
   });
 
-  test("displays section navigation buttons", async ({ page }) => {
-    // Test that section nav buttons exist
-    const sectionButtons = page.locator(
-      ".section-nav button, .section-buttons button",
-    );
-    await expect(sectionButtons.first()).toBeVisible();
-
-    // Should have multiple section buttons
-    const count = await sectionButtons.count();
-    expect(count).toBeGreaterThan(3);
-  });
-
-  test("displays tagline in header", async ({ page }) => {
-    const tagline = page.locator(".header-tagline");
-    await expect(tagline).toBeVisible({ timeout: 5000 });
-  });
-
-  test("has social links", async ({ page }) => {
-    // Test that external social links exist
-    const socialLinks = page.locator('a[target="_blank"]');
-    await expect(socialLinks.first()).toBeVisible();
-  });
-});
-
-test.describe("Section Navigation", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-  });
-
-  test("clicking a section button reveals content", async ({ page }) => {
-    // Find any section button and click it
-    const sectionButton = page
-      .locator(".section-nav button, .section-buttons button")
-      .first();
-    await sectionButton.click();
-
-    // Some content area should become visible
-    const contentArea = page
-      .locator('.section-content, .portfolio-section, [class*="section"]')
-      .first();
-    await expect(contentArea).toBeVisible({ timeout: 5000 });
-  });
-
-  test("clicking same section twice toggles it off", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
-
-    // Click journey to activate it
-    await journeyButton.click();
-    await page.waitForTimeout(500);
-    await expect(journeyButton).toHaveClass(/active/);
-
-    // Click journey again - should deactivate it
-    await journeyButton.click();
-    await page.waitForTimeout(500);
-
-    await expect(journeyButton).not.toHaveClass(/active/);
-  });
-
-  test("section buttons show active state when clicked", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
-
-    // Journey starts inactive (about is auto-selected on mount)
-    await expect(journeyButton).not.toHaveClass(/active/);
-
-    // Click to activate
-    await journeyButton.click();
-    await expect(journeyButton).toHaveClass(/active/);
-  });
-
-  test("switching sections deactivates previous", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
-    const projectsButton = page.locator('button[data-section="projects"]');
-
-    // Click journey (not auto-selected, so clean activation)
-    await journeyButton.click();
-    await expect(journeyButton).toHaveClass(/active/);
-
-    // Click projects
-    await projectsButton.click();
-
-    // Journey should no longer be active
-    await expect(journeyButton).not.toHaveClass(/active/);
-    await expect(projectsButton).toHaveClass(/active/);
-  });
-});
-
-test.describe("Section Flow Navigation", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-  });
-
-  test("section navigator shows next section", async ({ page }) => {
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
-
-    // Check for navigator
-    const navigator = page.locator(".section-navigator");
-    await expect(navigator).toBeVisible({ timeout: 5000 });
-
-    // Should show "up next" text
-    await expect(navigator).toContainText(/up next/i);
-  });
-
-  test("section navigator not shown on last section", async ({ page }) => {
-    // Click Music tab (last section)
-    await page.locator('button[data-section="music"]').click();
-
-    // Wait for section content to render
-    await page.waitForTimeout(1000);
-
-    // Navigator should not be visible
-    const navigator = page.locator(".section-navigator");
-    await expect(navigator).not.toBeVisible();
-  });
-
-  test("clicking section navigator switches section", async ({ page }) => {
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
-
-    // Wait for navigator to appear
-    const navigatorBtn = page.locator(".section-navigator-btn");
-    await expect(navigatorBtn).toBeVisible({ timeout: 5000 });
-
-    // Click the navigator
-    await navigatorBtn.click();
-
-    // Projects tab should now be active (next after journey)
-    const projectsButton = page.locator('button[data-section="projects"]');
-    await expect(projectsButton).toHaveClass(/active/);
-  });
-});
-
-test.describe("Action Buttons", () => {
-  test("action buttons appear when section is active", async ({ page }) => {
-    await page.goto("/");
-
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
-
-    // Action buttons should appear
-    const actionButtons = page.locator(
-      '.action-buttons button, [class*="action"] button',
-    );
-
-    // Wait for action buttons (may take a moment to appear)
-    await expect(actionButtons.first()).toBeVisible({ timeout: 5000 });
-  });
-
-  test("action buttons hidden when no section active", async ({ page }) => {
-    await page.goto("/");
-
-    // Without clicking any section, action buttons should not be visible
-    const actionButtons = page.locator(
-      '.action-buttons, [class*="action-buttons"]',
-    );
-    await expect(actionButtons).not.toBeVisible();
-  });
-});
-
-test.describe("Contact CTA", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-  });
-
-  test("displays contact CTA section", async ({ page }) => {
-    const cta = page.locator(".contact-cta");
-    await expect(cta).toBeVisible({ timeout: 5000 });
-
-    // Check that email link exists
-    const emailLink = cta.locator('a[href^="mailto:"]');
-    await expect(emailLink).toBeVisible();
-  });
-
-  test("homepage has footer", async ({ page }) => {
-    const footer = page.locator("footer.footer");
-    await expect(footer).toBeVisible({ timeout: 5000 });
+  test("hands the reader on to the personal page", async ({ page }) => {
+    await page.locator('.cl-hero a[href="/about"]').click();
+    await expect(page).toHaveURL("/about");
+    await expect(page.locator(".profile-photo")).toBeVisible();
   });
 });

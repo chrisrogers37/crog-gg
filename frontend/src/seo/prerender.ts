@@ -1,4 +1,5 @@
 import {
+  ABOUT_META,
   HOME_META,
   NOT_FOUND_META,
   PROJECTS_META,
@@ -67,6 +68,7 @@ export function renderPage(template: string, meta: PageMeta): string {
  */
 export const landingPages = (projects: ProjectSummary[]): LandingPage[] => [
   HOME_META,
+  ABOUT_META,
   PROJECTS_META,
   ...projects.map(projectMeta),
 ];

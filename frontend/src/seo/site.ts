@@ -1,4 +1,5 @@
 import type { Project } from "../types/Project";
+import { CLAUDLOBBY_REPO } from "../content/links";
 
 /**
  * What each page tells crawlers and link unfurlers about itself (#174).
@@ -116,10 +117,33 @@ const AUTHOR = {
   url: SITE_URL,
 } as const;
 
+const HOME_DESCRIPTION =
+  "Claudlobby composes a fleet of always-on Claude Code agents from one fleet.yaml, on hardware you own: a dark factory for software. By Chris Rogers.";
+
+/** The front door for Claudlobby (#173). */
 export const HOME_META: LandingPage = {
   path: "/",
+  description: HOME_DESCRIPTION,
+  schemas: [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      name: "Claudlobby",
+      description: HOME_DESCRIPTION,
+      codeRepository: CLAUDLOBBY_REPO,
+      programmingLanguage: "Python",
+      runtimePlatform: "Claude Code",
+      author: AUTHOR,
+    },
+  ],
+};
+
+/** The personal page, which is who the Person schema describes. */
+export const ABOUT_META: LandingPage = {
+  path: "/about",
+  title: "About",
   description:
-    "Agentic AI builder. Creator of Claudlobby (fleet compositor for Claude Code). Data platform lead at Artemis.",
+    "Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.",
   type: "profile",
   schemas: [
     {

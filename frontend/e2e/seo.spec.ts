@@ -40,6 +40,20 @@ test.describe("Page head", () => {
     expect(tags.ogImage).toMatch(/^https:\/\/.+\.png$/);
   });
 
+  test("the about page, reached in the app, replaces the entry page's tags", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.locator('footer a[href="/about"]').click();
+    await expect(page).toHaveURL(/\/about$/);
+    await expect(page.locator(".profile-photo")).toBeVisible();
+
+    await expect
+      .poll(async () => (await headTags(page)).canonical)
+      .toEqual(["/about"]);
+    expect((await headTags(page)).ogTitle).toBe(1);
+  });
+
   test("a page reached in the app replaces the entry page's tags", async ({
     page,
   }) => {
