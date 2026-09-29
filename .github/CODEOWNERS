@@ -1,0 +1,5 @@
+# Every change needs the owner's review. It matters most for the paths that
+# run code at build or deploy time, or that touch secrets and paid APIs:
+# .claude/, .github/, .husky/, api/, vercel.json, the package manifests and
+# the Vite config.
+* @chrisrogers37

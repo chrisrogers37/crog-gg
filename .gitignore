@@ -42,29 +42,25 @@ htmlcov/
 *.tmp
 *.temp
 
-# Python Virtual Environment
-.env.local
-.env.*.local
-!.env.example
-
-# Python Virtual Environment
+# Environment files (the committed .env.example files are the only exception)
 .env
-.env.local
-.env.development
-.env.test
-.env.production
+.env.*
+!.env.example
 
 # System Files
 .DS_Store
 Thumbs.db 
 .vercel
 
-# Claude fleet bot telemetry — supervision hooks may write these relative to
-# the session cwd instead of the bot directory (Claudfather/Claudlobby#874);
-# they can land at any depth and are never product data.
+# Agent telemetry: supervision hooks may write these relative to the session
+# cwd instead of the bot directory, so they can land at any depth. They are
+# never product data.
 **/data/events/fleet-*.jsonl
 **/data/.last-tool-call
 **/data/.idle
 
 # local virtualenv (repo already ignores venv/, not .venv/)
 .venv/
+
+# Personal Claude Code settings (keep machine-specific permissions out of the repo)
+.claude/settings.local.json
