@@ -150,7 +150,12 @@ export const ABOUT_META: LandingPage = {
       "@context": "https://schema.org",
       ...AUTHOR,
       image: absoluteUrl("/profile-photo.jpg"),
-      jobTitle: "Builder of Things That Sometimes Work",
+      jobTitle: "Data Platform Lead",
+      worksFor: {
+        "@type": "Organization",
+        name: "Artemis",
+        url: "https://artemis.ai",
+      },
       sameAs: Object.values(PROFILE_URLS),
       knowsAbout: [
         "Software Development",

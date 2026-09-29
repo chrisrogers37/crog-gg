@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { claudlobby } from "./claudlobby";
-import { ABOUT_META, HOME_META } from "../seo/site";
+import { ABOUT_META, HOME_META, OG_IMAGE } from "../seo/site";
 
 /**
  * The homepage copy's rules (content/claudlobby.ts). Its shape is the type
  * checker's job; these are the rules a type can't express.
  */
 
-/** Every string in the copy. */
+/** Every string in the value. */
 const strings = (value: unknown): string[] =>
   typeof value === "string"
     ? [value]
@@ -18,6 +18,13 @@ const strings = (value: unknown): string[] =>
         : [];
 
 const copy = strings(claudlobby);
+
+/** What `/` says about Claudlobby off the page: search snippet, share card, JSON-LD. */
+const homeHead = [
+  HOME_META.description,
+  OG_IMAGE.alt,
+  ...strings(HOME_META.schemas),
+];
 
 describe("homepage copy", () => {
   it("has no empty strings", () => {
@@ -48,7 +55,7 @@ describe("homepage copy", () => {
   it("never calls Claudlobby open source while its repo has no LICENSE", () => {
     // #179 and Claudfather/Claudlobby#1996. When the LICENSE lands, this is
     // the test to delete in the same PR that changes the copy.
-    for (const text of [...copy, HOME_META.description, ABOUT_META.description]) {
+    for (const text of [...copy, ...homeHead, ABOUT_META.description]) {
       expect(text).not.toMatch(/open[- ]?source/i);
     }
   });
@@ -61,5 +68,29 @@ describe("homepage copy", () => {
     for (const text of strings(claudlobby.hero)) {
       expect(text).not.toMatch(/artemis/i);
     }
+  });
+});
+
+describe("tone split and maturity (#179)", () => {
+  // Other agents and providers are the plan, not the product: they may be
+  // named only where the page says so.
+  const PLANNED =
+    /openai|gemini|codex|mistral|llama|local models?|multi-?provider|provider-agnostic|model-agnostic|any llm/i;
+
+  it("names other model providers only in the maturity note and the roadmap's Next column", () => {
+    const { maturity, roadmap, ...rest } = claudlobby;
+    const { next, ...roadmapRest } = roadmap;
+    for (const text of [...strings(rest), ...strings(roadmapRest), ...homeHead]) {
+      expect(text).not.toMatch(PLANNED);
+    }
+    // And the two places that may name them still do, so PLANNED still
+    // recognises the words the copy uses.
+    expect(maturity.text).toMatch(PLANNED);
+    expect(next.items.some((item) => PLANNED.test(item))).toBe(true);
+  });
+
+  it("says plainly what runs today and that the rest is roadmap", () => {
+    expect(claudlobby.maturity.text).toMatch(/claude code/i);
+    expect(claudlobby.maturity.text).toMatch(/roadmap/i);
   });
 });

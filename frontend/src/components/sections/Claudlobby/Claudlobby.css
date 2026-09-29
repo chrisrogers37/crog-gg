@@ -64,6 +64,28 @@
   margin-top: 1.75rem;
 }
 
+.cl-maturity {
+  margin: 1.25rem 0 0;
+  line-height: 1.55;
+}
+
+/* The early-alpha caveat, in the hero and again by the quickstart. */
+.cl-note {
+  font-size: 0.9rem;
+  color: var(--text-color-secondary);
+}
+
+.cl-badge {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
 /* Sections */
 /* The header sticks, so an in-page link (#quickstart and the like) stops its
    section's heading below the header rather than under it. */
@@ -186,14 +208,15 @@
 }
 
 /* Quickstart */
-.cl-prereqs {
+/* The page's bulleted lists: the prerequisites and the roadmap. */
+.cl-list {
   margin: 0.75rem 0 0;
   padding-left: 1.1rem;
   list-style: disc;
   line-height: 1.6;
 }
 
-.cl-prereqs li + li {
+.cl-list li + li {
   margin-top: 0.5rem;
 }
 
@@ -203,6 +226,26 @@
   gap: 1.5rem;
   margin: 2rem 0 0;
   font-weight: 600;
+}
+
+.cl-quickstart-note {
+  margin: 1rem 0 0;
+}
+
+/* Today, and what's next */
+.cl-roadmap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.cl-roadmap-column {
+  padding: 1.25rem 1.5rem;
+}
+
+/* Muted like the other cards' body text (.cl-step p, .cl-points p). */
+.cl-roadmap-column .cl-list {
+  color: var(--text-color-secondary);
 }
 
 @media (max-width: 768px) {
@@ -216,7 +259,8 @@
   }
 
   .cl-steps,
-  .cl-points {
+  .cl-points,
+  .cl-roadmap {
     grid-template-columns: minmax(0, 1fr);
   }
 
