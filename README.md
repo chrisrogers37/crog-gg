@@ -1,6 +1,6 @@
 # Choose Your Own Chris
 
-[![CI](https://github.com/chrisrogers37/choose-your-own-chris/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/choose-your-own-chris/actions/workflows/ci.yml)
+[![CI](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml)
 
 An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. The site showcases professional experience, projects, and musical endeavors with a unique twist - content can be regenerated on demand for a fresh perspective!
 
@@ -64,11 +64,11 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js 20.19+, 22.13+ or 24+ (required by Vite 7; CI runs Node 20)
 - Python 3.10+ (CI runs 3.12)
-- OpenAI API key
+- (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
 - (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
-- (Optional) Upstash Redis credentials — without them, rate-limit/cooldown silently no-op locally
+- (Optional) Upstash Redis credentials. Without them the site runs, but `/api/regenerate` returns 503: the paid endpoint fails closed rather than run unmetered
 
 ### Backend Setup
 
@@ -85,7 +85,7 @@ An interactive portfolio website featuring dynamic content generation using Open
    pip install -r requirements.txt
    ```
 
-3. Set env vars (use a `.env` loader of your choice, or export them directly):
+3. Set env vars. All of them are optional; [`.env.example`](.env.example) lists them with notes. Export them directly or use a loader of your choice:
 
    ```
    OPENAI_API_KEY=your_api_key_here
@@ -94,10 +94,10 @@ An interactive portfolio website featuring dynamic content generation using Open
    KV_REST_API_TOKEN=optional_upstash_rest_token
    ```
 
-4. Start the Flask dev server (binds to `:5001`; Vite proxies `/api/*` to it):
+4. Start the Flask dev server from the repo root. It binds to `:5001`, and Vite proxies `/api/*` to it. Run it as a module; `python api/index.py` fails with `ModuleNotFoundError: No module named 'api'`:
 
    ```bash
-   python api/index.py
+   python3 -m api.index
    ```
 
 ### Frontend Setup
@@ -114,11 +114,7 @@ An interactive portfolio website featuring dynamic content generation using Open
    npm install
    ```
 
-3. Create a `.env` file for local development:
-
-   ```
-   VITE_API_URL=http://localhost:5001
-   ```
+3. No `.env` file is needed. Leave `VITE_API_URL` unset so the dev server proxies `/api/*` to the Flask server on `:5001` (see `frontend/.env.example`). Setting it to `http://localhost:5001` makes the browser block the API calls.
 
 4. Start the development server:
 
@@ -195,7 +191,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://crog.gg; every 
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`                        | yes               | `/api/regenerate` won't work without it                                                                                                                                                         |
 | `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints                                                                                    |
-| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them, rate-limit/cooldown silently no-op. Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them, `/api/regenerate` returns 503 (the paid endpoint fails closed) and the GitHub endpoints run without rate limits. Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 
 ### Provisioning Upstash Redis
@@ -216,7 +212,7 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `/api/regenerate` returns `"OpenAI API key not configured"`                            | `OPENAI_API_KEY` missing in Vercel env vars or last deploy predates the env var being set — set it and redeploy                         |
 | `/api/v1/github/contributions` returns `"GitHub token required for contribution data"` | `GITHUB_TOKEN` missing — same fix                                                                                                       |
-| Rate limit / cooldown never enforces                                                   | Upstash env vars missing or DB not connected to the project; the client falls open on Redis errors so the site stays up but unprotected |
+| `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints fail open), so fix Upstash, not the endpoint |
 | Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
 
 ## License
