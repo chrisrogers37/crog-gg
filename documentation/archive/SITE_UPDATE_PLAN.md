@@ -147,8 +147,8 @@ ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --har
 
 | Secret           | Description                         |
 | ---------------- | ----------------------------------- |
-| `FRONTEND_HOST`  | Frontend server IP (209.97.158.198) |
-| `BACKEND_HOST`   | Backend server IP (167.172.233.207) |
+| `FRONTEND_HOST`  | Frontend server IP (decommissioned; address removed) |
+| `BACKEND_HOST`   | Backend server IP (decommissioned; address removed) |
 | `DEPLOY_USER`    | SSH user (root)                     |
 | `DEPLOY_SSH_KEY` | Contents of deploy private key      |
 | `FRONTEND_PATH`  | /var/www/crog.gg                    |
