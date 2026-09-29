@@ -41,6 +41,13 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: /prerender\.spec\.ts/,
+    },
+    // The crawler's view of a production build: raw HTML, no browser.
+    {
+      name: "prerender",
+      testMatch: /prerender\.spec\.ts/,
+      use: { baseURL: "http://localhost:4179" },
     },
     // Uncomment to test on more browsers
     // {
@@ -53,11 +60,21 @@ export default defineConfig({
     // },
   ],
 
-  // Run local dev server before starting tests
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  // The dev server for the browser tests, and a production build under
+  // `vite preview` for e2e/prerender.spec.ts. The build is never reused from an
+  // earlier run: stale output is exactly what that spec must not pass on.
+  webServer: [
+    {
+      command: "npm run dev",
+      url: "http://localhost:5173",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+    {
+      command: "npm run build && npx vite preview --port 4179 --strictPort",
+      url: "http://localhost:4179",
+      reuseExistingServer: false,
+      timeout: 180 * 1000,
+    },
+  ],
 });

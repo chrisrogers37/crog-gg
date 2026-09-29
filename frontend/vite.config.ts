@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { prerender } from "./scripts/vite-prerender";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,7 +25,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react()],
+  plugins: [react(), prerender()],
   server: {
     proxy: {
       "/api": {

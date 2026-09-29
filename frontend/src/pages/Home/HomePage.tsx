@@ -13,7 +13,8 @@ import {
 } from "../../store";
 
 // SEO
-import { SEO, PersonSchema } from "../../components/SEO";
+import { SEO } from "../../components/SEO";
+import { HOME_META } from "../../seo/site";
 
 // Components
 import About from "../../components/About";
@@ -244,12 +245,7 @@ export function HomePage() {
 
   return (
     <>
-      <SEO
-        description="Agentic AI builder. Creator of Claudlobby (open-source fleet compositor for Claude Code). Data platform lead at Artemis."
-        url="/"
-        type="profile"
-      />
-      <PersonSchema />
+      <SEO {...HOME_META} />
       <div className="home-page">
         <div className="home-theme-toggle">
           <ThemeToggle />

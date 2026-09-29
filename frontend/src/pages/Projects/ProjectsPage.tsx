@@ -8,6 +8,7 @@ import {
 import { ProjectCard } from "../../components/sections/Projects/ProjectCard";
 import { ProjectSkeletonGrid } from "../../components/sections/Projects/Projects";
 import { SEO } from "../../components/SEO";
+import { PROJECTS_META } from "../../seo/site";
 import "./ProjectsPage.css";
 
 /**
@@ -90,11 +91,7 @@ export function ProjectsPage() {
 
   return (
     <>
-      <SEO
-        title="Projects"
-        description="Explore my portfolio of software projects, side projects, and experiments. From web apps to mobile development."
-        url="/projects"
-      />
+      <SEO {...PROJECTS_META} />
       <div className="projects-page">
         <header className="projects-header">
           <h1 className="projects-title">Projects</h1>

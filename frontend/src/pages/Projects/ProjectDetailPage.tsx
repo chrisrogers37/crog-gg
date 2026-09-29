@@ -1,7 +1,8 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useProjects } from "../../store";
 import { Breadcrumbs } from "../../components/common/Breadcrumbs";
-import { SEO, SoftwareSchema, BreadcrumbSchema } from "../../components/SEO";
+import { SEO } from "../../components/SEO";
+import { projectBreadcrumbs, projectMeta } from "../../seo/site";
 import {
   GitHubReadme,
   RepoStats,
@@ -55,35 +56,10 @@ export function ProjectDetailPage() {
 
   return (
     <>
-      <SEO
-        title={project.title}
-        description={project.description}
-        url={`/projects/${project.id}`}
-      />
-      <SoftwareSchema
-        name={project.title}
-        description={project.description}
-        url={project.url}
-      />
-      <BreadcrumbSchema
-        items={[
-          { name: "Home", url: "https://crog.gg/" },
-          { name: "Projects", url: "https://crog.gg/projects" },
-          {
-            name: project.title,
-            url: `https://crog.gg/projects/${project.id}`,
-          },
-        ]}
-      />
+      <SEO {...projectMeta(project)} />
       <div className="project-detail-page">
         {/* Breadcrumbs */}
-        <Breadcrumbs
-          items={[
-            { label: "Home", path: "/" },
-            { label: "Projects", path: "/projects" },
-            { label: project.title },
-          ]}
-        />
+        <Breadcrumbs items={projectBreadcrumbs(project)} />
 
         {/* Project Header */}
         <header className="project-header">

@@ -1,5 +1,9 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  type RouteObject,
+} from "react-router-dom";
 
 // Layout (loaded immediately as it's the shell)
 import { Layout } from "./components/layout";
@@ -55,8 +59,14 @@ function LazyPage({ children }: { children: React.ReactNode }) {
  * /projects            - Projects listing
  * /projects/:slug      - Individual project detail
  * /*                   - 404 Not Found
+ *
+ * Every landable route needs a prerendered page in seo/prerender.ts, or it
+ * 404s in production (#174); router.test.tsx checks the two agree.
  */
-const router = createBrowserRouter([
+// Exported for router.test.tsx. This module is the app root, which Fast Refresh
+// reloads in full anyway, so the component-only-exports rule buys nothing here.
+// eslint-disable-next-line react-refresh/only-export-components
+export const routes: RouteObject[] = [
   {
     path: "/",
     element: (
@@ -107,7 +117,9 @@ const router = createBrowserRouter([
     path: "*",
     element: <NotFoundPage />,
   },
-]);
+];
+
+const router = createBrowserRouter(routes);
 
 /**
  * AppRouter Component
