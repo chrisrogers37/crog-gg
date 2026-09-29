@@ -96,9 +96,9 @@ def test_plausible_lookalike_urls_are_discarded(client):
     mangled = _bio(
         {
             **ORIGINAL_SOCIAL_LINKS,
-            "github": "https://github.com/christopher-rogers",
-            "linkedin": "https://www.linkedin.com/in/christopher-t-rogers/",
-            "hoobe": "https://hoo.be/christopherrogers",
+            "github": "https://github.com/lookalike-example",
+            "linkedin": "https://www.linkedin.com/in/lookalike-example/",
+            "hoobe": "https://hoo.be/lookalike-example",
         }
     )
 
