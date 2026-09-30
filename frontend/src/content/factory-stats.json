@@ -1,0 +1,69 @@
+{
+  "asOf": "2026-09-29",
+  "apps": {
+    "storydump": {
+      "repo": "chrisrogers37/storydump",
+      "merged": {
+        "value": 685,
+        "query": "repo:chrisrogers37/storydump is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions"
+      },
+      "mergedLast30Days": {
+        "value": 186,
+        "query": "repo:chrisrogers37/storydump is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions merged:>=2026-08-30"
+      },
+      "since": "2026-01-04"
+    },
+    "benzo": {
+      "repo": "chrisrogers37/benzo",
+      "merged": {
+        "value": 17,
+        "query": "repo:chrisrogers37/benzo is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions"
+      },
+      "mergedLast30Days": {
+        "value": 0,
+        "query": "repo:chrisrogers37/benzo is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions merged:>=2026-08-30"
+      },
+      "since": "2026-03-08"
+    },
+    "shuffify": {
+      "repo": "chrisrogers37/shuffify",
+      "merged": {
+        "value": 262,
+        "query": "repo:chrisrogers37/shuffify is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions"
+      },
+      "mergedLast30Days": {
+        "value": 1,
+        "query": "repo:chrisrogers37/shuffify is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions merged:>=2026-08-30"
+      },
+      "since": "2025-01-13"
+    },
+    "dead-redux": {
+      "repo": "chrisrogers37/dead-redux",
+      "merged": {
+        "value": 12,
+        "query": "repo:chrisrogers37/dead-redux is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions"
+      },
+      "mergedLast30Days": {
+        "value": 0,
+        "query": "repo:chrisrogers37/dead-redux is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions merged:>=2026-08-30"
+      },
+      "since": "2026-02-16"
+    },
+    "shitpost-alpha": {
+      "repo": "chrisrogers37/shitpost-alpha",
+      "merged": {
+        "value": 145,
+        "query": "repo:chrisrogers37/shitpost-alpha is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions"
+      },
+      "mergedLast30Days": {
+        "value": 0,
+        "query": "repo:chrisrogers37/shitpost-alpha is:pr is:merged -author:app/dependabot -author:app/renovate -author:app/github-actions merged:>=2026-08-30"
+      },
+      "since": "2025-09-01"
+    }
+  },
+  "tracker": {
+    "latestNumber": 2015,
+    "source": "https://api.github.com/repos/Claudfather/Claudlobby/issues?state=all&sort=created&direction=desc&per_page=1"
+  }
+}

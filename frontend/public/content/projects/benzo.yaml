@@ -13,6 +13,7 @@ technologies:
   - SwiftUI
   - React
   - Vite
+github: https://github.com/chrisrogers37/benzo
 featured: true
 order: 2
 status: active
@@ -22,4 +23,3 @@ tags:
   - menubar
   - power-management
   - swift
-  - open-source

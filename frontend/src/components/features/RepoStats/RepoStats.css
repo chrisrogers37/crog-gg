@@ -112,3 +112,9 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.stats-source {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+}

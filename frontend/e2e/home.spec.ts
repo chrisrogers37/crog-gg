@@ -119,7 +119,7 @@ test.describe("Home Page", () => {
   });
 
   test("shows the library counts with their source", async ({ page }) => {
-    const counts = page.locator(".cl-counts dd");
+    const counts = page.locator(".cl-library .cl-counts dd");
     await expect(counts.first()).toBeVisible();
     for (const value of await counts.allTextContents()) {
       expect(value).toMatch(/^\d+$/);
@@ -131,5 +131,18 @@ test.describe("Home Page", () => {
     await page.locator('.cl-hero a[href="/about"]').click();
     await expect(page).toHaveURL("/about");
     await expect(page.locator(".profile-photo")).toBeVisible();
+  });
+
+  test("shows the apps the fleet built, each with its project page (#176)", async ({
+    page,
+  }) => {
+    const cards = page.locator("#factory li");
+    await expect(cards.first()).toBeVisible();
+    expect(await cards.count()).toBeGreaterThanOrEqual(5);
+    for (const card of await cards.all()) {
+      await expect(card.locator('a[href^="/projects/"]')).toHaveCount(1);
+    }
+    // The proof bar under the hero shows its three figures.
+    await expect(page.locator(".cl-proof dd")).toHaveCount(3);
   });
 });

@@ -20,7 +20,8 @@ export type RepoLinkLocation =
   | "header"
   | "footer"
   | "menu"
-  | "quickstart";
+  | "quickstart"
+  | "factory";
 
 export type AnalyticsEvent =
   | { name: "repo_click"; location: RepoLinkLocation }

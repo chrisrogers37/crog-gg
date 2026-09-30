@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { githubService, Repository } from "../../../services/githubService";
+import { factoryStats, statsForRepo } from "../../../content/factory";
+import { formatDay } from "../../../utils/formatDate";
 import "./RepoStats.css";
+
+/**
+ * Below this many stars, star, fork and watcher counts read as "unused" rather
+ * than "early", so they're left out (#176, #181 G4).
+ */
+export const STAR_THRESHOLD = 25;
 
 interface RepoStatsProps {
   repoName: string;
@@ -11,7 +19,10 @@ interface RepoStatsProps {
  * RepoStats
  *
  * Displays GitHub repository statistics including:
- * - Stars, forks, watchers
+ * - Stars, forks, watchers, once the stars reach STAR_THRESHOLD
+ * - Pull requests merged, from the dated snapshot in content/factory-stats.json
+ *   (open issues aren't shown: the fleet files its own work queue, so their
+ *   count says nothing about how finished an app is)
  * - Primary language
  * - Last updated date
  * - License
@@ -64,11 +75,25 @@ export function RepoStats({ repoName }: RepoStatsProps) {
     return null;
   }
 
+  const factory = statsForRepo(repoName);
   const stats = [
-    { label: "Stars", value: repo.stargazers_count, icon: "⭐" },
-    { label: "Forks", value: repo.forks_count, icon: "🍴" },
-    { label: "Watchers", value: repo.watchers_count, icon: "👀" },
-    { label: "Issues", value: repo.open_issues_count, icon: "🐛" },
+    ...(repo.stargazers_count >= STAR_THRESHOLD
+      ? [
+          { label: "Stars", value: repo.stargazers_count, icon: "⭐" },
+          { label: "Forks", value: repo.forks_count, icon: "🍴" },
+          { label: "Watchers", value: repo.watchers_count, icon: "👀" },
+        ]
+      : []),
+    ...(factory
+      ? [
+          { label: "PRs merged", value: factory.merged.value, icon: "🔀" },
+          {
+            label: "In the last 30 days",
+            value: factory.mergedLast30Days.value,
+            icon: "📈",
+          },
+        ]
+      : []),
   ];
 
   const lastUpdated = new Date(repo.pushed_at).toLocaleDateString("en-US", {
@@ -80,21 +105,29 @@ export function RepoStats({ repoName }: RepoStatsProps) {
   return (
     <div className="repo-stats">
       {/* Main stats */}
-      <div className="stats-grid">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            className="stat-item"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <span className="stat-icon">{stat.icon}</span>
-            <span className="stat-value">{stat.value.toLocaleString()}</span>
-            <span className="stat-label">{stat.label}</span>
-          </motion.div>
-        ))}
-      </div>
+      {stats.length > 0 && (
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              className="stat-item"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <span className="stat-icon">{stat.icon}</span>
+              <span className="stat-value">{stat.value.toLocaleString()}</span>
+              <span className="stat-label">{stat.label}</span>
+            </motion.div>
+          ))}
+        </div>
+      )}
+      {factory && (
+        <p className="stats-source">
+          Pull requests merged, not counting dependency bots, as of{" "}
+          {formatDay(factoryStats.asOf)}.
+        </p>
+      )}
 
       {/* Meta info */}
       <div className="repo-meta">

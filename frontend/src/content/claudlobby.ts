@@ -17,11 +17,14 @@
  * - every number keeps its source and as-of date, and matches that source
  */
 
+import type { AppSlug } from "./factory";
 import { CLAUDLOBBY_REPO } from "./links";
 
 type Step = { title: string; code: string; body: string };
 type Point = { title: string; body: string };
 type Count = { value: number; label: string };
+/** An app in "Built by the factory"; `slug` is its project id. */
+type FactoryApp = { slug: AppSlug; name: string; url: string; summary: string };
 
 export const claudlobby = {
   hero: {
@@ -44,6 +47,16 @@ export const claudlobby = {
       "Other model providers (OpenAI, Gemini, local models) are on the roadmap.",
     link: "What's next",
     updatesLink: "Get updates",
+  },
+
+  // #176. The figures come from content/factory-stats.json.
+  proof: {
+    label: "The factory, by the numbers",
+    mergedLast30Days: "pull requests merged in the last 30 days",
+    apps: "apps live",
+    tracker: "the latest item on Claudlobby's tracker",
+    source:
+      "From GitHub. Pull requests are across the apps below, not counting dependency bots.",
   },
 
   darkFactory: {
@@ -100,6 +113,56 @@ export const claudlobby = {
         { value: 40, label: "protocols" },
       ] satisfies Count[],
     },
+  },
+
+  // #176. Each app must match its project YAML (factory.test.ts checks);
+  // its numbers come from content/factory-stats.json.
+  factory: {
+    heading: "Built by the factory",
+    intro:
+      "Apps my fleet has been building. Each count is every pull request merged into the app's repo since its first, not counting dependency bots.",
+    apps: [
+      {
+        slug: "storydump",
+        name: "Storydump",
+        url: "https://storydump.app",
+        summary:
+          "A Telegram bot that schedules and publishes Instagram stories from a shared content library.",
+      },
+      {
+        slug: "shuffify",
+        name: "Shuffify",
+        url: "https://shuffify.app",
+        summary:
+          "Spotify playlist management with advanced filtering, organization and discovery.",
+      },
+      {
+        slug: "benzo",
+        name: "Benzo",
+        url: "https://benzo-gules.vercel.app/",
+        summary:
+          "A macOS menu bar utility that forces true deep sleep on MacBooks connected to USB-C docks.",
+      },
+      {
+        slug: "dead-redux",
+        name: "Dead Redux",
+        url: "https://dead-redux.vercel.app",
+        summary: "A new Grateful Dead show, every day.",
+      },
+      {
+        slug: "shitpost-alpha",
+        name: "Shitpost Alpha",
+        url: "https://shitpost-alpha-web-production.up.railway.app/",
+        summary:
+          "Scores social media posts with LLMs for their likely market impact and sends trading alerts.",
+      },
+    ] satisfies FactoryApp[],
+    merged: "pull requests merged since",
+    recent: "in the last 30 days",
+    appLink: "Live app",
+    repoLink: "Repo",
+    source: "From GitHub.",
+    claudlobbyLink: "Built with Claudlobby",
   },
 
   // From the README's Quick start and "You install separately" at c4682f7

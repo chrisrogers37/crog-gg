@@ -2,7 +2,9 @@ import { SEO } from "../../components/SEO";
 import { HOME_META } from "../../seo/site";
 import {
   DarkFactory,
+  Factory,
   Hero,
+  ProofBar,
   Quickstart,
   Roadmap,
   Updates,
@@ -23,8 +25,10 @@ export function HomePage() {
       <SEO {...HOME_META} />
       <div className="cl-home">
         <Hero />
+        <ProofBar />
         <DarkFactory />
         <WhyClaudlobby />
+        <Factory />
         <Quickstart />
         <Roadmap />
         <Updates />

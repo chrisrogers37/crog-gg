@@ -1,15 +1,11 @@
 import { claudlobby } from "../../../content/claudlobby";
+import { formatDay } from "../../../utils/formatDate";
+import { Counts } from "./Counts";
 import { InlineCode } from "./InlineCode";
 import { Section } from "./Section";
 
 const { why } = claudlobby;
 const { library } = why;
-
-/** "2026-09-29" as "Sep 29, 2026", the same in every time zone. */
-const AS_OF = new Date(`${library.asOf}T00:00:00Z`).toLocaleDateString(
-  "en-US",
-  { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" },
-);
 
 /**
  * What sets it apart, and what is in the library today. Every count is shown
@@ -30,20 +26,13 @@ export function WhyClaudlobby() {
       </div>
       <div className="card cl-library">
         <h3>{library.heading}</h3>
-        <dl className="cl-counts">
-          {library.counts.map((count) => (
-            <div key={count.label}>
-              <dt>{count.label}</dt>
-              <dd>{count.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <Counts items={library.counts} />
         <p className="cl-source">
           Source:{" "}
           <a href={library.source} target="_blank" rel="noopener noreferrer">
             {library.sourceLabel}
           </a>
-          , as of {AS_OF}.
+          , as of {formatDay(library.asOf)}.
         </p>
       </div>
     </Section>

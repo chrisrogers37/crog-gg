@@ -153,7 +153,8 @@
 }
 
 .cl-step p,
-.cl-points p {
+.cl-points p,
+.cl-app p {
   margin: 0.5rem 0 0;
   font-size: 0.95rem;
   line-height: 1.55;
@@ -248,6 +249,41 @@
 /* Muted like the other cards' body text (.cl-step p, .cl-points p). */
 .cl-roadmap-column .cl-list {
   color: var(--text-color-secondary);
+}
+
+/* Under the hero: three sourced numbers */
+.cl-proof .cl-counts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+/* Built by the factory */
+.cl-apps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-app {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+}
+
+.cl-app .cl-app-count {
+  color: var(--text-color);
+}
+
+/* Pinned to the card's foot, so the links line up across a row. */
+.cl-app .cl-app-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
