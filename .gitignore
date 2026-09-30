@@ -46,6 +46,8 @@ htmlcov/
 .env
 .env.*
 !.env.example
+.envrc
+.direnv/
 
 # System Files
 .DS_Store

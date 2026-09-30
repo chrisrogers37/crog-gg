@@ -1,21 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:*)",
-      "Bash(npm run lint:*)",
-      "Bash(npm run test:*)",
-      "Bash(npm test:*)",
-      "Bash(npm run dev:*)",
-      "Bash(npm run preview:*)",
-      "Bash(npx vitest:*)",
-      "Bash(npx playwright test:*)",
-      "Bash(python3 -m pytest:*)",
-      "Bash(flake8 api:*)",
-      "Bash(black --check:*)",
-      "Bash(isort --check-only:*)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)"
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(npm run test:run)",
+      "Bash(npm test)",
+      "Bash(npm run dev)",
+      "Bash(npm run preview)",
+      "Bash(python3 -m pytest -q)",
+      "Bash(flake8 api --max-line-length=120 --ignore=E501,W503)",
+      "Bash(black --check --line-length=120 api)",
+      "Bash(isort --check-only --profile black api)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git diff --stat)",
+      "Bash(git log --oneline -10)"
     ],
     "deny": []
   }

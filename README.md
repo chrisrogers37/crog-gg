@@ -1,4 +1,4 @@
-# Choose Your Own Chris
+# crog.gg (formerly Choose Your Own Chris)
 
 [![CI](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml)
 
@@ -64,7 +64,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ### Prerequisites
 
-- Node.js 20.19+, 22.13+ or 24+ (required by Vite 7; CI runs Node 20)
+- Node.js 20.19+, 22.13+ or 24+ (required by Vite 7 and the ESLint toolchain; CI runs Node 20)
 - Python 3.10+ (CI runs 3.12)
 - (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
 - (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
@@ -75,8 +75,8 @@ An interactive portfolio website featuring dynamic content generation using Open
 1. From the repo root, create a virtual environment and activate it:
 
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 2. Install dependencies (`requirements.txt` lives at the repo root):
@@ -85,7 +85,7 @@ An interactive portfolio website featuring dynamic content generation using Open
    pip install -r requirements.txt
    ```
 
-3. Set env vars. All of them are optional; [`.env.example`](.env.example) lists them with notes. Export them directly or use a loader of your choice.
+3. Set env vars. All of them are optional: copy [`.env.example`](.env.example) to `.env` (git-ignored), fill in what you need, then load it with `set -a; source .env; set +a`.
 
 4. Start the Flask dev server from the repo root. It binds to `:5001`, and Vite proxies `/api/*` to it. Run it as a module; `python api/index.py` fails with `ModuleNotFoundError: No module named 'api'`:
 

@@ -18,6 +18,7 @@ Especially useful:
 - Ways to spend the site's OpenAI budget beyond the per-visitor limits on `/api/regenerate`.
 - Ways to read private data through the GitHub proxy (`/api/v1/github/*`).
 - Anything that exposes secrets, tokens or environment variables.
+- Cross-site scripting, or ways around the Content-Security-Policy on crog.gg.
 
 Out of scope:
 

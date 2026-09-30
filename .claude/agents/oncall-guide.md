@@ -68,7 +68,8 @@ crog.gg runs entirely on Vercel: the Vite build is served as static files, and `
 
 - **Roll back first, investigate second.** The steps are in the Rollback section of `README.md`.
 - **Symptoms and likely causes** are in the Troubleshooting table of `README.md`. The paid `/api/regenerate` endpoint fails closed (503) when Upstash is unavailable, by design (#113); don't make it fall open.
-- **Logs:** Vercel dashboard, the project, **Logs** (runtime logs for `/api/*`). Search for `regeneration failed`, `rate limit unavailable` and `cooldown read unavailable`.
+- **Logs:** Vercel dashboard, the project, **Logs** (runtime logs for `/api/*`), or `vercel logs <deployment-url>` from the CLI. Search for `regeneration failed`, `rate limit unavailable` and `cooldown read unavailable`.
+- **Is metering up?** `GET /api/limits` returns `"metering_available": false` when Upstash can't be read.
 - **Config:** env vars live in Vercel under **Settings, Environment Variables**, and `.env.example` describes each one. A change takes effect on the next deployment.
 
 ## Post-Incident
