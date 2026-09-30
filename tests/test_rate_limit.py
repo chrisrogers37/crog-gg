@@ -98,3 +98,28 @@ def test_outage_is_logged_so_the_degradation_is_visible(caplog):
     with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
         check_and_consume("k", 30, 60, fail_open=True)
     assert any("rate limit unavailable" in r.getMessage() for r in caplog.records)
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        pytest.param([{"result": 0}, {"error": "OOM"}, {"result": 0}, {"result": 1}], id="refused-write"),
+        pytest.param([{"result": 0}], id="short"),
+        pytest.param([{"result": 0}, {"result": 1}, {"result": None}, {"result": 1}], id="no-count"),
+    ],
+)
+def test_unusable_reply_fails_closed_and_is_logged(reply, caplog):
+    # Each of these used to read as a count of 0, or escape as an IndexError (#194).
+    caplog.set_level(logging.ERROR, logger="crog")
+    with patch("api._lib.redis_client._post", return_value=reply):
+        with pytest.raises(rate_limit.RedisUnavailable):
+            check_and_consume("k", 30, 60)
+        assert check_and_consume("k", 30, 60, fail_open=True) == (True, 0)
+    assert any("rate limit unavailable" in r.getMessage() for r in caplog.records)
+
+
+def test_cooldown_read_needs_an_integer_ttl():
+    with patch("api._lib.redis_client._post", return_value={"result": None}):
+        with pytest.raises(rate_limit.RedisUnavailable):
+            get_cooldown_remaining("k")
+        assert get_cooldown_remaining("k", fail_open=True) == 0

@@ -9,7 +9,9 @@ These tests drive the REAL limiter with Redis broken underneath it, rather than
 patching the limiter with a raising mock. The distinction is the whole point:
 a raising mock proves only that the handler catches, and would keep passing if
 the limiter went back to falling open. What needs pinning is the limiter's own
-decision to refuse.
+decision to refuse. Each test runs under both ways Redis can fail to meter
+(``metering_broken``): unreachable, and answering reads while refusing the
+write (#194).
 
 They must patch over conftest's autouse ``_hermetic_rate_limit``, which stubs
 the very primitives under test.
@@ -31,13 +33,38 @@ _BODY = {"sections": {"about": {"bio": "hi"}}}
 
 
 @pytest.fixture
-def redis_down():
-    """Real limiter, unreachable Redis."""
+def real_limiter():
+    """Put back the real primitives that conftest's autouse fixture stubs."""
     with patch("api.index.rate_limit.check_and_consume", _REAL["check_and_consume"]):
         with patch("api.index.rate_limit.get_cooldown_remaining", _REAL["get_cooldown_remaining"]):
-            with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("redis down")):
-                with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("redis down")):
-                    yield
+            yield
+
+
+@pytest.fixture
+def redis_down(real_limiter):
+    """Real limiter, unreachable Redis."""
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("redis down")):
+        with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("redis down")):
+            yield
+
+
+@pytest.fixture
+def redis_writes_refused(real_limiter):
+    """Real limiter; Redis answers the cooldown read but refuses the write (#194)."""
+
+    def upstash(path, _body):
+        if path == "/pipeline":
+            return [{"result": 0}, {"error": "OOM command not allowed"}, {"result": 0}, {"result": 1}]
+        return {"result": -2}  # TTL of a missing key: no cooldown
+
+    with patch("api._lib.redis_client._post", side_effect=upstash):
+        yield
+
+
+@pytest.fixture(params=["redis_down", "redis_writes_refused"])
+def metering_broken(request):
+    """Each way Redis can fail to meter: unreachable, or refusing the write."""
+    request.getfixturevalue(request.param)
 
 
 @pytest.fixture
@@ -49,21 +76,21 @@ def no_openai():
         yield fake
 
 
-def test_outage_returns_503_and_spends_nothing(client, redis_down, no_openai):
+def test_outage_returns_503_and_spends_nothing(client, metering_broken, no_openai):
     r = client.post("/api/regenerate", json=_BODY)
     assert r.status_code == 503
     assert r.get_json()["error"] == "Regeneration temporarily unavailable"
     no_openai.chat.completions.create.assert_not_called()
 
 
-def test_outage_blocks_every_section_of_a_multi_section_request(client, redis_down, no_openai):
+def test_outage_blocks_every_section_of_a_multi_section_request(client, metering_broken, no_openai):
     # The handler fans out one paid call per section; none may start.
     r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}, "portfolio": {"items": []}}})
     assert r.status_code == 503
     no_openai.chat.completions.create.assert_not_called()
 
 
-def test_free_github_gate_still_falls_open(redis_down):
+def test_free_github_gate_still_falls_open(metering_broken):
     # Deliberate asymmetry: an outage costs nothing on the free endpoints, so
     # dropping real traffic there would be the worse failure. Guard it so a
     # future sweep does not close the fail-open uniformly.
@@ -73,6 +100,6 @@ def test_free_github_gate_still_falls_open(redis_down):
         assert _gh_rate_limit_or_429("repo") is None
 
 
-def test_free_limits_endpoint_still_answers_during_an_outage(client, redis_down):
+def test_free_limits_endpoint_still_answers_during_an_outage(client, metering_broken):
     r = client.get("/api/limits")
     assert r.status_code == 200

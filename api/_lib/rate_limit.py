@@ -4,10 +4,11 @@ Two patterns:
   - Sliding window (for per-minute IP caps on GitHub endpoints)
   - Cooldown TTL (for the 30s per-IP gate on /api/regenerate)
 
-When Redis is unreachable the limiter raises ``RedisUnavailable`` and the
-caller decides (#113). Callers that spend money per request must not treat
-"cannot meter" as "allowed", so refusing is the default; a caller for whom an
-outage costs nothing passes ``fail_open=True`` and keeps serving.
+When Redis is unreachable, or refuses part of a call, the limiter raises
+``RedisUnavailable`` and the caller decides (#113, #194). Callers that spend
+money per request must not treat "cannot meter" as "allowed", so refusing is
+the default; a caller for whom an outage costs nothing passes
+``fail_open=True`` and keeps serving.
 
 The default is deliberately the safe one. Forgetting the flag on a paid gate
 would leak money silently, while forgetting it on a free gate produces a loud,
@@ -28,7 +29,9 @@ logger = logging.getLogger("crog")
 
 
 class RedisUnavailable(RuntimeError):
-    """A limiter call could not reach Redis and the caller opted to fail closed."""
+    """The limiter got no usable answer from Redis (unreachable, refused or
+    malformed) and the caller opted to fail closed.
+    """
 
 
 def check_and_consume(
@@ -42,8 +45,9 @@ def check_and_consume(
     reflects the whole request, rather than however many hits a per-slot loop
     happened to record before the cap tripped.
 
-    Raises ``RedisUnavailable`` if Redis cannot be reached, unless the caller
-    passes ``fail_open`` to keep serving instead. See the module docstring.
+    Raises ``RedisUnavailable`` if Redis cannot be reached or doesn't return a
+    count, unless the caller passes ``fail_open`` to keep serving instead. See
+    the module docstring.
     """
     now_ms = int(time.time() * 1000)
     window_start_ms = now_ms - (window_seconds * 1000)
@@ -60,13 +64,16 @@ def check_and_consume(
                 ["EXPIRE", key, str(window_seconds + 1)],
             ]
         )
+        # Inside the try: a bad count must fail like an outage, not read as 0.
+        count = results[2]
+        if not isinstance(count, int):
+            raise RuntimeError(f"ZCARD replied {count!r}")
     except Exception as exc:
         logger.error("rate limit unavailable (key=%s, fail_open=%s): %s", key, fail_open, exc)
         if fail_open:
             return True, 0
         raise RedisUnavailable(key) from exc
 
-    count = int(results[2] or 0)
     return count <= max_requests, count
 
 
@@ -79,12 +86,13 @@ def get_cooldown_remaining(key: str, fail_open: bool = False) -> int:
     """
     try:
         ttl = redis_client.command("TTL", key)
+        if not isinstance(ttl, int):
+            raise RuntimeError(f"TTL replied {ttl!r}")
     except Exception as exc:
         logger.error("cooldown read unavailable (key=%s, fail_open=%s): %s", key, fail_open, exc)
         if fail_open:
             return 0
         raise RedisUnavailable(key) from exc
-    ttl = int(ttl or 0)
     return max(0, ttl)
 
 
