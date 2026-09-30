@@ -4,8 +4,8 @@ import { test, expect, type Page } from "@playwright/test";
  * Page head E2E tests (#174)
  *
  * Every page's HTML arrives with head tags already in it (the build writes
- * them per route; the dev server writes the home page's), and the SEO
- * component renders its own once React mounts. The two sets must merge into
+ * them per route, and the dev server does the same), and the SEO component
+ * renders its own once React mounts. The two sets must merge into
  * one: a second og:title or canonical is a page that tells crawlers two
  * different things. These check structure (how many, and which URL they
  * name), not copy.
@@ -40,10 +40,20 @@ test.describe("Page head", () => {
     expect(tags.ogImage).toMatch(/^https:\/\/.+\.png$/);
   });
 
-  test("projects page replaces the entry tags with its own", async ({
+  test("a page reached in the app replaces the entry page's tags", async ({
     page,
   }) => {
-    await page.goto("/projects");
+    // Enter at / and navigate client-side: /projects' own HTML already carries
+    // its tags, so landing there directly would pass even if the SEO
+    // component never replaced anything.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.getByRole("button", { name: /menu/i }).click();
+    await page
+      .getByRole("navigation", { name: /mobile/i })
+      .getByRole("link", { name: /projects/i })
+      .click();
+    await expect(page).toHaveURL(/\/projects$/);
     await expect(page.locator("a.project-tile").first()).toBeVisible();
 
     await expect
