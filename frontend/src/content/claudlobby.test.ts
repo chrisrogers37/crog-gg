@@ -56,4 +56,10 @@ describe("homepage copy", () => {
   it("uses no em-dashes (CLAUDE.md tone rule)", () => {
     for (const text of copy) expect(text).not.toContain("—");
   });
+
+  it("keeps the employer out of the hero (Chris, 2026-09-30)", () => {
+    for (const text of strings(claudlobby.hero)) {
+      expect(text).not.toMatch(/artemis/i);
+    }
+  });
 });

@@ -23,7 +23,7 @@ export const claudlobby = {
     headline: "i build things that build things.",
     sub: "Claudlobby is my agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
     credibility:
-      "By day I lead the data platform at Artemis. Before that, Citadel and Meta, and chemical engineering at Cornell.",
+      "Data platform lead by day. Before that, Citadel and Meta, and chemical engineering at Cornell.",
     aboutLink: "More about me",
     ctaStar: "Star on GitHub",
     ctaQuickstart: "Quickstart",
