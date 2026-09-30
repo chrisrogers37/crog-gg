@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { renderWithProviders, screen, within } from "../../../test/utils";
+import { describe, it, expect, vi } from "vitest";
+import {
+  renderWithProviders,
+  screen,
+  userEvent,
+  within,
+} from "../../../test/utils";
 import { HomePage } from "../HomePage";
 import { claudlobby } from "../../../content/claudlobby";
 import {
@@ -7,6 +12,9 @@ import {
   CLAUDLOBBY_README_QUICKSTART,
   CLAUDLOBBY_REPO,
 } from "../../../content/links";
+import { track } from "../../../services/analytics";
+
+vi.mock("../../../services/analytics", () => ({ track: vi.fn() }));
 
 const { hero, maturity, quickstart, roadmap } = claudlobby;
 
@@ -25,6 +33,15 @@ describe("HomePage", () => {
       "href",
       "/about",
     );
+  });
+
+  it("reports a Quickstart click once", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<HomePage />);
+
+    await user.click(screen.getByRole("link", { name: hero.ctaQuickstart }));
+
+    expect(track).toHaveBeenCalledExactlyOnceWith({ name: "quickstart_click" });
   });
 
   it("states its maturity with the CTAs and points at the roadmap", () => {

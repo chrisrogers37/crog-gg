@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import { GitHubMark } from "../../common/GitHubMark";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
+import { RepoLink } from "../../common/RepoLink";
 import { useUIStore } from "../../../store";
 import "./Navigation.css";
 
@@ -45,15 +45,10 @@ export function Navigation() {
             </li>
           ))}
         </ul>
-        <a
-          className="btn btn-ghost btn-sm nav-repo"
-          href={CLAUDLOBBY_REPO}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <RepoLink location="header" className="btn btn-ghost btn-sm nav-repo">
           <GitHubMark />
           <span>Claudlobby</span>
-        </a>
+        </RepoLink>
         <ThemeToggle />
 
         {/* Hamburger button - visible on mobile only */}

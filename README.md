@@ -196,6 +196,13 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 4. Connect to the project, all 3 environments (Production / Preview / Development)
 5. Redeploy so the function picks up the new env vars
 
+### Web Analytics
+
+Pageviews and the CTA events (`star_click`, `quickstart_click`) go to Vercel Web Analytics, through `frontend/src/services/analytics.ts`. It sets no cookies, and its script and beacons are served from the site's own origin (`/_vercel/insights/*`), so the CSP needs no change.
+
+1. Vercel → project → **Analytics** → **Enable**, before the first deploy that ships `@vercel/analytics`. The `/_vercel/insights/*` routes exist from the next deployment on; until then every page requests a script that 404s.
+2. Custom events need the **Pro** plan. On Hobby only pageviews are recorded, up to the plan's monthly event cap.
+
 ### Rollback
 
 Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Promote to Production on any prior build.

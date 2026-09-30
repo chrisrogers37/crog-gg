@@ -4,6 +4,7 @@ import {
   CLAUDLOBBY_ISSUES,
   CLAUDLOBBY_README_QUICKSTART,
 } from "../../../content/links";
+import { RepoLink } from "../../common/RepoLink";
 import { InlineCode } from "./InlineCode";
 import { Section } from "./Section";
 
@@ -29,13 +30,9 @@ export function Quickstart() {
         ))}
       </ul>
       <p className="cl-links">
-        <a
-          href={CLAUDLOBBY_README_QUICKSTART}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <RepoLink location="quickstart" href={CLAUDLOBBY_README_QUICKSTART}>
           {quickstart.readmeLink}
-        </a>
+        </RepoLink>
         <a
           href={CLAUDLOBBY_GETTING_STARTED}
           target="_blank"

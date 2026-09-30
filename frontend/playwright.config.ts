@@ -41,13 +41,19 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: /prerender\.spec\.ts/,
+      testIgnore: [/prerender\.spec\.ts/, /analytics\.spec\.ts/],
     },
     // The crawler's view of a production build: raw HTML, no browser.
     {
       name: "prerender",
       testMatch: /prerender\.spec\.ts/,
       use: { baseURL: "http://localhost:4179" },
+    },
+    // Analytics, which only a production build loads.
+    {
+      name: "analytics",
+      testMatch: /analytics\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:4179" },
     },
     // Uncomment to test on more browsers
     // {
@@ -61,8 +67,9 @@ export default defineConfig({
   ],
 
   // The dev server for the browser tests, and a production build under
-  // `vite preview` for e2e/prerender.spec.ts. The build is never reused from an
-  // earlier run: stale output is exactly what that spec must not pass on.
+  // `vite preview` for e2e/prerender.spec.ts and e2e/analytics.spec.ts. The
+  // build is never reused from an earlier run: stale output is exactly what
+  // those specs must not pass on.
   webServer: [
     {
       command: "npm run dev",

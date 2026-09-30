@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
 import App from "./App.tsx";
+import { startAnalytics } from "./services/analytics";
 
 /**
  * Initialize theme from localStorage or system preference.
@@ -45,3 +46,7 @@ createRoot(document.getElementById("root")!).render(
     </HelmetProvider>
   </StrictMode>,
 );
+
+// render() only schedules React's first render, so the script request overlaps
+// it rather than queueing behind it (#177; measured, see the PR).
+startAnalytics();

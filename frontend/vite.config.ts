@@ -1,6 +1,21 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { prerender } from "./scripts/vite-prerender";
+
+/**
+ * `vite preview` stands in for a Vercel deployment with Web Analytics enabled
+ * (#177): the insights script's path gets an empty script, where the SPA
+ * fallback would otherwise serve index.html as JavaScript.
+ */
+const insightsPreview: Plugin = {
+  name: "crog:insights-preview",
+  configurePreviewServer(server) {
+    server.middlewares.use("/_vercel/insights/script.js", (_req, res) => {
+      res.setHeader("content-type", "text/javascript");
+      res.end();
+    });
+  },
+};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -25,7 +40,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), prerender()],
+  plugins: [react(), prerender(), insightsPreview],
   server: {
     proxy: {
       "/api": {

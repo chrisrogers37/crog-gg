@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
-import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../../../content/links";
+import { PROFILE_URLS } from "../../../content/links";
+import { RepoLink } from "../../common/RepoLink";
 import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
 
@@ -14,8 +15,8 @@ const PAGE_LINKS = [
   { to: "/projects", label: "all projects" },
 ];
 
+// After the Claudlobby repo link, which is a RepoLink so its clicks count.
 const CONNECT_LINKS = [
-  { href: CLAUDLOBBY_REPO, label: "claudlobby on github" },
   { href: PROFILE_URLS.github, label: "github" },
   { href: PROFILE_URLS.linkedin, label: "linkedin" },
   { href: PROFILE_URLS.spotify, label: "spotify" },
@@ -133,6 +134,13 @@ export function MobileMenu({
               {/* Social links */}
               <div className="mobile-menu-section">
                 <span className="mobile-menu-section-label">connect</span>
+                <RepoLink
+                  location="menu"
+                  className="mobile-menu-link"
+                  onClick={handleLinkClick}
+                >
+                  claudlobby on github
+                </RepoLink>
                 {CONNECT_LINKS.map((link) => (
                   <a
                     key={link.href}

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../../../content/links";
+import { PROFILE_URLS } from "../../../content/links";
+import { RepoLink } from "../../common/RepoLink";
 import "./Footer.css";
 
 const PROFILE_LINKS = [
@@ -22,9 +23,7 @@ export function Footer() {
           &copy; {currentYear} Chris Rogers. All rights reserved.
         </p>
         <div className="footer-links">
-          <a href={CLAUDLOBBY_REPO} target="_blank" rel="noopener noreferrer">
-            Claudlobby
-          </a>
+          <RepoLink location="footer">Claudlobby</RepoLink>
           <Link to="/about">About</Link>
           {PROFILE_LINKS.map((link) => (
             <a
