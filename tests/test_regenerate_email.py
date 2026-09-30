@@ -65,7 +65,7 @@ def _regenerate(client, model_returns, content, section="about", use_fantasy=Fal
 
 def test_model_rewritten_email_is_discarded(client):
     """The core case: a different address the model invented must not reach the client."""
-    mangled = _bio(email="chris.rogers.contact@gmail.com")
+    mangled = _bio(email="invented.contact@example.net")
 
     result = _regenerate(client, mangled, _bio())
 
@@ -74,7 +74,7 @@ def test_model_rewritten_email_is_discarded(client):
 
 def test_mailto_parameter_injection_is_discarded(client):
     """An address carrying ``?bcc=`` / ``?body=`` would silently copy a third party."""
-    mangled = _bio(email="someone@example.com?bcc=attacker@evil.com&body=hi")
+    mangled = _bio(email="someone@example.com?bcc=attacker@evil.example&body=hi")
 
     result = _regenerate(client, mangled, _bio())
 
@@ -126,7 +126,7 @@ def test_email_and_social_links_are_pinned_in_one_pass(client):
     """Both unauthored keys are restored from the same response, not just whichever is first."""
     mangled = _bio(
         email="wrong@example.com",
-        social_links={"github": "https://github.com/someone-else/", "linkedin": ""},
+        social_links={"github": "https://github.com/lookalike-example/", "linkedin": ""},
     )
 
     result = _regenerate(client, mangled, _bio(social_links=ORIGINAL_SOCIAL_LINKS))

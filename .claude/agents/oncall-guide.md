@@ -45,35 +45,32 @@ For critical issues, consider:
 ## Project-Specific Commands
 
 ```sh
-# Check recent deployments
+# Recent changes (every push to main deploys to production)
 git log --oneline -10
 
-# Check frontend build
+# Frontend: type-check and production build
 cd frontend && npm run build
 
-# Check backend (if running locally)
-cd backend && python app.py
+# Backend: run the Flask API locally on :5001 (from the repo root)
+python3 -m api.index
 
-# View GitHub Actions status
+# Backend tests (from the repo root)
+python3 -m pytest -q
+
+# CI status and open PRs
 gh run list --limit 5
-
-# Check PR status
 gh pr status
 ```
 
-## Deployment Commands
+## Deployment and Rollback (Vercel)
 
-### Frontend (crog.gg)
+crog.gg runs entirely on Vercel: the Vite build is served as static files, and `api/index.py` runs as a single Python Function behind `/api/*`. There are no servers to SSH into, and merging to `main` deploys to production.
 
-```sh
-ssh crog-frontend "cd /var/www/crog.gg && git fetch origin && git reset --hard origin/main && cd frontend && npm install && npm run build && sudo systemctl restart nginx"
-```
-
-### Backend (api.crog.gg)
-
-```sh
-ssh crog-backend "cd /var/www/api.crog.gg && git fetch origin && git reset --hard origin/main && pkill -f gunicorn && cd backend && /var/www/api.crog.gg/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5001 app:app &"
-```
+- **Roll back first, investigate second.** The steps are in the Rollback section of `README.md`.
+- **Symptoms and likely causes** are in the Troubleshooting table of `README.md`. The paid `/api/regenerate` endpoint fails closed (503) when Upstash is unavailable, by design (#113); don't make it fall open.
+- **Logs:** Vercel dashboard, the project, **Logs** (runtime logs for `/api/*`), or `vercel logs <deployment-url>` from the CLI. Search for `regeneration failed`, `rate limit unavailable` and `cooldown read unavailable`.
+- **Is metering up?** `GET /api/limits` returns `"metering_available": false` when Upstash can't be read.
+- **Config:** env vars live in Vercel under **Settings, Environment Variables**, and `.env.example` describes each one. A change takes effect on the next deployment.
 
 ## Post-Incident
 

@@ -43,7 +43,7 @@ npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:headed  # E2E tests with visible browser
 
 # Backend commands (run from repo root)
-python api/index.py      # Start Flask dev server on :5001 (Vite proxies /api to it)
+python3 -m api.index     # Start Flask dev server on :5001 (Vite proxies /api to it)
 pip install -r requirements.txt  # Install Python deps (flask, flask-cors, openai, requests)
 
 # Git workflow
@@ -96,8 +96,8 @@ git diff                # Review changes before commit
 ### API Integration
 
 - In production, frontend calls same-origin `/api/*` (Flask function on the same Vercel domain). `VITE_API_URL` should be empty/unset in Vercel so the code default kicks in.
-- For local dev: run `python api/index.py` on port 5001; Vite dev proxy in `vite.config.ts` forwards `/api` requests there.
-- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`); helpers fall open on Redis errors so the site stays up if Upstash is unavailable.
+- For local dev: run `python3 -m api.index` from the repo root (port 5001); Vite dev proxy in `vite.config.ts` forwards `/api` requests there. `python api/index.py` fails with `ModuleNotFoundError`.
+- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`). The paid `/api/regenerate` path fails closed (503) when Redis is unavailable or not configured, so it can never run unmetered (#113); the free GitHub endpoints fail open. Don't "fix" a 503 by making the paid path fall open.
 
 #### Backend Endpoints
 
@@ -195,7 +195,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to production at https://c
 ### Vercel project env vars
 
 - `OPENAI_API_KEY` — required for `/api/regenerate`
-- `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Scope to **public repositories only**: a classic PAT with `public_repo` (NOT `repo`), or a fine-grained token with read-only access to public repos (Contents: Read, Metadata: Read) and no private-repo access. `public_repo` already grants the 5000/hr REST quota and authorizes the GraphQL contributions query, so private scope is never needed. The per-repo proxy endpoints (`repo` / `readme` / `languages`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
+- `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data: a classic PAT with **no scopes**, or a fine-grained token set to "Public repositories (read-only)". Any authenticated token gets the 5000/hr REST quota and can run the GraphQL contributions query, so no scope is needed. Don't use `public_repo` (it can push to your public repos) or `repo`. The per-repo proxy endpoints (`repo` / `readme` / `languages`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
 - `KV_REST_API_URL` / `KV_REST_API_TOKEN` — auto-injected by the Upstash Marketplace integration; client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks
 - `VITE_API_URL` — leave empty/unset so the frontend defaults to same-origin `/api/*`
 
