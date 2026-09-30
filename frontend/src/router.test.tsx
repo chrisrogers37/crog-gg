@@ -1,7 +1,10 @@
+import type { ReactElement } from "react";
 import { describe, it, expect } from "vitest";
 import { matchPath, matchRoutes, type RouteObject } from "react-router-dom";
 import { routes } from "./router";
 import { landingPages } from "./seo/prerender";
+import { NotFoundPage } from "./pages/NotFound";
+import { RouteError } from "./pages/RouteError";
 
 /**
  * Production serves only the pages the build writes, and 404s everything else
@@ -17,23 +20,41 @@ const EXAMPLE = {
 };
 const pages = landingPages([EXAMPLE]);
 
-/** Path patterns a visitor can land on, e.g. "/projects/:slug". */
-const landablePatterns = (tree: RouteObject[], base = ""): string[] =>
+type RouteEntry = { route: RouteObject; pattern: string };
+
+/** Every route in the tree with its full path pattern, e.g. "/projects/:slug". */
+const routeEntries = (tree: RouteObject[], base = ""): RouteEntry[] =>
   tree.flatMap((route) => {
-    if (route.path === "*") return [];
     const pattern =
       route.path === undefined
         ? base
         : route.path.startsWith("/")
           ? route.path
           : `${base.replace(/\/$/, "")}/${route.path}`;
-    const own = route.index || route.element ? [pattern || "/"] : [];
-    return [...own, ...landablePatterns(route.children ?? [], pattern)];
+    return [
+      { route, pattern: pattern || "/" },
+      ...routeEntries(route.children ?? [], pattern),
+    ];
   });
+
+/**
+ * Path patterns a visitor can land on, but "*". React Router's own rule: a
+ * route matches a URL by itself if it has a path or is an index route.
+ */
+const landablePatterns = (tree: RouteObject[]): string[] => [
+  ...new Set(
+    routeEntries(tree)
+      .filter(
+        ({ route }) =>
+          route.path !== "*" && (route.path !== undefined || route.index),
+      )
+      .map(({ pattern }) => pattern),
+  ),
+];
 
 describe("routes and prerendered pages", () => {
   it("prerenders a page for every route a visitor can land on", () => {
-    const patterns = [...new Set(landablePatterns(routes))];
+    const patterns = landablePatterns(routes);
     expect(patterns).toContain("/projects/:slug");
 
     for (const pattern of patterns) {
@@ -51,6 +72,25 @@ describe("routes and prerendered pages", () => {
         matches[matches.length - 1]?.route.path,
         `${page.path} is prerendered as a real page, but the app renders its 404 there`,
       ).not.toBe("*");
+    }
+  });
+
+  it("keeps the 404 page for unmatched URLs and RouteError for every error", () => {
+    const unmatched = matchRoutes(routes, "/no-such-page") ?? [];
+    expect(unmatched[unmatched.length - 1]?.route.path).toBe("*");
+
+    // NotFoundPage marks a URL noindex, so a real page that fails to render
+    // (or a stale lazy chunk) must not fall back to it (#196 M40).
+    for (const { route, pattern } of routeEntries(routes)) {
+      const name = route.index ? `${pattern} (index)` : pattern;
+      if (route.errorElement) {
+        expect((route.errorElement as ReactElement).type, name).toBe(
+          RouteError,
+        );
+      }
+      const rendersNotFound =
+        (route.element as ReactElement | undefined)?.type === NotFoundPage;
+      expect(rendersNotFound, name).toBe(route.path === "*");
     }
   });
 });

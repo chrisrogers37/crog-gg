@@ -50,6 +50,39 @@ test.describe("404 Page", () => {
   });
 });
 
+test.describe("A page that fails to load", () => {
+  test("reloads once, then shows an error with the page's head intact", async ({
+    page,
+  }) => {
+    // What a tab opened before a deploy meets: the page's chunk is gone.
+    await page.route("**/src/pages/Projects/ProjectsPage.tsx*", (route) =>
+      route.abort(),
+    );
+    let documentLoads = 0;
+    page.on("request", (request) => {
+      if (request.resourceType() === "document") documentLoads += 1;
+    });
+
+    await page.goto("/projects");
+
+    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.locator('[class*="not-found"]')).toHaveCount(0);
+    expect(documentLoads).toBe(2);
+
+    // Not the 404 page's head: still indexable, still its own canonical.
+    const head = await page.evaluate(() => ({
+      robots: document.querySelector('meta[name="robots"]'),
+      canonical: document
+        .querySelector('link[rel="canonical"]')
+        ?.getAttribute("href"),
+    }));
+    expect(head.robots).toBeNull();
+    expect(new URL(head.canonical ?? "", "https://x").pathname).toBe(
+      "/projects",
+    );
+  });
+});
+
 test.describe("Layout Components", () => {
   test("header is present on projects page", async ({ page }) => {
     await page.goto("/projects");
