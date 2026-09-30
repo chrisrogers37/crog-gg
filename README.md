@@ -68,7 +68,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - Python 3.10+ (CI runs 3.12)
 - (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
 - (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
-- (Optional) Upstash Redis credentials. Without them the site runs, but `/api/regenerate` returns 503: the paid endpoint fails closed rather than run unmetered
+- (Optional) Upstash Redis credentials, which `/api/regenerate` needs (see [Troubleshooting](#troubleshooting))
 
 ### Backend Setup
 
@@ -85,14 +85,7 @@ An interactive portfolio website featuring dynamic content generation using Open
    pip install -r requirements.txt
    ```
 
-3. Set env vars. All of them are optional; [`.env.example`](.env.example) lists them with notes. Export them directly or use a loader of your choice:
-
-   ```
-   OPENAI_API_KEY=your_api_key_here
-   GITHUB_TOKEN=optional_but_recommended
-   KV_REST_API_URL=optional_upstash_rest_url
-   KV_REST_API_TOKEN=optional_upstash_rest_token
-   ```
+3. Set env vars. All of them are optional; [`.env.example`](.env.example) lists them with notes. Export them directly or use a loader of your choice.
 
 4. Start the Flask dev server from the repo root. It binds to `:5001`, and Vite proxies `/api/*` to it. Run it as a module; `python api/index.py` fails with `ModuleNotFoundError: No module named 'api'`:
 
@@ -191,7 +184,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://crog.gg; every 
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`                        | yes               | `/api/regenerate` won't work without it                                                                                                                                                         |
 | `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints                                                                                    |
-| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them, `/api/regenerate` returns 503 (the paid endpoint fails closed) and the GitHub endpoints run without rate limits. Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 
 ### Provisioning Upstash Redis
@@ -213,6 +206,9 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | `/api/regenerate` returns `"OpenAI API key not configured"`                            | `OPENAI_API_KEY` missing in Vercel env vars or last deploy predates the env var being set — set it and redeploy                         |
 | `/api/v1/github/contributions` returns `"GitHub token required for contribution data"` | `GITHUB_TOKEN` missing — same fix                                                                                                       |
 | `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints fail open), so fix Upstash, not the endpoint |
+| `/api/regenerate` failures with reason `model_error`                                    | The OpenAI key is invalid, or its quota or budget is used up. Check the OpenAI usage page.                                               |
+| Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy currently reports these as "not found".       |
+| GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. The free GitHub endpoints fail open by design.                                                                  |
 | Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
 
 ## License

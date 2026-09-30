@@ -64,21 +64,12 @@ gh pr status
 
 ## Deployment and Rollback (Vercel)
 
-crog.gg runs entirely on Vercel. The Vite build in `frontend/dist` is served as static files, and `api/index.py` runs as a single Python Function behind `/api/*`. There are no servers to SSH into.
+crog.gg runs entirely on Vercel: the Vite build is served as static files, and `api/index.py` runs as a single Python Function behind `/api/*`. There are no servers to SSH into, and merging to `main` deploys to production.
 
-- **Deploy:** merging to `main` deploys to production automatically. Every other branch gets a preview URL on its PR.
-- **Roll back:** Vercel dashboard, the project, **Deployments**, pick the last good deployment, **Promote to Production**. It takes effect without a rebuild. Roll back first, investigate second.
+- **Roll back first, investigate second.** The steps are in the Rollback section of `README.md`.
+- **Symptoms and likely causes** are in the Troubleshooting table of `README.md`. The paid `/api/regenerate` endpoint fails closed (503) when Upstash is unavailable, by design (#113); don't make it fall open.
 - **Logs:** Vercel dashboard, the project, **Logs** (runtime logs for `/api/*`). Search for `regeneration failed`, `rate limit unavailable` and `cooldown read unavailable`.
-- **Config:** env vars live in Vercel under **Settings, Environment Variables** (`OPENAI_API_KEY`, `GITHUB_TOKEN`, `KV_REST_API_URL`, `KV_REST_API_TOKEN`). A change takes effect on the next deployment.
-
-## Common Symptoms
-
-| Symptom | Likely cause |
-| ------- | ------------ |
-| `/api/regenerate` returns 503 "Regeneration temporarily unavailable" | Upstash (the rate-limit store) is unreachable or its env vars are missing. The paid endpoint fails closed by design (#113), so check Upstash, not the endpoint. Don't make it fall open. |
-| `/api/regenerate` returns 500 "OpenAI API key not configured", or failures with reason `model_error` | `OPENAI_API_KEY` missing or invalid, or the OpenAI quota or budget is used up. Check the Vercel env vars and the OpenAI usage page. |
-| Project pages show "No README available" or no repo stats | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy currently reports these as "not found". |
-| GitHub endpoints ignore rate limits | Upstash is unavailable. The free GitHub endpoints fail open by design. |
+- **Config:** env vars live in Vercel under **Settings, Environment Variables**, and `.env.example` describes each one. A change takes effect on the next deployment.
 
 ## Post-Incident
 

@@ -43,7 +43,7 @@ npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:headed  # E2E tests with visible browser
 
 # Backend commands (run from repo root)
-python3 -m api.index     # Start Flask dev server on :5001 (Vite proxies /api to it); run as a module, not as a file
+python3 -m api.index     # Start Flask dev server on :5001 (Vite proxies /api to it)
 pip install -r requirements.txt  # Install Python deps (flask, flask-cors, openai, requests)
 
 # Git workflow

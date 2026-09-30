@@ -14,7 +14,7 @@ This is a single-product portfolio site (`crog.gg`): a Vite/React frontend in `f
 
 ### Optional secrets (none required to boot)
 
-`OPENAI_API_KEY` (powers `POST /api/regenerate`), `GITHUB_TOKEN` (powers `/api/v1/github/contributions` + higher REST limits), and `KV_REST_API_URL`/`KV_REST_API_TOKEN` (Upstash rate limiting) are all optional. Without them `/api/regenerate` returns 503 (the paid endpoint fails closed without Upstash, see #113) and the GitHub panels degrade, but the core portfolio (browse sections, projects, search/filter) still works. Some Playwright `projects.spec.ts` tests skip gracefully when live GitHub project data isn't loaded — that is expected, not a failure.
+`OPENAI_API_KEY` (powers `POST /api/regenerate`), `GITHUB_TOKEN` (powers `/api/v1/github/contributions` + higher REST limits), and `KV_REST_API_URL`/`KV_REST_API_TOKEN` (Upstash rate limiting) are all optional; `.env.example` describes each one. Without them `/api/regenerate` returns 503 (the paid endpoint fails closed without Upstash, see #113) and the GitHub panels degrade, but the core portfolio (browse sections, projects, search/filter) still works. Some Playwright `projects.spec.ts` tests skip gracefully when live GitHub project data isn't loaded — that is expected, not a failure.
 
 ### Lint / test / build (see `CLAUDE.md` and `.github/workflows/ci.yml` for exact commands)
 
