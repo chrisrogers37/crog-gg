@@ -228,7 +228,8 @@
   font-weight: 600;
 }
 
-.cl-quickstart-note {
+/* A section's closing note, under its links. */
+.cl-section > .cl-note {
   margin: 1rem 0 0;
 }
 

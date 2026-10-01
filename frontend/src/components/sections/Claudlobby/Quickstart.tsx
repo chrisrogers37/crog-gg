@@ -41,7 +41,7 @@ export function Quickstart() {
           {quickstart.docsLink}
         </a>
       </p>
-      <p className="cl-note cl-quickstart-note">
+      <p className="cl-note">
         {quickstart.alphaNote}{" "}
         <a href={CLAUDLOBBY_ISSUES} target="_blank" rel="noopener noreferrer">
           {quickstart.issuesLink}

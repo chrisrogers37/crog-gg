@@ -24,7 +24,8 @@ export type RepoLinkLocation =
 
 export type AnalyticsEvent =
   | { name: "repo_click"; location: RepoLinkLocation }
-  | { name: "quickstart_click" };
+  | { name: "quickstart_click" }
+  | { name: "updates_click" };
 
 /**
  * What reaches Vercel keeps its path and any utm_* campaign tags. Every other
