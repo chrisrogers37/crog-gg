@@ -203,8 +203,8 @@ def test_none_content_is_counted_and_sibling_survives(client):
 
 @pytest.mark.parametrize(
     "choices",
-    [[], None, [_choice("")], [_choice("  \n ")]],
-    ids=["empty-choices", "null-choices", "empty-text", "blank-text"],
+    [[], None, [_choice("")], [_choice("  \n ")], [MagicMock(message=None, finish_reason="stop")]],
+    ids=["empty-choices", "null-choices", "empty-text", "blank-text", "null-message"],
 )
 def test_empty_completion_is_counted(client, choices):
     with patch("api.index.openai_client", _choices_client(choices)):

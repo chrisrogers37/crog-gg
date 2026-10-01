@@ -187,7 +187,12 @@ def _fetch_public_repo(repo_name: str, endpoint: str):
         return None, (jsonify({"error": "Repository not found"}), 404)
     if r.status_code != 200:
         return None, _github_unavailable(endpoint, repo_name, r=r)
-    data = r.json()
+    try:
+        data = r.json()
+    except ValueError as e:
+        return None, _github_unavailable(endpoint, repo_name, r=r, exc=e)
+    if not isinstance(data, dict):
+        return None, _github_unavailable(endpoint, repo_name, r=r)
     if data.get("private"):
         return None, (jsonify({"error": "Repository not found"}), 404)
     return data, None
@@ -218,9 +223,12 @@ def _proxy_sub_resource(
             continue
         if r.status_code == 404:
             return jsonify({"error": missing_msg or f"Failed to fetch {label} from GitHub"}), 404
-        if r.status_code >= 400:
+        if r.status_code != 200:
             return _github_unavailable(endpoint, repo_name, r=r)
-        return jsonify(r.json())
+        try:
+            return jsonify(r.json())
+        except ValueError as e:
+            return _github_unavailable(endpoint, repo_name, r=r, exc=e)
 
 
 # ---------------------------------------------------------------------------
@@ -646,9 +654,9 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
             ],
             **OPENAI_SAMPLING,
         )
-        choices = response.choices or []
-        new_content = choices[0].message.content if choices else None
-        finish_reason = getattr(choices[0], "finish_reason", None) if choices else None
+        choice = response.choices[0] if response.choices else None
+        new_content = getattr(getattr(choice, "message", None), "content", None)
+        finish_reason = getattr(choice, "finish_reason", None)
     except openai.OpenAIError as e:
         return _fail(section, FAILURE_MODEL_ERROR, **_describe_failure(e))
 
@@ -743,6 +751,10 @@ def regenerate_content():
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"success": False, "error": "No data provided"}), 400
+    # A list, string, number or `true` passes the check above and would raise
+    # an AttributeError at data.get() below: an HTML 500, before any metering.
+    if not isinstance(data, dict):
+        return jsonify({"success": False, "error": "Request body must be a JSON object"}), 400
 
     sections = data.get("sections")
     # SUMMON NEW LORE is the only caller and it always sends True, so a request

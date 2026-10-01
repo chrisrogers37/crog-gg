@@ -54,6 +54,15 @@ def test_empty_body_returns_400(client):
     assert r.get_json()["error"] == "No data provided"
 
 
+@pytest.mark.parametrize("body", [[1], "x", 5, True], ids=["list", "string", "number", "true"])
+def test_non_object_body_returns_400(client, body):
+    # These used to reach data.get() and raise an AttributeError, so the reply
+    # was an HTML 500 (#195).
+    r = client.post("/api/regenerate", json=body)
+    assert r.status_code == 400
+    assert r.get_json()["error"] == "Request body must be a JSON object"
+
+
 @pytest.mark.parametrize(
     "payload",
     [

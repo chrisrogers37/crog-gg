@@ -313,6 +313,49 @@ def test_sub_resource_network_error_is_502(client):
     assert r.get_json() == _UNAVAILABLE
 
 
+def _not_json(status_code=200):
+    resp = _make_response(status_code)
+    resp.json.side_effect = requests.exceptions.JSONDecodeError("Expecting value", "", 0)
+    resp.headers = {}
+    return resp
+
+
+def test_repo_metadata_that_is_not_json_is_502(client):
+    with patch("api.index.requests.get", return_value=_not_json()):
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+@pytest.mark.parametrize(
+    "route, suffix, reply",
+    [
+        ("/api/v1/github/readme/shuffify", "/contents/README.md", _not_json),
+        ("/api/v1/github/languages/shuffify", "/languages", lambda: _not_json(204)),
+    ],
+    ids=["readme-not-json", "languages-204"],
+)
+def test_sub_resource_reply_that_is_not_json_is_502(client, route, suffix, reply):
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        return reply() if url.endswith(suffix) else meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get(route)
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+def test_repo_name_with_a_trailing_newline_is_rejected(client):
+    # `$` also matches before a final newline, so a name ending in one passed
+    # validation and would split the upstream-error log line.
+    with patch("api.index.requests.get") as mock_get:
+        r = client.get("/api/v1/github/repo/shuffify%0A")
+    assert r.status_code == 400
+    mock_get.assert_not_called()
+
+
 def _import_request_utils(env):
     return subprocess.run(
         [sys.executable, "-c", "import api._lib.request_utils"],
