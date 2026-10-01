@@ -1,8 +1,10 @@
 # Test and lint tools for CI and local work, on top of the runtime dependencies.
 # Pinned to the versions CI installed on 2026-09-30, so black and isort keep
 # their current output. Regenerate the hashed lock after any edit:
-#   uv pip compile requirements-dev.in --python-version 3.12 --generate-hashes -o requirements-dev.txt
+#   uv pip compile requirements-dev.in --python-version 3.12 --universal --generate-hashes -o requirements-dev.txt
+# The -c line keeps the runtime packages at the versions requirements.txt pins.
 -r requirements.in
+-c requirements.txt
 pytest==9.1.1
 flake8==7.4.1
 black==26.5.1

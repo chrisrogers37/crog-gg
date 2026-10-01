@@ -64,7 +64,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ### Prerequisites
 
-- Node.js 24 (`.nvmrc`; CI and Vercel use it). 22.13+ also works. Avoid 25+, whose built-in localStorage breaks the jsdom unit tests
+- Node.js 24. CI reads `.nvmrc` and Vercel reads `engines.node` in the root `package.json`, so bump both together. 22.13+ also works locally; avoid 25+, whose built-in localStorage breaks the jsdom unit tests
 - Python 3.12 (`.python-version`; CI and Vercel use it)
 - (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
 - (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
@@ -176,7 +176,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 - Frontend: `frontend/` → Vite build → `frontend/dist`, served as static assets by Vercel. The build writes one HTML file per route with that page's meta/OG tags (`frontend/scripts/vite-prerender.ts`), `vercel.json` serves them with `cleanUrls`, and anything else is a real 404 (`404.html`).
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Python Function under Fluid Compute. `vercel.json` rewrites `/api/(.*)` → `/api/index` so Flask handles all internal routing.
 - Shared helpers: `api/_lib/` (Upstash REST client, sliding-window rate limiter, request utils). Underscore prefix keeps Vercel from treating them as separate functions.
-- Python deps: edit `requirements.in` (runtime) or `requirements-dev.in` (tools), then regenerate the hash-pinned `requirements.txt` and `requirements-dev.txt` with the `uv pip compile` command in each file's header. CI and Vercel install only from the hashed files.
+- Python deps: edit `requirements.in` (runtime) or `requirements-dev.in` (tools), then regenerate the hash-pinned `requirements.txt` and `requirements-dev.txt` with the `uv pip compile` command in each file's header. CI and local installs check the hashes. Vercel installs the same pinned versions, but its builder converts `requirements.txt` into a uv project and drops the hashes.
 
 ### Vercel project env vars
 
