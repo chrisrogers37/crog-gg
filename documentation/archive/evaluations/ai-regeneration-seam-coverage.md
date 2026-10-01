@@ -1,4 +1,4 @@
-> Historical snapshot. Most findings have since been fixed; see GitHub issues (#105).
+> Historical snapshot. All four gaps below have since closed (#105).
 
 # AI regeneration: what the seam tests prove, and what they do not
 

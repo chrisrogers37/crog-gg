@@ -7,7 +7,7 @@ This directory holds active development plans. Completed plans are archived to `
 | Artifact | Description |
 | --- | --- |
 | [`tech-debt-triage_2026-07-02.md`](./tech-debt-triage_2026-07-02.md) | The 2026-07-02 system review's triage. #172 tracks which items are still live. |
-| [`2026-08-03-model-upgrade-and-spend-guard.md`](./2026-08-03-model-upgrade-and-spend-guard.md) | Complete (#160, #162). Archived once #192 moves its fail-closed contract and budget-cap advice into the README. |
+| [`2026-08-03-model-upgrade-and-spend-guard.md`](./2026-08-03-model-upgrade-and-spend-guard.md) | Implemented (#160, #162). Archived once #192 moves its fail-closed contract and budget-cap advice into the README. |
 
 Current work is tracked in GitHub issues; the 2026-09-29 system review filed #186–#199.
 
