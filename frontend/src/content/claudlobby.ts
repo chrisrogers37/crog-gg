@@ -11,9 +11,9 @@
  *
  * Say only what the Claudlobby repo backs up (claudlobby.test.ts checks the
  * mechanical parts):
- * - no "open source" until the repo has a LICENSE (#179, Claudfather/Claudlobby#1996)
- * - Claude Code only today; other model providers appear only in `maturity`
- *   and `roadmap.next`, where they read as plans
+ * - it's open source: Apache-2.0 since 2026-09-30 (Claudfather/Claudlobby#2013)
+ * - Claude Code only today; other model providers appear only in
+ *   `maturity.planned` and `roadmap.next`, where they read as plans
  * - every number keeps its source and as-of date, and matches that source
  */
 
@@ -27,7 +27,7 @@ export const claudlobby = {
   hero: {
     eyebrow: "Claudlobby · by Chris Rogers",
     headline: "i build things that build things.",
-    sub: "Claudlobby is my agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
+    sub: "Claudlobby is my open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
     credibility:
       "Data platform lead by day. Before that, Citadel and Meta, and chemical engineering at Cornell.",
     aboutLink: "More about me",
@@ -37,7 +37,11 @@ export const claudlobby = {
 
   maturity: {
     label: "Early alpha",
-    text: "Runs on Claude Code today. Other model providers (OpenAI, Gemini, local models) are on the roadmap.",
+    // Split so the test can hold `today` to Claude Code; only `planned` may
+    // name other providers.
+    today: "Runs on Claude Code today.",
+    planned:
+      "Other model providers (OpenAI, Gemini, local models) are on the roadmap.",
     link: "What's next",
   },
 

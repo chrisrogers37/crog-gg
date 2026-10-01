@@ -47,7 +47,8 @@ export function Hero() {
         </a>
       </div>
       <p className="cl-maturity cl-note">
-        <span className="cl-badge">{maturity.label}</span> {maturity.text}{" "}
+        <span className="cl-badge">{maturity.label}</span> {maturity.today}{" "}
+        {maturity.planned}{" "}
         <a href="#roadmap">{maturity.link}</a>
       </p>
     </section>
