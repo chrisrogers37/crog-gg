@@ -233,15 +233,17 @@ def _fetch_public_repo(repo_name: str, endpoint: str):
     return data, None
 
 
-# A successful proxy response is cached by Vercel's CDN for an hour, so repeat
-# views of a project page skip the function, GitHub and Redis entirely (#194
-# M33). Repos change slowly, and a repo made private drops out within the hour.
-# Only a 200 is marked: errors and refusals are never cached.
-_CDN_CACHE_CONTROL = "public, s-maxage=3600"
-
-
 def _cdn_cached(response: Response) -> Response:
-    response.headers["Cache-Control"] = _CDN_CACHE_CONTROL
+    """Let Vercel's CDN cache a successful proxy response for an hour, so repeat
+    views of a project page skip the function, GitHub and Redis entirely (#194
+    M33). Repos change slowly, and a repo made private drops out within the
+    hour. Only a 200 is marked: errors and refusals are never cached.
+
+    The CDN keys on the full URL, so a varying query string still reaches the
+    function. Only an edge rule (a Vercel Firewall rate limit on /api/*) bounds
+    those invocations.
+    """
+    response.headers["Cache-Control"] = "public, s-maxage=3600"
     return response
 
 
@@ -1254,9 +1256,8 @@ def get_all_languages_v1():
     # GitHub (1 + N calls), and during an Upstash outage every request would,
     # spending the token's quota for every project page (#194 M33).
     try:
-        cached = cache.get_json(CACHE_ALL_LANGUAGES_KEY, raise_on_error=True)
-    except Exception as exc:
-        logger.warning("languages cache unavailable: %s", exc)
+        cached = cache.get_json(CACHE_ALL_LANGUAGES_KEY)
+    except rate_limit.RedisUnavailable:
         return jsonify({"error": "Language stats are unavailable right now"}), 503
     if cached is not None:
         return jsonify(cached)

@@ -138,18 +138,6 @@ def test_a_failed_response_is_never_cached(client, route, metadata):
     assert "s-maxage" not in r.headers.get("Cache-Control", "")
 
 
-def test_a_missing_readme_is_never_cached(client):
-    meta = _make_response(200, {"name": "shuffify", "private": False})
-
-    def _no_readme(url, **_kwargs):
-        return meta if url.endswith("/shuffify") else _make_response(404, {})
-
-    with patch("api.index.requests.get", side_effect=_no_readme):
-        r = client.get("/api/v1/github/readme/shuffify")
-    assert r.status_code == 404
-    assert "s-maxage" not in r.headers.get("Cache-Control", "")
-
-
 # --- get_readme ------------------------------------------------------------
 
 
@@ -219,6 +207,7 @@ def test_get_readme_404_when_neither_exists(client):
         r = client.get("/api/v1/github/readme/shuffify")
 
     assert r.status_code == 404
+    assert "s-maxage" not in r.headers.get("Cache-Control", ""), "a missing README must never be cached"
 
 
 def test_get_readme_private_returns_generic_404(client):
