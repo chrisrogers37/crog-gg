@@ -1,20 +1,25 @@
-"""Unit tests for the fall-open cache helper (api/_lib/cache.py, #91).
+"""Unit tests for the cache helper (api/_lib/cache.py, #91).
 
-The cache must NEVER turn a Redis outage into a request failure: get_json
-returns None (a miss) and set_json silently no-ops when Upstash errors. These
-also pin the JSON round-trip contract with the underlying Redis command, which
-the endpoint tests mock out.
+A write never turns a Redis outage into a request failure: set_json silently
+no-ops when Upstash errors. A read raises RedisUnavailable, so its caller can
+refuse rather than treat an outage as a miss (#194 M33). These also pin the
+JSON round-trip contract with the underlying Redis command, which the endpoint
+tests mock out.
 """
 
 import json
 from unittest.mock import patch
 
+import pytest
+
 from api._lib import cache
+from api._lib.rate_limit import RedisUnavailable
 
 
-def test_get_json_returns_none_on_redis_error():
+def test_get_json_raises_redis_unavailable_on_redis_error():
     with patch("api._lib.cache.redis_client.command", side_effect=RuntimeError("down")):
-        assert cache.get_json("k") is None
+        with pytest.raises(RedisUnavailable):
+            cache.get_json("k")
 
 
 def test_get_json_returns_none_on_miss():
@@ -28,6 +33,7 @@ def test_get_json_decodes_stored_value():
 
 
 def test_get_json_returns_none_on_bad_json():
+    # A corrupt value isn't an outage: the miss recomputes and overwrites it.
     with patch("api._lib.cache.redis_client.command", return_value="not json"):
         assert cache.get_json("k") is None
 

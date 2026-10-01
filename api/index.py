@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 import httpx
 import openai
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 
 from api._lib import cache, rate_limit, redis_client
@@ -233,6 +233,20 @@ def _fetch_public_repo(repo_name: str, endpoint: str):
     return data, None
 
 
+def _cdn_cached(response: Response) -> Response:
+    """Let Vercel's CDN cache a successful proxy response for an hour, so repeat
+    views of a project page skip the function, GitHub and Redis entirely (#194
+    M33). Repos change slowly, and a repo made private drops out within the
+    hour. Only a 200 is marked: errors and refusals are never cached.
+
+    The CDN keys on the full URL, so a varying query string still reaches the
+    function. Only an edge rule (a Vercel Firewall rate limit on /api/*) bounds
+    those invocations.
+    """
+    response.headers["Cache-Control"] = "public, s-maxage=3600"
+    return response
+
+
 def _proxy_sub_resource(
     repo_name: str, path: str | tuple[str, ...], label: str, endpoint: str, missing_msg: str | None = None
 ):
@@ -261,7 +275,7 @@ def _proxy_sub_resource(
         if r.status_code != 200:
             return _github_unavailable(endpoint, repo_name, r=r)
         try:
-            return jsonify(r.json())
+            return _cdn_cached(jsonify(r.json()))
         except ValueError as e:
             return _github_unavailable(endpoint, repo_name, r=r, exc=e)
 
@@ -1200,7 +1214,7 @@ def get_repository(repo_name):
     data, error = _fetch_public_repo(repo_name, "repo")
     if error is not None:
         return error
-    return jsonify(_repository_fields(data))
+    return _cdn_cached(jsonify(_repository_fields(data)))
 
 
 @app.route("/api/v1/github/readme/<repo_name>", methods=["GET"])
@@ -1238,7 +1252,13 @@ def get_all_languages_v1():
     if (resp := _gh_rate_limit_or_429("languages_all")) is not None:
         return resp
 
-    cached = cache.get_json(CACHE_ALL_LANGUAGES_KEY)
+    # A cache that can't be read is a refusal, not a miss: a miss fans out to
+    # GitHub (1 + N calls), and during an Upstash outage every request would,
+    # spending the token's quota for every project page (#194 M33).
+    try:
+        cached = cache.get_json(CACHE_ALL_LANGUAGES_KEY)
+    except rate_limit.RedisUnavailable:
+        return jsonify({"error": "Language stats are unavailable right now"}), 503
     if cached is not None:
         return jsonify(cached)
 
