@@ -39,21 +39,34 @@ def _post(path: str, body: Any) -> Any:
         return json.loads(resp.read())
 
 
+def _unwrap(reply: Any) -> Any:
+    """The ``result`` of one Upstash reply; anything else raises ``RuntimeError``.
+
+    Upstash reports a refused command as ``{"error": ...}`` inside a 200
+    response, not as a failed request. Callers read ``None`` as Redis nil, so
+    an error, or any reply without a result, must not come back as one (#194).
+    """
+    if isinstance(reply, dict) and "result" in reply:
+        return reply["result"]
+    detail = reply.get("error", "no result") if isinstance(reply, dict) else f"a {type(reply).__name__} reply"
+    raise RuntimeError(f"Upstash error: {detail}")
+
+
 def command(*args: Any) -> Any:
     """Execute a single Redis command. Returns the `result` field."""
     payload = [str(a) for a in args]
-    data = _post("", payload)
-    if "error" in data:
-        raise RuntimeError(f"Upstash error: {data['error']}")
-    return data.get("result")
+    return _unwrap(_post("", payload))
 
 
 def pipeline(commands: list[list[Any]]) -> list[Any]:
     """Execute multiple commands in a single round-trip.
 
-    Returns a list of result values in the same order as the input commands.
+    Returns a list of result values in the same order as the input commands,
+    and raises ``RuntimeError`` unless every command got one.
     Note: Upstash `/pipeline` is non-atomic; use `/multi-exec` for transactions.
     """
     payload = [[str(a) for a in cmd] for cmd in commands]
     data = _post("/pipeline", payload)
-    return [item.get("result") for item in data]
+    if not isinstance(data, list) or len(data) != len(commands):
+        raise RuntimeError(f"Upstash pipeline: expected a list of {len(commands)} replies")
+    return [_unwrap(item) for item in data]
