@@ -1,4 +1,5 @@
-import { useLogo } from "../../hooks/useLogo";
+import { useState } from "react";
+import { logoUrl } from "../../utils/logos";
 
 type LogoImageProps = {
   domain: string | undefined;
@@ -9,8 +10,9 @@ type LogoImageProps = {
 };
 
 /**
- * Renders a company/org logo from a domain, with a fallback when unavailable.
- * Uses the logoService to validate that the image actually loads.
+ * Renders a company/org logo from a domain (utils/logos.ts), with a fallback
+ * when there is no domain or its logo fails to load. The width and height
+ * hold the logo's footprint from first paint, so its arrival shifts nothing.
  */
 export function LogoImage({
   domain,
@@ -19,14 +21,9 @@ export function LogoImage({
   fallback = null,
   className = "",
 }: LogoImageProps) {
-  const logoUrl = useLogo(domain);
+  const [failedDomain, setFailedDomain] = useState<string>();
 
-  if (!logoUrl) {
-    // The logo resolves asynchronously, so it must occupy its footprint before
-    // it arrives -- otherwise it appears mid-read and changes the height of the
-    // line it lands on. A caller that supplied a fallback has already put
-    // something in the space; a caller that did not was rendering nothing at
-    // all, which is the case that shifts.
+  if (!domain || failedDomain === domain) {
     if (fallback) {
       return <>{fallback}</>;
     }
@@ -41,12 +38,13 @@ export function LogoImage({
 
   return (
     <img
-      src={logoUrl}
+      src={logoUrl(domain)}
       alt={alt}
       width={size}
       height={size}
       className={`logo-image ${className}`}
       style={{ objectFit: "contain" }}
+      onError={() => setFailedDomain(domain)}
     />
   );
 }

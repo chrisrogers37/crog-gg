@@ -6,6 +6,8 @@ import {
   pageFor,
   renderHead,
   renderPage,
+  renderRobots,
+  renderSitemap,
 } from "./prerender";
 import {
   HOME_META,
@@ -105,6 +107,19 @@ describe("landingPages, over the shipped content", () => {
         "Q&A Bot",
       );
     }
+  });
+
+  it("lists exactly the landing pages in the sitemap, on the canonical host", () => {
+    const sitemap = renderSitemap(landingPages(projects), "2026-09-29");
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs).toEqual(
+      landingPages(projects).map((page) => `${SITE_URL}${page.path}`),
+    );
+    expect(sitemap.match(/<lastmod>2026-09-29<\/lastmod>/g)).toHaveLength(locs.length);
+  });
+
+  it("points robots.txt at the sitemap on the canonical host", () => {
+    expect(renderRobots()).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
   });
 
   it("gives any other path the noindex 404 head", () => {

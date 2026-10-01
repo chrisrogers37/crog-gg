@@ -2,7 +2,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  /* Inside the Layout, between its header and footer. */
+  min-height: 60vh;
   background-color: var(--background-color);
   padding: 2rem;
 }

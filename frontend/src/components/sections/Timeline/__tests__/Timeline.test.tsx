@@ -1,12 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { Timeline } from "../Timeline";
-
-// Mock the useLogo hook so LogoImage doesn't make real network requests
-vi.mock("../../../../hooks/useLogo", () => ({
-  useLogo: (domain: string | undefined) =>
-    domain ? `https://logo.clearbit.com/${domain}?size=64` : null,
-}));
+import { logoUrl } from "../../../../utils/logos";
 
 // framer-motion's whileInView requires IntersectionObserver to be a real class
 beforeAll(() => {
@@ -104,7 +99,7 @@ describe("Timeline", () => {
 
   it("sorts entries newest-first (present at top)", () => {
     render(<Timeline data={mockData} />);
-    const titles = screen.getAllByRole("heading", { level: 4 });
+    const titles = screen.getAllByRole("heading", { level: 2 });
     // Artemis (present) should be first, then AI-Maxxing (Nov 2025),
     // then Citadel (Jul 2025), then Cornell (2014)
     expect(titles[0].textContent).toBe("Senior Data Scientist and Engineer");
@@ -121,15 +116,14 @@ describe("Timeline", () => {
   });
 
   it("renders logo images for entries with domains", () => {
-    render(<Timeline data={mockData} />);
-    // Entries with domains should have img elements
-    const logos = screen.getAllByRole("img");
-    expect(logos.length).toBeGreaterThan(0);
-    // Citadel should have logo (dot + card = 2 per entry with domain)
-    const citadelLogos = logos.filter(
-      (img) => img.getAttribute("alt") === "Citadel",
+    const { container } = render(<Timeline data={mockData} />);
+    // The logos are decorative: the organisation's name is the text beside
+    // them. So they are found by source, not by an accessible name.
+    const citadelLogos = container.querySelectorAll(
+      `img[src="${logoUrl("citadel.com")}"]`,
     );
-    expect(citadelLogos.length).toBe(2); // dot + card header
+    expect(citadelLogos).toHaveLength(2); // dot + card header
+    citadelLogos.forEach((img) => expect(img).toHaveAttribute("alt", ""));
   });
 
   it("renders emoji fallback for entries without domain", () => {

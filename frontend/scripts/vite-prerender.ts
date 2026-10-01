@@ -6,6 +6,8 @@ import {
   landingPages,
   pageFor,
   renderPage,
+  renderRobots,
+  renderSitemap,
 } from "../src/seo/prerender";
 import { NOT_FOUND_META } from "../src/seo/site";
 import { readProjects } from "../src/utils/projectLoader";
@@ -48,7 +50,8 @@ export function prerender(): Plugin[] {
         }
         const template = index.source;
 
-        for (const page of landingPages(await projects())) {
+        const pages = landingPages(await projects());
+        for (const page of pages) {
           const source = renderPage(template, page);
           if (page.path === "/") index.source = source;
           else this.emitFile({ type: "asset", fileName: fileFor(page.path), source });
@@ -58,6 +61,12 @@ export function prerender(): Plugin[] {
           fileName: "404.html",
           source: renderPage(template, NOT_FOUND_META),
         });
+        this.emitFile({
+          type: "asset",
+          fileName: "sitemap.xml",
+          source: renderSitemap(pages, new Date().toISOString().slice(0, 10)),
+        });
+        this.emitFile({ type: "asset", fileName: "robots.txt", source: renderRobots() });
       },
     },
   ];

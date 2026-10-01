@@ -183,7 +183,9 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 ## Deployment
 
-Deployed on Vercel. Every push to `main` auto-deploys to production at https://crog.gg; every push to any other branch gets a preview URL posted on the PR.
+Deployed on Vercel. Every push to `main` auto-deploys to production at https://www.crog.gg, the canonical host (the apex `crog.gg` 308s to it, a Vercel domain setting); every push to any other branch gets a preview URL posted on the PR.
+
+Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` and `robots.txt` are generated at build time from the prerendered page list, so there are no static copies in `public/`.
 
 ### Layout
 
@@ -222,7 +224,7 @@ When working with images:
 - **DON'T rotate images** unless explicitly requested - images are usually oriented correctly
 - Use **CSS `object-position`** for cropping (e.g., `object-position: top` to hide bottom of image)
 - Use **CSS `object-fit: cover`** for responsive image sizing
-- Profile photos are in `frontend/public/profile-photos/`
+- Profile photos are served from `frontend/public/profile-photos/` as WebP variants. The originals are in `frontend/scripts/photos/originals/`: to add or change a photo, edit there and run `python frontend/scripts/photos/make-variants.py`
 
 Example - cropping with CSS (not image manipulation):
 

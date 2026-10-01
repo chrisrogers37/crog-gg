@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from "react";
+import { SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
 
 interface SectionNavProps {
   activeSection: string;
@@ -83,8 +84,9 @@ export default function SectionNav({
           <button
             key={section.id}
             role="tab"
+            id={sectionTabId(section.id)}
+            aria-controls={SECTION_PANEL_ID}
             aria-selected={activeSection === section.id}
-            aria-pressed={activeSection === section.id}
             data-section={section.id}
             tabIndex={
               activeSection === section.id ||

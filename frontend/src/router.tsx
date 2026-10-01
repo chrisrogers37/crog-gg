@@ -100,11 +100,13 @@ export const routes: RouteObject[] = [
           },
         ],
       },
+      // Inside the Layout, so a 404 keeps the site's header, footer and its
+      // one <main> landmark.
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      },
     ],
-  },
-  {
-    path: "*",
-    element: <NotFoundPage />,
   },
 ];
 

@@ -2,6 +2,7 @@ import {
   HOME_META,
   NOT_FOUND_META,
   PROJECTS_META,
+  absoluteUrl,
   headTags,
   jsonLd,
   pageTitle,
@@ -78,3 +79,21 @@ export const fileFor = (path: string) =>
 export const pageFor = (pathname: string, projects: ProjectSummary[]) =>
   landingPages(projects).find((page) => page.path === pathname) ??
   NOT_FOUND_META;
+
+/**
+ * sitemap.xml for the landing pages, which are exactly the indexable ones, so
+ * it cannot list a page the build did not write (#178: the hand-kept file had
+ * drifted to two dead slugs and missed four live ones).
+ */
+export function renderSitemap(pages: LandingPage[], lastmod: string): string {
+  const urls = pages
+    .map(
+      (page) =>
+        `  <url>\n    <loc>${escapeHtml(absoluteUrl(page.path))}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`,
+    )
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+export const renderRobots = () =>
+  `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl("/sitemap.xml")}\n`;

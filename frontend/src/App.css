@@ -27,6 +27,7 @@
   --card-background: #1e293b; /* slate.800 */
   --hover-color: #93c5fd; /* primary.300 */
   --border-color: #334155; /* slate.700 */
+  --logo-chip: #f1f5f9; /* slate.100 */
 }
 
 .app {
@@ -1188,7 +1189,8 @@ a:hover {
 }
 
 /* Adjust main content layout */
-main {
+main,
+.home-main {
   display: flex;
   flex-direction: column;
 }

@@ -66,6 +66,9 @@ describe("githubService", () => {
         content: btoa("# Test README\n\nThis is a test."),
         encoding: "base64",
         sha: "abc123",
+        html_url: "https://github.com/chrisrogers37/shuffify/blob/main/README.md",
+        download_url:
+          "https://raw.githubusercontent.com/chrisrogers37/shuffify/main/README.md",
       };
 
       globalThis.fetch = vi.fn().mockResolvedValue({
@@ -75,14 +78,32 @@ describe("githubService", () => {
 
       const result = await githubService.getReadme("shuffify");
 
-      expect(result).toBe("# Test README\n\nThis is a test.");
+      expect(result).toEqual({
+        text: "# Test README\n\nThis is a test.",
+        htmlUrl: mockReadme.html_url,
+        downloadUrl: mockReadme.download_url,
+      });
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining("/api/v1/github/readme/shuffify"),
         expect.any(Object),
       );
     });
 
-    it("returns empty string when README not found", async () => {
+    it("decodes the README as UTF-8, so emoji and symbols survive", async () => {
+      // Headings from the Shitpost Alpha and Storydump READMEs, which rendered
+      // as "ð The Story", "â ï¸ Disclaimer" and "Â·" before #178.
+      const text = "## 📖 The Story\n## 🎯 Overview\n## ⚠️ Disclaimer\na — b · c";
+      const utf8 = String.fromCharCode(...new TextEncoder().encode(text));
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        // GitHub wraps its base64 at 60 columns.
+        json: () => Promise.resolve({ content: btoa(utf8).replace(/(.{60})/g, "$1\n") }),
+      });
+
+      expect((await githubService.getReadme("shitpost-alpha"))?.text).toBe(text);
+    });
+
+    it("returns null when the repo has no README", async () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
@@ -90,7 +111,7 @@ describe("githubService", () => {
 
       const result = await githubService.getReadme("no-readme-repo");
 
-      expect(result).toBe("");
+      expect(result).toBeNull();
     });
 
     it("throws error on other failures", async () => {

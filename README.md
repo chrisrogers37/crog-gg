@@ -169,7 +169,7 @@ There is no manually-triggered deploy workflow. Vercel deploys directly from the
 
 ## Production Deployment
 
-Deployed on Vercel. Every push to `main` auto-deploys to https://crog.gg; every push to any branch gets a preview URL posted on the PR.
+Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (the canonical host; the apex `crog.gg` 308s to it); every push to any branch gets a preview URL posted on the PR.
 
 ### Layout
 

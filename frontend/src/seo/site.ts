@@ -16,8 +16,12 @@ import type { Project } from "../types/Project";
  * pins it.
  */
 
-/** The canonical origin. Every absolute self-URL is built from it. */
-export const SITE_URL = "https://crog.gg";
+/**
+ * The canonical origin; every absolute self-URL is built from it (#178).
+ * Production answers the apex with a 308 to www (a Vercel domain setting), so
+ * www is the host that serves pages and the one crawlers should be sent to.
+ */
+export const SITE_URL = "https://www.crog.gg";
 
 const SITE_NAME = "Chris Rogers - i build things that build things";
 
@@ -48,7 +52,7 @@ export type PageMeta = {
 /** A page a visitor can land on, so it has a URL. */
 export type LandingPage = PageMeta & { path: string };
 
-const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
+export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 
 export const pageTitle = (meta: PageMeta) =>
   meta.title ? `${meta.title} | ${SITE_NAME}` : SITE_NAME;

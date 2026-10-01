@@ -126,7 +126,7 @@ export function Timeline({ data }: TimelineProps) {
               <div className="timeline-dot">
                 <LogoImage
                   domain={entry.domain}
-                  alt={entry.organization}
+                  alt=""
                   size={28}
                   className="timeline-dot-logo"
                   fallback={
@@ -139,11 +139,11 @@ export function Timeline({ data }: TimelineProps) {
               <div className="timeline-card">
                 <div className="timeline-card-header">
                   <span className="timeline-period">{formatPeriod(entry)}</span>
-                  <h4 className="timeline-title">{entry.title}</h4>
+                  <h2 className="timeline-title">{entry.title}</h2>
                   <span className="timeline-org">
                     <LogoImage
                       domain={entry.domain}
-                      alt={entry.organization}
+                      alt=""
                       size={18}
                       className="timeline-org-logo"
                     />
@@ -159,7 +159,7 @@ export function Timeline({ data }: TimelineProps) {
         {/* Skill bubbles sidebar */}
         <aside className="timeline-skills-sidebar">
           <div className="timeline-skills-sticky">
-            <h4 className="timeline-skills-heading">skills along the way</h4>
+            <h2 className="timeline-skills-heading">skills along the way</h2>
             <SkillBubbles
               activeSkills={activeSkills}
               skillCategories={data.skill_categories}

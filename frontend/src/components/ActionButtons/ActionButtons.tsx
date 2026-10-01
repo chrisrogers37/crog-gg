@@ -24,11 +24,11 @@ export function ActionButtons({
     cooldownTotal > 0 ? cooldownRemaining / cooldownTotal : 0;
   const sweepDegrees = sweepProgress * 360;
 
-  const getButtonText = () => {
-    if (isRegenerating) return "Weaving Epic Saga...";
-    if (isOnCooldown) return "";
-    return "SUMMON NEW LORE";
-  };
+  const buttonText = isRegenerating
+    ? "Weaving Epic Saga..."
+    : isOnCooldown
+      ? ""
+      : "SUMMON NEW LORE";
 
   return (
     <div className="action-buttons">
@@ -39,13 +39,11 @@ export function ActionButtons({
           className={`generate-btn ${isOnCooldown ? "on-cooldown" : ""} ${isReady ? "ready-flash" : ""}`}
           onClick={onRegenerate}
           disabled={isDisabled}
-          aria-label={
-            isOnCooldown
-              ? `Ability on cooldown: ${cooldownRemaining} seconds remaining`
-              : "Regenerate content with AI"
-          }
+          // Each button is named by the words on it, so a voice-control user
+          // can say what they see; what it does is its description.
+          aria-describedby="generate-btn-description"
         >
-          <span className="btn-text">{getButtonText()}</span>
+          <span className="btn-text">{buttonText}</span>
 
           {/* WoW-style cooldown overlay */}
           {isOnCooldown && !isRegenerating && (
@@ -59,7 +57,8 @@ export function ActionButtons({
                   )`,
                 }}
               />
-              <span className="cooldown-number">{cooldownRemaining}</span>
+              <span className="cooldown-number">{cooldownRemaining}</span>{" "}
+              <span className="sr-only">seconds of cooldown left</span>
             </div>
           )}
 
@@ -74,16 +73,24 @@ export function ActionButtons({
         {/* Ready glow ring */}
         {isReady && <div className="ready-glow" />}
       </div>
+      <span id="generate-btn-description" className="sr-only">
+        Regenerates the text with AI
+      </span>
 
       {hasModifiedContent && (
-        <button
-          className="reset-btn"
-          onClick={onReset}
-          disabled={isRegenerating}
-          aria-label="Reset content to original"
-        >
-          DISPEL ENCHANTMENT
-        </button>
+        <>
+          <button
+            className="reset-btn"
+            onClick={onReset}
+            disabled={isRegenerating}
+            aria-describedby="reset-btn-description"
+          >
+            DISPEL ENCHANTMENT
+          </button>
+          <span id="reset-btn-description" className="sr-only">
+            Restores the original text
+          </span>
+        </>
       )}
     </div>
   );

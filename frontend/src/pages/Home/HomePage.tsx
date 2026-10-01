@@ -33,6 +33,11 @@ import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { SectionNavigator } from "../../components/common/SectionNavigator";
 import { ImageShowcase } from "../../components/common/ImageShowcase";
 import { MobileMenu } from "../../components/layout/MobileMenu";
+import { PROFILE_PHOTOS, photoSrc, photoSrcSet } from "../../utils/photos";
+import {
+  SECTION_PANEL_ID,
+  sectionTabId,
+} from "../../components/sectionTabs";
 
 // Styles
 import "../../App.css";
@@ -45,15 +50,6 @@ import "./HomePage.css";
  * Main portfolio page using Zustand stores for state management.
  * Displays header, section navigation, content sections, and action buttons.
  */
-// Profile photos for random selection
-const PROFILE_PHOTOS = [
-  "/profile-photos/photo-1.jpg",
-  "/profile-photos/photo-2.jpg",
-  "/profile-photos/photo-3.jpg",
-  "/profile-photos/photo-4.jpg",
-  "/profile-photos/photo-5.jpg",
-];
-
 // Section order for flow navigation
 const SECTION_ORDER = ["about", "journey", "projects", "music"];
 
@@ -262,13 +258,18 @@ export function HomePage() {
         {/* Header */}
         <header>
           <div className="header-content">
+            {/* src goes last: attributes are set in order, and Safari starts
+                fetching src the moment it is set, before srcset can choose. */}
             <img
-              src={profilePhoto}
               alt={`${bio?.display_name || "Profile"}'s profile photo`}
               className="profile-photo"
               width={240}
               height={240}
               loading="eager"
+              // The .profile-photo widths in App.css, per breakpoint.
+              sizes="(max-width: 360px) 110px, (max-width: 480px) 140px, (max-width: 768px) 180px, 240px"
+              srcSet={photoSrcSet(profilePhoto)}
+              src={photoSrc(profilePhoto)}
             />
             <div className="header-text">
               <h1>{bio?.display_name || "Loading..."}</h1>
@@ -303,13 +304,16 @@ export function HomePage() {
           onSectionChange={handleSectionChange}
         />
 
-        {/* Main Content */}
-        <main>
+        {/* Main Content (inside the Layout's <main>, so not a landmark of its own) */}
+        <div className="home-main">
           <AnimatePresence mode="wait">
             {activeSection && !previewMode ? (
               <motion.div
                 key={activeSection}
                 className="content-section"
+                role="tabpanel"
+                id={SECTION_PANEL_ID}
+                aria-labelledby={sectionTabId(activeSection)}
                 // Attach is the first moment the expanded content occupies
                 // layout; detach is the moment it stops, which under
                 // AnimatePresence is when its exit animation has finished
@@ -326,6 +330,10 @@ export function HomePage() {
             ) : (
               <motion.div
                 key="preview"
+                // The collapsed preview is the About tab's panel.
+                role="tabpanel"
+                id={SECTION_PANEL_ID}
+                aria-labelledby={sectionTabId("about")}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
@@ -353,7 +361,7 @@ export function HomePage() {
               </motion.div>
             )}
           </AnimatePresence>
-        </main>
+        </div>
 
         {/* Action Buttons — gated on the content being present, not requested.
             previewMode is deliberately not consulted: it is the request, and
