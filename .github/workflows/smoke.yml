@@ -1,0 +1,77 @@
+name: Post-deploy smoke
+
+# Vercel reports every deployment to GitHub. When one succeeds, check that the
+# deployed site actually serves: the home page, a deep link, YAML content as
+# YAML, the CSP header, real 404s and the API's health check (#195).
+#
+# Deployment URLs (*.vercel.app) sit behind Vercel's login, so a run needs:
+#   - the SITE_URL Actions variable (the public production URL), used for
+#     Production deployments; and/or
+#   - the VERCEL_AUTOMATION_BYPASS_SECRET Actions secret (Vercel: Deployment
+#     Protection, Protection Bypass for Automation), used for previews, and for
+#     production when SITE_URL is unset.
+# Without either, the run skips with a notice.
+#
+# A deployment_status run uses the workflow file from the deployed commit, so
+# keep this job read-only, with the bypass secret as its only secret.
+on: deployment_status
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ENVIRONMENT: ${{ github.event.deployment.environment }}
+      DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Smoke-test the deployment
+        run: |
+          set -uo pipefail
+          if [ "$ENVIRONMENT" = "Production" ] && [ -n "$SITE_URL" ]; then
+            BASE="${SITE_URL%/}"
+            BYPASS=""
+          elif [ -n "$BYPASS" ]; then
+            BASE="${DEPLOYMENT_URL%/}"
+          else
+            echo "::notice::Skipped $ENVIRONMENT: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
+            exit 0
+          fi
+          echo "Checking $ENVIRONMENT at $BASE"
+
+          c() { curl -sS --max-time 20 ${BYPASS:+-H "x-vercel-protection-bypass: $BYPASS"} "$@"; }
+          st() { c -o /dev/null -w '%{http_code}' "$BASE$1"; }
+          fail=0
+          pass() { echo "ok    $1"; }
+          flunk() { echo "FAIL  $1"; fail=1; }
+          expect() { if [ "$2" = "$3" ]; then pass "$1"; else flunk "$1: got $2, want $3"; fi; }
+
+          expect "/ returns 200" "$(st /)" 200
+          if c -I "$BASE/" | grep -qi '^content-security-policy:'; then pass "/ sends a CSP header"; else flunk "/ sends no CSP header"; fi
+
+          file=$(c "$BASE/content/projects/index.yaml" | grep -m1 -oE '[A-Za-z0-9._-]+\.yaml$')
+          slug=$(c "$BASE/content/projects/$file" | awk '/^id:/ {print $2; exit}')
+          expect "a project deep link (/projects/$slug) returns 200" "$(st "/projects/$slug")" 200
+
+          expect "/content/bio.yaml returns 200" "$(st /content/bio.yaml)" 200
+          type=$(c -o /dev/null -w '%{content_type}' "$BASE/content/bio.yaml")
+          case "$type" in
+            *text/html*) flunk "/content/bio.yaml is served as HTML ($type)" ;;
+            *) pass "/content/bio.yaml is served as $type" ;;
+          esac
+
+          expect "an unknown path returns 404" "$(st /smoke-no-such-page)" 404
+
+          # A preview without keys may answer 503; the JSON body still proves
+          # the function imported. Production must be healthy.
+          code=$(c -o health.json -w '%{http_code}' "$BASE/api/health")
+          if grep -q '"checks"' health.json; then pass "/api/health answers JSON ($code)"; else flunk "/api/health didn't answer JSON ($code)"; fi
+          if [ "$ENVIRONMENT" = "Production" ]; then expect "/api/health is 200 on production" "$code" 200; fi
+
+          exit $fail
