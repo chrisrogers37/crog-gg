@@ -1,9 +1,9 @@
 """Small JSON key/value cache backed by Upstash Redis.
 
 Separate from rate_limit.py: this is opportunistic response caching, not a
-limiter. Like the rate-limit primitives, every operation falls open on a Redis
-error — a cache miss or a silent no-op is always preferable to failing the
-request when Upstash is unreachable.
+limiter. By default every operation falls open on a Redis error: a cache miss
+or a silent no-op beats failing the request when Upstash is unreachable. A
+caller whose miss costs more than a refusal passes ``raise_on_error`` (#194).
 """
 
 import json
@@ -12,12 +12,15 @@ from typing import Any
 from . import redis_client
 
 
-def get_json(key: str) -> Any | None:
-    """Return the decoded JSON value stored at ``key``, or None on a miss, a
-    decode error, or any Redis error (fall-open)."""
+def get_json(key: str, raise_on_error: bool = False) -> Any | None:
+    """Return the decoded JSON value stored at ``key``, or None on a miss or a
+    decode error. A Redis error reads as None too (fall-open), unless
+    ``raise_on_error`` is set, when it raises instead."""
     try:
         raw = redis_client.command("GET", key)
     except Exception:
+        if raise_on_error:
+            raise
         return None
     if raw is None:
         return None

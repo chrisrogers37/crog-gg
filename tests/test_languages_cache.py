@@ -111,3 +111,14 @@ def test_languages_repo_list_failure_is_not_cached(client):
 
     assert r.status_code == 500
     assert mock_set.call_count == 0
+
+
+def test_an_unreadable_cache_is_a_503_not_a_fan_out(client):
+    """During an Upstash outage, every miss would fan out to GitHub and could
+    spend the token's quota for every project page (#194 M33)."""
+    with patch("api._lib.cache.redis_client.command", side_effect=RuntimeError("redis down")):
+        with patch("api.index.requests.get") as mock_get:
+            r = client.get("/api/v1/github/languages")
+    assert r.status_code == 503
+    assert r.get_json() == {"error": "Language stats are unavailable right now"}
+    mock_get.assert_not_called()

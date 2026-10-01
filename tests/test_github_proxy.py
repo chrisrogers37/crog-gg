@@ -108,6 +108,48 @@ def test_get_repository_makes_single_github_call(client):
     assert mock_get.call_count == 1
 
 
+# --- CDN caching (#194 M33) ------------------------------------------------
+
+_PROXY_ROUTES = ["repo", "readme", "languages"]
+
+
+@pytest.mark.parametrize("route", _PROXY_ROUTES)
+def test_a_successful_response_is_cached_by_the_cdn(client, route):
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+    with patch("api.index.requests.get", side_effect=_metadata_then_payload(meta)):
+        r = client.get(f"/api/v1/github/{route}/shuffify")
+    assert r.status_code == 200
+    assert r.headers["Cache-Control"] == "public, s-maxage=3600"
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        pytest.param(_make_response(404, {}), id="missing"),
+        pytest.param(_make_response(200, {"private": True}), id="private"),
+        pytest.param(_make_response(500, {}), id="github-down"),
+    ],
+)
+@pytest.mark.parametrize("route", _PROXY_ROUTES)
+def test_a_failed_response_is_never_cached(client, route, metadata):
+    with patch("api.index.requests.get", return_value=metadata):
+        r = client.get(f"/api/v1/github/{route}/shuffify")
+    assert r.status_code != 200
+    assert "s-maxage" not in r.headers.get("Cache-Control", "")
+
+
+def test_a_missing_readme_is_never_cached(client):
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _no_readme(url, **_kwargs):
+        return meta if url.endswith("/shuffify") else _make_response(404, {})
+
+    with patch("api.index.requests.get", side_effect=_no_readme):
+        r = client.get("/api/v1/github/readme/shuffify")
+    assert r.status_code == 404
+    assert "s-maxage" not in r.headers.get("Cache-Control", "")
+
+
 # --- get_readme ------------------------------------------------------------
 
 
