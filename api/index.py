@@ -63,10 +63,23 @@ CORS(
 )
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-# Bounded like every other outbound call in this file. The default is 600s with
-# retries, and the request waits on the slowest section, so an unbounded hang
-# would pin the function to its max duration with the browser still waiting.
-openai_client = openai.OpenAI(api_key=OPENAI_API_KEY, timeout=20.0, max_retries=1) if OPENAI_API_KEY else None
+# One model call's time limit. _create_within shortens it to what's left of the
+# press's deadline (#195 M37); the client's copy is the backstop for any call
+# that doesn't pass its own.
+_OPENAI_CALL_SECONDS = 20.0
+
+
+def _make_openai_client(api_key: str) -> openai.OpenAI:
+    """Bounded like every other outbound call in this file. The default is 600s
+    with retries, and the request waits on the slowest section, so an unbounded
+    hang would pin the function to its max duration with the browser still
+    waiting. No SDK retries either: it sleeps up to 60 s on a Retry-After, past
+    the request's deadline. ``_create_within`` retries inside it (#195 M37).
+    """
+    return openai.OpenAI(api_key=api_key, timeout=_OPENAI_CALL_SECONDS, max_retries=0)
+
+
+openai_client = _make_openai_client(OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 # The rewrite model. This is a public button anyone can press, so the pick is
 # governed by cost and latency per call rather than raw capability -- it is
@@ -88,6 +101,9 @@ OPENAI_MODEL = "gpt-5.6-luna"
 OPENAI_SAMPLING: dict = {"reasoning_effort": "low"}
 
 COOLDOWN_SECONDS = 30
+# The whole press's time budget, under vercel.json's maxDuration (60 s), so the
+# handler answers before the platform cuts the function off (#195 M37).
+REGEN_DEADLINE_SECONDS = 50
 REGEN_DAILY_MAX = 30
 REGEN_DAILY_WINDOW = 86400
 # Section rewrites per rolling 24 h across all visitors (#194 M11), the ceiling
@@ -663,7 +679,37 @@ def _log_usage(section: str, usage, finish_reason, started: float) -> None:
     )
 
 
-def _regenerate_section(section: str, content: dict, use_fantasy: bool, register: str, tag: str | None):
+# Worth one more try inside the deadline: the connection failed or timed out
+# (APITimeoutError is an APIConnectionError), or OpenAI answered with a 5xx.
+# Not a 429, which a retry only makes worse.
+_RETRYABLE = (openai.APIConnectionError, openai.InternalServerError)
+# A retry needs at least this long left to be worth starting.
+_RETRY_MIN_SECONDS = 10.0
+
+
+def _create_within(deadline: float, **kwargs):
+    """``chat.completions.create``, finished by ``deadline`` (a ``time.monotonic()``
+    value) (#195 M37). Each attempt may take what's left, at most
+    _OPENAI_CALL_SECONDS, and one that fails retryably gets a second try while
+    _RETRY_MIN_SECONDS or more remain.
+    """
+    for attempt in (1, 2):
+        left = deadline - time.monotonic()
+        # Connecting keeps the SDK's usual 5 s. A bare number would give every
+        # phase the whole budget, so one attempt could take twice what's left.
+        timeout = openai.Timeout(max(1.0, min(_OPENAI_CALL_SECONDS, left)), connect=5.0)
+        try:
+            return openai_client.chat.completions.create(timeout=timeout, **kwargs)
+        except _RETRYABLE as exc:
+            left = deadline - time.monotonic()
+            if attempt == 2 or left < _RETRY_MIN_SECONDS:
+                raise
+            logger.warning("regenerate.retry error=%s left=%.1f", type(exc).__name__, left)
+
+
+def _regenerate_section(
+    section: str, content: dict, use_fantasy: bool, register: str, tag: str | None, deadline: float
+):
     """Rewrite one section through the model.
 
     Returns ``(parsed, failure)``: the parsed object and None on success, or
@@ -673,7 +719,8 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
 
     ``tag`` is the visitor's ``client_tag``, sent as OpenAI's
     ``safety_identifier`` so abuse can be traced to one visitor rather than to
-    the whole site's key. It's None when no salt is configured.
+    the whole site's key. It's None when no salt is configured. ``deadline`` is
+    when the whole press has to be answered by.
     """
     section_prompt = dict(_PROMPTS[section])
 
@@ -683,7 +730,8 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
 
     started = time.monotonic()
     try:
-        response = openai_client.chat.completions.create(
+        response = _create_within(
+            deadline,
             model=OPENAI_MODEL,
             messages=[
                 # The order is the reading order, not a precedence: role, then
@@ -822,6 +870,7 @@ def _metering_unavailable(_exc):
 
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
+    deadline = time.monotonic() + REGEN_DEADLINE_SECONDS
     client_ip = get_client_ip()
 
     data = request.get_json(silent=True)
@@ -934,7 +983,7 @@ def regenerate_content():
     # client is safe to share across threads.
     with ThreadPoolExecutor(max_workers=len(sections)) as pool:
         futures = {
-            name: pool.submit(_regenerate_section, name, body, use_fantasy, register, tag)
+            name: pool.submit(_regenerate_section, name, body, use_fantasy, register, tag, deadline)
             for name, body in sections.items()
         }
         results = {}
