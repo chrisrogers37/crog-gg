@@ -173,7 +173,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://crog.gg; every 
 
 ### Layout
 
-- Frontend: `frontend/` → Vite build → `frontend/dist`, served as static assets by Vercel
+- Frontend: `frontend/` → Vite build → `frontend/dist`, served as static assets by Vercel. The build writes one HTML file per route with that page's meta/OG tags (`frontend/scripts/vite-prerender.ts`), `vercel.json` serves them with `cleanUrls`, and anything else is a real 404 (`404.html`).
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Python Function under Fluid Compute. `vercel.json` rewrites `/api/(.*)` → `/api/index` so Flask handles all internal routing.
 - Shared helpers: `api/_lib/` (Upstash REST client, sliding-window rate limiter, request utils). Underscore prefix keeps Vercel from treating them as separate functions.
 - Python deps: `requirements.txt` at the repo root.

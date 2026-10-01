@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { SEO } from "../../components/SEO";
+import { NOT_FOUND_META } from "../../seo/site";
 import "./NotFoundPage.css";
 
 /**
@@ -10,6 +12,7 @@ import "./NotFoundPage.css";
 export function NotFoundPage() {
   return (
     <div className="not-found-page">
+      <SEO {...NOT_FOUND_META} />
       <div className="not-found-content">
         <h1 className="not-found-title">404</h1>
         <h2 className="not-found-subtitle">Page Not Found</h2>

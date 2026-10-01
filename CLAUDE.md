@@ -188,6 +188,8 @@ Deployed on Vercel. Every push to `main` auto-deploys to production at https://c
 ### Layout
 
 - Frontend: `frontend/` — Vite build, output at `frontend/dist`, served as static assets
+- Every route is prerendered to its own HTML file carrying that page's title, description, canonical, Open Graph/Twitter tags and JSON-LD (`frontend/scripts/vite-prerender.ts`; page list in `frontend/src/seo/prerender.ts`, tags in `frontend/src/seo/site.ts`, which the `SEO` component also renders from). `vercel.json` serves them with `cleanUrls` and has **no SPA catch-all**, so an unknown path is a real 404 (`404.html`). A new route needs a prerendered page or it 404s in production; `src/router.test.tsx` fails until it has one, and `e2e/prerender.spec.ts` (its own Playwright project, run against `vite preview` of a real build) checks the heads the build actually wrote.
+- Link-preview card: `frontend/public/og-image.png`, rendered from `frontend/scripts/og-image/og-image.html` (`node scripts/og-image/render.mjs`). Keep its text in step with `OG_IMAGE.alt` in `src/seo/site.ts`.
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Function under Fluid Compute; all `/api/*` routes are rewritten to it by `vercel.json`
 - Shared helpers: `api/_lib/` (Upstash REST client, rate limiter, request utils)
 - Python deps: `requirements.txt` at repo root

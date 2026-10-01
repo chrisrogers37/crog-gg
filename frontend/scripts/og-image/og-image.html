@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+  Source for public/og-image.png (1200x630), the link-preview card every page
+  points og:image and twitter:image at. Keep the text in step with OG_IMAGE.alt
+  in src/seo/site.ts, then re-render: node scripts/og-image/render.mjs
+  Colours are palette.ts shades: slate 950/300/400, primary 300/600, accent 300/500/700.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        margin: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+      }
+      body {
+        background:
+          radial-gradient(640px 420px at 100% 0%, rgb(37 99 235 / 0.34), transparent 70%),
+          radial-gradient(560px 380px at 0% 100%, rgb(124 58 237 / 0.26), transparent 70%),
+          linear-gradient(rgb(148 163 184 / 0.07) 1px, transparent 1px) 0 0 / 40px 40px,
+          linear-gradient(90deg, rgb(148 163 184 / 0.07) 1px, transparent 1px) 0 0 / 40px 40px,
+          #020617;
+        color: #f8fafc;
+        font-family: Inter, -apple-system, "SF Pro Display", system-ui, sans-serif;
+        padding: 72px 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 30px;
+        font-weight: 700;
+        color: #cbd5e1;
+      }
+      .pill {
+        font-size: 20px;
+        font-weight: 600;
+        color: #d8b4fe;
+        border: 1px solid rgb(168 85 247 / 0.55);
+        background: rgb(124 58 237 / 0.18);
+        padding: 6px 14px;
+        border-radius: 8px;
+        letter-spacing: 0.04em;
+      }
+      h1 {
+        font-size: 96px;
+        line-height: 1;
+        letter-spacing: -0.035em;
+        font-weight: 800;
+      }
+      .sub {
+        margin-top: 30px;
+        font-size: 36px;
+        line-height: 1.35;
+        color: #cbd5e1;
+        max-width: 960px;
+      }
+      code {
+        font-family: "SF Mono", Menlo, "JetBrains Mono", monospace;
+        font-size: 0.9em;
+        color: #93c5fd;
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 26px;
+        color: #94a3b8;
+      }
+      .foot .repo {
+        font-family: "SF Mono", Menlo, "JetBrains Mono", monospace;
+        color: #cbd5e1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <span>Claudlobby</span>
+      <span class="pill">alpha</span>
+    </div>
+    <div>
+      <h1>Build a dark factory.</h1>
+      <p class="sub">
+        Claudlobby runs a fleet of always-on Claude Code agents on your own
+        hardware, composed from one <code>fleet.yaml</code>.
+      </p>
+    </div>
+    <div class="foot">
+      <span class="repo">github.com/Claudfather/Claudlobby</span>
+      <span>crog.gg</span>
+    </div>
+  </body>
+</html>

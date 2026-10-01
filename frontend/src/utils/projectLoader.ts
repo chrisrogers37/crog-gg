@@ -27,10 +27,12 @@ interface RawProjectData {
 /**
  * A 200 does not mean the file exists.
  *
- * The SPA rewrite serves index.html for any path it does not recognise, so a
+ * An SPA fallback serves index.html for any path it does not recognise, so a
  * project YAML that is missing, renamed or misspelled in the index arrives as
- * an HTML document with status 200 and content-type text/html. `response.ok`
- * is therefore not an existence check for these assets.
+ * an HTML document with status 200 and content-type text/html. Production no
+ * longer has one (#174: unknown paths are real 404s), but the Vite dev server
+ * still does, so `response.ok` is still not an existence check for these
+ * assets everywhere they are read.
  *
  * js-yaml does not rescue that either: given an HTML document it returns a
  * *string* rather than throwing, so every field read off it is `undefined` and
@@ -86,37 +88,66 @@ const toProject = (projectData: RawProjectData): Project => ({
  * different portfolio.
  */
 export const loadProjects = async (): Promise<Project[]> => {
-  const indexResponse = await fetch("/content/projects/index.yaml");
-  if (!indexResponse.ok) {
-    throw new Error(
-      `Failed to fetch project index: ${indexResponse.status} ${indexResponse.statusText}`,
-    );
-  }
-
-  const indexData = yaml.load(await indexResponse.text());
-  if (!isProjectIndex(indexData)) {
-    throw new Error(
-      "Project index did not parse to { projects: string[] } — it was most likely served the SPA fallback HTML",
-    );
-  }
-
-  const projects = await Promise.all(
-    indexData.projects.map(async (file: string) => {
-      const response = await fetch(`/content/projects/${file}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
-      }
-
-      const parsed = yaml.load(await response.text());
-      if (!isRawProject(parsed)) {
-        throw new Error(
-          `${file} did not parse to a project object — the file is most likely missing and was served the SPA fallback HTML`,
-        );
-      }
-
-      return toProject(parsed);
-    }),
-  );
+  const projects = await readProjects(async (file) => {
+    const response = await fetch(`/content/projects/${file}`);
+    if (!response.ok) {
+      throw new Error(
+        file === "index.yaml"
+          ? `Failed to fetch project index: ${response.status} ${response.statusText}`
+          : `Failed to fetch ${file}: ${response.statusText}`,
+      );
+    }
+    return response.text();
+  });
 
   return projects.sort((a, b) => a.order - b.order);
+};
+
+/**
+ * The projects index.yaml lists, in index order. `read` returns a file's text
+ * by its name in content/projects/: a fetch in the browser, the filesystem at
+ * build time, where scripts/vite-prerender.ts writes a page per project from
+ * this. So a project file that would fail to load fails the build instead of
+ * shipping a page.
+ */
+export const readProjects = async (
+  read: (file: string) => Promise<string>,
+): Promise<Project[]> => {
+  const files = parseProjectIndex(await read("index.yaml"));
+  return Promise.all(
+    files.map(async (file) => parseProject(await read(file), file)),
+  );
+};
+
+// A missing file answered by an SPA fallback parses to a string, which is the
+// usual way these fail in the browser (see isRawProject above).
+const parseProjectIndex = (text: string): string[] => {
+  const indexData = yaml.load(text);
+  if (!isProjectIndex(indexData)) {
+    throw new Error(
+      "Project index did not parse to { projects: string[] }; an SPA fallback page parses to a string",
+    );
+  }
+  return indexData.projects;
+};
+
+// An id becomes a URL and a prerendered file, so it's one lowercase slug.
+const PROJECT_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const parseProject = (text: string, file: string): Project => {
+  const parsed = yaml.load(text);
+  if (!isRawProject(parsed)) {
+    throw new Error(
+      `${file} did not parse to a project object; an SPA fallback page parses to a string`,
+    );
+  }
+  if (!PROJECT_ID.test(parsed.id)) {
+    throw new Error(
+      `${file}: id "${parsed.id}" must be lowercase letters, digits and single hyphens; it becomes the page's URL`,
+    );
+  }
+  if (typeof parsed.title !== "string" || typeof parsed.description !== "string") {
+    throw new Error(`${file}: title and description must both be strings`);
+  }
+  return toProject(parsed);
 };
