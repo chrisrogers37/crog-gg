@@ -49,8 +49,16 @@ jobs:
           # True when the deployed commit is the head of a branch in this repo,
           # i.e. not a fork's commit, so it's safe to send the bypass header.
           own_branch_head() {
-            curl -sS --max-time 20 -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/$REPOSITORY/commits/$SHA/branches-where-head" | grep -q '"name"'
+            local reply code
+            reply=$(curl -sS --max-time 20 -w '\n%{http_code}' -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPOSITORY/commits/$SHA/branches-where-head")
+            code="${reply##*$'\n'}"
+            if [ "$code" != 200 ]; then
+              echo "::warning::Couldn't check whether $SHA is a branch head here (GitHub API HTTP $code), so the bypass secret isn't sent."
+              return 1
+            fi
+            grep -q '"name"' <<<"${reply%$'\n'*}"
           }
           if [ -n "$BYPASS" ] && own_branch_head; then
             BASE="${DEPLOYMENT_URL%/}"
