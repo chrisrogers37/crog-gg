@@ -846,7 +846,18 @@ def regenerate_content():
     )
     if full == REGEN_GLOBAL_KEY:
         logger.warning("regenerate.global_cap_reached sections=%d", len(sections))
-        return jsonify({"success": False, "error": "Daily regeneration budget reached"}), 503
+        # The cooldown was claimed first, so it's running: say so, and the page
+        # counts it down instead of offering a press the server would refuse.
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Daily regeneration budget reached",
+                    "cooldown_total": COOLDOWN_SECONDS,
+                }
+            ),
+            503,
+        )
     if full:
         return (
             jsonify(

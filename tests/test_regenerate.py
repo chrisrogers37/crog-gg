@@ -262,7 +262,11 @@ def test_global_ceiling_returns_503(client, caplog):
         with patch("api.index.rate_limit.check_and_consume", return_value=REGEN_GLOBAL_KEY):
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 503
-    assert r.get_json() == {"success": False, "error": "Daily regeneration budget reached"}
+    assert r.get_json() == {
+        "success": False,
+        "error": "Daily regeneration budget reached",
+        "cooldown_total": 30,
+    }
     assert any(rec.getMessage().startswith("regenerate.global_cap_reached") for rec in caplog.records)
     fake.chat.completions.create.assert_not_called()
 
