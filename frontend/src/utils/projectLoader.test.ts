@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { loadProjects } from "./projectLoader";
+import { loadProjects, readProjects } from "./projectLoader";
 
 /**
  * The defect these guard is silent by construction: the SPA rewrite answers a
@@ -102,5 +102,24 @@ describe("loadProjects", () => {
 
     expect(projects.map((p) => p.id)).toEqual(["shuffify"]);
     expect(fetchMock).not.toHaveBeenCalledWith("/content/projects/hedwig.yaml");
+  });
+});
+
+describe("readProjects", () => {
+  const readOne = (yaml: string) =>
+    readProjects(async (file) =>
+      file === "index.yaml" ? "projects:\n  - broken.yaml\n" : yaml,
+    );
+
+  it("rejects an id that can't be one URL segment, naming the file", async () => {
+    await expect(
+      readOne("id: a/b\ntitle: A\ndescription: B\n"),
+    ).rejects.toThrow(/broken\.yaml: id "a\/b"/);
+  });
+
+  it("rejects a project without a description, naming the file", async () => {
+    await expect(readOne("id: a-b\ntitle: A\n")).rejects.toThrow(
+      /broken\.yaml: title and description/,
+    );
   });
 });

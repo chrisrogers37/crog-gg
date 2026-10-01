@@ -57,6 +57,16 @@ describe("lazyPage", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
+  it("shows the route's error instead of reloading while offline", async () => {
+    vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    reloadOnce.mockReturnValue(true);
+
+    renderPageThatWontLoad();
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(reloadOnce).not.toHaveBeenCalled();
+  });
+
   it("shows the route's error once this tab has reloaded for it", async () => {
     reloadOnce.mockReturnValue(false);
 

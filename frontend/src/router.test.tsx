@@ -1,10 +1,11 @@
 import type { ReactElement } from "react";
-import { describe, it, expect } from "vitest";
+import { beforeAll, describe, it, expect } from "vitest";
 import { matchPath, matchRoutes, type RouteObject } from "react-router-dom";
 import { routes } from "./router";
 import { landingPages } from "./seo/prerender";
 import { NotFoundPage } from "./pages/NotFound";
 import { RouteError } from "./pages/RouteError";
+import { shippedProjects } from "./test/content";
 
 /**
  * Production serves only the pages the build writes, and 404s everything else
@@ -12,18 +13,20 @@ import { RouteError } from "./pages/RouteError";
  * directions.
  */
 
-const EXAMPLE = {
-  id: "example",
-  title: "Example",
-  description: "An example project.",
-  url: "https://example.com",
+type RouteEntry = {
+  route: RouteObject;
+  /** Its full path pattern, e.g. "/projects/:slug". */
+  pattern: string;
+  /** Outermost first, so `ancestors[0]` is the root. */
+  ancestors: RouteObject[];
 };
-const pages = landingPages([EXAMPLE]);
 
-type RouteEntry = { route: RouteObject; pattern: string };
-
-/** Every route in the tree with its full path pattern, e.g. "/projects/:slug". */
-const routeEntries = (tree: RouteObject[], base = ""): RouteEntry[] =>
+/** Every route in the tree. */
+const routeEntries = (
+  tree: RouteObject[],
+  base = "",
+  ancestors: RouteObject[] = [],
+): RouteEntry[] =>
   tree.flatMap((route) => {
     const pattern =
       route.path === undefined
@@ -32,10 +35,13 @@ const routeEntries = (tree: RouteObject[], base = ""): RouteEntry[] =>
           ? route.path
           : `${base.replace(/\/$/, "")}/${route.path}`;
     return [
-      { route, pattern: pattern || "/" },
-      ...routeEntries(route.children ?? [], pattern),
+      { route, pattern: pattern || "/", ancestors },
+      ...routeEntries(route.children ?? [], pattern, [...ancestors, route]),
     ];
   });
+
+const isRouteError = (element: RouteObject["errorElement"]) =>
+  (element as ReactElement | undefined)?.type === RouteError;
 
 /**
  * Path patterns a visitor can land on, but "*". React Router's own rule: a
@@ -53,6 +59,13 @@ const landablePatterns = (tree: RouteObject[]): string[] => [
 ];
 
 describe("routes and prerendered pages", () => {
+  // Over the shipped projects, so a project id the router can't match (one
+  // with a slash, say) fails here instead of shipping a 200 that shows a 404.
+  let pages: ReturnType<typeof landingPages>;
+  beforeAll(async () => {
+    pages = landingPages(await shippedProjects());
+  });
+
   it("prerenders a page for every route a visitor can land on", () => {
     const patterns = landablePatterns(routes);
     expect(patterns).toContain("/projects/:slug");
@@ -81,16 +94,28 @@ describe("routes and prerendered pages", () => {
 
     // NotFoundPage marks a URL noindex, so a real page that fails to render
     // (or a stale lazy chunk) must not fall back to it (#196 M40).
-    for (const { route, pattern } of routeEntries(routes)) {
+    expect(isRouteError(routes[0].errorElement), "the root").toBe(true);
+    for (const { route, pattern, ancestors } of routeEntries(routes)) {
       const name = route.index ? `${pattern} (index)` : pattern;
       if (route.errorElement) {
-        expect((route.errorElement as ReactElement).type, name).toBe(
-          RouteError,
-        );
+        expect(isRouteError(route.errorElement), name).toBe(true);
       }
       const rendersNotFound =
         (route.element as ReactElement | undefined)?.type === NotFoundPage;
       expect(rendersNotFound, name).toBe(route.path === "*");
+
+      // Every page's errors land inside Layout: on the page's own route or a
+      // route between it and the root.
+      const isPage =
+        ancestors.length > 0 &&
+        route.path !== "*" &&
+        (route.path !== undefined || route.index);
+      if (isPage) {
+        const caught = [route, ...ancestors.slice(1)].some((r) =>
+          isRouteError(r.errorElement),
+        );
+        expect(caught, `${name} has no RouteError inside Layout`).toBe(true);
+      }
     }
   });
 });

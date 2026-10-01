@@ -14,7 +14,9 @@ import { reloadOnce } from "./reloadOnce";
 export function lazyPage(load: () => Promise<{ default: ComponentType }>) {
   return lazy(() =>
     load().catch((error: unknown) => {
-      if (reloadOnce()) return new Promise<never>(() => {});
+      // Offline, a reload would only swap the app for the browser's offline
+      // page; RouteError at least offers to try again.
+      if (navigator.onLine && reloadOnce()) return new Promise<never>(() => {});
       throw error;
     }),
   );

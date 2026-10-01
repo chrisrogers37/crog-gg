@@ -10,13 +10,22 @@ import yaml from "js-yaml";
  * reproduce it, so only the 404 page's head is checked here.
  */
 
+/** The entities renderHead escapes, decoded the way a browser does. */
+const decode = (text: string | undefined) =>
+  text
+    ?.replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&");
+
 const readHead = async (request: APIRequestContext, path: string) => {
   const response = await request.get(path);
   expect(response.status(), `${path} status`).toBe(200);
   const html = await response.text();
   const first = (pattern: RegExp) => html.match(pattern)?.[1];
   return {
-    title: first(/<title>([^<]*)<\/title>/),
+    title: decode(first(/<title>([^<]*)<\/title>/)),
     description: first(/name="description" content="([^"]*)"/),
     canonical: first(/rel="canonical" href="([^"]+)"/),
     ogTitles: html.match(/property="og:title"/g)?.length ?? 0,

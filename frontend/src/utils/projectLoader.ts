@@ -131,12 +131,23 @@ const parseProjectIndex = (text: string): string[] => {
   return indexData.projects;
 };
 
+// An id becomes a URL and a prerendered file, so it's one lowercase slug.
+const PROJECT_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 const parseProject = (text: string, file: string): Project => {
   const parsed = yaml.load(text);
   if (!isRawProject(parsed)) {
     throw new Error(
       `${file} did not parse to a project object; an SPA fallback page parses to a string`,
     );
+  }
+  if (!PROJECT_ID.test(parsed.id)) {
+    throw new Error(
+      `${file}: id "${parsed.id}" must be lowercase letters, digits and single hyphens; it becomes the page's URL`,
+    );
+  }
+  if (typeof parsed.title !== "string" || typeof parsed.description !== "string") {
+    throw new Error(`${file}: title and description must both be strings`);
   }
   return toProject(parsed);
 };

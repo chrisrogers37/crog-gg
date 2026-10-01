@@ -7,15 +7,19 @@ import {
   renderHead,
   renderPage,
 } from "./prerender";
-import { HOME_META, NOT_FOUND_META, SITE_URL, type PageMeta } from "./site";
-import { readProjects } from "../utils/projectLoader";
+import {
+  HOME_META,
+  NOT_FOUND_META,
+  SITE_URL,
+  projectMeta,
+  type PageMeta,
+} from "./site";
+import { shippedProjects } from "../test/content";
 import type { Project } from "../types/Project";
 
-// The shipped content, read through Vite so a moved file fails here.
-const contentFiles = import.meta.glob<string>(
-  "../../public/content/projects/*.yaml",
-  { query: "?raw", import: "default", eager: true },
-);
+/** A head as a browser reads it, entities decoded. */
+const parseHead = (head: string) =>
+  new DOMParser().parseFromString(`<head>${head}</head>`, "text/html");
 
 const TEMPLATE = `<!doctype html><html><head>\n    ${HEAD_MARKER}\n  </head><body><div id="root"></div></body></html>`;
 
@@ -61,11 +65,7 @@ describe("fileFor", () => {
 describe("landingPages, over the shipped content", () => {
   let projects: Project[];
   beforeAll(async () => {
-    projects = await readProjects(async (file) => {
-      const text = contentFiles[`../../public/content/projects/${file}`];
-      if (text === undefined) throw new Error(`index.yaml lists ${file}, which does not exist`);
-      return text;
-    });
+    projects = await shippedProjects();
   });
 
   it("covers the home page, the projects page and every indexed project, in index order", () => {
@@ -79,9 +79,31 @@ describe("landingPages, over the shipped content", () => {
   it("gives each project page its own title, description and canonical", () => {
     for (const project of projects) {
       const head = renderHead(pageFor(`/projects/${project.id}`, projects));
-      expect(head).toContain(`<title>${project.title} | `);
+      expect(parseHead(head).title).toContain(`${project.title} | `);
       expect(head).toContain(`href="${SITE_URL}/projects/${project.id}"`);
       expect(head).toMatch(/name="description" content="[^"]+"/);
+    }
+  });
+
+  it("escapes what a project's YAML says, in the tags and in the JSON-LD", () => {
+    const hostile = {
+      id: "q-and-a",
+      title: 'Q&A Bot </script><script>alert(1)</script> "$&"',
+      description: "Ask & answer <b>now</b>",
+      url: "https://example.com",
+    };
+    const head = renderHead(projectMeta(hostile));
+    const doc = parseHead(head);
+
+    expect(doc.title).toContain(hostile.title);
+    expect(doc.querySelectorAll("script:not([type])")).toHaveLength(0);
+    const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+    expect(ld.length).toBeGreaterThan(0);
+    for (const script of ld) {
+      expect(script.textContent).not.toContain("<");
+      expect(JSON.stringify(JSON.parse(script.textContent ?? ""))).toContain(
+        "Q&A Bot",
+      );
     }
   });
 
