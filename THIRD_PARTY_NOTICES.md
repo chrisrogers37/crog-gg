@@ -4,11 +4,11 @@ A few assets in this repository come from other projects and keep their own lice
 
 ## Twemoji
 
-- **Files:** `frontend/public/favicon.ico`, and any app icons derived from it.
+- **Files:** `frontend/public/favicon.ico`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png`, and any other icons derived from them.
 - **Source:** the "alien monster" emoji (U+1F47E, `1f47e.svg`) from Twemoji, https://github.com/jdecked/twemoji
 - **Copyright:** Twitter, Inc and other contributors.
 - **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
-- **Changes:** rasterized to 16, 32 and 48 px icon sizes.
+- **Changes:** rasterized to 16, 32 and 48 px for the favicon, and to 180, 192 and 512 px on an opaque background for the app icons.
 
 ## Font Awesome Free
 

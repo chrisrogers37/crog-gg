@@ -5,7 +5,8 @@ The source code in this repository is released under the [MIT License](LICENSE).
 The MIT License does **not** cover the personal content that makes this site about Chris Rogers. That content is © 2025-2026 Chris Rogers, all rights reserved, and is not licensed for reuse:
 
 - **Written content** in `frontend/public/content/`: the bio, career timeline, experience, education, skills, showcase entries and project write-ups.
-- **Photos and likeness**: everything in `frontend/public/profile-photos/`, and any other photograph, portrait or link-preview image of Chris Rogers anywhere in this repository.
+- **Photos and likeness**: everything in `frontend/public/profile-photos/`, `frontend/public/profile-photo.jpg`, and any other photograph or portrait of Chris Rogers anywhere in this repository.
+- **Link-preview card**: `frontend/public/og-image.png` and the text it shows, which lives in `frontend/scripts/og-image/og-image.html`. The script that renders it is code, so it's MIT.
 - **Personal copy in the source code and tests**: the owner's name, taglines, typewriter phrases, and the About, contact and music text shown on the site.
 - **Personal links and handles**: the social, music and contact links and the email address.
 
