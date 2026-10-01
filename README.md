@@ -57,15 +57,15 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 - Flask (`api/index.py`) deployed as a single Vercel Python Function under Fluid Compute
 - OpenAI API
-- Python 3.12 (CI), `requirements.txt` at repo root: `flask`, `flask-cors`, `openai`, `requests`
+- Python 3.12 (`.python-version`). `requirements.in` lists `flask`, `flask-cors`, `openai` and `requests`; `requirements.txt` is the hash-pinned lock generated from it
 - Upstash Redis (via Vercel Marketplace) for rate-limit and cooldown state
 
 ## Local Development Setup
 
 ### Prerequisites
 
-- Node.js 20.19+, 22.13+ or 24+ (required by Vite 7 and the ESLint toolchain; CI runs Node 20)
-- Python 3.10+ (CI runs 3.12)
+- Node.js 24 (`.nvmrc`; CI and Vercel use it). 22.13+ also works. Avoid 25+, whose built-in localStorage breaks the jsdom unit tests
+- Python 3.12 (`.python-version`; CI and Vercel use it)
 - (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
 - (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
 - (Optional) Upstash Redis credentials, which `/api/regenerate` needs (see [Troubleshooting](#troubleshooting))
@@ -79,10 +79,10 @@ An interactive portfolio website featuring dynamic content generation using Open
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
-2. Install dependencies (`requirements.txt` lives at the repo root):
+2. Install dependencies. `requirements-dev.txt` adds pytest, flake8, black and isort to the runtime lock in `requirements.txt`:
 
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    ```
 
 3. Set env vars. All of them are optional: copy [`.env.example`](.env.example) to `.env` (git-ignored), fill in what you need, then load it with `set -a; source .env; set +a`.
@@ -176,7 +176,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 - Frontend: `frontend/` → Vite build → `frontend/dist`, served as static assets by Vercel. The build writes one HTML file per route with that page's meta/OG tags (`frontend/scripts/vite-prerender.ts`), `vercel.json` serves them with `cleanUrls`, and anything else is a real 404 (`404.html`).
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Python Function under Fluid Compute. `vercel.json` rewrites `/api/(.*)` → `/api/index` so Flask handles all internal routing.
 - Shared helpers: `api/_lib/` (Upstash REST client, sliding-window rate limiter, request utils). Underscore prefix keeps Vercel from treating them as separate functions.
-- Python deps: `requirements.txt` at the repo root.
+- Python deps: edit `requirements.in` (runtime) or `requirements-dev.in` (tools), then regenerate the hash-pinned `requirements.txt` and `requirements-dev.txt` with the `uv pip compile` command in each file's header. CI and Vercel install only from the hashed files.
 
 ### Vercel project env vars
 

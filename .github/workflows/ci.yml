@@ -10,10 +10,6 @@ on:
 permissions:
   contents: read
 
-env:
-  NODE_VERSION: "20"
-  PYTHON_VERSION: "3.12"
-
 jobs:
   frontend-lint:
     name: Frontend Lint
@@ -31,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -57,7 +53,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -90,7 +86,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -135,7 +131,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -165,15 +161,14 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: .python-version
           cache: "pip"
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: requirements-dev.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install flake8 black isort
+          pip install -r requirements-dev.txt
 
       - name: Run flake8
         run: flake8 api --max-line-length=120 --ignore=E501,W503
@@ -197,14 +192,14 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: .python-version
           cache: "pip"
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: requirements-dev.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pytest
+          pip install -r requirements-dev.txt
 
       - name: Run API tests
         run: pytest -q
