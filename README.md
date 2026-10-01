@@ -32,7 +32,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **Responsive Design**: Mobile-friendly layout with CSS Grid and Flexbox
 - **Same-Origin API**: Frontend and `/api/*` served from the same Vercel domain — no CORS in production
 - **Error Handling**: Robust error management for API interactions
-- **Rate Limiting**: Per-IP cooldown on `/api/regenerate` (30s) and sliding-window limiter (30/min) on GitHub endpoints, backed by Upstash Redis
+- **Rate Limiting**: on `/api/regenerate`, a 30s cooldown plus daily caps of 30 section rewrites per visitor and 300 site-wide; a sliding-window limiter (30/min) on GitHub endpoints. An IPv6 /64 counts as one visitor. Backed by Upstash Redis
 - **Smooth Animations**: Framer Motion transitions for content updates
 
 ### Testing & CI/CD
@@ -206,6 +206,7 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | `/api/regenerate` returns `"OpenAI API key not configured"`                            | `OPENAI_API_KEY` missing in Vercel env vars or last deploy predates the env var being set — set it and redeploy                         |
 | `/api/v1/github/contributions` returns `"GitHub token required for contribution data"` | `GITHUB_TOKEN` missing — same fix                                                                                                       |
 | `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints fail open), so fix Upstash, not the endpoint |
+| `/api/regenerate` returns 503 `"Daily regeneration budget reached"`                   | The site-wide daily ceiling (`REGEN_GLOBAL_DAILY_MAX` in `api/index.py`) is used up; each refusal logs `regenerate.global_cap_reached`. It frees up as the rolling 24 h window moves. Raise it only if the OpenAI budget allows |
 | `/api/regenerate` failures with reason `model_error`                                    | The OpenAI key is invalid, or its quota or budget is used up. Check the OpenAI usage page.                                               |
 | Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy currently reports these as "not found".       |
 | GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. The free GitHub endpoints fail open by design.                                                                  |

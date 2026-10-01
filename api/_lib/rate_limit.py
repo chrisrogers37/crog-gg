@@ -1,10 +1,11 @@
 """Rate limiting + cooldown primitives backed by Upstash Redis.
 
 Two patterns:
-  - Sliding window (the per-minute IP caps on the GitHub endpoints, and the
-    daily cap on /api/regenerate), counted and recorded in one Lua script
-  - Cooldown (the 30s per-IP gate on /api/regenerate), checked and started in
-    one SET NX
+  - Sliding windows (the per-minute IP caps on the GitHub endpoints, and the
+    per-visitor and site-wide daily caps on /api/regenerate), counted and
+    recorded in one Lua script
+  - Cooldown (the 30s per-visitor gate on /api/regenerate), checked and
+    started in one SET NX
 
 When Redis is unreachable, or refuses part of a call, the limiter raises
 ``RedisUnavailable`` and the caller decides (#113, #194). Callers that spend
@@ -36,74 +37,81 @@ class RedisUnavailable(RuntimeError):
     """
 
 
-# ``check_and_consume`` as one script (#194 M14, #139 property 3).
-#   KEYS[1]  the window             ARGV[1]   prune scores up to this (ms)
-#   ARGV[2]  the cap                ARGV[3]   the new hits' score (now, ms)
-#   ARGV[4]  the key's TTL (s)      ARGV[5..] one member per hit
-# Expired hits only ever add to the count, so counting them can't wrongly allow;
-# the prune runs only when they might be what puts a request over the cap. That
-# keeps an allowed call at the old pipeline's four Upstash commands.
+# ``check_and_consume`` as one script (#194 M11 and M14, #139 property 3).
+#   KEYS[1..n]    the windows            ARGV[1]      prune scores up to this (ms)
+#   ARGV[2]       the new hits' score    ARGV[3]      the keys' TTL (s)
+#   ARGV[4..3+n]  each window's cap      ARGV[4+n..]  one member per hit
+# Every window is checked before any is written, so a request one window
+# refuses adds nothing to the others. Expired hits only ever add to a count, so
+# counting them can't wrongly allow; a window is pruned only when they might be
+# what puts the request over its cap. That keeps an allowed one-window call at
+# the old pipeline's four Upstash commands.
+# Returns 0 if the hits were recorded, else the number of the first full window.
 _CONSUME_SCRIPT = """
-local cost = #ARGV - 4
-local count = redis.call('ZCARD', KEYS[1])
-if count + cost > tonumber(ARGV[2]) then
-  count = count - redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, ARGV[1])
-  if count + cost > tonumber(ARGV[2]) then
-    return {0, count}
+local n = #KEYS
+local cost = #ARGV - 3 - n
+for k = 1, n do
+  local cap = tonumber(ARGV[3 + k])
+  local count = redis.call('ZCARD', KEYS[k])
+  if count + cost > cap then
+    count = count - redis.call('ZREMRANGEBYSCORE', KEYS[k], 0, ARGV[1])
+    if count + cost > cap then
+      return k
+    end
   end
 end
-for i = 5, #ARGV do
-  redis.call('ZADD', KEYS[1], ARGV[3], ARGV[i])
+for k = 1, n do
+  for i = 4 + n, #ARGV do
+    redis.call('ZADD', KEYS[k], ARGV[2], ARGV[i])
+  end
+  redis.call('EXPIRE', KEYS[k], ARGV[3])
 end
-redis.call('EXPIRE', KEYS[1], ARGV[4])
-return {1, count + cost}
+return 0
 """
 
 
 def check_and_consume(
-    key: str, max_requests: int, window_seconds: int, cost: int = 1, fail_open: bool = False
-) -> tuple[bool, int]:
-    """Sliding-window rate limit in one atomic step: record this request's
-    ``cost`` hits only if they fit under ``max_requests``. Returns (allowed,
-    the count after this request, which can include expired hits the script
-    had no need to prune).
+    limits: dict[str, int], window_seconds: int, cost: int = 1, fail_open: bool = False
+) -> str | None:
+    """Sliding-window rate limits in one atomic step. ``limits`` maps each
+    window's key to its cap.
 
-    A refused request records nothing, so it neither fills the window nor
-    stretches anyone's wait, and two requests can't both see room for the last
-    slot. The ``cost`` hits of one request are recorded together, so the count
-    reflects the whole request.
+    Returns None if this request's ``cost`` hits went into every window, else
+    the key of the first full window, with nothing recorded anywhere: a refused
+    request neither fills a window nor stretches anyone's wait, and two
+    requests can't both see room for the last slot.
 
-    Raises ``RedisUnavailable`` if Redis cannot be reached or doesn't return a
-    count, unless the caller passes ``fail_open`` to keep serving instead. See
-    the module docstring.
+    Raises ``RedisUnavailable`` if Redis cannot be reached or doesn't give a
+    usable answer, unless the caller passes ``fail_open`` to keep serving
+    instead, which returns None. See the module docstring.
     """
+    keys = list(limits)
+    names = ",".join(keys)
     now_ms = int(time.time() * 1000)
-    window_start_ms = now_ms - (window_seconds * 1000)
     members = [f"{now_ms}:{uuid.uuid4().hex}" for _ in range(cost)]
 
     try:
-        reply = redis_client.command(
+        full = redis_client.command(
             "EVAL",
             _CONSUME_SCRIPT,
-            1,
-            key,
-            window_start_ms,
-            max_requests,
+            len(keys),
+            *keys,
+            now_ms - window_seconds * 1000,
             now_ms,
             window_seconds + 1,
+            *limits.values(),
             *members,
         )
         # Inside the try: an unreadable answer must fail like an outage.
-        if not (isinstance(reply, list) and len(reply) == 2 and all(isinstance(v, int) for v in reply)):
-            raise RuntimeError(f"EVAL replied {reply!r}")
-        allowed, count = reply
+        if not (isinstance(full, int) and 0 <= full <= len(keys)):
+            raise RuntimeError(f"EVAL replied {full!r}")
     except Exception as exc:
-        logger.error("rate limit unavailable (key=%s, fail_open=%s): %s", key, fail_open, exc)
+        logger.error("rate limit unavailable (keys=%s, fail_open=%s): %s", names, fail_open, exc)
         if fail_open:
-            return True, 0
-        raise RedisUnavailable(key) from exc
+            return None
+        raise RedisUnavailable(names) from exc
 
-    return allowed == 1, count
+    return keys[full - 1] if full else None
 
 
 def get_cooldown_remaining(key: str, fail_open: bool = False) -> int:

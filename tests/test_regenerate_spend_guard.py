@@ -1,8 +1,8 @@
 """The paid endpoint must not spend money it cannot meter (#113).
 
-Every spend control on ``/api/regenerate`` -- the 30s per-IP cooldown and the
-per-IP daily cap -- lives in Redis. Before this, any Upstash exception returned
-"allowed", so an outage silently removed both at once and left an
+Every spend control on ``/api/regenerate`` -- the 30s per-visitor cooldown and
+the daily caps -- lives in Redis. Before this, any Upstash exception returned
+"allowed", so an outage silently removed them all at once and left an
 unauthenticated endpoint proxying unbounded calls to a paid API.
 
 These tests drive the REAL limiter with Redis broken underneath it, rather than
@@ -11,8 +11,9 @@ a raising mock proves only that the handler catches, and would keep passing if
 the limiter went back to falling open. What needs pinning is the limiter's own
 decision to refuse. Each test runs under both ways Redis can fail to meter
 (``metering_broken``): unreachable, and answering reads while refusing the
-write (#194). The last test runs the real limiter on a working Redis, where a
-burst of presses must not all get through a cooldown meant to admit one.
+write (#194). The last two run the real limiter on a working Redis: a burst
+of presses must not all get through a cooldown meant to admit one, and a press
+the site-wide budget refuses must not spend the visitor's own slots.
 
 They must patch over conftest's autouse ``_hermetic_rate_limit``, which stubs
 the very primitives under test.
@@ -25,6 +26,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from api._lib import rate_limit, redis_client
+from api.index import (
+    REGEN_DAILY_WINDOW,
+    REGEN_GLOBAL_DAILY_MAX,
+    REGEN_GLOBAL_KEY,
+    _regen_daily_key,
+)
 
 # Bound at import time, before conftest's autouse fixture replaces them.
 _REAL = {
@@ -56,7 +63,7 @@ def redis_writes_refused(real_limiter):
     """Real limiter; Redis answers reads but refuses writes (#194)."""
 
     def reply(args):
-        if args[0] in ("SET", "EVAL"):  # the window's script writes too
+        if args[0] in ("SET", "EVAL"):  # the limiter's script writes too
             return {"error": "OOM command not allowed"}
         return {"result": -2}  # TTL of a missing key: no cooldown
 
@@ -75,9 +82,10 @@ def metering_broken(request):
 
 @pytest.fixture
 def no_openai():
-    """Any call to the paid API while metering is down fails the test loudly."""
+    """Any call to the paid API fails the test loudly: every request these
+    tests send must be refused before it gets that far."""
     fake = MagicMock()
-    fake.chat.completions.create.side_effect = AssertionError("OpenAI called while metering was unavailable")
+    fake.chat.completions.create.side_effect = AssertionError("OpenAI called for a request that should be refused")
     with patch("api.index.openai_client", fake):
         yield fake
 
@@ -141,3 +149,15 @@ def test_parallel_presses_get_one_200_and_429s_for_the_rest(client, real_limiter
 
     assert statuses == [200] + [429] * (presses - 1)
     model.chat.completions.create.assert_called_once()
+
+
+def test_site_wide_ceiling_refuses_without_spending_the_visitors_slots(client, real_limiter, fake_upstash, no_openai):
+    # Spending them would let a budget outage use up every visitor's day as
+    # they kept pressing (#194 M11, M14).
+    budget = {REGEN_GLOBAL_KEY: REGEN_GLOBAL_DAILY_MAX}
+    assert rate_limit.check_and_consume(budget, REGEN_DAILY_WINDOW, cost=REGEN_GLOBAL_DAILY_MAX) is None
+    r = client.post("/api/regenerate", json=_BODY)
+    assert r.status_code == 503
+    assert r.get_json()["error"] == "Daily regeneration budget reached"
+    assert fake_upstash.zcard(_regen_daily_key("127.0.0.1")) == 0
+    no_openai.chat.completions.create.assert_not_called()
