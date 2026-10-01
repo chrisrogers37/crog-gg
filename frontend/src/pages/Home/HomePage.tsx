@@ -121,15 +121,12 @@ export function HomePage() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Regeneration functionality with WoW-style cooldown
+  // Regeneration; the button reads its own cooldown
   const {
     regenerate,
     reset,
     isRegenerating,
     hasModifiedContent,
-    cooldownRemaining,
-    cooldownTotal,
-    isReady,
   } = useRegeneration();
 
   // Handle section change from nav buttons.
@@ -373,9 +370,6 @@ export function HomePage() {
               onReset={reset}
               isRegenerating={isRegenerating}
               hasModifiedContent={hasModifiedContent}
-              cooldownRemaining={cooldownRemaining}
-              cooldownTotal={cooldownTotal}
-              isReady={isReady}
             />
             {regenerationError && (
               <div className="regeneration-notice" role="status">

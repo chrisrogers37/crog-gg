@@ -127,9 +127,8 @@ def test_a_usable_partial_rewrite_still_succeeds(client):
     with patch("api.index.openai_client", _client_returning({"about_text": "rewritten"})):
         r = client.post("/api/regenerate", json={"sections": {"about": _REAL_BIO}})
     assert r.status_code == 200
-    about = r.get_json()["content"]["about"]
-    assert about["about_text"] == "rewritten"
-    assert about["social_links"] == _REAL_BIO["social_links"]
+    # Everything the model left out keeps the visitor's copy (#196 M16).
+    assert r.get_json()["content"]["about"] == {**_REAL_BIO, "about_text": "rewritten"}
 
 
 def test_a_non_string_bio_field_is_dropped_and_counted(client, caplog):
@@ -142,10 +141,23 @@ def test_a_non_string_bio_field_is_dropped_and_counted(client, caplog):
     with patch("api.index.openai_client", _client_returning(reply)):
         r = client.post("/api/regenerate", json={"sections": {"about": _ORIGINAL}})
 
-    # The dropped fields are absent (tagline, which the input lacked, goes as an
-    # extra key): the page merges the rewrite over its own copy and keeps them.
+    # The dropped field keeps the visitor's copy, and tagline, which the input
+    # lacked, goes as an extra key.
     assert r.status_code == 200
-    assert r.get_json()["content"]["about"] == {"display_name": "Chris R."}
+    assert r.get_json()["content"]["about"] == {"about_text": "original", "display_name": "Chris R."}
     assert any(
         rec.getMessage() == "regenerate.field_type_dropped section=about fields=about_text" for rec in caplog.records
+    )
+
+
+def test_a_blank_string_field_keeps_the_visitors_copy(client, caplog):
+    # Whitespace in place of the name would blank it on the page; the server
+    # counts it like any other wrong-typed field and puts the original back.
+    caplog.set_level("WARNING", logger="crog")
+    with patch("api.index.openai_client", _client_returning({"about_text": "rewritten", "display_name": "  "})):
+        r = client.post("/api/regenerate", json={"sections": {"about": _ORIGINAL}})
+    assert r.status_code == 200
+    assert r.get_json()["content"]["about"] == {"about_text": "rewritten", "display_name": "Chris"}
+    assert any(
+        rec.getMessage() == "regenerate.field_type_dropped section=about fields=display_name" for rec in caplog.records
     )

@@ -11,7 +11,14 @@ import { useCooldown } from "./useCooldown";
 describe("useCooldown", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    useContentStore.setState({ cooldownEndsAt: null, cooldownTotal: 0 });
+    // limitsRequested: the once-per-load /api/limits read is pinned in the
+    // ActionButtons tests; these don't make it.
+    useContentStore.setState({
+      cooldownEndsAt: null,
+      cooldownTotal: 0,
+      dailyCapReached: false,
+      limitsRequested: true,
+    });
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -50,6 +57,13 @@ describe("useCooldown", () => {
 
     const { result } = renderHook(() => useCooldown());
     expect(result.current.remaining).toBe(6);
+  });
+
+  it("reports the daily cap from the store", () => {
+    useContentStore.setState({ dailyCapReached: true });
+    const { result } = renderHook(() => useCooldown());
+    expect(result.current.dailyCapReached).toBe(true);
+    expect(result.current.isOnCooldown).toBe(false);
   });
 
   it("drops the ready flash if the cooldown is cleared during it", () => {

@@ -134,33 +134,30 @@ const cooldownFrom = (
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-// The bio fields the page shows as text. A rewrite's email and social links
-// are the server's copy of what was sent, so they're never taken from it.
-const RENDERED_BIO_KEYS = [
-  "display_name",
-  "tagline",
-  "location",
-  "about_text",
-  "role",
-] as const;
+// The bio keys the model never writes (api/index.py's _UNAUTHORED_KEYS). They
+// are rendered into links, so the page keeps its own copy whatever comes back.
+const UNAUTHORED_BIO_KEYS: ReadonlySet<string> = new Set(["email", "social_links"]);
 
 /**
  * A rewritten bio merged over the one it rewrites, or undefined if it brings
- * nothing usable (#196 M16). A rewrite is often partial, and taking it whole
- * erased every field it left out. Only non-empty strings for fields the bio
- * already has are taken: an object in `about_text` turned the page into the
- * 404 page.
+ * nothing usable (#196 M16). The server fills in what a rewrite leaves out;
+ * this is the page's own guard, built from the bio it has rather than a list
+ * of text fields: only a non-empty string replaces a string. An object in
+ * `about_text` turned the page into the 404 page.
  */
 const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
   if (!isPlainObject(incoming)) return undefined;
-  const accepted: Partial<BioData> = {};
-  for (const key of RENDERED_BIO_KEYS) {
-    const value = incoming[key];
-    if (key in prior && typeof value === "string" && value.trim()) {
-      accepted[key] = value;
+  const accepted: Record<string, string> = {};
+  for (const [key, value] of Object.entries(prior)) {
+    if (UNAUTHORED_BIO_KEYS.has(key)) continue;
+    const next = incoming[key];
+    if (typeof value === "string" && typeof next === "string" && next.trim()) {
+      accepted[key] = next;
     }
   }
-  return Object.keys(accepted).length ? { ...prior, ...accepted } : undefined;
+  return Object.keys(accepted).length
+    ? ({ ...prior, ...accepted } as BioData)
+    : undefined;
 };
 
 /**
@@ -259,6 +256,16 @@ export const useContentStore = create<ContentStore>()(
           return;
         }
 
+        // The one gate on a press while the server would refuse it (#196 M44).
+        // The button only shows this: it is counting down or reads "Daily limit
+        // reached", so here too nothing more needs saying.
+        if (
+          state.dailyCapReached ||
+          (state.cooldownEndsAt !== null && state.cooldownEndsAt > Date.now())
+        ) {
+          return;
+        }
+
         const bio = state.bio;
         const pressedAt = Date.now();
         const controller = new AbortController();
@@ -311,11 +318,8 @@ export const useContentStore = create<ContentStore>()(
             // generic message told them to retry, which is exactly what
             // re-triggers the cooldown.
             //
-            // A 429 without a cooldown is the daily cap, which keeps the button
-            // off.
-            const dailyCap =
-              response.status === 429 &&
-              typeof result.cooldown_remaining !== "number";
+            // The daily cap keeps the button off until a reload.
+            const dailyCap = result.limit === "daily";
             set({
               regenerationError:
                 typeof result.error === "string" && result.error
@@ -545,6 +549,4 @@ export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
 export const useHasModifiedContent = () =>
   useContentStore((state) => state.hasModifiedContent);
-export const useDailyCapReached = () =>
-  useContentStore((state) => state.dailyCapReached);
 export const useTimeline = () => useContentStore((state) => state.timeline);

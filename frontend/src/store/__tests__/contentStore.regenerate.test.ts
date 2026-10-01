@@ -34,6 +34,10 @@ const seed = () =>
     isRegenerating: false,
     error: null,
     regenerationError: null,
+    cooldownEndsAt: null,
+    cooldownTotal: 0,
+    dailyCapReached: false,
+    limitsRequested: false,
   });
 
 const respondWith = (body: unknown, status = 200) => {
@@ -543,12 +547,6 @@ describe("the cooldown follows the server", () => {
 
   beforeEach(() => {
     seed();
-    useContentStore.setState({
-      cooldownEndsAt: null,
-      cooldownTotal: 0,
-      dailyCapReached: false,
-      limitsRequested: false,
-    });
     vi.spyOn(Date, "now").mockReturnValue(NOW);
   });
   afterEach(() => {
@@ -597,8 +595,16 @@ describe("the cooldown follows the server", () => {
   });
 
   it("keeps the button off after the daily cap", async () => {
+    // The server's real daily-cap refusal: the cooldown was claimed first, so
+    // one is running too.
     respondWith(
-      { success: false, error: "Daily limit reached", message: "Max 30" },
+      {
+        success: false,
+        error: "Daily limit reached",
+        limit: "daily",
+        message: "Max 30",
+        cooldown_total: 30,
+      },
       429,
     );
 
@@ -606,7 +612,26 @@ describe("the cooldown follows the server", () => {
 
     const s = useContentStore.getState();
     expect(s.dailyCapReached).toBe(true);
-    expect(s.cooldownEndsAt).toBeNull();
+    expect(s.cooldownEndsAt).toBe(NOW + 30_000);
+  });
+
+  it("is the one gate: no press goes out while the cooldown runs", async () => {
+    const fetchMock = respondWith({ success: true, content: {} });
+    useContentStore.setState({ cooldownEndsAt: NOW + 5_000, cooldownTotal: 30 });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(useContentStore.getState().isRegenerating).toBe(false);
+  });
+
+  it("is the one gate: no press goes out after the daily cap", async () => {
+    const fetchMock = respondWith({ success: true, content: {} });
+    useContentStore.setState({ dailyCapReached: true });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("starts the cooldown a failure after metering reports", async () => {

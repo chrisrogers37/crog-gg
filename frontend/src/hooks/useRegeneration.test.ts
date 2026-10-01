@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useContentStore } from "../store";
 import { useRegeneration } from "./useRegeneration";
 
@@ -9,22 +9,13 @@ describe("useRegeneration", () => {
   beforeEach(() => {
     useContentStore.setState({ regenerateContent, cooldownEndsAt: null, cooldownTotal: 0 });
   });
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
 
-  it("presses through, but starts no cooldown of its own (#196 M44)", () => {
+  it("presses through, and starts no cooldown of its own (#196 M44)", () => {
+    // Whether a press goes out is the store's call; see the press gate in
+    // contentStore.regenerate.test.ts.
     const { result } = renderHook(() => useRegeneration());
     result.current.regenerate();
     expect(regenerateContent).toHaveBeenCalledWith(true);
     expect(useContentStore.getState().cooldownEndsAt).toBeNull();
-  });
-
-  it("doesn't press while the server's cooldown runs", () => {
-    useContentStore.setState({ cooldownEndsAt: Date.now() + 10_000, cooldownTotal: 30 });
-    const { result } = renderHook(() => useRegeneration());
-    result.current.regenerate();
-    expect(regenerateContent).not.toHaveBeenCalled();
-    expect(result.current.cooldownRemaining).toBeGreaterThan(0);
   });
 });

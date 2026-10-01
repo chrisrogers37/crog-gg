@@ -56,7 +56,4 @@ export interface ActionButtonsProps {
   onReset: () => void;
   isRegenerating: boolean;
   hasModifiedContent: boolean;
-  cooldownRemaining: number;
-  cooldownTotal: number;
-  isReady: boolean;
 }

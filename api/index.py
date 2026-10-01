@@ -822,11 +822,14 @@ def _regenerate_section(
     except json.JSONDecodeError:
         return _fail(section, FAILURE_NOT_JSON, log_only=new_content or "")
 
-    # A field that came in as a string has to come back as one: an object in the
-    # bio's text reached the page and turned it into the 404 page (#196 M16).
-    # Dropped before validation, and counted.
+    # A field that came in as a string has to come back as a non-empty one: an
+    # object in the bio's text reached the page and turned it into the 404 page
+    # (#196 M16). Dropped before validation, and counted; the fill below puts
+    # the visitor's copy back.
     if isinstance(parsed, dict) and (
-        dropped := sorted(k for k, v in parsed.items() if isinstance(content.get(k), str) and not isinstance(v, str))
+        dropped := sorted(
+            k for k, v in parsed.items() if isinstance(content.get(k), str) and not (isinstance(v, str) and v.strip())
+        )
     ):
         for key in dropped:
             del parsed[key]
@@ -855,6 +858,12 @@ def _regenerate_section(
     for key in _UNAUTHORED_KEYS.get(section, ()):
         if key in content:
             parsed[key] = content[key]
+
+    # A rewrite is often partial. Fields the model left out keep the visitor's
+    # copy, so a one-field rewrite never blanks the rest of the section,
+    # whatever bundle sent the press (#196 M16).
+    for key, value in content.items():
+        parsed.setdefault(key, value)
 
     # Measured as the next press will send it, so the visitor keeps the copy
     # they have rather than one the section cap would refuse.
@@ -958,6 +967,7 @@ def regenerate_content():
                 {
                     "success": False,
                     "error": "Ability on cooldown",
+                    "limit": "cooldown",
                     "cooldown_remaining": remaining,
                     "cooldown_total": COOLDOWN_SECONDS,
                 }
@@ -985,18 +995,22 @@ def regenerate_content():
                 {
                     "success": False,
                     "error": "Daily regeneration budget reached",
+                    "limit": "budget",
                     "cooldown_total": COOLDOWN_SECONDS,
                 }
             ),
             503,
         )
     if full:
+        # Like the budget's 503, this follows the cooldown claim, so one is running.
         return (
             jsonify(
                 {
                     "success": False,
                     "error": "Daily limit reached",
+                    "limit": "daily",
                     "message": f"Max {REGEN_DAILY_MAX} regenerations per day",
+                    "cooldown_total": COOLDOWN_SECONDS,
                 }
             ),
             429,
