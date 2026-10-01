@@ -1,68 +1,67 @@
-"""Unit tests for the sliding-window limiter (api/_lib/rate_limit.py).
+"""Unit tests for the limiter primitives (api/_lib/rate_limit.py).
 
-Focus is the ``cost`` argument: a request that consumes several slots records
-them in one round trip, so the recorded count reflects the whole request rather
-than however many hits a per-slot loop managed before the cap tripped.
+``check_and_consume`` is one Lua script (#194): it records a request's ``cost``
+hits together, and only if they all fit, so a refused request adds nothing.
+``claim_cooldown`` checks and starts a cooldown in one SET NX. The mocked tests
+pin what each one sends and how it reads the reply; the ``fake_upstash`` tests
+run the real script against an in-memory Redis.
 """
 
 import logging
+import time
 from unittest.mock import patch
 
 import pytest
 
 from api._lib import rate_limit
 
-# conftest's autouse `_hermetic_rate_limit` stubs `rate_limit.check_and_consume`
-# for every test in the suite -- including this module, whose subject IS that
-# function. Bind the real one at import time, before any fixture runs, so these
-# tests exercise the limiter instead of the stub standing in for it.
+# conftest's autouse `_hermetic_rate_limit` stubs these for every test in the
+# suite -- including this module, whose subject IS them. Bind the real ones at
+# import time, before any fixture runs, so these tests exercise the limiter
+# instead of the stubs standing in for it.
 check_and_consume = rate_limit.check_and_consume
 get_cooldown_remaining = rate_limit.get_cooldown_remaining
-start_cooldown = rate_limit.start_cooldown
+claim_cooldown = rate_limit.claim_cooldown
 
 
-def _zadd_from(pipeline_call):
-    """The ZADD command out of the pipeline the limiter submitted."""
-    commands = pipeline_call.call_args[0][0]
-    return next(c for c in commands if c[0] == "ZADD")
+def _members_sent(command):
+    """The members the limiter's EVAL asked the script to record."""
+    args = command.call_args.args
+    assert args[:2] == ("EVAL", rate_limit._CONSUME_SCRIPT)
+    return args[8:]  # after numkeys, the key and ARGV[1..4]
 
 
 def test_default_cost_records_one_hit():
-    with patch("api._lib.rate_limit.redis_client.pipeline", return_value=[0, 1, 1, 1]) as pipe:
+    with patch("api._lib.rate_limit.redis_client.command", return_value=[1, 1]) as command:
         check_and_consume("k", 30, 60)
-    zadd = _zadd_from(pipe)
-    # ZADD key score member -> one score/member pair
-    assert len(zadd) == 4
+    assert len(_members_sent(command)) == 1
 
 
 def test_cost_records_that_many_hits_in_one_round_trip():
-    with patch("api._lib.rate_limit.redis_client.pipeline", return_value=[0, 3, 3, 1]) as pipe:
+    with patch("api._lib.rate_limit.redis_client.command", return_value=[1, 3]) as command:
         check_and_consume("k", 30, 60, cost=3)
-    pipe.assert_called_once()
-    zadd = _zadd_from(pipe)
-    assert len(zadd) == 2 + (3 * 2)
+    command.assert_called_once()
+    assert len(_members_sent(command)) == 3
 
 
 def test_members_are_distinct_so_none_overwrite_each_other():
     # Same-millisecond members that collided would silently under-count.
-    with patch("api._lib.rate_limit.redis_client.pipeline", return_value=[0, 4, 4, 1]) as pipe:
+    with patch("api._lib.rate_limit.redis_client.command", return_value=[1, 4]) as command:
         check_and_consume("k", 30, 60, cost=4)
-    zadd = _zadd_from(pipe)
-    members = zadd[3::2]
-    assert len(set(members)) == 4
+    assert len(set(_members_sent(command))) == 4
 
 
-def test_batch_over_the_cap_is_denied():
-    with patch("api._lib.rate_limit.redis_client.pipeline", return_value=[0, 2, 31, 1]):
+def test_script_refusal_reads_as_denied():
+    with patch("api._lib.rate_limit.redis_client.command", return_value=[0, 29]):
         allowed, count = check_and_consume("k", 30, 60, cost=2)
     assert allowed is False
-    assert count == 31
+    assert count == 29
 
 
 def test_falls_open_only_when_the_caller_opts_out():
     # Free endpoints keep serving: losing rate limiting on a transient outage
     # beats dropping legit traffic where an extra request costs nothing.
-    with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("down")):
         allowed, count = check_and_consume("k", 30, 60, cost=2, fail_open=True)
     assert allowed is True
     assert count == 0
@@ -72,7 +71,7 @@ def test_fails_closed_by_default():
     # "Cannot meter" must not read as "allowed". The safe mode is the default so
     # that forgetting the flag on a paid gate cannot silently leak money -- the
     # direction a caller forgets in is the harmless one.
-    with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("down")):
         with pytest.raises(rate_limit.RedisUnavailable):
             check_and_consume("k", 30, 60, cost=2)
 
@@ -86,16 +85,9 @@ def test_cooldown_read_fails_closed_by_default_and_opens_on_request():
         assert get_cooldown_remaining("k", fail_open=True) == 0
 
 
-def test_start_cooldown_never_raises():
-    # Runs after the daily slot is already consumed: failing the request here
-    # would reject work the caller has already been charged for.
-    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("down")):
-        start_cooldown("k", 30)
-
-
 def test_outage_is_logged_so_the_degradation_is_visible(caplog):
     caplog.set_level(logging.ERROR, logger="crog")
-    with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("down")):
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("down")):
         check_and_consume("k", 30, 60, fail_open=True)
     assert any("rate limit unavailable" in r.getMessage() for r in caplog.records)
 
@@ -103,13 +95,14 @@ def test_outage_is_logged_so_the_degradation_is_visible(caplog):
 @pytest.mark.parametrize(
     "reply",
     [
-        pytest.param([{"result": 0}, {"error": "OOM"}, {"result": 0}, {"result": 1}], id="refused-write"),
-        pytest.param([{"result": 0}], id="short"),
-        pytest.param([{"result": 0}, {"result": 1}, {"result": None}, {"result": 1}], id="no-count"),
+        pytest.param({"error": "OOM command not allowed"}, id="refused-write"),
+        pytest.param({"result": [1]}, id="short"),
+        pytest.param({"result": [1, None]}, id="no-count"),
+        pytest.param({"result": None}, id="nil"),
     ],
 )
 def test_unusable_reply_fails_closed_and_is_logged(reply, caplog):
-    # Each of these used to read as a count of 0, or escape as an IndexError (#194).
+    # Each of these must stop the request like an outage, not read as a count (#194).
     caplog.set_level(logging.ERROR, logger="crog")
     with patch("api._lib.redis_client._post", return_value=reply):
         with pytest.raises(rate_limit.RedisUnavailable):
@@ -123,3 +116,76 @@ def test_cooldown_read_needs_an_integer_ttl():
         with pytest.raises(rate_limit.RedisUnavailable):
             get_cooldown_remaining("k")
         assert get_cooldown_remaining("k", fail_open=True) == 0
+
+
+def test_claim_cooldown_checks_and_starts_it_in_one_set_nx():
+    # Without NX every press would claim it, and the cooldown would never refuse.
+    with patch("api._lib.redis_client._post", return_value=[{"result": "OK"}, {"result": 30}]) as post:
+        claim_cooldown("k", 30)
+    post.assert_called_once_with("/pipeline", [["SET", "k", "1", "NX", "EX", "30"], ["TTL", "k"]])
+
+
+@pytest.mark.parametrize(
+    "reply, remaining",
+    [
+        # "OK": this press started the cooldown.
+        pytest.param([{"result": "OK"}, {"result": 30}], 0, id="ok"),
+        # nil: one is running, and the TTL says for how long.
+        pytest.param([{"result": None}, {"result": 12}], 12, id="nil"),
+        # It ran out between the SET and the TTL: still a refusal, for a second.
+        pytest.param([{"result": None}, {"result": -2}], 1, id="nil-then-gone"),
+    ],
+)
+def test_claim_cooldown_ok_nil(reply, remaining):
+    with patch("api._lib.redis_client._post", return_value=reply):
+        assert claim_cooldown("k", 30) == remaining
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        pytest.param([{"error": "OOM command not allowed"}, {"result": -2}], id="error"),
+        pytest.param([{"result": None}, {"result": None}], id="no-ttl"),
+        pytest.param([{"result": "OK"}], id="short"),
+    ],
+)
+def test_claim_cooldown_error_fails_closed_and_is_logged(reply, caplog):
+    # Anything else must refuse the press, never read as "OK" (#194).
+    caplog.set_level(logging.ERROR, logger="crog")
+    with patch("api._lib.redis_client._post", return_value=reply):
+        with pytest.raises(rate_limit.RedisUnavailable):
+            claim_cooldown("k", 30)
+    assert any("cooldown claim unavailable" in r.getMessage() for r in caplog.records)
+
+
+# --- the real script and SET NX, run by an in-memory Redis ------------------
+
+
+def test_refused_request_adds_nothing(fake_upstash):
+    # Recording refused hits would keep a full window full for as long as
+    # someone kept asking, and push back everyone's wait (#194 M14).
+    assert check_and_consume("k", 3, 60, cost=3) == (True, 3)
+    hits = fake_upstash.zrange("k", 0, -1, withscores=True)
+    assert check_and_consume("k", 3, 60) == (False, 3)
+    assert fake_upstash.zrange("k", 0, -1, withscores=True) == hits
+
+
+def test_a_request_is_recorded_whole_or_not_at_all(fake_upstash):
+    assert check_and_consume("k", 3, 60, cost=2) == (True, 2)
+    assert check_and_consume("k", 3, 60, cost=2) == (False, 2)
+    assert check_and_consume("k", 3, 60, cost=1) == (True, 3)
+    assert fake_upstash.zcard("k") == 3
+
+
+def test_hits_older_than_the_window_stop_counting(fake_upstash):
+    stale_ms = int(time.time() * 1000) - 61_000
+    fake_upstash.zadd("k", {f"{stale_ms}:old": stale_ms})
+    assert check_and_consume("k", 1, 60) == (True, 1)
+    assert 0 < fake_upstash.ttl("k") <= 61  # and the key expires with its hits
+
+
+def test_only_the_first_claim_starts_the_cooldown(fake_upstash):
+    assert claim_cooldown("cd", 30) == 0
+    assert 0 < claim_cooldown("cd", 30) <= 30
+    fake_upstash.delete("cd")  # as if it ran out
+    assert claim_cooldown("cd", 30) == 0

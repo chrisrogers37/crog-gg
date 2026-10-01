@@ -755,19 +755,6 @@ def _metering_unavailable(_exc):
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
     client_ip = get_client_ip()
-    remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip))
-    if remaining > 0:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Ability on cooldown",
-                    "cooldown_remaining": remaining,
-                    "cooldown_total": COOLDOWN_SECONDS,
-                }
-            ),
-            429,
-        )
 
     data = request.get_json(silent=True)
     if not data:
@@ -812,9 +799,25 @@ def regenerate_content():
     if openai_client is None:
         return jsonify({"success": False, "error": "OpenAI API key not configured"}), 500
 
+    # After validation, so a rejected request costs nothing (#107), and before
+    # the daily cap, so a press refused here doesn't spend a daily slot.
+    remaining = rate_limit.claim_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
+    if remaining > 0:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Ability on cooldown",
+                    "cooldown_remaining": remaining,
+                    "cooldown_total": COOLDOWN_SECONDS,
+                }
+            ),
+            429,
+        )
+
     # One daily slot per section, so batching sections into a single request
     # costs the same as the calls it replaces. Metered BEFORE the OpenAI calls
-    # (#107) so a request that then errors still burns the per-IP gate and a
+    # (#107) so a request that then errors has still spent its slots and a
     # caller cannot retry expensive generations by forcing errors.
     allowed, _count = rate_limit.check_and_consume(
         _regen_daily_key(client_ip), REGEN_DAILY_MAX, REGEN_DAILY_WINDOW, cost=len(sections)
@@ -830,7 +833,6 @@ def regenerate_content():
             ),
             429,
         )
-    rate_limit.start_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
 
     # Sampled once per request, not once per section: one press is one telling,
     # so every section has to land in the same world. Sampling inside the

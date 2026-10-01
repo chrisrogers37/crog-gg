@@ -41,5 +41,35 @@ def _hermetic_rate_limit():
     """
     with patch("api.index.rate_limit.check_and_consume", return_value=(True, 0)):
         with patch("api.index.rate_limit.get_cooldown_remaining", return_value=0):
-            with patch("api.index.rate_limit.start_cooldown"):
+            with patch("api.index.rate_limit.claim_cooldown", return_value=0):
                 yield
+
+
+@pytest.fixture
+def fake_upstash():
+    """Upstash's REST replies, served by an in-memory Redis that runs Lua (#194).
+
+    Only the client's network call is replaced, so the reply unwrapping, the
+    pipeline checks and the limiter's Lua script all run for real. Yields a
+    client on the same data for assertions. Skips where ``fakeredis[lua]``
+    isn't installed.
+    """
+    fakeredis = pytest.importorskip("fakeredis")
+    pytest.importorskip("lupa")  # what fakeredis runs EVAL with
+    from redis.exceptions import ResponseError
+
+    server = fakeredis.FakeServer()
+    upstash = fakeredis.FakeRedis(server=server, decode_responses=True)
+    upstash.response_callbacks = {}  # raw replies, which is what Upstash serializes
+
+    def reply(args):
+        try:
+            return {"result": upstash.execute_command(*args)}
+        except ResponseError as exc:
+            return {"error": str(exc)}
+
+    def post(path, body):
+        return [reply(args) for args in body] if path == "/pipeline" else reply(body)
+
+    with patch("api._lib.redis_client._post", side_effect=post):
+        yield fakeredis.FakeRedis(server=server, decode_responses=True)

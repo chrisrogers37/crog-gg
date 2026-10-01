@@ -116,43 +116,62 @@ def test_oversized_body_returns_413(client):
 
 def test_valid_request_succeeds_and_starts_cooldown(client):
     with patch("api.index.openai_client", _mock_openai()):
-        with patch("api.index.rate_limit.start_cooldown") as start_cd:
+        with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 200
     body = r.get_json()
     assert body["success"] is True
     assert body["content"] == {"about": {"bio": "rewritten"}}
     assert body["failed_sections"] == []
-    start_cd.assert_called_once()
+    claim.assert_called_once()
 
 
 def test_openai_error_still_starts_cooldown(client):
     # A validated request that errors at OpenAI must still burn the cooldown so a
     # caller can't retry expensive generations back-to-back by forcing errors (#107).
     with patch("api.index.openai_client", _mock_openai(error=openai.OpenAIError("boom"))):
-        with patch("api.index.rate_limit.start_cooldown") as start_cd:
+        with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 500
-    start_cd.assert_called_once()
+    claim.assert_called_once()
 
 
 def test_non_json_model_output_still_starts_cooldown(client):
     # Non-JSON model output -> 500, but the cooldown was already started (#107).
     with patch("api.index.openai_client", _mock_openai(content="not json at all")):
-        with patch("api.index.rate_limit.start_cooldown") as start_cd:
+        with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 500
-    start_cd.assert_called_once()
+    claim.assert_called_once()
 
 
 def test_malformed_request_does_not_meter(client):
     # A rejected request must not consume a daily slot or start a cooldown (#107).
     with patch("api.index.rate_limit.check_and_consume") as consume:
-        with patch("api.index.rate_limit.start_cooldown") as start_cd:
+        with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"nope": {}}})
     assert r.status_code == 400
     consume.assert_not_called()
-    start_cd.assert_not_called()
+    claim.assert_not_called()
+
+
+def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
+    # A press refused by the cooldown uses no daily slot and makes no model
+    # call, and says how long is left (#194).
+    fake = _mock_openai()
+    with patch("api.index.openai_client", fake):
+        with patch("api.index.rate_limit.claim_cooldown", return_value=12):
+            with patch("api.index.rate_limit.check_and_consume") as consume:
+                r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
+    assert r.status_code == 429
+    assert r.get_json() == {
+        "success": False,
+        "error": "Ability on cooldown",
+        "cooldown_remaining": 12,
+        "cooldown_total": 30,
+    }
+    consume.assert_not_called()
+    fake.chat.completions.create.assert_not_called()
 
 
 def test_daily_slot_consumed_per_section(client):
@@ -185,15 +204,13 @@ def test_multi_section_request_checks_cooldown_once(client):
     # to be two concurrent requests, so the second hit the cooldown the first had
     # just started and was rejected. One request means one gate check.
     with patch("api.index.openai_client", _mock_openai()):
-        with patch("api.index.rate_limit.get_cooldown_remaining", return_value=0) as gate:
-            with patch("api.index.rate_limit.start_cooldown") as start_cd:
-                r = client.post(
-                    "/api/regenerate",
-                    json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
-                )
+        with patch("api.index.rate_limit.claim_cooldown", return_value=0) as gate:
+            r = client.post(
+                "/api/regenerate",
+                json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+            )
     assert r.status_code == 200
     gate.assert_called_once()
-    start_cd.assert_called_once()
 
 
 def test_every_section_prompt_carries_the_length_anchor(client):
