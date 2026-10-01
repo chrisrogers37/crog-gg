@@ -28,6 +28,41 @@
   text-decoration: underline;
 }
 
+/* The loading and error states (#196 M41) have no text to size the page by,
+   so they take the width the page would have. On a phone the header is also a
+   column, which would shrink the skeleton's empty bars to nothing. */
+.project-detail-page--placeholder {
+  width: 100%;
+}
+
+.project-detail-skeleton .project-header-content {
+  align-self: stretch;
+}
+
+.project-detail-skeleton__icon {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--border-color);
+}
+
+.project-detail-skeleton__line {
+  height: 14px;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  background: var(--border-color);
+}
+
+.project-detail-skeleton__line--title {
+  width: 50%;
+  height: 28px;
+}
+
+.project-detail-skeleton__line--short {
+  width: 70%;
+}
+
 /* Header */
 .project-header {
   display: flex;

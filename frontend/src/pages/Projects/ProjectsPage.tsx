@@ -5,6 +5,7 @@ import {
   useContentError,
   useContentStore,
 } from "../../store";
+import { LoadError } from "../../components/common/LoadError";
 import { ProjectCard } from "../../components/sections/Projects/ProjectCard";
 import { ProjectSkeletonGrid } from "../../components/sections/Projects/Projects";
 import { SEO } from "../../components/SEO";
@@ -74,17 +75,10 @@ export function ProjectsPage() {
             A collection of my work, side projects, and experiments.
           </p>
         </header>
-        <div className="projects-error" role="alert">
-          <p className="projects-error__message">
-            Failed to load projects. Please try again.
-          </p>
-          <button
-            className="projects-error__retry"
-            onClick={() => loadContent()}
-          >
-            Retry
-          </button>
-        </div>
+        <LoadError
+          message="Failed to load projects. Please try again."
+          onRetry={() => loadContent()}
+        />
       </div>
     );
   }
