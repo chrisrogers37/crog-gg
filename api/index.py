@@ -16,6 +16,7 @@ import logging
 import os
 import random
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 import openai
@@ -23,9 +24,10 @@ import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from api._lib import cache, rate_limit
+from api._lib import cache, rate_limit, redis_client
 from api._lib.request_utils import (
     GITHUB_API,
+    GITHUB_TOKEN,
     GITHUB_USERNAME,
     get_client_ip,
     github_headers,
@@ -837,6 +839,68 @@ def get_usage_info():
             "metering_available": remaining is not None,
         }
     )
+
+
+# How long one health result is reused. A monitor polling every few minutes
+# still sees fresh data, and a flood of requests costs one Redis PING and one
+# GitHub call per instance every 30 s.
+HEALTH_CACHE_SECONDS = 30
+_health_cache: dict = {}
+
+
+def _redis_ping() -> bool:
+    try:
+        return redis_client.command("PING") == "PONG"
+    except Exception:
+        return False
+
+
+def _github_core_remaining():
+    """GitHub's remaining core quota for this deployment, or None if unknown.
+
+    /rate_limit doesn't count against the quota, and it fails once the token
+    has expired or been revoked, which is the failure this check exists for.
+    """
+    try:
+        r = requests.get(f"{GITHUB_API}/rate_limit", headers=github_headers(), timeout=5)
+        r.raise_for_status()
+        return r.json()["resources"]["core"]["remaining"]
+    except (requests.RequestException, ValueError, KeyError, TypeError):
+        return None
+
+
+@app.route("/api/health", methods=["GET"])
+def health():
+    """Whether this deployment can serve its features, for an uptime monitor (#195).
+
+    200 when the OpenAI key is set, Redis answers a PING, and the GitHub token
+    (if one is set) still works and has quota left; 503 otherwise. The body
+    always lists every check, so a 503 says which one failed. It never calls
+    OpenAI, which would spend money on every poll. /api/limits isn't a health
+    check either: it answers null on purpose during an outage.
+    """
+    now = time.monotonic()
+    entry = _health_cache.get("entry")
+    if entry is None or now - entry[0] >= HEALTH_CACHE_SECONDS:
+        checks = {
+            "openai_key": openai_client is not None,
+            "redis_configured": redis_client.is_configured(),
+            "redis_ping": _redis_ping(),
+            "github_token": bool(GITHUB_TOKEN),
+            "github_core_remaining": _github_core_remaining(),
+        }
+        ok = (
+            checks["openai_key"]
+            and checks["redis_ping"]
+            and (not checks["github_token"] or bool(checks["github_core_remaining"]))
+        )
+        entry = (now, {"ok": ok, "checks": checks}, 200 if ok else 503)
+        _health_cache["entry"] = entry
+    _at, body, status = entry
+    response = jsonify(body)
+    response.status_code = status
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 # ---------------------------------------------------------------------------
