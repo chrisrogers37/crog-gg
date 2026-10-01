@@ -19,6 +19,7 @@ from unittest.mock import patch  # noqa: E402
 
 import pytest  # noqa: E402
 
+from api._lib import request_utils  # noqa: E402
 from api.index import app  # noqa: E402
 
 
@@ -44,6 +45,20 @@ def _hermetic_rate_limit():
         with patch("api.index.rate_limit.get_cooldown_remaining", return_value=0):
             with patch("api.index.rate_limit.claim_cooldown", return_value=0):
                 yield
+
+
+@pytest.fixture(autouse=True)
+def _unsalted():
+    """No IP_HASH_SALT unless a test asks for one with ``salted``, so a salt
+    exported in the shell can't change what the tests see."""
+    with patch.object(request_utils, "IP_HASH_SALT", ""):
+        yield
+
+
+@pytest.fixture
+def salted():
+    with patch.object(request_utils, "IP_HASH_SALT", "a-test-salt-of-thirty-two-chars!"):
+        yield
 
 
 def _require(module: str):
