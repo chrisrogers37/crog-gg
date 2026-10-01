@@ -13,11 +13,14 @@ name: Post-deploy smoke
 # A preview without the secret skips with a notice. Production in this repo
 # with neither fails, so the check can't go green while checking nothing.
 #
-# Security: a deployment_status run uses the workflow files of the deployed
-# commit. Authorizing a fork's preview in Vercel (Git Fork Protection) therefore
-# runs that fork's workflows here, with any permissions they declare and every
-# Actions secret. `contents: read` below limits only this file. Review a fork
-# PR's .github/ changes before authorizing its deployment.
+# Security: authorizing a fork's preview in Vercel (Git Fork Protection) runs
+# the fork's code with the Preview environment variables, and, because a
+# deployment_status run uses the deployed commit's workflow files, the fork's
+# workflows here with any permissions they declare and every Actions secret.
+# `contents: read` below limits only this file. Review the whole fork PR before
+# authorizing its deployment. This check itself sends the bypass secret only to
+# a commit that is the head of a branch in this repo, never to a fork's preview,
+# whose code could log the header.
 on: deployment_status
 
 permissions:
@@ -32,6 +35,8 @@ jobs:
     env:
       ENVIRONMENT: ${{ github.event.deployment.environment }}
       REPOSITORY: ${{ github.repository }}
+      SHA: ${{ github.event.deployment.sha }}
+      GH_TOKEN: ${{ github.token }}
       DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
       SITE_URL: ${{ vars.SITE_URL }}
       BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
@@ -41,13 +46,23 @@ jobs:
           # Actions runs this with `bash -e`. Turn it off so a failed lookup is
           # reported as a FAIL line and every check still runs.
           set +e -uo pipefail
-          if [ -n "$BYPASS" ]; then
+          # True when the deployed commit is the head of a branch in this repo,
+          # i.e. not a fork's commit, so it's safe to send the bypass header.
+          own_branch_head() {
+            curl -sS --max-time 20 -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPOSITORY/commits/$SHA/branches-where-head" | grep -q '"name"'
+          }
+          if [ -n "$BYPASS" ] && own_branch_head; then
             BASE="${DEPLOYMENT_URL%/}"
           elif [ "$ENVIRONMENT" = "Production" ] && [ -n "$SITE_URL" ]; then
             BASE="${SITE_URL%/}"
+            BYPASS=""
           elif [ "$ENVIRONMENT" = "Production" ] && [ "$REPOSITORY" = "chrisrogers37/crog-gg" ]; then
             echo "::error::Production can't be checked: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
             exit 1
+          elif [ -n "$BYPASS" ]; then
+            echo "::notice::Skipped $ENVIRONMENT: $SHA isn't the head of a branch in this repo (a fork's preview, or a branch that has moved on). The bypass secret only goes to this repo's own branches."
+            exit 0
           else
             echo "::notice::Skipped $ENVIRONMENT: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
             exit 0
