@@ -3,7 +3,8 @@
 Covers the validation + metering in ``regenerate_content``:
   - the section allowlist and content-type check return a clean 400 instead of
     a permissive default prompt (#89) or an AttributeError -> 500 (#107),
-  - an oversized request body is rejected with 413 (#90),
+  - an oversized request body is rejected with 413 (#90), and so is an
+    oversized section, before any metering (#194),
   - the 30s cooldown is started for any accepted request, even one whose OpenAI
     call errors or returns non-JSON (#107), so failed generations can't be
     retried back-to-back,
@@ -19,10 +20,21 @@ discarded the whole regeneration.
 """
 
 import json
+import logging
 from unittest.mock import MagicMock, patch
 
 import openai
 import pytest
+
+from api.index import (
+    FAILURE_TOO_LONG,
+    MAX_SECTION_CHARS,
+    REGEN_DAILY_MAX,
+    REGEN_GLOBAL_DAILY_MAX,
+    REGEN_GLOBAL_KEY,
+    _prompt_json,
+    _regen_daily_key,
+)
 
 
 def _mock_openai(content='{"bio": "rewritten"}', error=None, per_call=None):
@@ -111,6 +123,45 @@ def test_oversized_body_returns_413(client):
     assert r.status_code == 413
 
 
+# Room for the bio in {"bio": ...}, measured the way the handler measures it.
+_BIO_ROOM = MAX_SECTION_CHARS - len(_prompt_json({"bio": ""}))
+
+
+@pytest.mark.parametrize(
+    "bio",
+    [
+        pytest.param("a" * (_BIO_ROOM + 1), id="one-over"),
+        # Measured as it goes into the prompt, where each < becomes \u003c.
+        pytest.param("<" * (_BIO_ROOM // 6 + 1), id="escaped-into-the-prompt"),
+    ],
+)
+def test_oversized_section_is_413_unmetered(client, bio):
+    # The 64 KB body cap still lets one section carry ~16x the shipped content
+    # into a paid prompt; the section cap stops it before any metering (#194 M11).
+    with patch("api.index.openai_client", _mock_openai()):
+        with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
+            r = client.post("/api/regenerate", json={"sections": {"about": {"bio": bio}}})
+    assert r.status_code == 413
+    assert r.get_json()["error"] == "content for about is too long"
+    claim.assert_not_called()
+
+
+def test_a_section_at_the_cap_is_accepted(client):
+    with patch("api.index.openai_client", _mock_openai()):
+        r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "a" * _BIO_ROOM}}})
+    assert r.status_code == 200
+
+
+def test_a_rewrite_too_long_to_send_back_is_refused(client):
+    # Each rewrite comes back as the next press's input, so one over the cap
+    # would make every later press a 413. The visitor keeps the copy they have.
+    too_long = json.dumps({"bio": "a" * (_BIO_ROOM + 1)})
+    with patch("api.index.openai_client", _mock_openai(content=too_long)):
+        r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
+    assert r.status_code == 500
+    assert r.get_json()["failures"]["about"] == {"reason": FAILURE_TOO_LONG, "chars": MAX_SECTION_CHARS + 1}
+
+
 # --- metering: cooldown starts for any accepted request (#107) -------------
 
 
@@ -176,24 +227,48 @@ def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
 
 def test_daily_slot_consumed_per_section(client):
     # Batching sections into one request must cost the same as the per-section
-    # requests it replaces, or the daily cap would be trivially stretched.
+    # requests it replaces, or the daily caps would be trivially stretched.
     with patch("api.index.openai_client", _mock_openai()):
-        with patch("api.index.rate_limit.check_and_consume", return_value=(True, 0)) as consume:
+        with patch("api.index.rate_limit.check_and_consume", return_value=None) as consume:
             r = client.post(
                 "/api/regenerate",
                 json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
             )
     assert r.status_code == 200
     consume.assert_called_once()
+    # The visitor's window first: when both are full, their own cap is the
+    # refusal they get, not the site-wide 503.
+    assert list(consume.call_args.args[0].items()) == [
+        (_regen_daily_key("127.0.0.1"), REGEN_DAILY_MAX),
+        (REGEN_GLOBAL_KEY, REGEN_GLOBAL_DAILY_MAX),
+    ]
     assert consume.call_args.kwargs["cost"] == 2
 
 
 def test_daily_limit_reached_returns_429(client):
     with patch("api.index.openai_client", _mock_openai()):
-        with patch("api.index.rate_limit.check_and_consume", return_value=(False, 99)):
+        with patch("api.index.rate_limit.check_and_consume", return_value=_regen_daily_key("127.0.0.1")):
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 429
     assert r.get_json()["error"] == "Daily limit reached"
+
+
+def test_global_ceiling_returns_503(client, caplog):
+    # The site-wide budget is spent: nobody's press can be served, so it's the
+    # service that's unavailable, not this visitor who's over a limit (#194 M11).
+    caplog.set_level(logging.WARNING, logger="crog")
+    fake = _mock_openai()
+    with patch("api.index.openai_client", fake):
+        with patch("api.index.rate_limit.check_and_consume", return_value=REGEN_GLOBAL_KEY):
+            r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
+    assert r.status_code == 503
+    assert r.get_json() == {
+        "success": False,
+        "error": "Daily regeneration budget reached",
+        "cooldown_total": 30,
+    }
+    assert any(rec.getMessage().startswith("regenerate.global_cap_reached") for rec in caplog.records)
+    fake.chat.completions.create.assert_not_called()
 
 
 # --- one action is one request ---------------------------------------------

@@ -40,7 +40,7 @@ def _hermetic_rate_limit():
     exercise either behaviour must patch over this fixture -- it stubs the very
     primitives under test. See tests/test_regenerate_spend_guard.py.
     """
-    with patch("api.index.rate_limit.check_and_consume", return_value=(True, 0)):
+    with patch("api.index.rate_limit.check_and_consume", return_value=None):
         with patch("api.index.rate_limit.get_cooldown_remaining", return_value=0):
             with patch("api.index.rate_limit.claim_cooldown", return_value=0):
                 yield

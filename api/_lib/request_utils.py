@@ -1,5 +1,6 @@
 """Request-side helpers: client IP, GitHub headers, repo name validation."""
 
+import ipaddress
 import logging
 import os
 import re
@@ -33,6 +34,25 @@ def get_client_ip() -> str:
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.remote_addr or "unknown"
+
+
+def rate_limit_subject(ip: str) -> str:
+    """What a per-visitor limit counts, for an address from ``get_client_ip``.
+
+    An IPv6 address counts as its /64, since one connection is usually handed
+    a whole /64 and could otherwise rotate through it for fresh limits (#194
+    M11). An IPv4 address, IPv4-mapped or not, counts as itself. Anything that
+    doesn't parse is returned unchanged.
+    """
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if addr.version == 4:
+        return ip
+    if addr.ipv4_mapped:
+        return str(addr.ipv4_mapped)
+    return str(ipaddress.ip_network((addr, 64), strict=False))
 
 
 def github_headers() -> dict:

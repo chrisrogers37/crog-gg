@@ -32,6 +32,7 @@ from api._lib.request_utils import (
     GITHUB_USERNAME,
     get_client_ip,
     github_headers,
+    rate_limit_subject,
     validate_repo_name,
 )
 
@@ -84,6 +85,14 @@ OPENAI_SAMPLING: dict = {}
 COOLDOWN_SECONDS = 30
 REGEN_DAILY_MAX = 30
 REGEN_DAILY_WINDOW = 86400
+# Section rewrites per rolling 24 h across all visitors (#194 M11), the ceiling
+# per-visitor caps can't give, since anyone can bring more addresses. Size it
+# as the monthly OpenAI budget / (30 x the measured cost of one section rewrite).
+REGEN_GLOBAL_DAILY_MAX = 300
+REGEN_GLOBAL_KEY = "spend:regen_global"
+# The largest section a press may send, measured as it goes into the prompt
+# (#194 M11). The shipped sections are about 1.7 KB and 3.9 KB.
+MAX_SECTION_CHARS = 12_000
 GH_RATE_LIMIT_MAX = 30
 GH_RATE_LIMIT_WINDOW = 60
 
@@ -97,24 +106,22 @@ CACHE_ALL_LANGUAGES_TTL = 3600
 
 
 def _cooldown_key(ip: str) -> str:
-    return f"cooldown:regenerate:{ip}"
+    return f"cooldown:regenerate:{rate_limit_subject(ip)}"
 
 
 def _regen_daily_key(ip: str) -> str:
-    return f"ratelimit:regen_daily:{ip}"
+    return f"ratelimit:regen_daily:{rate_limit_subject(ip)}"
 
 
 def _gh_rate_key(ip: str, endpoint: str) -> str:
-    return f"ratelimit:gh:{endpoint}:{ip}"
+    return f"ratelimit:gh:{endpoint}:{rate_limit_subject(ip)}"
 
 
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
-    ip = get_client_ip()
-    allowed, count = rate_limit.check_and_consume(
-        _gh_rate_key(ip, endpoint), GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW, fail_open=True
-    )
-    if not allowed:
+    key = _gh_rate_key(get_client_ip(), endpoint)
+    full = rate_limit.check_and_consume({key: GH_RATE_LIMIT_MAX}, GH_RATE_LIMIT_WINDOW, fail_open=True)
+    if full:
         return (
             jsonify(
                 {
@@ -321,6 +328,9 @@ FAILURE_UNRELATED_OBJECT = "unrelated_object"
 FAILURE_EMPTY_RESPONSE = "empty_response"
 # The section's worker raised something no other reason covers.
 FAILURE_UNEXPECTED = "unexpected"
+# The rewrite is over MAX_SECTION_CHARS. The client would send it back as the
+# next press's input and get a 413 every time from then on (#194 M11).
+FAILURE_TOO_LONG = "too_long"
 
 
 def _describe_failure(exc) -> tuple[dict, dict]:
@@ -715,6 +725,11 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
         if key in content:
             parsed[key] = content[key]
 
+    # Measured as the next press will send it, so the visitor keeps the copy
+    # they have rather than one the section cap would refuse.
+    if (size := len(_prompt_json(parsed))) > MAX_SECTION_CHARS:
+        return _fail(section, FAILURE_TOO_LONG, chars=size)
+
     # Observed, not enforced -- see the two helpers for why each is a warning
     # rather than a rejection. Both are what makes the two prompt anchors above
     # falsifiable at all: without a count, "the model preserves structure" is a
@@ -731,11 +746,12 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
 def _metering_unavailable(_exc):
     """503 when a spend gate could not be consulted (#113).
 
-    The per-IP cooldown and the daily cap are the only spend controls on
-    /api/regenerate, and both live in Redis. If the limiter cannot be consulted,
-    an "allow" turns a public button into an unmetered proxy to a paid API, so
-    refusing is the cheaper failure: the endpoint rewrites cosmetic copy and the
-    rest of the site is unaffected while it is paused.
+    The cooldown and the daily caps, per visitor and site-wide, are the spend
+    controls on /api/regenerate, and all of them live in Redis. If the limiter
+    cannot be consulted, an "allow" turns a public button into an unmetered
+    proxy to a paid API, so refusing is the cheaper failure: the endpoint
+    rewrites cosmetic copy and the rest of the site is unaffected while it is
+    paused.
 
     Registered at the app level rather than caught per call, so a gate added
     later is covered without anyone remembering to wrap it.
@@ -795,12 +811,14 @@ def regenerate_content():
             return jsonify({"success": False, "error": f"Invalid section: {name}"}), 400
         if not isinstance(section_content, dict):
             return jsonify({"success": False, "error": f"content for {name} must be an object"}), 400
+        if len(_prompt_json(section_content)) > MAX_SECTION_CHARS:
+            return jsonify({"success": False, "error": f"content for {name} is too long"}), 413
 
     if openai_client is None:
         return jsonify({"success": False, "error": "OpenAI API key not configured"}), 500
 
     # After validation, so a rejected request costs nothing (#107), and before
-    # the daily cap, so a press refused here doesn't spend a daily slot.
+    # the daily caps, so a press refused here doesn't spend a daily slot.
     remaining = rate_limit.claim_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
     if remaining > 0:
         return (
@@ -815,14 +833,32 @@ def regenerate_content():
             429,
         )
 
-    # One daily slot per section, so batching sections into a single request
-    # costs the same as the calls it replaces. Metered BEFORE the OpenAI calls
+    # One slot per section in two daily windows, the visitor's and the site's
+    # (#194 M11), so batching sections into a single request costs the same as
+    # the calls it replaces. The visitor's goes first, so someone at their own
+    # cap gets their 429, not the site's 503. Metered BEFORE the OpenAI calls
     # (#107) so a request that then errors has still spent its slots and a
     # caller cannot retry expensive generations by forcing errors.
-    allowed, _count = rate_limit.check_and_consume(
-        _regen_daily_key(client_ip), REGEN_DAILY_MAX, REGEN_DAILY_WINDOW, cost=len(sections)
+    full = rate_limit.check_and_consume(
+        {_regen_daily_key(client_ip): REGEN_DAILY_MAX, REGEN_GLOBAL_KEY: REGEN_GLOBAL_DAILY_MAX},
+        REGEN_DAILY_WINDOW,
+        cost=len(sections),
     )
-    if not allowed:
+    if full == REGEN_GLOBAL_KEY:
+        logger.warning("regenerate.global_cap_reached sections=%d", len(sections))
+        # The cooldown was claimed first, so it's running: say so, and the page
+        # counts it down instead of offering a press the server would refuse.
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": "Daily regeneration budget reached",
+                    "cooldown_total": COOLDOWN_SECONDS,
+                }
+            ),
+            503,
+        )
+    if full:
         return (
             jsonify(
                 {
