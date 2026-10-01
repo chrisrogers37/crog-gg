@@ -1,62 +1,60 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useContentStore } from "../store";
 
-const COOLDOWN_DURATION = 30; // seconds
+/** Whole seconds until `endsAt`, never negative. */
+const secondsUntil = (endsAt: number | null) =>
+  endsAt === null ? 0 : Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
 
 /**
- * Hook for WoW-style ability cooldown timer.
- *
- * Returns remaining seconds, total duration, whether the ability
- * just became ready (for the flash effect), and a trigger function.
+ * The regenerate button's WoW-style cooldown, from the server's numbers held in
+ * the store (#196 M44): the seconds left, the "ready" flash when a running
+ * cooldown runs out, and whether the daily cap has been reached. The button
+ * calls it itself, so the countdown re-renders the button, not the page.
  */
 export function useCooldown() {
-  const [remaining, setRemaining] = useState(0);
+  const endsAt = useContentStore((state) => state.cooldownEndsAt);
+  const total = useContentStore((state) => state.cooldownTotal);
+  const dailyCapReached = useContentStore((state) => state.dailyCapReached);
+  // Set once a second while counting, so the number on screen moves.
+  const [, setSecondsLeft] = useState(0);
   const [isReady, setIsReady] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const endTimeRef = useRef<number>(0);
 
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+  // Once per page load, when the button first shows: a cooldown the server
+  // started before a reload would otherwise show a ready button it refuses.
+  useEffect(() => {
+    const { limitsRequested, syncCooldown } = useContentStore.getState();
+    if (!limitsRequested) void syncCooldown();
   }, []);
 
-  const startCooldown = useCallback(() => {
-    clearTimer();
-    setIsReady(false);
-
-    const now = Date.now();
-    endTimeRef.current = now + COOLDOWN_DURATION * 1000;
-    setRemaining(COOLDOWN_DURATION);
-
-    intervalRef.current = setInterval(() => {
-      const left = Math.max(
-        0,
-        Math.ceil((endTimeRef.current - Date.now()) / 1000),
-      );
-      setRemaining(left);
-
-      if (left <= 0) {
-        clearTimer();
+  useEffect(() => {
+    if (endsAt === null || secondsUntil(endsAt) === 0) return;
+    let timer: ReturnType<typeof setTimeout>;
+    // Wake on each second boundary, which is when the number on screen changes.
+    const untilNextSecond = () => (endsAt - Date.now()) % 1000 || 1000;
+    const tick = () => {
+      const left = secondsUntil(endsAt);
+      setSecondsLeft(left);
+      if (left > 0) {
+        timer = setTimeout(tick, untilNextSecond());
+      } else {
         setIsReady(true);
         // Clear the "ready" flash after the animation plays
-        setTimeout(() => setIsReady(false), 1500);
+        timer = setTimeout(() => setIsReady(false), 1500);
       }
-    }, 100); // Update frequently for smooth sweep
-  }, [clearTimer]);
+    };
+    timer = setTimeout(tick, untilNextSecond());
+    return () => {
+      clearTimeout(timer);
+      setIsReady(false);
+    };
+  }, [endsAt]);
 
-  const isOnCooldown = remaining > 0;
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => clearTimer();
-  }, [clearTimer]);
-
+  const remaining = secondsUntil(endsAt);
   return {
     remaining,
-    total: COOLDOWN_DURATION,
-    isOnCooldown,
+    total,
+    isOnCooldown: remaining > 0,
     isReady,
-    startCooldown,
+    dailyCapReached,
   };
 }

@@ -1,3 +1,4 @@
+import { useCooldown } from "../../hooks/useCooldown";
 import { ActionButtonsProps } from "../../types";
 import "./ActionButtons.css";
 
@@ -12,12 +13,18 @@ export function ActionButtons({
   onReset,
   isRegenerating,
   hasModifiedContent,
-  cooldownRemaining,
-  cooldownTotal,
-  isReady,
 }: ActionButtonsProps) {
-  const isOnCooldown = cooldownRemaining > 0;
-  const isDisabled = isRegenerating || isOnCooldown;
+  // Read here rather than passed in, so the countdown re-renders the button,
+  // not the page (#196 M44). The daily cap holds until a reload, since the
+  // server's window is a rolling 24 h and nothing reports when it frees up.
+  const {
+    remaining: cooldownRemaining,
+    total: cooldownTotal,
+    isOnCooldown,
+    isReady,
+    dailyCapReached,
+  } = useCooldown();
+  const isDisabled = isRegenerating || isOnCooldown || dailyCapReached;
 
   // Calculate sweep progress (1 = full cover, 0 = fully revealed)
   const sweepProgress =
@@ -28,7 +35,9 @@ export function ActionButtons({
     ? "Weaving Epic Saga..."
     : isOnCooldown
       ? ""
-      : "SUMMON NEW LORE";
+      : dailyCapReached
+        ? "Daily limit reached"
+        : "SUMMON NEW LORE";
 
   return (
     <div className="action-buttons">

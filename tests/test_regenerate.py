@@ -219,6 +219,7 @@ def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
     assert r.get_json() == {
         "success": False,
         "error": "Ability on cooldown",
+        "limit": "cooldown",
         "cooldown_remaining": 12,
         "cooldown_total": 30,
     }
@@ -253,7 +254,8 @@ def test_daily_limit_reached_returns_429(client):
         ):
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 429
-    assert r.get_json()["error"] == "Daily limit reached"
+    body = r.get_json()
+    assert (body["error"], body["limit"], body["cooldown_total"]) == ("Daily limit reached", "daily", 30)
 
 
 def test_global_ceiling_returns_503(client, caplog):
@@ -268,6 +270,7 @@ def test_global_ceiling_returns_503(client, caplog):
     assert r.get_json() == {
         "success": False,
         "error": "Daily regeneration budget reached",
+        "limit": "budget",
         "cooldown_total": 30,
     }
     assert any(rec.getMessage().startswith("regenerate.global_cap_reached") for rec in caplog.records)
@@ -376,6 +379,9 @@ def test_total_failure_is_a_500(client):
     body = r.get_json()
     assert body["success"] is False
     assert body["failed_sections"] == ["about", "portfolio"]
+    # Metered before the calls failed, so the cooldown is running; the page
+    # counts it down from this rather than inventing its own (#196 M44).
+    assert body["cooldown_total"] == 30
 
 
 # --- prompt-injection boundary (#89) ---------------------------------------
