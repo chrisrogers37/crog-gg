@@ -615,6 +615,17 @@ describe("the cooldown follows the server", () => {
     expect(s.cooldownEndsAt).toBe(NOW + 30_000);
   });
 
+  it("doesn't take another 429 for the daily cap", async () => {
+    // An edge rate limit (a Vercel Firewall rule on /api/*, say) answers 429
+    // without this API's fields. Only `limit` names the daily cap; reading any
+    // bare 429 as it locked the button until a reload.
+    respondWith({ error: "Too Many Requests" }, 429);
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().dailyCapReached).toBe(false);
+  });
+
   it("is the one gate: no press goes out while the cooldown runs", async () => {
     const fetchMock = respondWith({ success: true, content: {} });
     useContentStore.setState({ cooldownEndsAt: NOW + 5_000, cooldownTotal: 30 });
