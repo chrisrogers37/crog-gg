@@ -30,6 +30,13 @@ _REQUEST = httpx.Request("POST", "https://api.openai.com/v1/chat/completions")
 _DROPPED = openai.APIConnectionError(request=_REQUEST)
 
 
+def _timeout(cause):
+    """An APITimeoutError as the SDK raises it: from the httpx timeout behind it."""
+    error = openai.APITimeoutError(request=_REQUEST)
+    error.__cause__ = cause
+    return error
+
+
 def _status_error(status):
     """The error the SDK raises for an HTTP ``status``, built by the SDK."""
     response = httpx.Response(status, request=_REQUEST)
@@ -66,8 +73,8 @@ def _openai(*calls, now=0.0, clock=None):
 
 @pytest.mark.parametrize(
     "failure",
-    [_DROPPED, openai.APITimeoutError(request=_REQUEST), _status_error(503)],
-    ids=["connection", "timeout", "503"],
+    [_DROPPED, _timeout(httpx.ConnectTimeout("connect", request=_REQUEST)), _status_error(503)],
+    ids=["connection", "connect-timeout", "503"],
 )
 def test_a_retryable_failure_gets_one_more_try(failure):
     with _openai((1.0, failure), (1.0, "the completion")) as create:
@@ -91,6 +98,8 @@ def test_a_retry_gets_only_what_is_left_and_is_logged(caplog):
         pytest.param([(41.0, _DROPPED)], 1, id="under-10s-left"),
         pytest.param([(1.0, _DROPPED), (1.0, _DROPPED)], 2, id="second-failure"),
         pytest.param([(1.0, _status_error(429))], 1, id="rate-limit"),
+        # The model was still writing: a retry pays for the same slow generation.
+        pytest.param([(20.0, _timeout(httpx.ReadTimeout("read", request=_REQUEST)))], 1, id="read-timeout"),
     ],
 )
 def test_a_failure_that_is_not_retried_is_raised(script, calls):

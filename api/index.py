@@ -20,6 +20,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import httpx
 import openai
 import requests
 from flask import Flask, jsonify, request
@@ -681,9 +682,12 @@ def _log_usage(section: str, usage, finish_reason, started: float) -> None:
     )
 
 
-# Worth one more try inside the deadline: the connection failed or timed out
-# (APITimeoutError is an APIConnectionError), or OpenAI answered with a 5xx.
-# Not a 429, which a retry only makes worse.
+# Worth one more try inside the deadline: the connection failed, connect
+# timeouts included (APITimeoutError is an APIConnectionError), or OpenAI
+# answered with a 5xx, so most likely nothing was generated. Not a read
+# timeout: the model was still writing, a second try pays for that slow
+# generation again and rarely fits in what's left. Not a 429 either, which a
+# retry only makes worse.
 _RETRYABLE = (openai.APIConnectionError, openai.InternalServerError)
 # A retry needs at least this long left to be worth starting.
 _RETRY_MIN_SECONDS = 10.0
@@ -704,7 +708,8 @@ def _create_within(section: str, deadline: float, **kwargs):
             return openai_client.chat.completions.create(timeout=timeout, **kwargs)
         except _RETRYABLE as exc:
             left = deadline - time.monotonic()
-            if attempt == 2 or left < _RETRY_MIN_SECONDS:
+            # The SDK raises APITimeoutError from the httpx timeout behind it.
+            if attempt == 2 or left < _RETRY_MIN_SECONDS or isinstance(exc.__cause__, httpx.ReadTimeout):
                 raise
             logger.warning("regenerate.retry section=%s error=%s left=%.1f", section, type(exc).__name__, left)
 
