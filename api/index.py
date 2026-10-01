@@ -16,6 +16,7 @@ import logging
 import os
 import random
 import re
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -843,15 +844,18 @@ def get_usage_info():
 
 # How long one health result is reused. A monitor polling every few minutes
 # still sees fresh data, and a flood of requests costs one Redis PING and one
-# GitHub call per instance every 30 s.
+# GitHub call per instance every 30 s: the lock makes concurrent misses wait for
+# a single refresh instead of each running their own.
 HEALTH_CACHE_SECONDS = 30
 _health_cache: dict = {}
+_health_lock = threading.Lock()
 
 
 def _redis_ping() -> bool:
     try:
         return redis_client.command("PING") == "PONG"
-    except Exception:
+    except Exception as e:
+        logger.warning("health check failed: check=redis_ping error=%s", type(e).__name__)
         return False
 
 
@@ -865,8 +869,35 @@ def _github_core_remaining():
         r = requests.get(f"{GITHUB_API}/rate_limit", headers=github_headers(), timeout=5)
         r.raise_for_status()
         return r.json()["resources"]["core"]["remaining"]
-    except (requests.RequestException, ValueError, KeyError, TypeError):
+    except (requests.RequestException, ValueError, KeyError, TypeError) as e:
+        status = getattr(getattr(e, "response", None), "status_code", None)
+        logger.warning("health check failed: check=github_core_remaining status=%s error=%s", status, type(e).__name__)
         return None
+
+
+def _run_health_checks():
+    """Run every check, the two network calls side by side, and stamp the result
+    with the time it finished, so a slow refresh still counts its full 30 s."""
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        ping = pool.submit(_redis_ping)
+        remaining = pool.submit(_github_core_remaining)
+        checks = {
+            "openai_key": openai_client is not None,
+            "redis_configured": redis_client.is_configured(),
+            "redis_ping": ping.result(),
+            "github_token": bool(GITHUB_TOKEN),
+            "github_core_remaining": remaining.result(),
+        }
+    ok = (
+        checks["openai_key"]
+        and checks["redis_ping"]
+        and (not checks["github_token"] or bool(checks["github_core_remaining"]))
+    )
+    return time.monotonic(), {"ok": ok, "checks": checks}, 200 if ok else 503
+
+
+def _is_fresh(entry) -> bool:
+    return entry is not None and time.monotonic() - entry[0] < HEALTH_CACHE_SECONDS
 
 
 @app.route("/api/health", methods=["GET"])
@@ -879,23 +910,12 @@ def health():
     OpenAI, which would spend money on every poll. /api/limits isn't a health
     check either: it answers null on purpose during an outage.
     """
-    now = time.monotonic()
     entry = _health_cache.get("entry")
-    if entry is None or now - entry[0] >= HEALTH_CACHE_SECONDS:
-        checks = {
-            "openai_key": openai_client is not None,
-            "redis_configured": redis_client.is_configured(),
-            "redis_ping": _redis_ping(),
-            "github_token": bool(GITHUB_TOKEN),
-            "github_core_remaining": _github_core_remaining(),
-        }
-        ok = (
-            checks["openai_key"]
-            and checks["redis_ping"]
-            and (not checks["github_token"] or bool(checks["github_core_remaining"]))
-        )
-        entry = (now, {"ok": ok, "checks": checks}, 200 if ok else 503)
-        _health_cache["entry"] = entry
+    if not _is_fresh(entry):
+        with _health_lock:
+            entry = _health_cache.get("entry")
+            if not _is_fresh(entry):
+                entry = _health_cache["entry"] = _run_health_checks()
     _at, body, status = entry
     response = jsonify(body)
     response.status_code = status

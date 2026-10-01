@@ -5,8 +5,11 @@ called, Redis answers through ``redis_client.command``, and GitHub's
 /rate_limit through ``requests.get``.
 """
 
+import logging
+import threading
+import time
 from contextlib import ExitStack
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
@@ -47,7 +50,9 @@ def _deps(stack, openai_key=True, ping="PONG", token="tok", github=None):
         command.return_value = ping
     stack.enter_context(patch("api.index.redis_client.is_configured", return_value=True))
     stack.enter_context(patch("api.index.GITHUB_TOKEN", token))
-    get = stack.enter_context(patch("api.index.requests.get", return_value=github or _rate_limit()))
+    # `is None`, not `or`: a real requests.Response with a 4xx/5xx status is falsy.
+    reply = github if github is not None else _rate_limit()
+    get = stack.enter_context(patch("api.index.requests.get", return_value=reply))
     return fake_openai, command, get
 
 
@@ -115,12 +120,101 @@ def test_result_is_cached_for_30_seconds(client):
     with ExitStack() as stack:
         _fake, command, get = _deps(stack)
         clock = stack.enter_context(patch("api.index.time"))
-        clock.monotonic.side_effect = [1000.0, 1029.0, 1031.0]
+        clock.monotonic.return_value = 1000.0
         first = client.get("/api/health")
         command.side_effect = RuntimeError("down")
+        clock.monotonic.return_value = 1029.0
         cached = client.get("/api/health")
+        clock.monotonic.return_value = 1031.0
         refreshed = client.get("/api/health")
     assert first.status_code == cached.status_code == 200
     assert refreshed.status_code == 503
     assert command.call_count == 2
     assert get.call_count == 2
+
+
+def test_the_checks_make_the_calls_they_claim(client):
+    with ExitStack() as stack:
+        _fake, command, get = _deps(stack)
+        client.get("/api/health")
+    command.assert_called_once_with("PING")
+    get.assert_called_once_with(f"{index.GITHUB_API}/rate_limit", headers=ANY, timeout=5)
+
+
+def test_concurrent_misses_share_one_refresh(client):
+    with ExitStack() as stack:
+        _fake, command, get = _deps(stack)
+
+        def slow_ping(*_args):
+            time.sleep(0.2)
+            return "PONG"
+
+        command.side_effect = slow_ping
+        statuses = []
+
+        def hit():
+            with index.app.app_context():
+                statuses.append(index.health().status_code)
+
+        threads = [threading.Thread(target=hit) for _ in range(8)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+    assert statuses == [200] * 8
+    assert command.call_count == 1
+    assert get.call_count == 1
+
+
+def test_unconfigured_redis_is_reported_by_the_real_client(client):
+    # No patch on redis_client's functions: the real client, with no URL or
+    # token, must report itself unconfigured and fail the PING.
+    with ExitStack() as stack:
+        stack.enter_context(patch("api.index.openai_client", MagicMock()))
+        stack.enter_context(patch("api.index.redis_client._URL", ""))
+        stack.enter_context(patch("api.index.redis_client._TOKEN", ""))
+        stack.enter_context(patch("api.index.GITHUB_TOKEN", None))
+        stack.enter_context(patch("api.index.requests.get", return_value=_rate_limit()))
+        r = client.get("/api/health")
+    assert r.status_code == 503
+    checks = r.get_json()["checks"]
+    assert checks["redis_configured"] is False and checks["redis_ping"] is False
+
+
+def _real_response(status, body: bytes):
+    r = requests.Response()
+    r.status_code = status
+    r._content = body
+    r.headers["Content-Type"] = "application/json"
+    return r
+
+
+@pytest.mark.parametrize(
+    "status, body",
+    [
+        (200, b"<html>maintenance</html>"),
+        (200, b""),
+        (200, b"[]"),
+        (200, b"null"),
+        (200, b'{"resources": {}}'),
+        (502, b"bad gateway"),
+    ],
+    ids=["html", "empty", "list", "null", "wrong-shape", "502"],
+)
+def test_an_unusable_github_reply_is_null_not_a_500(client, caplog, status, body):
+    caplog.set_level(logging.WARNING, logger="crog")
+    with ExitStack() as stack:
+        _deps(stack, github=_real_response(status, body))
+        r = client.get("/api/health")
+    assert r.status_code == 503
+    assert r.is_json
+    assert r.get_json()["checks"]["github_core_remaining"] is None
+    assert any("health check failed: check=github_core_remaining" in rec.getMessage() for rec in caplog.records)
+
+
+def test_a_usable_github_reply_reports_the_quota(client):
+    with ExitStack() as stack:
+        _deps(stack, github=_real_response(200, b'{"resources": {"core": {"remaining": 4321}}}'))
+        r = client.get("/api/health")
+    assert r.status_code == 200
+    assert r.get_json()["checks"]["github_core_remaining"] == 4321
