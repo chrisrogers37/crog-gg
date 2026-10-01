@@ -26,6 +26,7 @@ from unittest.mock import MagicMock, patch
 import openai
 import pytest
 
+from api._lib.request_utils import Visitor
 from api.index import (
     FAILURE_TOO_LONG,
     MAX_SECTION_CHARS,
@@ -239,7 +240,7 @@ def test_daily_slot_consumed_per_section(client):
     # The visitor's window first: when both are full, their own cap is the
     # refusal they get, not the site-wide 503.
     assert list(consume.call_args.args[0].items()) == [
-        (_regen_daily_key("127.0.0.1"), REGEN_DAILY_MAX),
+        (_regen_daily_key(Visitor.from_ip("127.0.0.1")), REGEN_DAILY_MAX),
         (REGEN_GLOBAL_KEY, REGEN_GLOBAL_DAILY_MAX),
     ]
     assert consume.call_args.kwargs["cost"] == 2
@@ -247,7 +248,9 @@ def test_daily_slot_consumed_per_section(client):
 
 def test_daily_limit_reached_returns_429(client):
     with patch("api.index.openai_client", _mock_openai()):
-        with patch("api.index.rate_limit.check_and_consume", return_value=_regen_daily_key("127.0.0.1")):
+        with patch(
+            "api.index.rate_limit.check_and_consume", return_value=_regen_daily_key(Visitor.from_ip("127.0.0.1"))
+        ):
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 429
     assert r.get_json()["error"] == "Daily limit reached"
