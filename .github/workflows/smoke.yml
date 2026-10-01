@@ -5,15 +5,19 @@ name: Post-deploy smoke
 # YAML, the CSP header, real 404s and the API's health check (#195).
 #
 # Deployment URLs (*.vercel.app) sit behind Vercel's login, so a run needs:
-#   - the SITE_URL Actions variable (the public production URL), used for
-#     Production deployments; and/or
 #   - the VERCEL_AUTOMATION_BYPASS_SECRET Actions secret (Vercel: Deployment
-#     Protection, Protection Bypass for Automation), used for previews, and for
-#     production when SITE_URL is unset.
-# Without either, the run skips with a notice.
+#     Protection, Protection Bypass for Automation). With it, every run checks
+#     the deployment that triggered it, previews included; or
+#   - the SITE_URL Actions variable (the public production URL), which lets
+#     Production deployments be checked without the secret.
+# A preview without the secret skips with a notice. Production in this repo
+# with neither fails, so the check can't go green while checking nothing.
 #
-# A deployment_status run uses the workflow file from the deployed commit, so
-# keep this job read-only, with the bypass secret as its only secret.
+# Security: a deployment_status run uses the workflow files of the deployed
+# commit. Authorizing a fork's preview in Vercel (Git Fork Protection) therefore
+# runs that fork's workflows here, with any permissions they declare and every
+# Actions secret. `contents: read` below limits only this file. Review a fork
+# PR's .github/ changes before authorizing its deployment.
 on: deployment_status
 
 permissions:
@@ -27,18 +31,23 @@ jobs:
     timeout-minutes: 5
     env:
       ENVIRONMENT: ${{ github.event.deployment.environment }}
+      REPOSITORY: ${{ github.repository }}
       DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
       SITE_URL: ${{ vars.SITE_URL }}
       BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - name: Smoke-test the deployment
         run: |
-          set -uo pipefail
-          if [ "$ENVIRONMENT" = "Production" ] && [ -n "$SITE_URL" ]; then
-            BASE="${SITE_URL%/}"
-            BYPASS=""
-          elif [ -n "$BYPASS" ]; then
+          # Actions runs this with `bash -e`. Turn it off so a failed lookup is
+          # reported as a FAIL line and every check still runs.
+          set +e -uo pipefail
+          if [ -n "$BYPASS" ]; then
             BASE="${DEPLOYMENT_URL%/}"
+          elif [ "$ENVIRONMENT" = "Production" ] && [ -n "$SITE_URL" ]; then
+            BASE="${SITE_URL%/}"
+          elif [ "$ENVIRONMENT" = "Production" ] && [ "$REPOSITORY" = "chrisrogers37/crog-gg" ]; then
+            echo "::error::Production can't be checked: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
+            exit 1
           else
             echo "::notice::Skipped $ENVIRONMENT: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
             exit 0
@@ -57,7 +66,11 @@ jobs:
 
           file=$(c "$BASE/content/projects/index.yaml" | grep -m1 -oE '[A-Za-z0-9._-]+\.yaml$')
           slug=$(c "$BASE/content/projects/$file" | awk '/^id:/ {print $2; exit}')
-          expect "a project deep link (/projects/$slug) returns 200" "$(st "/projects/$slug")" 200
+          if [ -n "$slug" ]; then
+            expect "a project deep link (/projects/$slug) returns 200" "$(st "/projects/$slug")" 200
+          else
+            flunk "no project id found via /content/projects/index.yaml"
+          fi
 
           expect "/content/bio.yaml returns 200" "$(st /content/bio.yaml)" 200
           type=$(c -o /dev/null -w '%{content_type}' "$BASE/content/bio.yaml")
