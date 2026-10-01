@@ -105,6 +105,7 @@ git diff                # Review changes before commit
 | --------------------------------- | ------ | --------------------------------------------- |
 | `/api/regenerate`                 | POST   | AI content regeneration (30s cooldown per IP) |
 | `/api/limits`                     | GET    | Current cooldown status                       |
+| `/api/health`                     | GET    | Health checks for uptime monitors (200 / 503) |
 | `/api/v1/github/repo/<name>`      | GET    | GitHub repo details                           |
 | `/api/v1/github/readme/<name>`    | GET    | GitHub README content                         |
 | `/api/v1/github/languages/<name>` | GET    | Language stats for repo                       |
