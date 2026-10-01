@@ -1,3 +1,5 @@
+> Historical snapshot (2026-07-02). Most findings have since been fixed; see GitHub issues, and #172 for the triage.
+
 # System Review — Analysis Artifacts (2026-07-02)
 
 This directory holds the durable, detailed analysis behind the triage tracker at

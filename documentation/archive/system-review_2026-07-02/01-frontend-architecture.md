@@ -1,3 +1,5 @@
+> Historical snapshot (2026-07-02). Most findings have since been fixed; see GitHub issues, and #172 for the triage.
+
 # Frontend Architecture Review — 2026-07-02
 
 The codebase is mid-migration: Zustand + organized folders (`sections/`,

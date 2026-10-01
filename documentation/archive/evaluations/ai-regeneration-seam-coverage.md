@@ -1,3 +1,5 @@
+> Historical snapshot. Most findings have since been fixed; see GitHub issues (#105).
+
 # AI regeneration: what the seam tests prove, and what they do not
 
 Issue #105. Written alongside the test additions in

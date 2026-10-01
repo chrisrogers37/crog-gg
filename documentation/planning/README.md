@@ -4,11 +4,12 @@ This directory holds active development plans. Completed plans are archived to `
 
 ## Active
 
-| Artifact                                                             | Description                                                                                         | Status         |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------- |
-| [`tech-debt-triage_2026-07-02.md`](./tech-debt-triage_2026-07-02.md) | Full-system review: triaged bugs, tech debt, testing/CI gaps, and enhancements (summary tracker)    | 🔧 In progress |
-| [`reviews/`](./reviews/)                                             | Durable detailed analysis behind the tracker (architecture, data/services/hooks, testing/CI/config) | 📄 Reference   |
-| [`issues/`](./issues/)                                               | Ready-to-file GitHub issue backlog (P1 individual; P2/P3/nice-to-have clustered) + `file-issues.sh` | 📋 To be filed |
+| Artifact | Description |
+| --- | --- |
+| [`tech-debt-triage_2026-07-02.md`](./tech-debt-triage_2026-07-02.md) | The 2026-07-02 system review's triage. #172 tracks which items are still live. |
+| [`2026-08-03-model-upgrade-and-spend-guard.md`](./2026-08-03-model-upgrade-and-spend-guard.md) | Complete (#160, #162). Archived once #192 moves its fail-closed contract and budget-cap advice into the README. |
+
+Current work is tracked in GitHub issues; the 2026-09-29 system review filed #186–#199.
 
 ---
 
@@ -38,30 +39,8 @@ Archived as `documentation/archive/01-current-state-analysis.md` through `docume
 | Projects redesign (YAML normalization, grid tiles, skeletons) | `archive/projects-redesign_2026-02-17/`   | ✅ Complete |
 | Security audit (Flask hardening, validation, rate limiting)   | `archive/security-audit_2026-02-22/`      | ✅ Complete |
 | Vercel migration (DO → Vercel + Upstash)                      | `archive/vercel-migration_2026-05-17/`    | ✅ Complete |
+| System review (architecture, data and hooks, testing and CI)  | `archive/system-review_2026-07-02/`       | ✅ Archived; open items in #172 |
 
 ---
 
-## Current Architecture
-
-```
-frontend/src/
-├── components/
-│   ├── ActionButtons/      # Regenerate/reset controls
-│   ├── common/             # Shared UI primitives
-│   ├── features/           # GitHubReadme, RepoStats, ContributionGraph, ProjectDemo
-│   ├── layout/             # Header, Footer, Layout
-│   ├── sections/           # Experience, Education, Projects, Music
-│   └── SEO/                # Meta tags, structured data
-├── hooks/                  # useContentLoader, useRegeneration, useScrollToSection
-├── pages/                  # Home, NotFound, Projects
-├── services/               # githubService
-├── store/                  # contentStore, uiStore (Zustand)
-├── types/                  # TypeScript interfaces
-└── router.tsx              # React Router configuration
-```
-
----
-
----
-
-_Last updated: 2026-07-02_
+_Last updated: 2026-10-01_

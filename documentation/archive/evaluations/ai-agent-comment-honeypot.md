@@ -1,3 +1,5 @@
+> Historical: an exploratory evaluation from 2026-02-01. Nothing was built, and nothing on the site depends on it.
+
 # Evaluation: AI Agent Comment Honeypot
 
 **Date:** 2026-02-01

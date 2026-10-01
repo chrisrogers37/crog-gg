@@ -1,30 +1,9 @@
-# Mobile Optimization Plan - Choose Your Own Chris
+# Mobile Optimization Plan - crog.gg
 
 ## Status
 
-> **Last reviewed**: February 16, 2026
-> **Overall**: ~23% implemented, ~42% partial, ~35% not started
-
-| Item  | Description                        | Status                          |
-| ----- | ---------------------------------- | ------------------------------- |
-| 1     | Header vertical footprint          | 📋 Not started                  |
-| 2     | Section nav touch targets          | 🔧 Partial                      |
-| 3     | Box shadow card removal            | 🔧 Partial                      |
-| 4     | Content section padding            | 🔧 Partial                      |
-| 5     | Timeline mobile optimization       | 🔧 Partial                      |
-| 6     | Projects section cards             | 🔧 Partial                      |
-| 7     | Music/Spotify embed                | 📋 Not started                  |
-| 8     | Bio/About section                  | 📋 Not started                  |
-| 9     | Skills word cloud                  | 🔧 Partial                      |
-| 10    | Touch target sizes (44px)          | 🔧 Partial                      |
-| 11    | Active/pressed states              | 📋 Not started                  |
-| 12-13 | Projects page optimization         | 🔧 Partial                      |
-| 14-16 | Layout, footer, contact CTA        | 🔧 Partial                      |
-| 17    | iOS input zoom prevention          | 🔧 Partial                      |
-| 18    | Safe area insets                   | 📋 Not started                  |
-| 19-22 | Feature components, action buttons | 📋 Not started                  |
-| 23    | CSS variable bug (Timeline)        | ✅ Not a bug (vars are correct) |
-| 24-26 | Swipe, pull-to-refresh, tab bar    | 📋 Not started                  |
+Tracked in #96, whose checklist is authoritative. The status table that was here was last reviewed on 2026-02-16 and is gone.
+Items 9 and 19 are obsolete (see the notes on those sections). Items 1, 2, 7 and 8 wait for #173's homepage and /about restructure.
 
 ---
 
@@ -524,6 +503,8 @@ In `Music.tsx`, change the iframe height to use a CSS variable or smaller defaul
 ```
 
 ---
+
+> **Obsolete:** the word cloud was replaced by the Timeline's skill bubbles (`SkillBubbles.tsx`).
 
 ### 9. Optimize the Skills Word Cloud
 
@@ -1095,6 +1076,8 @@ Also add the viewport meta tag if not present. Check `frontend/index.html`:
 ```
 
 ---
+
+> **Obsolete:** `ContributionGraph` isn't mounted on any page. Whether it comes back is decided in #198.
 
 ### 19. Optimize the Contribution Graph for Mobile
 
