@@ -18,7 +18,10 @@ if not GITHUB_TOKEN:
     logging.getLogger("crog").warning("github token missing: proxy calls are unauthenticated (60/hour)")
 IP_HASH_SALT = os.environ.get("IP_HASH_SALT", "")
 if not IP_HASH_SALT:
-    logging.getLogger("crog").warning("ip hash salt missing: regenerate calls go without a safety_identifier")
+    logging.getLogger("crog").warning(
+        "ip hash salt missing: rate-limit keys and logs name visitors by address,"
+        " and regenerate calls go without a safety_identifier"
+    )
 GITHUB_USERNAME = "chrisrogers37"
 GITHUB_API = "https://api.github.com"
 
@@ -72,6 +75,17 @@ def client_tag(ip: str) -> str | None:
     if not IP_HASH_SALT:
         return None
     return hmac.new(IP_HASH_SALT.encode(), rate_limit_subject(ip).encode(), hashlib.sha256).hexdigest()[:16]
+
+
+def visitor_id(ip: str) -> str:
+    """How rate-limit keys and log lines name a visitor: their ``client_tag``,
+    so neither Redis nor the logs hold an address (#199 M75).
+
+    Without a salt it falls back to ``rate_limit_subject(ip)``, the address:
+    limits have to keep working when the setting is missing, and the warning
+    above says it is.
+    """
+    return client_tag(ip) or rate_limit_subject(ip)
 
 
 def github_headers() -> dict:

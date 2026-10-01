@@ -34,8 +34,8 @@ from api._lib.request_utils import (
     client_tag,
     get_client_ip,
     github_headers,
-    rate_limit_subject,
     validate_repo_name,
+    visitor_id,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(name)s - %(message)s")
@@ -132,15 +132,15 @@ CACHE_ALL_LANGUAGES_TTL = 3600
 
 
 def _cooldown_key(ip: str) -> str:
-    return f"cooldown:regenerate:{rate_limit_subject(ip)}"
+    return f"cooldown:regenerate:{visitor_id(ip)}"
 
 
 def _regen_daily_key(ip: str) -> str:
-    return f"ratelimit:regen_daily:{rate_limit_subject(ip)}"
+    return f"ratelimit:regen_daily:{visitor_id(ip)}"
 
 
 def _gh_rate_key(ip: str, endpoint: str) -> str:
-    return f"ratelimit:gh:{endpoint}:{rate_limit_subject(ip)}"
+    return f"ratelimit:gh:{endpoint}:{visitor_id(ip)}"
 
 
 def _gh_rate_limit_or_429(endpoint: str):
@@ -902,7 +902,7 @@ def regenerate_content():
         # Recorded rather than rejected. Defaulting keeps a stale bundle working,
         # which is why it defaults -- but a caller silently losing the key is
         # still a caller worth being able to count later.
-        logger.warning("regenerate.use_fantasy_absent ip=%s", client_ip)
+        logger.warning("regenerate.use_fantasy_absent client=%s", visitor_id(client_ip))
     use_fantasy = data.get("use_fantasy", True)
 
     # One user action is one request. `sections` maps each section name to the

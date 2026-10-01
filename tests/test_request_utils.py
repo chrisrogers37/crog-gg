@@ -11,7 +11,7 @@ from unittest.mock import patch
 import pytest
 
 from api._lib import request_utils
-from api._lib.request_utils import client_tag, rate_limit_subject
+from api._lib.request_utils import client_tag, rate_limit_subject, visitor_id
 from api.index import _cooldown_key, _gh_rate_key, _regen_daily_key
 
 
@@ -59,3 +59,14 @@ def test_client_tag_changes_with_the_salt():
 def test_without_a_salt_there_is_no_tag():
     with patch.object(request_utils, "IP_HASH_SALT", ""):
         assert client_tag("203.0.113.7") is None
+
+
+def test_without_a_salt_a_visitor_is_named_by_address():
+    assert visitor_id("2001:db8:1:2::1") == "2001:db8:1:2::/64"
+
+
+def test_salted_keys_hold_no_address(salted):
+    ip = "203.0.113.7"
+    keys = [_cooldown_key(ip), _regen_daily_key(ip), _gh_rate_key(ip, "repo")]
+    assert all(key.endswith(client_tag(ip)) for key in keys)
+    assert not any(ip in key for key in keys)

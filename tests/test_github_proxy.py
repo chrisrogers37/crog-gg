@@ -349,7 +349,9 @@ def test_sub_resource_reply_that_is_not_json_is_502(client, route, suffix, reply
 
 
 @pytest.mark.parametrize("route, endpoint", [("repo", "repo"), ("readme", "readme"), ("languages", "languages_repo")])
-def test_a_full_rate_limit_window_is_a_429_before_github_is_called(client, route, endpoint):
+def test_a_full_rate_limit_window_is_a_429_before_github_is_called(client, salted, route, endpoint):
+    # Salted, so the key names the visitor by tag: one built from the raw
+    # address would not match (#199 M75).
     from api.index import GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW, _gh_rate_key
 
     key = _gh_rate_key("127.0.0.1", endpoint)
