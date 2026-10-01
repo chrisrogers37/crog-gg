@@ -86,7 +86,7 @@ def test_describe_failure_extracts_the_machine_tokens():
     assert "does not support 0.7" in private["message"]
 
 
-def test_describe_failure_also_reads_an_unwrapped_envelope():
+def test_describe_failure_also_reads_a_wrapped_envelope():
     exc = openai.OpenAIError("boom")
     exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
     public, private = _describe_failure(exc)
