@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useContentStore, useDailyCapReached } from "../../store";
 import { ActionButtonsProps } from "../../types";
 import "./ActionButtons.css";
 
@@ -17,7 +19,18 @@ export function ActionButtons({
   isReady,
 }: ActionButtonsProps) {
   const isOnCooldown = cooldownRemaining > 0;
-  const isDisabled = isRegenerating || isOnCooldown;
+  // Only the button needs these, so they're read here rather than passed in
+  // (#196 M44). The daily cap holds until a reload, since the server's window
+  // is a rolling 24 h and nothing reports when it frees up.
+  const dailyCapReached = useDailyCapReached();
+  const isDisabled = isRegenerating || isOnCooldown || dailyCapReached;
+
+  // Once per page load, when the button first shows: a cooldown the server
+  // started before a reload would otherwise show a ready button it refuses.
+  useEffect(() => {
+    const { limitsRequested, syncCooldown } = useContentStore.getState();
+    if (!limitsRequested) void syncCooldown();
+  }, []);
 
   // Calculate sweep progress (1 = full cover, 0 = fully revealed)
   const sweepProgress =
@@ -28,7 +41,9 @@ export function ActionButtons({
     ? "Weaving Epic Saga..."
     : isOnCooldown
       ? ""
-      : "SUMMON NEW LORE";
+      : dailyCapReached
+        ? "Daily limit reached"
+        : "SUMMON NEW LORE";
 
   return (
     <div className="action-buttons">

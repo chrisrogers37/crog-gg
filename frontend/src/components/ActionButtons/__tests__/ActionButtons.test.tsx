@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { useContentStore } from "../../../store";
 import { ActionButtons } from "../ActionButtons";
 
 /**
@@ -65,5 +66,42 @@ describe("ActionButtons accessible names", () => {
   it("names the cooldown by the number it shows", () => {
     render(<ActionButtons {...props} cooldownRemaining={27} />);
     expect(button()).toHaveAccessibleName("27 seconds of cooldown left");
+  });
+});
+
+describe("ActionButtons after the daily cap", () => {
+  afterEach(() => {
+    useContentStore.setState({ dailyCapReached: false });
+  });
+
+  it("stays disabled and says why once the server has refused for the day (#196 M44)", () => {
+    useContentStore.setState({ dailyCapReached: true });
+    render(<ActionButtons {...props} />);
+    expect(button()).toBeDisabled();
+    expect(button()).toHaveTextContent(/daily limit reached/i);
+  });
+});
+
+describe("ActionButtons and the server's cooldown", () => {
+  const realFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    useContentStore.setState({ limitsRequested: false, cooldownEndsAt: null });
+  });
+
+  it("reads /api/limits once per page load, when the button first shows", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: async () => ({ cooldown_remaining: 0, cooldown_total: 30 }),
+    });
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    useContentStore.setState({ limitsRequested: false });
+
+    const first = render(<ActionButtons {...props} />);
+    first.unmount();
+    render(<ActionButtons {...props} />);
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/api\/limits$/);
   });
 });

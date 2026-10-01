@@ -822,6 +822,16 @@ def _regenerate_section(
     except json.JSONDecodeError:
         return _fail(section, FAILURE_NOT_JSON, log_only=new_content or "")
 
+    # A field that came in as a string has to come back as one: an object in the
+    # bio's text reached the page and turned it into the 404 page (#196 M16).
+    # Dropped before validation, and counted.
+    if isinstance(parsed, dict) and (
+        dropped := sorted(k for k, v in parsed.items() if isinstance(content.get(k), str) and not isinstance(v, str))
+    ):
+        for key in dropped:
+            del parsed[key]
+        logger.warning("regenerate.field_type_dropped section=%s fields=%s", section, ",".join(dropped))
+
     # Validate what the MODEL returned, before anything is grafted onto it.
     # Order is load-bearing: the unauthored-key restore below adds keys from the
     # original, so an empty or unrelated object checked afterwards would inherit
@@ -1035,6 +1045,8 @@ def regenerate_content():
                     "error": "Content generation failed",
                     "failed_sections": failed,
                     "failures": failures,
+                    # Metered already, so the cooldown is running (#196 M44).
+                    "cooldown_total": COOLDOWN_SECONDS,
                 }
             ),
             500,

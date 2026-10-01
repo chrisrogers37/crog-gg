@@ -376,6 +376,9 @@ def test_total_failure_is_a_500(client):
     body = r.get_json()
     assert body["success"] is False
     assert body["failed_sections"] == ["about", "portfolio"]
+    # Metered before the calls failed, so the cooldown is running; the page
+    # counts it down from this rather than inventing its own (#196 M44).
+    assert body["cooldown_total"] == 30
 
 
 # --- prompt-injection boundary (#89) ---------------------------------------

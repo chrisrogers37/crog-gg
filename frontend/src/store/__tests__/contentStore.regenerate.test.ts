@@ -18,6 +18,14 @@ import { useContentStore } from "../contentStore";
 const BIO = { display_name: "Christopher Rogers", about_text: "original" };
 const realFetch = globalThis.fetch;
 
+// The server's real cooldown refusal (api/index.py), sent with a 429.
+const ON_COOLDOWN = {
+  success: false,
+  error: "Ability on cooldown",
+  cooldown_remaining: 12,
+  cooldown_total: 30,
+};
+
 const seed = () =>
   useContentStore.setState({
     bio: BIO,
@@ -28,8 +36,10 @@ const seed = () =>
     regenerationError: null,
   });
 
-const respondWith = (body: unknown) => {
-  const mock = vi.fn().mockResolvedValue({ json: async () => body });
+const respondWith = (body: unknown, status = 200) => {
+  const mock = vi
+    .fn()
+    .mockResolvedValue({ status, ok: status < 400, json: async () => body });
   globalThis.fetch = mock as unknown as typeof fetch;
   return mock;
 };
@@ -287,7 +297,7 @@ describe("regenerateContent", () => {
       await useContentStore.getState().regenerateContent(true);
 
       const state = useContentStore.getState();
-      expect(state.bio).toEqual(long);
+      expect(state.bio).toEqual({ ...BIO, ...long });
       expect(state.regenerationError).toBeNull();
     });
 
@@ -366,22 +376,14 @@ describe("regenerateContent", () => {
    * The paid endpoint refuses far more often than it errors: a per-IP cooldown
    * is the common response, not the exceptional one.
    *
-   * Deliberately thin. That a refusal keeps the content and stays out of the
-   * fatal `error` is already pinned above, and a cooldown reaches the store
-   * through the same `!result.success` branch as any other refusal -- there is
-   * no status-code or Retry-After handling to test, because there is none in
-   * the store. Restating those here under a rate-limit name would inflate what
-   * a reader thinks is covered. What is left is the part genuinely untested:
-   * whether the visitor is told to wait or told to retry.
+   * That a refusal keeps the content and stays out of the fatal `error` is
+   * already pinned above. The countdown a refusal starts is pinned in its own
+   * block below. What is left here is whether the visitor is told to wait or
+   * told to retry.
    */
   describe("cooldown and rate limits", () => {
-    const RATE_LIMITED = {
-      success: false,
-      error: "Rate limit exceeded. Try again in 30 seconds.",
-    };
-
     it("re-enables the button after a refusal", async () => {
-      respondWith(RATE_LIMITED);
+      respondWith(ON_COOLDOWN, 429);
 
       await useContentStore.getState().regenerateContent(true);
 
@@ -402,7 +404,7 @@ describe("regenerateContent", () => {
     it(
       "tells the visitor it was a cooldown, not a generic failure",
       async () => {
-        respondWith(RATE_LIMITED);
+        respondWith(ON_COOLDOWN, 429);
 
         await useContentStore.getState().regenerateContent(true);
 
@@ -444,14 +446,9 @@ describe("hasModifiedContent reflects what was applied", () => {
   });
 
   it("becomes true when a section is actually applied", async () => {
-    // The store assigns a validated section wholesale rather than merging, so
-    // a realistic success carries the whole section -- the server restores the
-    // fields the model is not allowed to author.
     respondWith({
       success: true,
-      content: {
-        about: { display_name: BIO.display_name, about_text: "rewritten" },
-      },
+      content: { about: { about_text: "rewritten" } },
     });
 
     await useContentStore.getState().regenerateContent(false);
@@ -471,5 +468,250 @@ describe("hasModifiedContent reflects what was applied", () => {
     await useContentStore.getState().regenerateContent(false);
 
     expect(useContentStore.getState().hasModifiedContent).toBe(true);
+  });
+});
+
+
+/**
+ * A rewrite is often partial, and the store used to take it whole: a one-field
+ * `about` erased every field it left out (#196 M16). It's merged over the bio
+ * now, taking only non-empty strings for the fields the page shows.
+ */
+describe("a rewritten bio is merged, not swapped in", () => {
+  const FULL = {
+    display_name: "Christopher Rogers",
+    tagline: "i build things that build things",
+    location: "Brooklyn",
+    about_text: "original",
+    email: "hello@example.com",
+  };
+
+  beforeEach(() => {
+    seed();
+    useContentStore.setState({ bio: FULL });
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  it("keeps the fields a one-field rewrite leaves out", async () => {
+    respondWith({ success: true, content: { about: { about_text: "lore" } } });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().bio).toEqual({ ...FULL, about_text: "lore" });
+  });
+
+  it("ignores a non-string field and the fields the model doesn't write", async () => {
+    respondWith({
+      success: true,
+      content: {
+        about: {
+          about_text: { nested: "an object here turned / into the 404 page" },
+          tagline: "a new tagline",
+          email: "attacker@example.com",
+        },
+      },
+    });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().bio).toEqual({
+      ...FULL,
+      tagline: "a new tagline",
+    });
+  });
+
+  it("refuses a rewrite with nothing usable in it", async () => {
+    respondWith({ success: true, content: { about: { about_text: "   " } } });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    const s = useContentStore.getState();
+    expect(s.bio).toEqual(FULL);
+    expect(s.regenerationError).not.toBeNull();
+  });
+});
+
+/**
+ * The cooldown follows the server (#196 M44). The button used to start its own
+ * 30 s countdown on every press, whatever the server said, and forgot it when
+ * the page unmounted. The store now sets it only from a server response.
+ */
+describe("the cooldown follows the server", () => {
+  const NOW = 1_700_000_000_000;
+
+  beforeEach(() => {
+    seed();
+    useContentStore.setState({
+      cooldownEndsAt: null,
+      cooldownTotal: 0,
+      dailyCapReached: false,
+      limitsRequested: false,
+    });
+    vi.spyOn(Date, "now").mockReturnValue(NOW);
+  });
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  /** Requests answered by URL: a regenerate reply and a limits reply. */
+  const respondByUrl = (
+    regenerate: (init?: RequestInit) => Promise<unknown>,
+    limits: unknown = { cooldown_remaining: 0, cooldown_total: 30 },
+  ) => {
+    const mock = vi.fn((url: string, init?: RequestInit) =>
+      url.endsWith("/api/limits")
+        ? Promise.resolve({ status: 200, ok: true, json: async () => limits })
+        : regenerate(init),
+    );
+    globalThis.fetch = mock as unknown as typeof fetch;
+    return mock;
+  };
+
+  it("starts the cooldown a successful press reports", async () => {
+    respondWith({
+      success: true,
+      content: { about: { about_text: "lore" } },
+      cooldown_total: 30,
+    });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    const s = useContentStore.getState();
+    expect(s.cooldownEndsAt).toBe(NOW + 30_000);
+    expect(s.cooldownTotal).toBe(30);
+  });
+
+  it("takes the time left from a cooldown refusal", async () => {
+    respondWith(ON_COOLDOWN, 429);
+
+    await useContentStore.getState().regenerateContent(true);
+
+    const s = useContentStore.getState();
+    expect(s.cooldownEndsAt).toBe(NOW + 12_000);
+    expect(s.cooldownTotal).toBe(30);
+    expect(s.dailyCapReached).toBe(false);
+  });
+
+  it("keeps the button off after the daily cap", async () => {
+    respondWith(
+      { success: false, error: "Daily limit reached", message: "Max 30" },
+      429,
+    );
+
+    await useContentStore.getState().regenerateContent(true);
+
+    const s = useContentStore.getState();
+    expect(s.dailyCapReached).toBe(true);
+    expect(s.cooldownEndsAt).toBeNull();
+  });
+
+  it("starts the cooldown a failure after metering reports", async () => {
+    respondWith(
+      {
+        success: false,
+        error: "Content generation failed",
+        failed_sections: ["about", "portfolio"],
+        cooldown_total: 30,
+      },
+      500,
+    );
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().cooldownEndsAt).toBe(NOW + 30_000);
+  });
+
+  it.each([
+    [400, { success: false, error: "Invalid section: nope" }],
+    [503, { success: false, error: "Regeneration temporarily unavailable" }],
+  ])("starts nothing on a %i", async (status, body) => {
+    respondWith(body, status);
+
+    await useContentStore.getState().regenerateContent(true);
+
+    const s = useContentStore.getState();
+    expect(s.cooldownEndsAt).toBeNull();
+    expect(s.dailyCapReached).toBe(false);
+  });
+
+  it("asks /api/limits when a press gets no answer", async () => {
+    const fetchMock = respondByUrl(() => Promise.reject(new TypeError("offline")), {
+      cooldown_remaining: 20,
+      cooldown_total: 30,
+    });
+
+    await useContentStore.getState().regenerateContent(true);
+    await vi.waitFor(() =>
+      expect(useContentStore.getState().cooldownEndsAt).toBe(NOW + 20_000),
+    );
+
+    const limitsCalls = fetchMock.mock.calls.filter(([url]) => url.endsWith("/api/limits"));
+    expect(limitsCalls).toHaveLength(1);
+  });
+
+  it("gives up after 65 seconds, says so, and asks /api/limits (#195 M37)", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const fetchMock = respondByUrl(
+      (init) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new DOMException("The operation was aborted.", "AbortError")),
+          );
+        }),
+    );
+
+    const press = useContentStore.getState().regenerateContent(true);
+    await vi.advanceTimersByTimeAsync(64_999);
+    expect(useContentStore.getState().isRegenerating).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
+    await press;
+
+    const s = useContentStore.getState();
+    expect(s.regenerationError).toBe("This is taking too long. Try again in a minute.");
+    expect(s.isRegenerating).toBe(false);
+    expect(fetchMock.mock.calls.some(([url]) => url.endsWith("/api/limits"))).toBe(true);
+  });
+
+  it("counts a press's cooldown from the press, not from the reply", async () => {
+    // The server starts the cooldown when the press arrives, so 8 s spent on
+    // the model calls are 8 s of it already gone.
+    vi.spyOn(Date, "now").mockReturnValueOnce(NOW).mockReturnValue(NOW + 8_000);
+    respondWith({
+      success: true,
+      content: { about: { about_text: "lore" } },
+      cooldown_total: 30,
+    });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().cooldownEndsAt).toBe(NOW + 30_000);
+  });
+
+  it("reads /api/limits into the cooldown", async () => {
+    respondWith({ cooldown_remaining: 7, cooldown_total: 30 });
+
+    await useContentStore.getState().syncCooldown();
+
+    const s = useContentStore.getState();
+    expect(s.cooldownEndsAt).toBe(NOW + 7_000);
+    expect(s.limitsRequested).toBe(true);
+  });
+
+  it("lets a press answered meanwhile win over a late /api/limits reply", async () => {
+    let answer: (value: unknown) => void = () => {};
+    globalThis.fetch = vi.fn(
+      () => new Promise((resolve) => (answer = resolve)),
+    ) as unknown as typeof fetch;
+
+    const sync = useContentStore.getState().syncCooldown();
+    useContentStore.setState({ cooldownEndsAt: NOW + 25_000 });
+    answer({ json: async () => ({ cooldown_remaining: 0, cooldown_total: 30 }) });
+    await sync;
+
+    expect(useContentStore.getState().cooldownEndsAt).toBe(NOW + 25_000);
   });
 });

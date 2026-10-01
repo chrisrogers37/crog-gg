@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useContentStore, useUIStore } from "../store";
+import { useContentStore } from "../store";
 import { useCooldown } from "./useCooldown";
 
 /**
@@ -15,18 +15,15 @@ export function useRegeneration() {
   const hasModifiedContent = useContentStore(
     (state) => state.hasModifiedContent,
   );
-  const activeSection = useUIStore((state) => state.activeSection);
 
-  const { remaining, total, isOnCooldown, isReady, startCooldown } =
-    useCooldown();
+  const { remaining, total, isOnCooldown, isReady } = useCooldown();
 
   const regenerate = useCallback(
     (useFantasy: boolean = true) => {
       if (isOnCooldown) return;
       regenerateContent(useFantasy);
-      startCooldown();
     },
-    [regenerateContent, isOnCooldown, startCooldown],
+    [regenerateContent, isOnCooldown],
   );
 
   const reset = useCallback(() => {
@@ -38,10 +35,8 @@ export function useRegeneration() {
     reset,
     isRegenerating,
     hasModifiedContent,
-    activeSection,
     cooldownRemaining: remaining,
     cooldownTotal: total,
     isReady,
-    isOnCooldown,
   };
 }

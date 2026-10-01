@@ -1,62 +1,46 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-
-const COOLDOWN_DURATION = 30; // seconds
+import { useEffect, useState } from "react";
+import { useContentStore } from "../store";
 
 /**
- * Hook for WoW-style ability cooldown timer.
- *
- * Returns remaining seconds, total duration, whether the ability
- * just became ready (for the flash effect), and a trigger function.
+ * The regenerate button's WoW-style cooldown: the seconds left on the server's
+ * cooldown (held in the store, #196 M44), and a "ready" flash when a running
+ * one runs out.
  */
 export function useCooldown() {
-  const [remaining, setRemaining] = useState(0);
+  const endsAt = useContentStore((state) => state.cooldownEndsAt);
+  const total = useContentStore((state) => state.cooldownTotal);
+  // Whole seconds, so a tick that changes nothing on screen renders nothing.
+  const [, setSecondsLeft] = useState(0);
   const [isReady, setIsReady] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const endTimeRef = useRef<number>(0);
 
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
-
-  const startCooldown = useCallback(() => {
-    clearTimer();
+  useEffect(() => {
+    if (endsAt === null || endsAt <= Date.now()) return;
     setIsReady(false);
-
-    const now = Date.now();
-    endTimeRef.current = now + COOLDOWN_DURATION * 1000;
-    setRemaining(COOLDOWN_DURATION);
-
-    intervalRef.current = setInterval(() => {
-      const left = Math.max(
-        0,
-        Math.ceil((endTimeRef.current - Date.now()) / 1000),
-      );
-      setRemaining(left);
-
+    let flash: ReturnType<typeof setTimeout> | undefined;
+    const interval = setInterval(() => {
+      const left = Math.ceil((endsAt - Date.now()) / 1000);
+      setSecondsLeft(left);
       if (left <= 0) {
-        clearTimer();
+        clearInterval(interval);
         setIsReady(true);
         // Clear the "ready" flash after the animation plays
-        setTimeout(() => setIsReady(false), 1500);
+        flash = setTimeout(() => setIsReady(false), 1500);
       }
     }, 100); // Update frequently for smooth sweep
-  }, [clearTimer]);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(flash);
+      setIsReady(false);
+    };
+  }, [endsAt]);
 
-  const isOnCooldown = remaining > 0;
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => clearTimer();
-  }, [clearTimer]);
+  const remaining =
+    endsAt === null ? 0 : Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
 
   return {
     remaining,
-    total: COOLDOWN_DURATION,
-    isOnCooldown,
+    total,
+    isOnCooldown: remaining > 0,
     isReady,
-    startCooldown,
   };
 }

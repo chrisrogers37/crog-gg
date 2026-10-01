@@ -33,6 +33,16 @@ interface ContentState {
 
   // Modification tracking
   hasModifiedContent: boolean;
+
+  // The regenerate button's cooldown, as the server reported it (#196 M44).
+  // Set only from server responses, so the page never starts a cooldown the
+  // server didn't, and held here so it survives leaving the page.
+  cooldownEndsAt: number | null;
+  cooldownTotal: number;
+  // The server refused a press for the daily cap, so no more presses this visit.
+  dailyCapReached: boolean;
+  // Whether this page load has asked /api/limits for the cooldown yet.
+  limitsRequested: boolean;
 }
 
 interface ContentActions {
@@ -41,6 +51,9 @@ interface ContentActions {
 
   // Content regeneration
   regenerateContent: (useFantasy: boolean) => Promise<void>;
+
+  // Read the cooldown from /api/limits, when no press has reported it
+  syncCooldown: () => Promise<void>;
 
   // Restore the content captured at load, undoing a regeneration
   resetContent: () => void;
@@ -72,6 +85,10 @@ const initialState: ContentState = {
   error: null,
   regenerationError: null,
   hasModifiedContent: false,
+  cooldownEndsAt: null,
+  cooldownTotal: 0,
+  dailyCapReached: false,
+  limitsRequested: false,
 };
 
 // ===========================================
@@ -79,6 +96,29 @@ const initialState: ContentState = {
 // ===========================================
 
 const API_URL = import.meta.env.VITE_API_URL || "";
+
+// Just above the 60 s the API function is allowed (#195 M37), so the server
+// always gets to answer first.
+const REGEN_TIMEOUT_MS = 65_000;
+
+/**
+ * The cooldown a server response reports, as state this page can count down
+ * from (#196 M44). `remaining` seconds from `from` starts or replaces the
+ * countdown, 0 clears it, and anything else (no answer, metering down) leaves
+ * it alone.
+ */
+const cooldownFrom = (
+  remaining: unknown,
+  total: unknown,
+  from = Date.now(),
+): Partial<ContentState> => {
+  if (typeof remaining !== "number") return {};
+  if (remaining <= 0) return { cooldownEndsAt: null };
+  return {
+    cooldownEndsAt: from + remaining * 1000,
+    cooldownTotal: typeof total === "number" && total > 0 ? total : remaining,
+  };
+};
 
 // ===========================================
 // REGENERATED CONTENT VALIDATION
@@ -90,28 +130,38 @@ const API_URL = import.meta.env.VITE_API_URL || "";
  * a nullish guard alone let each of them overwrite the content a visitor was
  * reading -- a blank section from a response the server called a success, with
  * no error raised anywhere to notice it by.
- *
- * The bar is deliberately "recognisably the same thing", not "a complete
- * BioData". The server rewrites a section and restores only the fields the
- * model must not author, so a legitimate response is often partial; requiring
- * every required key of BioData would reject real rewrites, and does reject the
- * partial this store is already pinned to apply. Sharing a key with the value
- * being replaced separates a partial rewrite from an unrelated object, which a
- * non-empty check alone would wave through.
  */
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const asBioData = (
-  value: unknown,
-  prior: BioData | null,
-): BioData | undefined =>
-  isPlainObject(value) &&
-  (prior
-    ? Object.keys(value).some((key) => key in prior)
-    : Object.keys(value).length > 0)
-    ? (value as unknown as BioData)
-    : undefined;
+// The bio fields the page shows as text. A rewrite's email and social links
+// are the server's copy of what was sent, so they're never taken from it.
+const RENDERED_BIO_KEYS = [
+  "display_name",
+  "tagline",
+  "location",
+  "about_text",
+  "role",
+] as const;
+
+/**
+ * A rewritten bio merged over the one it rewrites, or undefined if it brings
+ * nothing usable (#196 M16). A rewrite is often partial, and taking it whole
+ * erased every field it left out. Only non-empty strings for fields the bio
+ * already has are taken: an object in `about_text` turned the page into the
+ * 404 page.
+ */
+const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
+  if (!isPlainObject(incoming)) return undefined;
+  const accepted: Partial<BioData> = {};
+  for (const key of RENDERED_BIO_KEYS) {
+    const value = incoming[key];
+    if (key in prior && typeof value === "string" && value.trim()) {
+      accepted[key] = value;
+    }
+  }
+  return Object.keys(accepted).length ? { ...prior, ...accepted } : undefined;
+};
 
 /**
  * A non-empty list of objects, or undefined. An empty list is rejected rather
@@ -209,6 +259,11 @@ export const useContentStore = create<ContentStore>()(
           return;
         }
 
+        const bio = state.bio;
+        const pressedAt = Date.now();
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), REGEN_TIMEOUT_MS);
+
         try {
           set({ isRegenerating: true, regenerationError: null });
 
@@ -223,9 +278,10 @@ export const useContentStore = create<ContentStore>()(
             },
             mode: "cors",
             credentials: "include",
+            signal: controller.signal,
             body: JSON.stringify({
               sections: {
-                about: state.bio,
+                about: bio,
                 portfolio: {
                   experience: state.experience,
                   education: state.education,
@@ -237,17 +293,37 @@ export const useContentStore = create<ContentStore>()(
 
           const result = await response.json();
 
+          // A refusal says how long the cooldown has left. A press that ran
+          // reports the one it started when it arrived, so that's counted from
+          // the press, not from this reply (#196 M44).
+          const cooldown =
+            typeof result.cooldown_remaining === "number"
+              ? cooldownFrom(result.cooldown_remaining, result.cooldown_total)
+              : cooldownFrom(
+                  result.cooldown_total,
+                  result.cooldown_total,
+                  pressedAt,
+                );
+
           if (!result.success) {
             // The server's refusals are written for a visitor and are the only
             // ones they can act on -- a cooldown says how long to wait. The
             // generic message told them to retry, which is exactly what
             // re-triggers the cooldown.
+            //
+            // A 429 without a cooldown is the daily cap, which keeps the button
+            // off.
+            const dailyCap =
+              response.status === 429 &&
+              typeof result.cooldown_remaining !== "number";
             set({
               regenerationError:
                 typeof result.error === "string" && result.error
                   ? result.error
                   : "Failed to regenerate content. Please try again.",
               isRegenerating: false,
+              ...cooldown,
+              ...(dailyCap && { dailyCapReached: true }),
             });
             return;
           }
@@ -259,7 +335,7 @@ export const useContentStore = create<ContentStore>()(
           // called a success, with no error raised anywhere to notice it by.
           // A section that fails validation is treated exactly like one the
           // server named in failed_sections: keep what was there and say so.
-          const about = asBioData(result.content?.about, state.bio);
+          const about = mergeBio(bio, result.content?.about);
           const portfolio = result.content?.portfolio;
           const experience = asPopulatedList<Employment>(portfolio?.experience);
           const education = asPopulatedList<Education>(portfolio?.education);
@@ -286,7 +362,7 @@ export const useContentStore = create<ContentStore>()(
           const applied = Boolean(about || experience || education);
 
           set({
-            bio: about ?? state.bio,
+            bio: about ?? bio,
             experience: experience ?? state.experience,
             education: education ?? state.education,
             hasModifiedContent: state.hasModifiedContent || applied,
@@ -294,6 +370,7 @@ export const useContentStore = create<ContentStore>()(
             regenerationError: anyFailed
               ? "Some of that didn't come through. Press it again for the rest."
               : null,
+            ...cooldown,
           });
 
           // Legacy components still listen for this instead of reading the
@@ -322,12 +399,35 @@ export const useContentStore = create<ContentStore>()(
               : undefined,
           );
         } catch (error) {
-          console.error("Regeneration failed:", error);
+          const timedOut = controller.signal.aborted;
+          if (!timedOut) console.error("Regeneration failed:", error);
           set({
-            regenerationError:
-              "Failed to regenerate content. Please try again.",
+            regenerationError: timedOut
+              ? "This is taking too long. Try again in a minute."
+              : "Failed to regenerate content. Please try again.",
             isRegenerating: false,
           });
+          // No answer to read the cooldown from, though the server may well
+          // have started one, so ask for it.
+          void get().syncCooldown();
+        } finally {
+          clearTimeout(timeout);
+        }
+      },
+
+      syncCooldown: async () => {
+        const before = get().cooldownEndsAt;
+        set({ limitsRequested: true });
+        try {
+          const response = await fetch(`${API_URL}/api/limits`, {
+            headers: { Accept: "application/json" },
+          });
+          const limits = await response.json();
+          // A press answered while this was in flight knows better.
+          if (get().cooldownEndsAt !== before) return;
+          set(cooldownFrom(limits.cooldown_remaining, limits.cooldown_total));
+        } catch {
+          // Nothing to read it from: the button keeps whatever it had.
         }
       },
 
@@ -445,4 +545,6 @@ export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
 export const useHasModifiedContent = () =>
   useContentStore((state) => state.hasModifiedContent);
+export const useDailyCapReached = () =>
+  useContentStore((state) => state.dailyCapReached);
 export const useTimeline = () => useContentStore((state) => state.timeline);
