@@ -1,5 +1,5 @@
-"""Request-side helpers: client IP, what counts as one visitor and their
-anonymous tag, GitHub headers, repo name validation."""
+"""Request-side helpers: who a request is from (a ``Visitor``, never the bare
+address), GitHub headers, repo name validation."""
 
 import hashlib
 import hmac
@@ -7,6 +7,7 @@ import ipaddress
 import logging
 import os
 import re
+from dataclasses import dataclass
 
 from flask import request
 
@@ -29,8 +30,12 @@ REPO_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9._-]+$")
 MAX_REPO_NAME_LENGTH = 100
 
 
-def get_client_ip() -> str:
-    """Vercel sets `x-real-ip` from its trusted edge after stripping client-
+def _client_ip() -> str:
+    """The request's address. Private: handlers get a ``Visitor`` from
+    ``current_visitor()`` instead, so none of them holds an address it could
+    log (#199 M75).
+
+    Vercel sets `x-real-ip` from its trusted edge after stripping client-
     supplied headers — this resolves the X-Forwarded-For spoofing issue
     that affected the old DO deployment.
 
@@ -45,8 +50,8 @@ def get_client_ip() -> str:
     return request.remote_addr or "unknown"
 
 
-def rate_limit_subject(ip: str) -> str:
-    """What a per-visitor limit counts, for an address from ``get_client_ip``.
+def _rate_limit_subject(ip: str) -> str:
+    """What a per-visitor limit counts, for an address from ``_client_ip``.
 
     An IPv6 address counts as its /64, since one connection is usually handed
     a whole /64 and could otherwise rotate through it for fresh limits (#194
@@ -66,7 +71,7 @@ def rate_limit_subject(ip: str) -> str:
 
 def client_tag(ip: str) -> str | None:
     """A stable name for a visitor that doesn't reveal their address: 16 hex
-    characters of HMAC-SHA256 over ``rate_limit_subject(ip)``, keyed by
+    characters of HMAC-SHA256 over ``_rate_limit_subject(ip)``, keyed by
     ``IP_HASH_SALT`` (#194 M12, #199 M75).
 
     None without a salt, because an unkeyed hash of an address is undone by
@@ -74,18 +79,33 @@ def client_tag(ip: str) -> str | None:
     """
     if not IP_HASH_SALT:
         return None
-    return hmac.new(IP_HASH_SALT.encode(), rate_limit_subject(ip).encode(), hashlib.sha256).hexdigest()[:16]
+    return hmac.new(IP_HASH_SALT.encode(), _rate_limit_subject(ip).encode(), hashlib.sha256).hexdigest()[:16]
 
 
-def visitor_id(ip: str) -> str:
-    """How rate-limit keys and log lines name a visitor: their ``client_tag``,
-    so neither Redis nor the logs hold an address (#199 M75).
+@dataclass(frozen=True)
+class Visitor:
+    """Who a request is from, without their address (#199 M75).
 
-    Without a salt it falls back to ``rate_limit_subject(ip)``, the address:
-    limits have to keep working when the setting is missing, and the warning
-    above says it is.
+    ``id`` names the visitor in rate-limit keys and log lines: their ``tag``,
+    so neither Redis nor the logs hold an address. Without a salt it falls back
+    to what their limits count, the address, because limits have to keep
+    working when the setting is missing (the warning above says so). ``tag``
+    is what goes to OpenAI as ``safety_identifier``: None without a salt, so an
+    address is never sent there.
     """
-    return client_tag(ip) or rate_limit_subject(ip)
+
+    id: str
+    tag: str | None
+
+    @classmethod
+    def from_ip(cls, ip: str) -> "Visitor":
+        tag = client_tag(ip)
+        return cls(id=tag or _rate_limit_subject(ip), tag=tag)
+
+
+def current_visitor() -> Visitor:
+    """The visitor making this request. Handlers use this, never the address."""
+    return Visitor.from_ip(_client_ip())
 
 
 def github_headers() -> dict:

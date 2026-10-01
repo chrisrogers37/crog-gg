@@ -31,11 +31,10 @@ from api._lib.request_utils import (
     GITHUB_API,
     GITHUB_TOKEN,
     GITHUB_USERNAME,
-    client_tag,
-    get_client_ip,
+    Visitor,
+    current_visitor,
     github_headers,
     validate_repo_name,
-    visitor_id,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(name)s - %(message)s")
@@ -131,21 +130,21 @@ CACHE_ALL_LANGUAGES_KEY = "cache:all_languages"
 CACHE_ALL_LANGUAGES_TTL = 3600
 
 
-def _cooldown_key(ip: str) -> str:
-    return f"cooldown:regenerate:{visitor_id(ip)}"
+def _cooldown_key(visitor: Visitor) -> str:
+    return f"cooldown:regenerate:{visitor.id}"
 
 
-def _regen_daily_key(ip: str) -> str:
-    return f"ratelimit:regen_daily:{visitor_id(ip)}"
+def _regen_daily_key(visitor: Visitor) -> str:
+    return f"ratelimit:regen_daily:{visitor.id}"
 
 
-def _gh_rate_key(ip: str, endpoint: str) -> str:
-    return f"ratelimit:gh:{endpoint}:{visitor_id(ip)}"
+def _gh_rate_key(visitor: Visitor, endpoint: str) -> str:
+    return f"ratelimit:gh:{endpoint}:{visitor.id}"
 
 
 def _gh_rate_limit_or_429(endpoint: str):
     """Returns a Flask response if rate-limited, else None."""
-    key = _gh_rate_key(get_client_ip(), endpoint)
+    key = _gh_rate_key(current_visitor(), endpoint)
     full = rate_limit.check_and_consume({key: GH_RATE_LIMIT_MAX}, GH_RATE_LIMIT_WINDOW, fail_open=True)
     if full:
         return (
@@ -879,7 +878,7 @@ def _metering_unavailable(_exc):
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
     deadline = time.monotonic() + REGEN_DEADLINE_SECONDS
-    client_ip = get_client_ip()
+    visitor = current_visitor()
 
     data = request.get_json(silent=True)
     if not data:
@@ -902,7 +901,7 @@ def regenerate_content():
         # Recorded rather than rejected. Defaulting keeps a stale bundle working,
         # which is why it defaults -- but a caller silently losing the key is
         # still a caller worth being able to count later.
-        logger.warning("regenerate.use_fantasy_absent client=%s", visitor_id(client_ip))
+        logger.warning("regenerate.use_fantasy_absent client=%s", visitor.id)
     use_fantasy = data.get("use_fantasy", True)
 
     # One user action is one request. `sections` maps each section name to the
@@ -928,7 +927,7 @@ def regenerate_content():
 
     # After validation, so a rejected request costs nothing (#107), and before
     # the daily caps, so a press refused here doesn't spend a daily slot.
-    remaining = rate_limit.claim_cooldown(_cooldown_key(client_ip), COOLDOWN_SECONDS)
+    remaining = rate_limit.claim_cooldown(_cooldown_key(visitor), COOLDOWN_SECONDS)
     if remaining > 0:
         return (
             jsonify(
@@ -949,7 +948,7 @@ def regenerate_content():
     # (#107) so a request that then errors has still spent its slots and a
     # caller cannot retry expensive generations by forcing errors.
     full = rate_limit.check_and_consume(
-        {_regen_daily_key(client_ip): REGEN_DAILY_MAX, REGEN_GLOBAL_KEY: REGEN_GLOBAL_DAILY_MAX},
+        {_regen_daily_key(visitor): REGEN_DAILY_MAX, REGEN_GLOBAL_KEY: REGEN_GLOBAL_DAILY_MAX},
         REGEN_DAILY_WINDOW,
         cost=len(sections),
     )
@@ -979,8 +978,6 @@ def regenerate_content():
             429,
         )
 
-    tag = client_tag(client_ip)
-
     # Sampled once per request, not once per section: one press is one telling,
     # so every section has to land in the same world. Sampling inside the
     # per-section call would put a sea shanty beside a stat block on one press.
@@ -991,7 +988,7 @@ def regenerate_content():
     # client is safe to share across threads.
     with ThreadPoolExecutor(max_workers=len(sections)) as pool:
         futures = {
-            name: pool.submit(_regenerate_section, name, body, use_fantasy, register, tag, deadline)
+            name: pool.submit(_regenerate_section, name, body, use_fantasy, register, visitor.tag, deadline)
             for name, body in sections.items()
         }
         results = {}
@@ -1060,9 +1057,8 @@ def get_usage_info():
     degrades toward letting the visitor press the button -- and /api/regenerate
     is the authority on that, failing closed with its own 503.
     """
-    client_ip = get_client_ip()
     try:
-        remaining = rate_limit.get_cooldown_remaining(_cooldown_key(client_ip))
+        remaining = rate_limit.get_cooldown_remaining(_cooldown_key(current_visitor()))
     except rate_limit.RedisUnavailable:
         remaining = None
     return jsonify(

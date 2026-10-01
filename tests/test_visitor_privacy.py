@@ -35,3 +35,12 @@ def test_a_press_leaves_no_address_in_keys_or_logs(client, salted, caplog):
     messages = [record.getMessage() for record in caplog.records]
     assert not any(_IP in message for message in messages)
     assert f"regenerate.use_fantasy_absent client={client_tag(_IP)}" in messages
+
+
+def test_handlers_never_see_an_address():
+    # Handlers get a Visitor from current_visitor(); the address and the
+    # helpers that return it stay private to request_utils, so no handler can
+    # put one in a log line or a key (#199 M75).
+    import api.index as index
+
+    assert not {"get_client_ip", "_client_ip", "_rate_limit_subject"} & set(vars(index))

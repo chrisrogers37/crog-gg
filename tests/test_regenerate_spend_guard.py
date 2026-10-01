@@ -26,6 +26,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from api._lib import rate_limit, redis_client
+from api._lib.request_utils import Visitor
 from api.index import (
     REGEN_DAILY_WINDOW,
     REGEN_GLOBAL_DAILY_MAX,
@@ -159,5 +160,5 @@ def test_site_wide_ceiling_refuses_without_spending_the_visitors_slots(client, r
     r = client.post("/api/regenerate", json=_BODY)
     assert r.status_code == 503
     assert r.get_json()["error"] == "Daily regeneration budget reached"
-    assert fake_upstash.zcard(_regen_daily_key("127.0.0.1")) == 0
+    assert fake_upstash.zcard(_regen_daily_key(Visitor.from_ip("127.0.0.1"))) == 0
     no_openai.chat.completions.create.assert_not_called()
