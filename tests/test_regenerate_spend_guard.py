@@ -11,22 +11,26 @@ a raising mock proves only that the handler catches, and would keep passing if
 the limiter went back to falling open. What needs pinning is the limiter's own
 decision to refuse. Each test runs under both ways Redis can fail to meter
 (``metering_broken``): unreachable, and answering reads while refusing the
-write (#194).
+write (#194). The last test runs the real limiter on a working Redis, where a
+burst of presses must not all get through a cooldown meant to admit one.
 
 They must patch over conftest's autouse ``_hermetic_rate_limit``, which stubs
 the very primitives under test.
 """
 
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api._lib import rate_limit
+from api._lib import rate_limit, redis_client
 
 # Bound at import time, before conftest's autouse fixture replaces them.
 _REAL = {
     "check_and_consume": rate_limit.check_and_consume,
     "get_cooldown_remaining": rate_limit.get_cooldown_remaining,
+    "claim_cooldown": rate_limit.claim_cooldown,
 }
 
 _BODY = {"sections": {"about": {"bio": "hi"}}}
@@ -35,9 +39,8 @@ _BODY = {"sections": {"about": {"bio": "hi"}}}
 @pytest.fixture
 def real_limiter():
     """Put back the real primitives that conftest's autouse fixture stubs."""
-    with patch("api.index.rate_limit.check_and_consume", _REAL["check_and_consume"]):
-        with patch("api.index.rate_limit.get_cooldown_remaining", _REAL["get_cooldown_remaining"]):
-            yield
+    with patch.multiple("api.index.rate_limit", **_REAL):
+        yield
 
 
 @pytest.fixture
@@ -50,12 +53,15 @@ def redis_down(real_limiter):
 
 @pytest.fixture
 def redis_writes_refused(real_limiter):
-    """Real limiter; Redis answers the cooldown read but refuses the write (#194)."""
+    """Real limiter; Redis answers reads but refuses writes (#194)."""
 
-    def upstash(path, _body):
-        if path == "/pipeline":
-            return [{"result": 0}, {"error": "OOM command not allowed"}, {"result": 0}, {"result": 1}]
+    def reply(args):
+        if args[0] in ("SET", "EVAL"):  # the window's script writes too
+            return {"error": "OOM command not allowed"}
         return {"result": -2}  # TTL of a missing key: no cooldown
+
+    def upstash(path, body):
+        return [reply(args) for args in body] if path == "/pipeline" else reply(body)
 
     with patch("api._lib.redis_client._post", side_effect=upstash):
         yield
@@ -103,3 +109,35 @@ def test_free_github_gate_still_falls_open(metering_broken):
 def test_free_limits_endpoint_still_answers_during_an_outage(client, metering_broken):
     r = client.get("/api/limits")
     assert r.status_code == 200
+
+
+def test_parallel_presses_get_one_200_and_429s_for_the_rest(client, real_limiter, fake_upstash):
+    # The cooldown used to be a TTL read and, later, a SETEX, so presses that
+    # all read before any wrote all got through (#194 M64). Holding each press
+    # after its first Redis call until every press has made one forces that
+    # race on every run. With SET NX, exactly one press claims the cooldown.
+    presses = 4
+    all_called = threading.Barrier(presses, timeout=5)
+    this_press = threading.local()
+    upstash = redis_client._post  # fake_upstash's
+
+    def held_after_first_call(path, body):
+        reply = upstash(path, body)
+        if not getattr(this_press, "held", False):
+            this_press.held = True
+            all_called.wait()
+        return reply
+
+    def press(_):
+        return client.application.test_client().post("/api/regenerate", json=_BODY).status_code
+
+    model = MagicMock()
+    model.chat.completions.create.return_value.choices = [MagicMock(message=MagicMock(content='{"bio": "rewritten"}'))]
+
+    with patch("api.index.openai_client", model):
+        with patch("api._lib.redis_client._post", side_effect=held_after_first_call):
+            with ThreadPoolExecutor(presses) as pool:
+                statuses = sorted(pool.map(press, range(presses)))
+
+    assert statuses == [200] + [429] * (presses - 1)
+    model.chat.completions.create.assert_called_once()

@@ -9,3 +9,5 @@ pytest==9.1.1
 flake8==7.4.1
 black==26.5.1
 isort==9.0.2
+# Runs the rate limiter's Lua script in the tests (conftest's fake_upstash).
+fakeredis[lua]==2.38.0
