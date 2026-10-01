@@ -342,13 +342,13 @@ FAILURE_TOO_LONG = "too_long"
 FAILURE_TRUNCATED = "truncated"
 
 # Output bounds per call (#194 M12): no completion runs longer than this,
-# whatever the input asks for. Reasoning tokens count against it too. These are
-# starting values: once regenerate.usage has logged real completions on
-# Preview, set each to about twice the largest, but not much past what the
-# section cap would take back (MAX_SECTION_CHARS / ~3.5 characters per token,
-# plus any reasoning). Output beyond that can only be billed and then refused
-# as too_long.
-_MAX_COMPLETION_TOKENS = {"about": 2000, "portfolio": 4000}
+# whatever the input asks for. Reasoning tokens count against it too. Set to
+# about twice the largest completion real presses produced on Preview, with
+# low reasoning effort: about 530 and 662, portfolio 857 and 768. Keep them
+# well under what the section cap would take back (MAX_SECTION_CHARS / ~3.5
+# characters per token), since output beyond that can only be billed and then
+# refused as too_long.
+_MAX_COMPLETION_TOKENS = {"about": 1500, "portfolio": 2000}
 
 
 def _describe_failure(exc) -> tuple[dict, dict]:
