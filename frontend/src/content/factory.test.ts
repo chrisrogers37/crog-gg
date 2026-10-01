@@ -38,8 +38,10 @@ describe("Built by the factory (#176)", () => {
       for (const count of [stats.merged, stats.mergedLast30Days]) {
         expect(Number.isInteger(count.value)).toBe(true);
         expect(count.query).toContain(`repo:${stats.repo} is:pr is:merged`);
-        // Dependency bumps aren't anyone's work.
-        expect(count.query).toContain("-author:app/dependabot");
+        // Dependency bumps and workflow bots aren't anyone's work.
+        for (const bot of ["dependabot", "renovate", "github-actions"]) {
+          expect(count.query).toContain(`-author:app/${bot}`);
+        }
       }
       expect(stats.mergedLast30Days.value).toBeLessThanOrEqual(
         stats.merged.value,

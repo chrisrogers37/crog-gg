@@ -71,13 +71,15 @@ export function RepoStats({ repoName }: RepoStatsProps) {
     );
   }
 
-  if (!repo) {
+  // The snapshot needs no network, so a failed or rate-limited live call only
+  // costs the live figures: stars, forks and the meta row.
+  const factory = statsForRepo(repoName);
+  if (!repo && !factory) {
     return null;
   }
 
-  const factory = statsForRepo(repoName);
   const stats = [
-    ...(repo.stargazers_count >= STAR_THRESHOLD
+    ...(repo && repo.stargazers_count >= STAR_THRESHOLD
       ? [
           { label: "Stars", value: repo.stargazers_count, icon: "⭐" },
           { label: "Forks", value: repo.forks_count, icon: "🍴" },
@@ -96,11 +98,6 @@ export function RepoStats({ repoName }: RepoStatsProps) {
       : []),
   ];
 
-  const lastUpdated = new Date(repo.pushed_at).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 
   return (
     <div className="repo-stats">
@@ -130,28 +127,35 @@ export function RepoStats({ repoName }: RepoStatsProps) {
       )}
 
       {/* Meta info */}
-      <div className="repo-meta">
-        {repo.language && (
+      {repo && (
+        <div className="repo-meta">
+          {repo.language && (
+            <span className="meta-item">
+              <span
+                className="meta-dot"
+                style={{ background: getLanguageColor(repo.language) }}
+              />
+              {repo.language}
+            </span>
+          )}
+          {repo.license && (
+            <span className="meta-item">
+              <span className="meta-icon">📜</span> {repo.license.spdx_id}
+            </span>
+          )}
           <span className="meta-item">
-            <span
-              className="meta-dot"
-              style={{ background: getLanguageColor(repo.language) }}
-            />
-            {repo.language}
+            <span className="meta-icon">🕐</span> Updated{" "}
+            {new Date(repo.pushed_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
           </span>
-        )}
-        {repo.license && (
-          <span className="meta-item">
-            <span className="meta-icon">📜</span> {repo.license.spdx_id}
-          </span>
-        )}
-        <span className="meta-item">
-          <span className="meta-icon">🕐</span> Updated {lastUpdated}
-        </span>
-      </div>
+        </div>
+      )}
 
       {/* Topics */}
-      {repo.topics && repo.topics.length > 0 && (
+      {repo?.topics && repo.topics.length > 0 && (
         <div className="repo-topics">
           {repo.topics.map((topic) => (
             <span key={topic} className="topic-tag">

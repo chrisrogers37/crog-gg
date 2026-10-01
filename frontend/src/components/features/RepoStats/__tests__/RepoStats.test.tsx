@@ -56,6 +56,19 @@ describe("RepoStats", () => {
     }
   });
 
+  it("keeps the snapshot's counts when GitHub's API fails or rate-limits", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(githubService.getRepository).mockRejectedValue(
+      new Error("403 rate limited"),
+    );
+    render(<RepoStats repoName="storydump" />);
+
+    expect(await screen.findByText("PRs merged")).toBeInTheDocument();
+    // Only the live figures go: stars and the meta row.
+    expect(screen.queryByText("Stars")).toBeNull();
+    expect(screen.queryByText(/updated/i)).toBeNull();
+  });
+
   it("shows star counts once there are enough of them", async () => {
     vi.mocked(githubService.getRepository).mockResolvedValue(
       repo("some-other-repo", STAR_THRESHOLD),

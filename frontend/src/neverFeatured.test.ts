@@ -6,7 +6,8 @@ import { describe, expect, it } from "vitest";
  * and what a project page fetches at runtime (its README) can't be read here,
  * so those still need checking by eye.
  */
-const NEVER = /goku\s*stats/i;
+// "GokuStats", "goku stats", "goku-stats", "goku_stats".
+const NEVER = /goku[\s_-]*stats/i;
 
 const files = import.meta.glob<string>(
   [
