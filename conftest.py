@@ -9,6 +9,7 @@ The Flask test client and a hermetic rate-limit fixture are exposed here so
 every test module shares them without redefining the plumbing.
 """
 
+import importlib
 import os
 import sys
 
@@ -45,17 +46,26 @@ def _hermetic_rate_limit():
                 yield
 
 
+def _require(module: str):
+    """A test-only dependency: skipped where it's missing locally, but a failure
+    in CI, which installs requirements-dev.txt, so a broken install can't
+    quietly switch the tests off (the #120 lesson)."""
+    if os.environ.get("CI"):
+        return importlib.import_module(module)
+    return pytest.importorskip(module)
+
+
 @pytest.fixture
 def fake_upstash():
     """Upstash's REST replies, served by an in-memory Redis that runs Lua (#194).
 
     Only the client's network call is replaced, so the reply unwrapping, the
     pipeline checks and the limiter's Lua script all run for real. Yields a
-    client on the same data for assertions. Skips where ``fakeredis[lua]``
-    isn't installed.
+    client on the same data for assertions. Needs ``fakeredis[lua]``, from
+    requirements-dev.txt.
     """
-    fakeredis = pytest.importorskip("fakeredis")
-    pytest.importorskip("lupa")  # what fakeredis runs EVAL with
+    fakeredis = _require("fakeredis")
+    _require("lupa")  # what fakeredis runs EVAL with
     from redis.exceptions import ResponseError
 
     server = fakeredis.FakeServer()
