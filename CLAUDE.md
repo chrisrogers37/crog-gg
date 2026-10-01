@@ -44,7 +44,7 @@ npm run test:e2e:headed  # E2E tests with visible browser
 
 # Backend commands (run from repo root)
 python3 -m api.index     # Start Flask dev server on :5001 (Vite proxies /api to it)
-pip install -r requirements.txt  # Install Python deps (flask, flask-cors, openai, requests)
+pip install -r requirements-dev.txt  # Install Python deps plus pytest, flake8, black and isort
 
 # Git workflow
 git status              # Check current state
@@ -195,7 +195,7 @@ Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robo
 - Link-preview card: `frontend/public/og-image.png`, rendered from `frontend/scripts/og-image/og-image.html` (`node scripts/og-image/render.mjs`). Keep its text in step with `OG_IMAGE.alt` in `src/seo/site.ts`.
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Function under Fluid Compute; all `/api/*` routes are rewritten to it by `vercel.json`
 - Shared helpers: `api/_lib/` (Upstash REST client, rate limiter, request utils)
-- Python deps: `requirements.txt` at repo root
+- Python deps: edit `requirements.in` / `requirements-dev.in`, then regenerate the hash-pinned `requirements.txt` / `requirements-dev.txt` with the `uv pip compile` command in each file's header
 
 ### Vercel project env vars
 

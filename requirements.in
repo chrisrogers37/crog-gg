@@ -1,0 +1,8 @@
+# Runtime dependencies for the Vercel Python function (api/). Edit this file,
+# then regenerate the hash-pinned lock that CI and Vercel install from:
+#   uv pip compile requirements.in --python-version 3.12 --universal --generate-hashes -o requirements.txt
+# and regenerate requirements-dev.txt the same way (see its header).
+flask>=3.0,<4.0
+flask-cors>=4.0,<7.0
+openai>=1.0,<2.0
+requests>=2.31,<3.0
