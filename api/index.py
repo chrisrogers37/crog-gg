@@ -334,7 +334,9 @@ def _describe_failure(exc) -> tuple[dict, dict]:
     which sit behind Vercel's login.
     """
     body = getattr(exc, "body", None)
-    err = body.get("error") if isinstance(body, dict) else None
+    # The SDK unwraps OpenAI's {"error": {...}} envelope before it raises, so
+    # exc.body is usually the inner object already; accept either shape.
+    err = body.get("error", body) if isinstance(body, dict) else None
     err = err if isinstance(err, dict) else {}
     public = {"status": getattr(exc, "status_code", None), "code": err.get("code")}
     private = {"type": type(exc).__name__, "param": err.get("param"), "message": str(exc)[:300]}
@@ -704,14 +706,11 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
         logger.warning("regenerate.extra_keys_dropped section=%s keys=%s", section, ",".join(extra))
 
     # The model does not author URLs -- see _UNAUTHORED_KEYS. Assignment is
-    # wholesale so nothing the model put under one of these keys survives, and a
-    # key the caller never sent is dropped rather than accepted as model
-    # invention. `parsed` is a non-empty dict by the check above.
+    # wholesale so nothing the model put under one of these keys survives. A
+    # key the caller never sent is already gone, dropped just above.
     for key in _UNAUTHORED_KEYS.get(section, ()):
         if key in content:
             parsed[key] = content[key]
-        else:
-            parsed.pop(key, None)
 
     # Observed, not enforced -- see the two helpers for why each is a warning
     # rather than a rejection. Both are what makes the two prompt anchors above
