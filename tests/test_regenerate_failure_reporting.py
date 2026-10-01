@@ -24,8 +24,10 @@ import openai
 import pytest
 
 from api.index import (
+    FAILURE_EMPTY_RESPONSE,
     FAILURE_MODEL_ERROR,
     FAILURE_NOT_JSON,
+    FAILURE_UNEXPECTED,
     OPENAI_SAMPLING,
     _describe_failure,
 )
@@ -156,3 +158,82 @@ def test_a_successful_request_reports_no_failures(client, sections):
         r = client.post("/api/regenerate", json={"sections": sections})
     assert r.status_code == 200
     assert r.get_json()["failures"] == {}
+
+
+# --- empty completions and crashed workers (#195) --------------------------
+# A completion with no text made json.loads raise a TypeError nothing caught,
+# and any exception in a worker re-raised from future.result(). Either way the
+# request became an HTML 500 that also discarded the sections that worked.
+
+_TWO = {"sections": {"about": _BIO, "portfolio": {"experience": [{"title": "Eng"}]}}}
+
+
+def _choice(content, finish_reason="stop"):
+    return MagicMock(message=MagicMock(content=content), finish_reason=finish_reason)
+
+
+def _choices_client(choices):
+    fake = MagicMock()
+    fake.chat.completions.create.return_value = MagicMock(choices=choices)
+    return fake
+
+
+def _about_gets(about_choices):
+    """`about` receives ``about_choices``; `portfolio` receives a usable rewrite."""
+    fake = MagicMock()
+
+    def per_call(**kwargs):
+        if "experience" in kwargs["messages"][1]["content"]:
+            return MagicMock(choices=[_choice(json.dumps({"experience": [{"title": "Engineer"}]}))])
+        return MagicMock(choices=about_choices)
+
+    fake.chat.completions.create.side_effect = per_call
+    return fake
+
+
+def test_none_content_is_counted_and_sibling_survives(client):
+    with patch("api.index.openai_client", _about_gets([_choice(None, finish_reason="content_filter")])):
+        r = client.post("/api/regenerate", json=_TWO)
+    assert r.status_code == 200
+    body = r.get_json()
+    assert "portfolio" in body["content"]
+    assert body["failed_sections"] == ["about"]
+    assert body["failures"]["about"] == {"reason": FAILURE_EMPTY_RESPONSE, "finish_reason": "content_filter"}
+
+
+@pytest.mark.parametrize(
+    "choices",
+    [[], None, [_choice("")], [_choice("  \n ")], [MagicMock(message=None, finish_reason="stop")]],
+    ids=["empty-choices", "null-choices", "empty-text", "blank-text", "null-message"],
+)
+def test_empty_completion_is_counted(client, choices):
+    with patch("api.index.openai_client", _choices_client(choices)):
+        r = client.post("/api/regenerate", json=_BODY)
+    assert r.status_code == 500
+    assert r.is_json
+    assert r.get_json()["failures"]["about"]["reason"] == FAILURE_EMPTY_RESPONSE
+
+
+def test_worker_crash_is_counted_not_500(client):
+    def crash_about(name, *args):
+        if name == "about":
+            raise RuntimeError("detail that must stay server-side")
+        return {"experience": [{"title": "Engineer"}]}, None
+
+    with patch("api.index.openai_client", MagicMock()), patch("api.index._regenerate_section", side_effect=crash_about):
+        r = client.post("/api/regenerate", json=_TWO)
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["content"] == {"portfolio": {"experience": [{"title": "Engineer"}]}}
+    assert body["failures"]["about"] == {"reason": FAILURE_UNEXPECTED, "error_type": "RuntimeError"}
+    assert "must stay server-side" not in r.get_data(as_text=True)
+
+
+def test_a_crash_in_every_section_is_still_json(client):
+    with patch("api.index.openai_client", MagicMock()), patch(
+        "api.index._regenerate_section", side_effect=RuntimeError("boom")
+    ):
+        r = client.post("/api/regenerate", json=_BODY)
+    assert r.status_code == 500
+    assert r.is_json
+    assert r.get_json()["failures"]["about"]["reason"] == FAILURE_UNEXPECTED

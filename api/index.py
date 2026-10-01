@@ -136,18 +136,44 @@ def _guard_repo_request(repo_name: str, endpoint: str):
     return None
 
 
-def _fetch_public_repo(repo_name: str):
+def _github_unavailable(endpoint: str, repo: str, r=None, exc=None):
+    """Log an upstream GitHub failure and return the response for it.
+
+    These failures used to come back as "Repository not found", so an expired
+    token or a spent quota told visitors that real repos didn't exist, and
+    nothing reached the log. They are now logged with what an operator needs
+    to tell them apart, and answered with a status that names GitHub, not the
+    repo: 503 for 403/429 (GitHub's rate-limit statuses) and 502 for anything
+    else. The body is the same for every failure, and GitHub's own status and
+    message never reach the visitor, so this can't be used to probe which
+    private repos exist (#97).
+    """
+    status = r.status_code if r is not None else None
+    remaining = r.headers.get("X-RateLimit-Remaining") if r is not None else None
+    logger.warning(
+        "github upstream error: endpoint=%s repo=%s status=%s ratelimit_remaining=%s error=%s",
+        endpoint,
+        repo,
+        status,
+        remaining,
+        type(exc).__name__ if exc is not None else None,
+    )
+    return jsonify({"error": "GitHub is unavailable right now"}), 503 if status in (403, 429) else 502
+
+
+def _fetch_public_repo(repo_name: str, endpoint: str):
     """Fetch the owner's repo metadata, enforcing the public-only guard.
 
     Returns ``(data, None)`` when ``repo_name`` is a public repo of the owner,
-    else ``(None, <404 response>)``. This is the single source of truth for the
+    else ``(None, <error response>)``. This is the single source of truth for the
     private-repo guard (defense-in-depth so the proxy never serves private-repo
     data even if GITHUB_TOKEN is over-scoped), and returning the fetched
     metadata lets the /repo endpoint reuse it instead of making a second,
     identical GitHub call.
 
     A missing repo and a private repo both yield the SAME generic 404, so the
-    proxy can't be used as an oracle for private repo names.
+    proxy can't be used as an oracle for private repo names. Any other upstream
+    failure is GitHub's, not the repo's, and goes to ``_github_unavailable``.
     """
     try:
         r = requests.get(
@@ -155,42 +181,54 @@ def _fetch_public_repo(repo_name: str):
             headers=github_headers(),
             timeout=10,
         )
-    except requests.RequestException:
+    except requests.RequestException as e:
+        return None, _github_unavailable(endpoint, repo_name, exc=e)
+    if r.status_code == 404:
         return None, (jsonify({"error": "Repository not found"}), 404)
     if r.status_code != 200:
-        return None, (jsonify({"error": "Repository not found"}), 404)
-    data = r.json()
+        return None, _github_unavailable(endpoint, repo_name, r=r)
+    try:
+        data = r.json()
+    except ValueError as e:
+        return None, _github_unavailable(endpoint, repo_name, r=r, exc=e)
+    if not isinstance(data, dict):
+        return None, _github_unavailable(endpoint, repo_name, r=r)
     if data.get("private"):
         return None, (jsonify({"error": "Repository not found"}), 404)
     return data, None
 
 
-def _proxy_sub_resource(repo_name: str, path: str | tuple[str, ...], label: str, missing_msg: str | None = None):
-    """GET a sub-resource of an already-validated public repo and map failures
-    to the shared generic response. ``path`` is appended to the repo URL (e.g.
-    ``/readme``), and a tuple of paths is tried in order so a caller can prefer a
-    specific file over GitHub's own resolution and still fall back when it is
-    absent; ``label`` names the resource in the failure message; ``missing_msg``
-    (when set) returns a specific 404 if the sub-resource itself is absent."""
+def _proxy_sub_resource(
+    repo_name: str, path: str | tuple[str, ...], label: str, endpoint: str, missing_msg: str | None = None
+):
+    """GET a sub-resource of an already-validated public repo. ``path`` is
+    appended to the repo URL (e.g. ``/readme``), and a tuple of paths is tried in
+    order so a caller can prefer a specific file over GitHub's own resolution and
+    still fall back when it is absent; ``label`` names the resource in the 404
+    message; ``missing_msg`` (when set) replaces that message. Any failure other
+    than the resource being absent goes to ``_github_unavailable``."""
     candidates = (path,) if isinstance(path, str) else path
-    try:
-        for i, candidate in enumerate(candidates):
+    for i, candidate in enumerate(candidates):
+        try:
             r = requests.get(
                 f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}{candidate}",
                 headers=github_headers(),
                 timeout=10,
             )
-            # A 404 on any but the last candidate just means "try the next one";
-            # only the final candidate's absence is the resource being missing.
-            if r.status_code == 404 and i < len(candidates) - 1:
-                continue
-            if missing_msg is not None and r.status_code == 404:
-                return jsonify({"error": missing_msg}), 404
-            r.raise_for_status()
+        except requests.RequestException as e:
+            return _github_unavailable(endpoint, repo_name, exc=e)
+        # A 404 on any but the last candidate just means "try the next one";
+        # only the final candidate's absence is the resource being missing.
+        if r.status_code == 404 and i < len(candidates) - 1:
+            continue
+        if r.status_code == 404:
+            return jsonify({"error": missing_msg or f"Failed to fetch {label} from GitHub"}), 404
+        if r.status_code != 200:
+            return _github_unavailable(endpoint, repo_name, r=r)
+        try:
             return jsonify(r.json())
-    except requests.RequestException as e:
-        status = e.response.status_code if getattr(e, "response", None) is not None else 500
-        return jsonify({"error": f"Failed to fetch {label} from GitHub"}), status
+        except ValueError as e:
+            return _github_unavailable(endpoint, repo_name, r=r, exc=e)
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +314,10 @@ FAILURE_NOT_JSON = "not_json"
 FAILURE_NOT_AN_OBJECT = "not_an_object"
 FAILURE_EMPTY_OBJECT = "empty_object"
 FAILURE_UNRELATED_OBJECT = "unrelated_object"
+# The model sent no text: a refusal, a content filter or an empty `choices`.
+FAILURE_EMPTY_RESPONSE = "empty_response"
+# The section's worker raised something no other reason covers.
+FAILURE_UNEXPECTED = "unexpected"
 
 
 def _describe_failure(exc) -> dict:
@@ -612,9 +654,21 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
             ],
             **OPENAI_SAMPLING,
         )
-        new_content = response.choices[0].message.content
+        choice = response.choices[0] if response.choices else None
+        new_content = getattr(getattr(choice, "message", None), "content", None)
+        finish_reason = getattr(choice, "finish_reason", None)
     except openai.OpenAIError as e:
         return _fail(section, FAILURE_MODEL_ERROR, **_describe_failure(e))
+
+    # Checked before parsing because json.loads(None) raises a TypeError, not
+    # the JSONDecodeError caught below. Uncaught, it became an HTML 500 that
+    # also threw away the sibling section the visitor had already paid for.
+    if not isinstance(new_content, str) or not new_content.strip():
+        return _fail(
+            section,
+            FAILURE_EMPTY_RESPONSE,
+            finish_reason=finish_reason if isinstance(finish_reason, str) else None,
+        )
 
     try:
         parsed = json.loads(new_content)
@@ -697,6 +751,10 @@ def regenerate_content():
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"success": False, "error": "No data provided"}), 400
+    # A list, string, number or `true` passes the check above and would raise
+    # an AttributeError at data.get() below: an HTML 500, before any metering.
+    if not isinstance(data, dict):
+        return jsonify({"success": False, "error": "Request body must be a JSON object"}), 400
 
     sections = data.get("sections")
     # SUMMON NEW LORE is the only caller and it always sends True, so a request
@@ -765,7 +823,17 @@ def regenerate_content():
         futures = {
             name: pool.submit(_regenerate_section, name, body, use_fantasy, register) for name, body in sections.items()
         }
-        results = {name: future.result() for name, future in futures.items()}
+        results = {}
+        for name, future in futures.items():
+            try:
+                results[name] = future.result()
+            except Exception as exc:
+                # One crashed section must not cost the others: the daily slots
+                # for every section are already spent, and an exception raised
+                # here would be an HTML 500 carrying none of the sections that
+                # worked. The exception text stays in the log, never the response.
+                logger.exception("regeneration crashed: section=%s", name)
+                results[name] = _fail(name, FAILURE_UNEXPECTED, error_type=type(exc).__name__)
 
     regenerated = {name: parsed for name, (parsed, _reason) in results.items() if parsed is not None}
     failed = sorted(name for name, (parsed, _reason) in results.items() if parsed is None)
@@ -850,7 +918,7 @@ def get_repository(repo_name):
         return resp
     # The public-repo guard already fetches the repo metadata, which IS this
     # endpoint's payload, so reuse it directly (one GitHub call, not two).
-    data, error = _fetch_public_repo(repo_name)
+    data, error = _fetch_public_repo(repo_name, "repo")
     if error is not None:
         return error
     return jsonify(data)
@@ -860,7 +928,7 @@ def get_repository(repo_name):
 def get_readme(repo_name):
     if (resp := _guard_repo_request(repo_name, "readme")) is not None:
         return resp
-    _data, error = _fetch_public_repo(repo_name)
+    _data, error = _fetch_public_repo(repo_name, "readme")
     if error is not None:
         return error
     # Ask for the root README explicitly. GitHub's /readme endpoint resolves
@@ -871,6 +939,7 @@ def get_readme(repo_name):
         repo_name,
         ("/contents/README.md", "/readme"),
         "README",
+        "readme",
         missing_msg="README not found",
     )
 
@@ -879,10 +948,10 @@ def get_readme(repo_name):
 def get_repo_languages(repo_name):
     if (resp := _guard_repo_request(repo_name, "languages_repo")) is not None:
         return resp
-    _data, error = _fetch_public_repo(repo_name)
+    _data, error = _fetch_public_repo(repo_name, "languages_repo")
     if error is not None:
         return error
-    return _proxy_sub_resource(repo_name, "/languages", "languages")
+    return _proxy_sub_resource(repo_name, "/languages", "languages", "languages_repo")
 
 
 @app.route("/api/v1/github/languages", methods=["GET"])

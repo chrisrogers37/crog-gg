@@ -9,12 +9,20 @@ Coverage:
     which returns the SAME generic 404 for a private repo and a missing repo
     (no existence oracle).
   - Public-repo happy paths still return 200.
+  - GitHub's own failures (#195) are 502/503 "GitHub is unavailable right now"
+    and are logged, rather than reading as "Repository not found".
 
 ``requests.get`` is mocked, so no network access occurs.
 """
 
+import logging
+import os
+import subprocess
+import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 import requests
 
 
@@ -224,3 +232,142 @@ def test_private_and_missing_are_indistinguishable_no_oracle(client):
         r_missing = client.get("/api/v1/github/readme/nope")
     assert r_private.status_code == r_missing.status_code == 404
     assert r_private.get_json() == r_missing.get_json() == {"error": "Repository not found"}
+
+
+# --- upstream failures (#195) ------------------------------------------------
+# An expired token or a spent quota used to tell visitors that real repos don't
+# exist. GitHub's failures now name GitHub, carry a status an operator can act
+# on and reach the log, while a missing or private repo keeps the generic 404.
+
+_UNAVAILABLE = {"error": "GitHub is unavailable right now"}
+
+
+def _failing(status_code, remaining="0"):
+    resp = _make_response(status_code, {"message": "upstream says no"})
+    resp.headers = {"X-RateLimit-Remaining": remaining}
+    return resp
+
+
+@pytest.mark.parametrize("status_code", [401, 500, 502])
+def test_upstream_401_and_5xx_are_502(client, status_code):
+    with patch("api.index.requests.get", return_value=_failing(status_code)):
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+@pytest.mark.parametrize("status_code", [403, 429])
+def test_upstream_rate_limit_is_503(client, status_code):
+    with patch("api.index.requests.get", return_value=_failing(status_code)):
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 503
+    assert r.get_json() == _UNAVAILABLE
+
+
+@pytest.mark.parametrize("exc", [requests.Timeout("slow"), requests.ConnectionError("down")])
+def test_upstream_timeout_and_network_errors_are_502(client, exc):
+    with patch("api.index.requests.get", side_effect=exc):
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+def test_upstream_failure_is_logged(client, caplog):
+    caplog.set_level(logging.WARNING, logger="crog")
+    with patch("api.index.requests.get", return_value=_failing(403, remaining="0")):
+        client.get("/api/v1/github/readme/shuffify")
+    [record] = [rec for rec in caplog.records if "github upstream error" in rec.getMessage()]
+    assert record.levelname == "WARNING"
+    assert "endpoint=readme repo=shuffify status=403 ratelimit_remaining=0" in record.getMessage()
+    # GitHub's message is neither returned nor logged.
+    assert "upstream says no" not in record.getMessage()
+
+
+def test_sub_resource_failure_is_not_passed_through(client):
+    """The README fetch used to return GitHub's own status code; it now goes
+    through the same mapping as the metadata call."""
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/contents/README.md"):
+            return _failing(500)
+        return meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get("/api/v1/github/readme/shuffify")
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+def test_sub_resource_network_error_is_502(client):
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/languages"):
+            raise requests.ConnectionError("down")
+        return meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get("/api/v1/github/languages/shuffify")
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+def _not_json(status_code=200):
+    resp = _make_response(status_code)
+    resp.json.side_effect = requests.exceptions.JSONDecodeError("Expecting value", "", 0)
+    resp.headers = {}
+    return resp
+
+
+def test_repo_metadata_that_is_not_json_is_502(client):
+    with patch("api.index.requests.get", return_value=_not_json()):
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+@pytest.mark.parametrize(
+    "route, suffix, reply",
+    [
+        ("/api/v1/github/readme/shuffify", "/contents/README.md", _not_json),
+        ("/api/v1/github/languages/shuffify", "/languages", lambda: _not_json(204)),
+    ],
+    ids=["readme-not-json", "languages-204"],
+)
+def test_sub_resource_reply_that_is_not_json_is_502(client, route, suffix, reply):
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        return reply() if url.endswith(suffix) else meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get(route)
+    assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+def test_repo_name_with_a_trailing_newline_is_rejected(client):
+    # `$` also matches before a final newline, so a name ending in one passed
+    # validation and would split the upstream-error log line.
+    with patch("api.index.requests.get") as mock_get:
+        r = client.get("/api/v1/github/repo/shuffify%0A")
+    assert r.status_code == 400
+    mock_get.assert_not_called()
+
+
+def _import_request_utils(env):
+    return subprocess.run(
+        [sys.executable, "-c", "import api._lib.request_utils"],
+        cwd=Path(__file__).resolve().parents[1],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stderr
+
+
+def test_missing_token_is_logged_once_at_import():
+    env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
+    assert _import_request_utils(env).count("github token missing") == 1
+    assert "github token missing" not in _import_request_utils({**env, "GITHUB_TOKEN": "x"})
