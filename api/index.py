@@ -81,7 +81,11 @@ OPENAI_MODEL = "gpt-5.6-luna"
 # current generation accepts only the default temperature and rejects any
 # explicit value outright, so passing one fails every call rather than degrading
 # -- swapping the model without revisiting this is how that happens silently.
-OPENAI_SAMPLING: dict = {}
+#
+# The model reasons by default: on Preview a real press spent 512 and 404
+# reasoning tokens of 876 and 1066 completion tokens (#194 M12). A rewrite needs
+# little of it, and reasoning counts against _MAX_COMPLETION_TOKENS, so it's low.
+OPENAI_SAMPLING: dict = {"reasoning_effort": "low"}
 
 COOLDOWN_SECONDS = 30
 REGEN_DAILY_MAX = 30
