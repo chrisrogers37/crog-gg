@@ -64,8 +64,10 @@ def test_the_request_carries_no_rejected_parameter(client):
     assert "temperature" not in kwargs, f"a rejected sampling param reached the API: {sorted(kwargs)}"
     # Exact, so every parameter on the wire is one someone chose (#194 M12).
     # No safety_identifier: conftest leaves IP_HASH_SALT unset.
+    # `timeout` is a client-side option: the SDK keeps it out of the request body.
+    wire = set(kwargs) - {"timeout"}
     expected = {"model", "messages", "max_completion_tokens", "response_format", "reasoning_effort"}
-    assert set(kwargs) == expected, f"unexpected params on the wire: {sorted(kwargs)}"
+    assert wire == expected, f"unexpected params on the wire: {sorted(wire)}"
     assert kwargs["max_completion_tokens"] > 0
 
 
