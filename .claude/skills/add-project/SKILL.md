@@ -94,9 +94,17 @@ Optional fields (add only if available):
 
 **Bump order numbers**:
 - Every existing project with `order >= chosen position` gets incremented by 1
-- The `github.yaml` project uses `order: 99` - leave it alone
+### 6. Add Its Numbers (projects with a `github:` link)
 
-### 6. Verify
+The project page shows merged-PR counts from a dated snapshot, and `factory.test.ts` fails until the snapshot covers every project with a repo. The repo must be public, so that every published number can be checked. From `frontend/`:
+
+```bash
+GITHUB_TOKEN=$(gh auth token) node scripts/factory-stats.mjs
+```
+
+Commit the updated `src/content/factory-stats.json` with the YAML.
+
+### 7. Verify
 
 Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 
@@ -115,7 +123,7 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 | gradient | No | CSS gradient for card header, defaults to gray |
 | featured | No | Defaults to false |
 | status | No | active, archived, experimental |
-| github | No | A public repo of the configured GitHub owner (see step 5) |
+| github | No | A public repo of the configured GitHub owner (see step 5; then step 6) |
 | demo | No | Only if it differs from `url`; needs a `frame-src` entry (see step 5) |
 | tags | No | Metadata tags |
 
