@@ -11,10 +11,11 @@ current model generation rejects, and that when a call does fail the response
 names the cause -- so the next failure costs one look instead of one deploy per
 hypothesis.
 
-Local mock builder rather than a shared one: `_mock_openai` in test_regenerate.py
-and `_with_model_returning` in test_regenerate_social_links.py are already two
-copies of this, and consolidating them is a separate cleanup that would touch
-files owned by other in-flight branches.
+Local mock builder rather than a shared one: `_mock_openai` in test_regenerate.py,
+`_with_model_returning` in test_regenerate_social_links.py and `_model` in
+test_regenerate_call_bounds.py are already copies of this, and consolidating
+them is a separate cleanup that would touch files owned by other in-flight
+branches.
 """
 
 import json
@@ -61,7 +62,11 @@ def test_the_request_carries_no_rejected_parameter(client):
 
     kwargs = fake.chat.completions.create.call_args.kwargs
     assert "temperature" not in kwargs, f"a rejected sampling param reached the API: {sorted(kwargs)}"
-    assert set(kwargs) <= {"model", "messages"}, f"unexpected params on the wire: {sorted(kwargs)}"
+    # Exact, so every parameter on the wire is one someone chose (#194 M12).
+    # No safety_identifier: conftest leaves IP_HASH_SALT unset.
+    expected = {"model", "messages", "max_completion_tokens", "response_format"}
+    assert set(kwargs) == expected, f"unexpected params on the wire: {sorted(kwargs)}"
+    assert kwargs["max_completion_tokens"] > 0
 
 
 def _api_error(status, code=None, param=None, message="Unsupported value: 'temperature' does not support 0.7"):

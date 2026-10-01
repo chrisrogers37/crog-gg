@@ -1,5 +1,8 @@
-"""Request-side helpers: client IP, GitHub headers, repo name validation."""
+"""Request-side helpers: client IP, what counts as one visitor and their
+anonymous tag, GitHub headers, repo name validation."""
 
+import hashlib
+import hmac
 import ipaddress
 import logging
 import os
@@ -13,6 +16,9 @@ if not GITHUB_TOKEN:
     # unauthenticated quota, and the panels it feeds fail with nothing in the
     # log to say why.
     logging.getLogger("crog").warning("github token missing: proxy calls are unauthenticated (60/hour)")
+IP_HASH_SALT = os.environ.get("IP_HASH_SALT", "")
+if not IP_HASH_SALT:
+    logging.getLogger("crog").warning("ip hash salt missing: regenerate calls go without a safety_identifier")
 GITHUB_USERNAME = "chrisrogers37"
 GITHUB_API = "https://api.github.com"
 
@@ -53,6 +59,19 @@ def rate_limit_subject(ip: str) -> str:
     if addr.ipv4_mapped:
         return str(addr.ipv4_mapped)
     return str(ipaddress.ip_network((addr, 64), strict=False))
+
+
+def client_tag(ip: str) -> str | None:
+    """A stable name for a visitor that doesn't reveal their address: 16 hex
+    characters of HMAC-SHA256 over ``rate_limit_subject(ip)``, keyed by
+    ``IP_HASH_SALT`` (#194 M12, #199 M75).
+
+    None without a salt, because an unkeyed hash of an address is undone by
+    hashing every address.
+    """
+    if not IP_HASH_SALT:
+        return None
+    return hmac.new(IP_HASH_SALT.encode(), rate_limit_subject(ip).encode(), hashlib.sha256).hexdigest()[:16]
 
 
 def github_headers() -> dict:

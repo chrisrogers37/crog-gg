@@ -30,6 +30,7 @@ from api._lib.request_utils import (
     GITHUB_API,
     GITHUB_TOKEN,
     GITHUB_USERNAME,
+    client_tag,
     get_client_ip,
     github_headers,
     rate_limit_subject,
@@ -87,7 +88,9 @@ REGEN_DAILY_MAX = 30
 REGEN_DAILY_WINDOW = 86400
 # Section rewrites per rolling 24 h across all visitors (#194 M11), the ceiling
 # per-visitor caps can't give, since anyone can bring more addresses. Size it
-# as the monthly OpenAI budget / (30 x the measured cost of one section rewrite).
+# as the monthly OpenAI budget / (30 x the WORST-case cost of one rewrite):
+# MAX_SECTION_CHARS of input plus _MAX_COMPLETION_TOKENS of output. Someone
+# using many addresses can make every rewrite the worst case, not the average.
 REGEN_GLOBAL_DAILY_MAX = 300
 REGEN_GLOBAL_KEY = "spend:regen_global"
 # The largest section a press may send, measured as it goes into the prompt
@@ -331,6 +334,17 @@ FAILURE_UNEXPECTED = "unexpected"
 # The rewrite is over MAX_SECTION_CHARS. The client would send it back as the
 # next press's input and get a 413 every time from then on (#194 M11).
 FAILURE_TOO_LONG = "too_long"
+# The model ran out of max_completion_tokens before it finished (#194 M12).
+FAILURE_TRUNCATED = "truncated"
+
+# Output bounds per call (#194 M12): no completion runs longer than this,
+# whatever the input asks for. Reasoning tokens count against it too. These are
+# starting values: once regenerate.usage has logged real completions on
+# Preview, set each to about twice the largest, but not much past what the
+# section cap would take back (MAX_SECTION_CHARS / ~3.5 characters per token,
+# plus any reasoning). Output beyond that can only be billed and then refused
+# as too_long.
+_MAX_COMPLETION_TOKENS = {"about": 2000, "portfolio": 4000}
 
 
 def _describe_failure(exc) -> tuple[dict, dict]:
@@ -627,13 +641,35 @@ def _lost_verbatim(original: dict, parsed: dict) -> list[str]:
     return lost
 
 
-def _regenerate_section(section: str, content: dict, use_fantasy: bool, register: str):
+def _log_usage(section: str, usage, finish_reason, started: float) -> None:
+    """One INFO line per completed call: what it cost and how it ended (#194 M12).
+
+    Every completed call is billed, including ones whose output is refused
+    later, so each gets a line. ``reasoning=`` shows whether the model spends
+    reasoning tokens, which count against _MAX_COMPLETION_TOKENS.
+    """
+    logger.info(
+        "regenerate.usage section=%s ms=%d prompt=%s completion=%s reasoning=%s finish=%s",
+        section,
+        (time.monotonic() - started) * 1000,
+        getattr(usage, "prompt_tokens", None),
+        getattr(usage, "completion_tokens", None),
+        getattr(getattr(usage, "completion_tokens_details", None), "reasoning_tokens", None),
+        finish_reason,
+    )
+
+
+def _regenerate_section(section: str, content: dict, use_fantasy: bool, register: str, tag: str | None):
     """Rewrite one section through the model.
 
     Returns ``(parsed, failure)``: the parsed object and None on success, or
     None and a description of what went wrong. Returning rather than raising
     lets a multi-section request keep the sections that did succeed; returning
     the reason alongside is what stops a failure from being anonymous.
+
+    ``tag`` is the visitor's ``client_tag``, sent as OpenAI's
+    ``safety_identifier`` so abuse can be traced to one visitor rather than to
+    the whole site's key. It's None when no salt is configured.
     """
     section_prompt = dict(_PROMPTS[section])
 
@@ -641,6 +677,7 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
         section_prompt["format"] += _fantasy_addition_for(section)
         section_prompt["format"] += _variation_directive(register)
 
+    started = time.monotonic()
     try:
         response = openai_client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -675,16 +712,27 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
                     ),
                 },
             ],
+            max_completion_tokens=_MAX_COMPLETION_TOKENS[section],
+            # Both prompts' formats ask for JSON in words, which the API
+            # requires before it accepts JSON mode.
+            response_format={"type": "json_object"},
+            **({"safety_identifier": tag} if tag else {}),
             **OPENAI_SAMPLING,
         )
         choice = response.choices[0] if response.choices else None
         new_content = getattr(getattr(choice, "message", None), "content", None)
         finish_reason = getattr(choice, "finish_reason", None)
+        _log_usage(section, response.usage, finish_reason, started)
     except openai.OpenAIError as e:
         public, private = _describe_failure(e)
         if os.environ.get("VERCEL_ENV") == "preview":
             public = {**public, **private}
         return _fail(section, FAILURE_MODEL_ERROR, log_detail=private, **public)
+
+    # Before the checks below: a cut-off completion is usually empty or broken
+    # JSON too, and "truncated" is the reason that points at the fix.
+    if finish_reason == "length":
+        return _fail(section, FAILURE_TRUNCATED, max_completion_tokens=_MAX_COMPLETION_TOKENS[section])
 
     # Checked before parsing because json.loads(None) raises a TypeError, not
     # the JSONDecodeError caught below. Uncaught, it became an HTML 500 that
@@ -870,6 +918,8 @@ def regenerate_content():
             429,
         )
 
+    tag = client_tag(client_ip)
+
     # Sampled once per request, not once per section: one press is one telling,
     # so every section has to land in the same world. Sampling inside the
     # per-section call would put a sea shanty beside a stat block on one press.
@@ -880,7 +930,8 @@ def regenerate_content():
     # client is safe to share across threads.
     with ThreadPoolExecutor(max_workers=len(sections)) as pool:
         futures = {
-            name: pool.submit(_regenerate_section, name, body, use_fantasy, register) for name, body in sections.items()
+            name: pool.submit(_regenerate_section, name, body, use_fantasy, register, tag)
+            for name, body in sections.items()
         }
         results = {}
         for name, future in futures.items():
