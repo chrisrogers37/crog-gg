@@ -14,7 +14,8 @@ type RepoLinkProps = {
 
 /**
  * A link to the Claudlobby repo's front page, where the Star button is. Each
- * click is reported as a star_click (#177).
+ * click is reported as a repo_click (#177): a visit to the repo, which may or
+ * may not end in a star, so it isn't counted as a star.
  */
 export function RepoLink({
   location,
@@ -30,7 +31,7 @@ export function RepoLink({
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => {
-        track({ name: "star_click", location });
+        track({ name: "repo_click", location });
         onClick?.();
       }}
     >

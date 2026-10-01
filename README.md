@@ -198,7 +198,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 
 ### Web Analytics
 
-Pageviews and the CTA events (`star_click`, `quickstart_click`) go to Vercel Web Analytics, through `frontend/src/services/analytics.ts`. It sets no cookies, and its script and beacons are served from the site's own origin (`/_vercel/insights/*`), so the CSP needs no change.
+Pageviews and the CTA events (`repo_click`, `quickstart_click`) go to Vercel Web Analytics, through `frontend/src/services/analytics.ts`. It sets no cookies, and its script and beacons are served from the site's own origin (`/_vercel/insights/*`), so the CSP needs no change.
 
 1. Vercel → project → **Analytics** → **Enable**, before the first deploy that ships `@vercel/analytics`. The `/_vercel/insights/*` routes exist from the next deployment on; until then every page requests a script that 404s.
 2. Custom events need the **Pro** plan. On Hobby only pageviews are recorded, up to the plan's monthly event cap.

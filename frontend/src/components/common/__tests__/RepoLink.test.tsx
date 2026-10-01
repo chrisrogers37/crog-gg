@@ -38,7 +38,7 @@ describe("RepoLink", () => {
     await user.click(screen.getByRole("button", { name: "Open menu" }));
 
     // Every link into the repo. The deeper ones (issues, the setup guide, the
-    // pinned README) aren't star clicks, so they must report nothing.
+    // pinned README) aren't the repo's front page, so they must report nothing.
     const intoRepo = (await screen.findAllByRole("link"))
       .map((link) => [link, link.getAttribute("href")!] as const)
       .filter(([, href]) => href.startsWith(CLAUDLOBBY_REPO));
@@ -49,7 +49,7 @@ describe("RepoLink", () => {
     const locations = vi
       .mocked(track)
       .mock.calls.map(([event]) =>
-        event.name === "star_click" ? event.location : event.name,
+        event.name === "repo_click" ? event.location : event.name,
       );
     expect(locations.sort()).toEqual([
       "footer",

@@ -25,13 +25,13 @@ describe("analytics", () => {
     // The CSP allows scripts and beacons from 'self' only.
     expect(script()).toBe("/_vercel/insights/script.js");
 
-    track({ name: "star_click", location: "hero" });
+    track({ name: "repo_click", location: "hero" });
     track({ name: "quickstart_click" });
 
     // Queued until the script loads, which consumes the queue.
     expect(window.vaq).toEqual([
       ["beforeSend", keepCampaignParams],
-      ["event", { name: "star_click", data: { location: "hero" } }],
+      ["event", { name: "repo_click", data: { location: "hero" } }],
       ["event", { name: "quickstart_click", data: {} }],
     ]);
   });

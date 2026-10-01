@@ -23,7 +23,7 @@ export type RepoLinkLocation =
   | "quickstart";
 
 export type AnalyticsEvent =
-  | { name: "star_click"; location: RepoLinkLocation }
+  | { name: "repo_click"; location: RepoLinkLocation }
   | { name: "quickstart_click" };
 
 /**
