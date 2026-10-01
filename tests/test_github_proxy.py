@@ -17,6 +17,7 @@ Coverage:
 
 import logging
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -354,6 +355,74 @@ def test_repo_name_with_a_trailing_newline_is_rejected(client):
         r = client.get("/api/v1/github/repo/shuffify%0A")
     assert r.status_code == 400
     mock_get.assert_not_called()
+
+
+# --- what /repo and the language total expose (#199) -------------------------
+
+
+@pytest.mark.parametrize(
+    "license_in, license_out",
+    [
+        (
+            {"key": "mit", "name": "MIT License", "spdx_id": "MIT", "url": "https://api.github.com/licenses/mit"},
+            {"name": "MIT License", "spdx_id": "MIT"},
+        ),
+        (None, None),
+    ],
+    ids=["license", "no-license"],
+)
+def test_repo_returns_only_the_repository_fields(client, license_in, license_out):
+    from api.index import _REPO_FIELDS
+
+    payload = {
+        "name": "shuffify",
+        "private": False,
+        "stargazers_count": 3,
+        "permissions": {"admin": True, "push": True},
+        "security_and_analysis": {"secret_scanning": {"status": "enabled"}},
+        "license": license_in,
+    }
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        r = client.get("/api/v1/github/repo/shuffify")
+
+    body = r.get_json()
+    assert set(body) == set(_REPO_FIELDS) and len(_REPO_FIELDS) == 16
+    assert body["stargazers_count"] == 3
+    assert body["license"] == license_out
+    assert "permissions" not in body and "security_and_analysis" not in body
+
+
+def test_repo_fields_match_the_frontend_type():
+    """_REPO_FIELDS copies the frontend's Repository type; fail when they drift."""
+    from api.index import _REPO_FIELDS
+
+    source = (Path(__file__).resolve().parents[1] / "frontend/src/services/githubService.ts").read_text()
+    block = source.split("export interface Repository {", 1)[1].split("\n}", 1)[0]
+    assert sorted(re.findall(r"^  (\w+)\??:", block, flags=re.M)) == sorted(_REPO_FIELDS)
+    license_block = block.split("license: {", 1)[1].split("}", 1)[0]
+    assert sorted(re.findall(r"^    (\w+)\??:", license_block, flags=re.M)) == ["name", "spdx_id"]
+
+
+def test_language_total_skips_private_repos(client):
+    repos = [
+        {"name": "public-one", "fork": False, "private": False},
+        {"name": "secret-one", "fork": False, "private": True},
+        {"name": "forked-one", "fork": True, "private": False},
+    ]
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/repos?per_page=100"):
+            return _make_response(200, repos)
+        if "/public-one/" in url:
+            return _make_response(200, {"Python": 10})
+        return _make_response(200, {"Secret": 99})
+
+    with patch("api.index.cache.get_json", return_value=None), patch("api.index.cache.set_json"):
+        with patch("api.index.requests.get", side_effect=_side_effect) as mock_get:
+            r = client.get("/api/v1/github/languages")
+
+    assert r.get_json() == {"Python": 10}
+    assert not any("secret-one" in call.args[0] for call in mock_get.call_args_list)
 
 
 def _import_request_utils(env):

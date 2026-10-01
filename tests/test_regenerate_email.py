@@ -136,14 +136,20 @@ def test_email_and_social_links_are_pinned_in_one_pass(client):
 
 
 def test_portfolio_section_email_is_untouched(client):
-    """The pin table is per-section: only ``about`` declares ``email`` unauthored."""
+    """The pin table is per-section: only ``about`` declares ``email`` unauthored.
+
+    The input carries an ``email`` too, because a key the input lacks is dropped
+    as the model's invention whatever the section (#199)."""
     rewritten = {
         "experience": [{"title": "rewritten"}],
         "email": "anything@example.com",
     }
 
     result = _regenerate(
-        client, rewritten, {"experience": [{"title": "original"}]}, section="portfolio"
+        client,
+        rewritten,
+        {"experience": [{"title": "original"}], "email": "original@example.com"},
+        section="portfolio",
     )
 
     assert result == rewritten

@@ -20,6 +20,7 @@ files owned by other in-flight branches.
 import json
 from unittest.mock import MagicMock, patch
 
+import httpx
 import openai
 import pytest
 
@@ -63,40 +64,88 @@ def test_the_request_carries_no_rejected_parameter(client):
     assert set(kwargs) <= {"model", "messages"}, f"unexpected params on the wire: {sorted(kwargs)}"
 
 
+def _api_error(status, code=None, param=None, message="Unsupported value: 'temperature' does not support 0.7"):
+    """An OpenAI error exactly as the SDK raises it for an HTTP error response.
+
+    Built through the SDK rather than by setting attributes by hand: the SDK
+    unwraps OpenAI's {"error": {...}} envelope before raising, and a hand-built
+    envelope hid for months that _describe_failure never found `code`.
+    """
+    body = {"error": {"message": message, "type": "invalid_request_error", "param": param, "code": code}}
+    response = httpx.Response(status, request=httpx.Request("POST", "https://api.openai.com/v1/chat/completions"))
+    return openai.OpenAI(api_key="test")._make_status_error(f"Error code: {status} - {body}", body=body, response=response)
+
+
 def test_describe_failure_extracts_the_machine_tokens():
     # The shape OpenAI returns for a rejected parameter -- `code` and `param`
     # are what identify the cause without echoing the request back.
-    exc = openai.OpenAIError("Unsupported value: 'temperature' does not support 0.7 with this model")
-    exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
-    exc.status_code = 400
+    public, private = _describe_failure(_api_error(400, code="unsupported_value", param="temperature"))
+    assert public == {"status": 400, "code": "unsupported_value"}
+    assert private["param"] == "temperature"
+    assert private["type"] == "BadRequestError"
+    assert "does not support 0.7" in private["message"]
 
-    d = _describe_failure(exc)
-    assert d["code"] == "unsupported_value"
-    assert d["param"] == "temperature"
-    assert d["status"] == 400
-    assert "temperature" in d["message"]
+
+def test_describe_failure_also_reads_a_wrapped_envelope():
+    exc = openai.OpenAIError("boom")
+    exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
+    public, private = _describe_failure(exc)
+    assert public["code"] == "unsupported_value" and private["param"] == "temperature"
+
+
+def test_a_quota_error_names_itself(client):
+    exc = _api_error(429, code="insufficient_quota", message="You exceeded your current quota. " * 12)
+    with patch("api.index.openai_client", _client(error=exc)):
+        r = client.post("/api/regenerate", json=_BODY)
+    assert r.get_json()["failures"]["about"] == {"reason": FAILURE_MODEL_ERROR, "status": 429, "code": "insufficient_quota"}
 
 
 def test_describe_failure_survives_an_error_with_no_body():
-    d = _describe_failure(openai.OpenAIError("boom"))
-    assert d["type"] == "OpenAIError"
-    assert d["code"] is None and d["param"] is None
-    assert d["message"] == "boom"
+    public, private = _describe_failure(openai.OpenAIError("boom"))
+    assert public == {"status": None, "code": None}
+    assert private == {"type": "OpenAIError", "param": None, "message": "boom"}
 
 
 def test_a_failed_request_names_the_cause(client):
-    exc = openai.OpenAIError("Unsupported value: 'temperature'")
-    exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
+    exc = _api_error(400, code="unsupported_value", param="temperature")
     with patch("api.index.openai_client", _client(error=exc)):
         r = client.post("/api/regenerate", json=_BODY)
 
     assert r.status_code == 500
     body = r.get_json()
     assert body["failed_sections"] == ["about"]
-    # The whole point: the 500 is no longer contentless.
-    assert body["failures"]["about"]["reason"] == FAILURE_MODEL_ERROR
-    assert body["failures"]["about"]["code"] == "unsupported_value"
-    assert body["failures"]["about"]["param"] == "temperature"
+    # The whole point: the 500 is no longer contentless. The machine token
+    # names the cause; the provider's own words stay server-side (#199).
+    assert body["failures"]["about"] == {"reason": FAILURE_MODEL_ERROR, "status": 400, "code": "unsupported_value"}
+
+
+def test_provider_text_stays_in_the_log(client, caplog, monkeypatch):
+    import logging
+
+    monkeypatch.delenv("VERCEL_ENV", raising=False)
+    caplog.set_level(logging.ERROR, logger="crog")
+    exc = _api_error(400, code="unsupported_value", param="temperature")
+    with patch("api.index.openai_client", _client(error=exc)):
+        r = client.post("/api/regenerate", json=_BODY)
+
+    assert "does not support" not in r.get_data(as_text=True)
+    assert "temperature" not in r.get_data(as_text=True)
+    [record] = [rec for rec in caplog.records if "regeneration failed" in rec.getMessage()]
+    assert "does not support 0.7" in record.getMessage()
+    assert "'param': 'temperature'" in record.getMessage()
+
+
+def test_preview_responses_keep_the_provider_text(client, monkeypatch):
+    # Previews sit behind Vercel's login, so they keep #134's browser-side
+    # diagnosis.
+    monkeypatch.setenv("VERCEL_ENV", "preview")
+    exc = _api_error(400, code="unsupported_value", param="temperature")
+    with patch("api.index.openai_client", _client(error=exc)):
+        r = client.post("/api/regenerate", json=_BODY)
+
+    failure = r.get_json()["failures"]["about"]
+    assert failure["param"] == "temperature"
+    assert "Unsupported value" in failure["message"]
 
 
 def test_a_non_json_response_also_names_itself(client):
