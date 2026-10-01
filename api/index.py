@@ -320,31 +320,28 @@ FAILURE_EMPTY_RESPONSE = "empty_response"
 FAILURE_UNEXPECTED = "unexpected"
 
 
-def _describe_failure(exc) -> dict:
-    """A short, response-safe description of why a model call failed.
+def _describe_failure(exc) -> tuple[dict, dict]:
+    """Why a model call failed, split into ``(public, private)`` (#199).
 
     Configuration faults -- a rejected parameter, a model the account cannot
     reach, an exhausted quota -- present as a total outage: every call fails
-    identically. They are also exactly the failures a bare 500 makes impossible
-    to diagnose from outside, because the cause exists only in a server log.
-
-    `code` and `param` are short machine tokens (`unsupported_value`,
-    `temperature`) that name the cause without echoing request content back to
-    the caller.
+    identically, and a bare 500 makes them impossible to diagnose from outside.
+    So ``public`` keeps the two short machine tokens that name the cause
+    (`status` and `code`, e.g. 400 and `unsupported_value`) and goes back to the
+    caller. ``private`` holds the provider's own words (`message`), the
+    parameter it names and the exception type. That text is the provider's, not
+    ours, so it goes only into the server log, and into Preview responses,
+    which sit behind Vercel's login.
     """
     body = getattr(exc, "body", None)
     err = body.get("error") if isinstance(body, dict) else None
     err = err if isinstance(err, dict) else {}
-    return {
-        "type": type(exc).__name__,
-        "status": getattr(exc, "status_code", None),
-        "code": err.get("code"),
-        "param": err.get("param"),
-        "message": str(exc)[:300],
-    }
+    public = {"status": getattr(exc, "status_code", None), "code": err.get("code")}
+    private = {"type": type(exc).__name__, "param": err.get("param"), "message": str(exc)[:300]}
+    return public, private
 
 
-def _fail(section: str, reason: str, log_only: str = "", **detail):
+def _fail(section: str, reason: str, log_only: str = "", log_detail: dict | None = None, **detail):
     """Record a failed section and return it in the caller's shape.
 
     Every failure routes through here, so the taxonomy reaches the log
@@ -353,12 +350,23 @@ def _fail(section: str, reason: str, log_only: str = "", **detail):
     useless for a pattern.
 
     ``reason`` is the token to aggregate on. ``detail`` rides along in the
-    response; ``log_only`` never leaves the server.
+    response; ``log_only`` and ``log_detail`` never leave the server.
     """
     failure = {"reason": reason, **detail}
     sample = f" sample={log_only[:200]!r}" if log_only else ""
-    logger.error("regeneration failed: section=%s %s%s", section, failure, sample)
+    logger.error("regeneration failed: section=%s %s%s", section, {**failure, **(log_detail or {})}, sample)
     return None, failure
+
+
+def _prompt_json(content) -> str:
+    """``content`` as JSON that can't close the <user_content> tag around it.
+
+    json.dumps leaves ``<`` and ``>`` alone, so a value containing
+    ``</user_content>`` would end the data block early and turn the rest of the
+    visitor's text into instructions. ``\\u003c`` and ``\\u003e`` are the same
+    characters to any JSON reader, so the model still sees the content unchanged.
+    """
+    return json.dumps(content).replace("<", "\\u003c").replace(">", "\\u003e")
 
 
 def _section_rejection(parsed, original: dict):
@@ -644,7 +652,7 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
                     "role": "user",
                     "content": (
                         "Rewrite the content provided between the <user_content> tags below.\n\n"
-                        f"<user_content>\n{json.dumps(content)}\n</user_content>\n\n"
+                        f"<user_content>\n{_prompt_json(content)}\n</user_content>\n\n"
                         f"Formatting instructions: {section_prompt['format']}\n\n"
                         "Pay special attention to achievements if they exist. Each "
                         "achievement should be rewritten to be more impactful while "
@@ -658,7 +666,10 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
         new_content = getattr(getattr(choice, "message", None), "content", None)
         finish_reason = getattr(choice, "finish_reason", None)
     except openai.OpenAIError as e:
-        return _fail(section, FAILURE_MODEL_ERROR, **_describe_failure(e))
+        public, private = _describe_failure(e)
+        if os.environ.get("VERCEL_ENV") == "preview":
+            public = {**public, **private}
+        return _fail(section, FAILURE_MODEL_ERROR, log_detail=private, **public)
 
     # Checked before parsing because json.loads(None) raises a TypeError, not
     # the JSONDecodeError caught below. Uncaught, it became an HTML 500 that
@@ -683,6 +694,14 @@ def _regenerate_section(section: str, content: dict, use_fantasy: bool, register
     rejection = _section_rejection(parsed, content)
     if rejection is not None:
         return _fail(section, rejection, output_type=type(parsed).__name__)
+
+    # A rewrite keeps the shape it was handed, so a key the input didn't have is
+    # the model's invention. It goes before the restore below, and is counted:
+    # a key that keeps appearing is a prompt that keeps drifting.
+    if extra := sorted(key for key in parsed if key not in content):
+        for key in extra:
+            del parsed[key]
+        logger.warning("regenerate.extra_keys_dropped section=%s keys=%s", section, ",".join(extra))
 
     # The model does not author URLs -- see _UNAUTHORED_KEYS. Assignment is
     # wholesale so nothing the model put under one of these keys survives, and a
@@ -912,6 +931,37 @@ def get_usage_info():
 # ---------------------------------------------------------------------------
 
 
+# The fields of the frontend's `Repository` type (githubService.ts), and all
+# that /repo returns. GitHub's full body, fetched with the server's token, also
+# carries token-specific fields such as `permissions`, which a public endpoint
+# has no reason to repeat (#199).
+_REPO_FIELDS = (
+    "name",
+    "full_name",
+    "description",
+    "html_url",
+    "homepage",
+    "stargazers_count",
+    "forks_count",
+    "watchers_count",
+    "open_issues_count",
+    "language",
+    "topics",
+    "created_at",
+    "updated_at",
+    "pushed_at",
+    "license",
+    "default_branch",
+)
+
+
+def _repository_fields(data: dict) -> dict:
+    fields = {key: data.get(key) for key in _REPO_FIELDS}
+    if isinstance(fields["license"], dict):
+        fields["license"] = {"name": fields["license"].get("name"), "spdx_id": fields["license"].get("spdx_id")}
+    return fields
+
+
 @app.route("/api/v1/github/repo/<repo_name>", methods=["GET"])
 def get_repository(repo_name):
     if (resp := _guard_repo_request(repo_name, "repo")) is not None:
@@ -921,7 +971,7 @@ def get_repository(repo_name):
     data, error = _fetch_public_repo(repo_name, "repo")
     if error is not None:
         return error
-    return jsonify(data)
+    return jsonify(_repository_fields(data))
 
 
 @app.route("/api/v1/github/readme/<repo_name>", methods=["GET"])
@@ -974,7 +1024,9 @@ def get_all_languages_v1():
 
         all_languages: dict[str, int] = {}
         for repo in repos:
-            if repo.get("fork"):
+            # Private repos are skipped like forks: a token that can see them
+            # would otherwise add their languages to a public total (#199).
+            if repo.get("fork") or repo.get("private"):
                 continue
             lang_response = requests.get(
                 f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo['name']}/languages",

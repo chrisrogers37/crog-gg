@@ -70,18 +70,16 @@ def test_describe_failure_extracts_the_machine_tokens():
     exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
     exc.status_code = 400
 
-    d = _describe_failure(exc)
-    assert d["code"] == "unsupported_value"
-    assert d["param"] == "temperature"
-    assert d["status"] == 400
-    assert "temperature" in d["message"]
+    public, private = _describe_failure(exc)
+    assert public == {"status": 400, "code": "unsupported_value"}
+    assert private["param"] == "temperature"
+    assert "temperature" in private["message"]
 
 
 def test_describe_failure_survives_an_error_with_no_body():
-    d = _describe_failure(openai.OpenAIError("boom"))
-    assert d["type"] == "OpenAIError"
-    assert d["code"] is None and d["param"] is None
-    assert d["message"] == "boom"
+    public, private = _describe_failure(openai.OpenAIError("boom"))
+    assert public == {"status": None, "code": None}
+    assert private == {"type": "OpenAIError", "param": None, "message": "boom"}
 
 
 def test_a_failed_request_names_the_cause(client):
@@ -93,10 +91,40 @@ def test_a_failed_request_names_the_cause(client):
     assert r.status_code == 500
     body = r.get_json()
     assert body["failed_sections"] == ["about"]
-    # The whole point: the 500 is no longer contentless.
-    assert body["failures"]["about"]["reason"] == FAILURE_MODEL_ERROR
-    assert body["failures"]["about"]["code"] == "unsupported_value"
-    assert body["failures"]["about"]["param"] == "temperature"
+    # The whole point: the 500 is no longer contentless. The machine token
+    # names the cause; the provider's own words stay server-side (#199).
+    assert body["failures"]["about"] == {"reason": FAILURE_MODEL_ERROR, "status": None, "code": "unsupported_value"}
+
+
+def test_provider_text_stays_in_the_log(client, caplog, monkeypatch):
+    import logging
+
+    monkeypatch.delenv("VERCEL_ENV", raising=False)
+    caplog.set_level(logging.ERROR, logger="crog")
+    exc = openai.OpenAIError("Unsupported value: 'temperature' does not support 0.7")
+    exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
+    with patch("api.index.openai_client", _client(error=exc)):
+        r = client.post("/api/regenerate", json=_BODY)
+
+    assert "does not support" not in r.get_data(as_text=True)
+    assert "temperature" not in r.get_data(as_text=True)
+    [record] = [rec for rec in caplog.records if "regeneration failed" in rec.getMessage()]
+    assert "does not support 0.7" in record.getMessage()
+    assert "'param': 'temperature'" in record.getMessage()
+
+
+def test_preview_responses_keep_the_provider_text(client, monkeypatch):
+    # Previews sit behind Vercel's login, so they keep #134's browser-side
+    # diagnosis.
+    monkeypatch.setenv("VERCEL_ENV", "preview")
+    exc = openai.OpenAIError("Unsupported value: 'temperature'")
+    exc.body = {"error": {"code": "unsupported_value", "param": "temperature"}}
+    with patch("api.index.openai_client", _client(error=exc)):
+        r = client.post("/api/regenerate", json=_BODY)
+
+    failure = r.get_json()["failures"]["about"]
+    assert failure["param"] == "temperature"
+    assert "Unsupported value" in failure["message"]
 
 
 def test_a_non_json_response_also_names_itself(client):

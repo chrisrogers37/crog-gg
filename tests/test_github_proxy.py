@@ -356,6 +356,52 @@ def test_repo_name_with_a_trailing_newline_is_rejected(client):
     mock_get.assert_not_called()
 
 
+# --- what /repo and the language total expose (#199) -------------------------
+
+
+def test_repo_returns_only_the_repository_fields(client):
+    from api.index import _REPO_FIELDS
+
+    payload = {
+        "name": "shuffify",
+        "private": False,
+        "stargazers_count": 3,
+        "permissions": {"admin": True, "push": True},
+        "security_and_analysis": {"secret_scanning": {"status": "enabled"}},
+        "license": {"key": "mit", "name": "MIT License", "spdx_id": "MIT", "url": "https://api.github.com/licenses/mit"},
+    }
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        r = client.get("/api/v1/github/repo/shuffify")
+
+    body = r.get_json()
+    assert set(body) == set(_REPO_FIELDS) and len(_REPO_FIELDS) == 16
+    assert body["stargazers_count"] == 3
+    assert body["license"] == {"name": "MIT License", "spdx_id": "MIT"}
+    assert "permissions" not in body and "security_and_analysis" not in body
+
+
+def test_language_total_skips_private_repos(client):
+    repos = [
+        {"name": "public-one", "fork": False, "private": False},
+        {"name": "secret-one", "fork": False, "private": True},
+        {"name": "forked-one", "fork": True, "private": False},
+    ]
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/repos?per_page=100"):
+            return _make_response(200, repos)
+        if "/public-one/" in url:
+            return _make_response(200, {"Python": 10})
+        return _make_response(200, {"Secret": 99})
+
+    with patch("api.index.cache.get_json", return_value=None), patch("api.index.cache.set_json"):
+        with patch("api.index.requests.get", side_effect=_side_effect) as mock_get:
+            r = client.get("/api/v1/github/languages")
+
+    assert r.get_json() == {"Python": 10}
+    assert not any("secret-one" in call.args[0] for call in mock_get.call_args_list)
+
+
 def _import_request_utils(env):
     return subprocess.run(
         [sys.executable, "-c", "import api._lib.request_utils"],
