@@ -12,7 +12,9 @@
     @apply bg-slate-50 text-slate-800 antialiased;
     @apply dark:bg-slate-900 dark:text-slate-200;
     @apply min-h-screen w-full m-0;
-    @apply overflow-x-hidden;
+    /* clip, not hidden: hidden makes body a scroll container, so the sticky
+       header stuck to it and scrolled away with the page. */
+    @apply overflow-x-clip;
     @apply transition-colors duration-200;
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   }
@@ -28,7 +30,7 @@
   /* The site's two button styles (CLAUDE.md): one filled primary, one ghost.
      Focus is the global *:focus-visible outline above. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2;
+    @apply inline-flex items-center justify-center gap-2 no-underline hover:no-underline;
     @apply px-5 py-3 rounded-lg border border-transparent;
     @apply text-base font-semibold;
     @apply transition-colors duration-150;

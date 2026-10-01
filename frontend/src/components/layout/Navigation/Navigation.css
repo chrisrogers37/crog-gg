@@ -121,3 +121,10 @@
     gap: 1rem;
   }
 }
+
+/* At phone widths the logo needs the room; the menu links the repo too. */
+@media (max-width: 480px) {
+  .nav-repo {
+    display: none;
+  }
+}

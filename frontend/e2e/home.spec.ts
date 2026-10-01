@@ -44,18 +44,58 @@ test.describe("Home Page", () => {
     }
   });
 
-  test("the Quickstart button jumps to the quickstart", async ({ page }) => {
-    await page.locator('.cl-hero a[href="#quickstart"]').click();
-    await expect(page).toHaveURL(/#quickstart$/);
-    await expect(page.locator("#quickstart pre")).toBeInViewport();
+  for (const [label, viewport] of [
+    ["desktop", { width: 1366, height: 768 }],
+    ["phone", { width: 390, height: 844 }],
+  ] as const) {
+    test(`the Quickstart button lands below the sticky header (${label})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      // Instant scrolling, so the check below sees where the jump lands.
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.locator('.cl-hero a[href="#quickstart"]').click();
+      await expect(page).toHaveURL(/#quickstart$/);
+
+      const header = await page.locator("header").first().boundingBox();
+      const heading = await page.locator("#quickstart h2").boundingBox();
+      // The header stays on screen, and the heading sits below it.
+      expect(header?.y).toBe(0);
+      expect(heading!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
+      await expect(page.locator("#quickstart h2")).toBeInViewport();
+    });
+  }
+
+  test("a shared link to a section opens with its heading below the header", async ({
+    page,
+  }) => {
+    // Mid-page, so the browser can bring the section all the way up: only the
+    // sections' scroll margin keeps the heading out from under the header.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/#dark-factory");
+    const heading = page.locator("#dark-factory h2");
+    await expect(heading).toBeInViewport();
+
+    const header = await page.locator("header").first().boundingBox();
+    const box = await heading.boundingBox();
+    expect(box!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
   });
 
-  test("copies the quickstart commands", async ({ page, context }) => {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    await page.locator("#quickstart .cl-copy").click();
-    await expect(page.locator("#quickstart .cl-copy")).toHaveText(/copied/i);
-    const copied = await page.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toContain(`git clone ${REPO}.git`);
+  test("the quickstart sends you to the README's own steps", async ({
+    page,
+  }) => {
+    const readme = page.locator(`#quickstart a[href="${REPO}#quick-start"]`);
+    await expect(readme).toBeVisible();
+    expect(await readme.getAttribute("rel")).toContain("noopener");
+  });
+
+  test("the header's logo stays on one line on a small phone", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    const logo = await page.locator("header .nav-logo").boundingBox();
+    expect(logo!.height).toBeLessThan(45);
   });
 
   test("shows the library counts with their source", async ({ page }) => {

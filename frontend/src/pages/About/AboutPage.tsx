@@ -119,11 +119,11 @@ export function AboutPage() {
   // actually went, so one click moved the page below twice. Both are the same
   // defect, and the fix for both is to follow the DOM rather than the intent.
 
-  // Default to "about" selected on mount
+  // Every visit lands on About's preview. activeSection lives in the global
+  // store and outlives this page, so a tab picked on an earlier visit would
+  // otherwise sit selected over About's preview.
   useEffect(() => {
-    if (!activeSection) {
-      setActiveSection("about");
-    }
+    setActiveSection("about");
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Regeneration; the button reads its own cooldown
@@ -159,8 +159,9 @@ export function AboutPage() {
   // Before the early returns below, so the menu lists these while loading too.
   useSectionMenu(MENU_SECTIONS, handleSectionChange);
 
-  // Handle "see more" click from preview
+  // "see more" expands About: the preview is always About's.
   const handlePreviewExpand = () => {
+    setActiveSection("about");
     setPreviewMode(false);
   };
 

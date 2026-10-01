@@ -40,9 +40,9 @@ export const claudlobby = {
         body: "Name each bot and the pieces it's built from: a persona, skills, MCP servers, guardrails and protocols, all from one shared library.",
       },
       {
-        title: "Generate the bots",
-        code: "claudlobby generate",
-        body: "Each bot becomes a self-contained Claude Code workspace, with a systemd or launchd unit to keep it running.",
+        title: "Plan, then activate",
+        code: "claudlobby config plan",
+        body: "Each bot is composed into a self-contained Claude Code workspace with a launchd or systemd unit, staged as a plan you review before you activate it.",
       },
       {
         title: "Let it run",
@@ -57,15 +57,15 @@ export const claudlobby = {
     points: [
       {
         title: "Write it once, use it everywhere",
-        body: "A guardrail, skill or protocol lives once in the library, and every bot that declares it gets it. Adding a bot is about ten lines of `fleet.yaml`.",
+        body: "A guardrail, skill or protocol lives once in the library, and every bot that declares it gets it. Adding a bot is one stanza in `fleet.yaml`.",
       },
       {
         title: "Runs on hardware you own",
-        body: "Local-first, with no required hosted service. A Mac mini, a Linux box or a Raspberry Pi 5 is enough.",
+        body: "No Claudlobby service to sign up for: the fleet runs on your machine. A Mac mini, a Linux box or a Raspberry Pi 5 is enough.",
       },
       {
         title: "Bots that learn",
-        body: "Skills are shared, so an improvement one bot makes reaches every bot using that skill. `claudlobby diff` and `promote` pull the rest of a bot's changes back into the library.",
+        body: "Skills are shared, so improving one improves every bot that uses it. Bots keep their own memory across rebuilds, and `claudlobby config diff --bot` shows what a bot has changed, so a good change can go back into the library.",
       },
     ] satisfies Point[],
     library: {
@@ -73,12 +73,12 @@ export const claudlobby = {
       // Counted from the README's "What this repo gives you" list, and checked
       // against the repo tree (library/, README.md files excluded) that day.
       source:
-        "https://github.com/Claudfather/Claudlobby/blob/1f61247c3febb9e13285687096bb7e8483f5dcad/README.md#what-this-repo-gives-you--and-doesnt",
+        "https://github.com/Claudfather/Claudlobby/blob/c4682f7ace169ae69b2337eaabdfcbc12e64001e/README.md#what-this-repo-gives-you--and-doesnt",
       sourceLabel: "Claudlobby README",
-      asOf: "2026-09-29",
+      asOf: "2026-09-30",
       counts: [
         { value: 19, label: "expertise profiles" },
-        { value: 54, label: "skills" },
+        { value: 55, label: "skills" },
         { value: 17, label: "MCP fragments" },
         { value: 25, label: "guardrails" },
         { value: 40, label: "protocols" },
@@ -86,28 +86,21 @@ export const claudlobby = {
     },
   },
 
+  // From the README's Quick start and "You install separately" at c4682f7
+  // (2026-09-30). The steps themselves change with each release, so this
+  // section links to them in the README instead of copying them.
   quickstart: {
     heading: "Quickstart",
     intro:
-      "Clone the repo, install it, and let claudfather, the built-in setup assistant, walk you through the rest on Telegram.",
+      "Setup builds a sealed release on your machine and starts your fleet from one `fleet.yaml`. The README's Quick start walks you through it.",
     prerequisitesHeading: "You'll need",
     prerequisites: [
-      "Claude Code, signed in with Claude Max, Team or Enterprise, or an `ANTHROPIC_API_KEY`",
-      "A Telegram account, a bot token from @BotFather and Claude Code's Telegram plugin",
-      "A GitHub token for the bots to work with",
-      "macOS or Linux with Python 3.10+, such as a Mac mini or a Raspberry Pi 5",
+      "Claude Code, installed and signed in (or an `ANTHROPIC_API_KEY`)",
+      "Python and `tmux` on macOS (launchd) or Linux (systemd), such as a Mac mini or a Raspberry Pi 5",
+      "Claude Code's Telegram plugin and a @BotFather token for each bot, if your fleet uses Telegram",
+      "A GitHub token for the bots (`GITHUB_PAT`)",
     ],
-    commands: [
-      "git clone https://github.com/Claudfather/Claudlobby.git",
-      "cd Claudlobby",
-      "python3 -m venv .venv",
-      "source .venv/bin/activate",
-      "python3 -m pip install -e '.[plane-ui]'",
-      "claude",
-    ].join("\n"),
-    after:
-      "Then type `/setup` in Claude Code. It checks your host, collects your credentials and starts claudfather on Telegram, where setup continues.",
-    docsLink: "Full setup guide",
     readmeLink: "Quickstart in the README",
+    docsLink: "Full setup guide",
   },
 };

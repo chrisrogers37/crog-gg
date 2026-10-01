@@ -50,7 +50,8 @@ body {
   display: flex;
   justify-content: center;
   width: 100%;
-  overflow-x: hidden;
+  /* clip, not hidden, so the sticky header sticks (see .layout). */
+  overflow-x: clip;
 }
 
 #root {
@@ -58,7 +59,7 @@ body {
   display: flex;
   justify-content: center;
   background-color: var(--background-color);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 header {

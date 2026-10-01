@@ -59,10 +59,27 @@ test.describe("About Page", () => {
   });
 
   test("has social links", async ({ page }) => {
-    // Test that external social links exist
-    const socialLinks = page.locator('a[target="_blank"]');
+    // The page's own: the site header links out too, and renders first.
+    const socialLinks = page.locator('.about-page a[target="_blank"]');
     await expect(socialLinks.first()).toBeVisible();
   });
+
+  test("lands on About's preview whatever tab was open before", async ({
+    page,
+  }) => {
+    // The selected tab lives in a global store that outlives the page.
+    await page.getByRole("tab", { name: /journey/i }).click();
+    await page.locator('header a[href="/"]').first().click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.locator('header a[href="/about"]').first().click();
+    await expect(page).toHaveURL(/\/about$/);
+
+    const about = page.getByRole("tab", { name: /^about$/i });
+    await expect(about).toHaveAttribute("aria-selected", "true");
+    await page.getByRole("button", { name: /see more/i }).click();
+    await expect(about).toHaveAttribute("aria-selected", "true");
+  });
+
 });
 
 test.describe("Section Navigation", () => {

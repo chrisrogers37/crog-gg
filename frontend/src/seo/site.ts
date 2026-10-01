@@ -41,7 +41,7 @@ export type PageMeta = {
    * indexed has none.
    */
   path?: string;
-  /** Page title; the site name is appended. The home page omits it. */
+  /** Page title; the site name is appended. */
   title?: string;
   description: string;
   type?: "website" | "profile";
@@ -123,6 +123,7 @@ const HOME_DESCRIPTION =
 /** The front door for Claudlobby (#173). */
 export const HOME_META: LandingPage = {
   path: "/",
+  title: "Claudlobby",
   description: HOME_DESCRIPTION,
   schemas: [
     {

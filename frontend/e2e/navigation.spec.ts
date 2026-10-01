@@ -83,6 +83,28 @@ test.describe("A page that fails to load", () => {
   });
 });
 
+test.describe("Moving between pages", () => {
+  test("a new page opens at the top, not where the last one was scrolled", async ({
+    page,
+  }) => {
+    // /projects first, so it renders at once later, as it does for anyone
+    // who's been there.
+    await page.goto("/projects");
+    await expect(page.locator("a.project-tile").first()).toBeVisible();
+    await page.locator('header a[href="/"]').first().click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.locator("footer").scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(0);
+
+    await page.locator('header a[href="/projects"]').first().click();
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect(page.locator("a.project-tile").first()).toBeVisible();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+});
+
 test.describe("Layout Components", () => {
   test("header is present on projects page", async ({ page }) => {
     await page.goto("/projects");

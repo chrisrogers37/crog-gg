@@ -46,7 +46,7 @@ export function Navigation() {
           ))}
         </ul>
         <a
-          className="btn btn-ghost btn-sm"
+          className="btn btn-ghost btn-sm nav-repo"
           href={CLAUDLOBBY_REPO}
           target="_blank"
           rel="noopener noreferrer"

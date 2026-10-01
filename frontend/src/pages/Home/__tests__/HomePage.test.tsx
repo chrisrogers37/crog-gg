@@ -1,10 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
-import { renderWithProviders, screen, userEvent } from "../../../test/utils";
+import { describe, it, expect } from "vitest";
+import { renderWithProviders, screen } from "../../../test/utils";
 import { HomePage } from "../HomePage";
 import { claudlobby } from "../../../content/claudlobby";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
+import {
+  CLAUDLOBBY_GETTING_STARTED,
+  CLAUDLOBBY_README_QUICKSTART,
+  CLAUDLOBBY_REPO,
+} from "../../../content/links";
 
-const { hero } = claudlobby;
+const { hero, quickstart } = claudlobby;
 
 describe("HomePage", () => {
   it("leads with one heading and both next steps", () => {
@@ -40,36 +44,13 @@ describe("HomePage", () => {
     );
   });
 
-  it("copies the quickstart commands and announces it", async () => {
-    // userEvent.setup() stands in a clipboard for the test.
-    const user = userEvent.setup();
+  it("sends the quickstart to the README's own steps", () => {
     renderWithProviders(<HomePage />);
-
-    await user.click(screen.getByRole("button", { name: "Copy" }));
-
     expect(
-      await screen.findByRole("button", { name: "Copied" }),
-    ).toBeInTheDocument();
-    expect(await navigator.clipboard.readText()).toContain(
-      `git clone ${CLAUDLOBBY_REPO}.git`,
-    );
+      screen.getByRole("link", { name: quickstart.readmeLink }),
+    ).toHaveAttribute("href", CLAUDLOBBY_README_QUICKSTART);
     expect(
-      screen.getByText("Commands copied to the clipboard"),
-    ).toBeInTheDocument();
-  });
-
-  it("says so when the clipboard refuses, instead of claiming it copied", async () => {
-    const user = userEvent.setup();
-    vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(
-      new Error("denied"),
-    );
-    renderWithProviders(<HomePage />);
-
-    await user.click(screen.getByRole("button", { name: "Copy" }));
-
-    expect(
-      await screen.findByRole("button", { name: "Copy failed" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/couldn't copy/i)).toBeInTheDocument();
+      screen.getByRole("link", { name: quickstart.docsLink }),
+    ).toHaveAttribute("href", CLAUDLOBBY_GETTING_STARTED);
   });
 });

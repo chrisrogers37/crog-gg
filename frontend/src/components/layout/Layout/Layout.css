@@ -3,7 +3,9 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  /* clip, not hidden: hidden makes this a scroll container, and the sticky header
+   would stick to it instead of the viewport, so it scrolled away with the page. */
+  overflow-x: clip;
 }
 
 .layout-main {

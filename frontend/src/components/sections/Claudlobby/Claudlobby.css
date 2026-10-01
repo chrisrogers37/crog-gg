@@ -65,6 +65,12 @@
 }
 
 /* Sections */
+/* The header sticks, so an in-page link (#quickstart and the like) stops its
+   section's heading below the header rather than under it. */
+.cl-section {
+  scroll-margin-top: 5rem;
+}
+
 .cl-section h2 {
   margin: 0 0 0.75rem;
   font-size: clamp(1.5rem, 3vw, 2rem);
@@ -180,13 +186,6 @@
 }
 
 /* Quickstart */
-.cl-quickstart {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  gap: 2rem;
-  align-items: start;
-}
-
 .cl-prereqs {
   margin: 0.75rem 0 0;
   padding-left: 1.1rem;
@@ -196,43 +195,6 @@
 
 .cl-prereqs li + li {
   margin-top: 0.5rem;
-}
-
-.cl-code {
-  @apply bg-slate-900 text-slate-200;
-  position: relative;
-  border-radius: 8px;
-}
-
-.cl-code pre {
-  margin: 0;
-  padding: 1.25rem;
-  overflow-x: auto;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  line-height: 1.7;
-}
-
-.cl-code code {
-  font-size: inherit;
-}
-
-.cl-copy {
-  @apply border-slate-600 hover:border-slate-400;
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.3rem 0.75rem;
-  border-width: 1px;
-  border-radius: 8px;
-  background: inherit;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.cl-after {
-  margin: 1rem 0 0;
-  line-height: 1.6;
 }
 
 .cl-links {
@@ -254,8 +216,7 @@
   }
 
   .cl-steps,
-  .cl-points,
-  .cl-quickstart {
+  .cl-points {
     grid-template-columns: minmax(0, 1fr);
   }
 
