@@ -306,7 +306,7 @@ describe("regenerateContent", () => {
      * and the store validates each field is renderable before it replaces
      * what is on the page.
      *
-     * Written up in documentation/evaluations/ai-regeneration-seam-coverage.md
+     * Written up in documentation/archive/evaluations/ai-regeneration-seam-coverage.md
      * (issue #105). If one of these starts failing again, that write-up is
      * where the reasoning lives.
      */
@@ -397,7 +397,7 @@ describe("regenerateContent", () => {
      * is precisely what re-triggers the cooldown. Server refusals now reach
      * the visitor; unexpected exceptions still get the generic message.
      *
-     * Same write-up: documentation/evaluations/ai-regeneration-seam-coverage.md
+     * Same write-up: documentation/archive/evaluations/ai-regeneration-seam-coverage.md
      */
     it(
       "tells the visitor it was a cooldown, not a generic failure",

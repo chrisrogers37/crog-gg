@@ -1,3 +1,5 @@
+> Historical snapshot. All four gaps below have since closed (#105).
+
 # AI regeneration: what the seam tests prove, and what they do not
 
 Issue #105. Written alongside the test additions in

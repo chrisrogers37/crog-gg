@@ -1,3 +1,5 @@
+> Historical snapshot (2026-07-02). Most findings have since been fixed; see GitHub issues, and #172 for the triage.
+
 # Data Layer, Services & Hooks Review — 2026-07-02
 
 Architecture:

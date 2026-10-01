@@ -1,7 +1,9 @@
+> Historical snapshot (2026-07-02). Most findings have since been fixed; see GitHub issues, and #172 for the triage.
+
 # System Review — Analysis Artifacts (2026-07-02)
 
 This directory holds the durable, detailed analysis behind the triage tracker at
-[`../tech-debt-triage_2026-07-02.md`](../tech-debt-triage_2026-07-02.md). The
+[`../../planning/tech-debt-triage_2026-07-02.md`](../../planning/tech-debt-triage_2026-07-02.md). The
 tracker is the short, actionable checklist; these documents are the full
 read-through that produced it, kept for provenance and future reference.
 
@@ -11,8 +13,7 @@ read-through that produced it, kept for provenance and future reference.
 | [`02-data-services-hooks.md`](./02-data-services-hooks.md)     | YAML loaders, GitHub/logo services, hooks, the regeneration flow, code-quality signals           |
 | [`03-testing-ci-config.md`](./03-testing-ci-config.md)         | Test coverage (FE + BE), CI, git hooks, build/tooling config, styling architecture, dependencies |
 
-The ready-to-file issue backlog derived from these lives in
-[`../issues/`](../issues/).
+The issue drafts derived from these were removed in October 2026; see #119, #171 and #172.
 
 ## Provenance & caveats
 
