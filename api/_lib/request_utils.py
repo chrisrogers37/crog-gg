@@ -1,11 +1,17 @@
 """Request-side helpers: client IP, GitHub headers, repo name validation."""
 
+import logging
 import os
 import re
 
 from flask import request
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+if not GITHUB_TOKEN:
+    # Once per cold start. Without a token every proxy call shares GitHub's
+    # unauthenticated quota, and the panels it feeds fail with nothing in the
+    # log to say why.
+    logging.getLogger("crog").warning("github token missing: proxy calls are unauthenticated (60/hour)")
 GITHUB_USERNAME = "chrisrogers37"
 GITHUB_API = "https://api.github.com"
 
