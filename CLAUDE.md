@@ -224,7 +224,7 @@ When working with images:
 - **DON'T rotate images** unless explicitly requested - images are usually oriented correctly
 - Use **CSS `object-position`** for cropping (e.g., `object-position: top` to hide bottom of image)
 - Use **CSS `object-fit: cover`** for responsive image sizing
-- Profile photos are in `frontend/public/profile-photos/`
+- Profile photos are served from `frontend/public/profile-photos/` as WebP variants. The originals are in `frontend/scripts/photos/originals/`: to add or change a photo, edit there and run `python frontend/scripts/photos/make-variants.py`
 
 Example - cropping with CSS (not image manipulation):
 
