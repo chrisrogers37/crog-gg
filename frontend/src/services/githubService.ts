@@ -40,11 +40,11 @@ export interface ReadmeResponse {
  * A decoded README and where it lives on GitHub, which its relative links and
  * images resolve against (utils/readmeLinks.ts).
  */
-export interface Readme {
+export type Readme = {
   text: string;
   htmlUrl: string;
   downloadUrl: string;
-}
+};
 
 /**
  * Language statistics

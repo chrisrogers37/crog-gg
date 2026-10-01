@@ -84,7 +84,9 @@ export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
     );
   }
 
-  if (error || !readme) {
+  // An empty README, or one over the contents API's 1 MB limit, arrives with
+  // no text: say so rather than render an empty article.
+  if (error || !readme || !readme.text.trim()) {
     return (
       <div className={`github-readme empty ${className}`}>
         <p className="readme-empty-message">

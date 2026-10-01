@@ -134,6 +134,15 @@
   flex-shrink: 0;
 }
 
+/* Some marks are dark on transparent and others come on a white square, so in
+   dark mode every logo sits on the same light chip and all of them read. Only
+   images: an entry with no logo keeps an empty placeholder, which stays clear. */
+.dark img.timeline-dot-logo,
+.dark img.timeline-org-logo {
+  background-color: var(--logo-chip);
+  padding: 2px;
+}
+
 .timeline-one-liner {
   font-size: 0.9rem;
   color: var(--text-color-secondary);
