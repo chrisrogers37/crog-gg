@@ -1,4 +1,8 @@
-import { inject, track as send } from "@vercel/analytics";
+import {
+  inject,
+  track as send,
+  type BeforeSendEvent,
+} from "@vercel/analytics";
 
 /**
  * Cookieless visit and conversion counts: Vercel Web Analytics (#177). Its
@@ -23,12 +27,27 @@ export type AnalyticsEvent =
   | { name: "quickstart_click" };
 
 /**
+ * What reaches Vercel keeps its path and any utm_* campaign tags, and drops
+ * every other query parameter, so no link built with a personal detail in it
+ * (a confirmation link, say) is ever reported.
+ */
+export function keepCampaignParams(event: BeforeSendEvent): BeforeSendEvent {
+  const url = new URL(event.url);
+  for (const key of [...url.searchParams.keys()]) {
+    if (!key.startsWith("utm_")) url.searchParams.delete(key);
+  }
+  return { ...event, url: url.toString() };
+}
+
+/**
  * Loads the script, which counts this pageview and every client-side one
  * after it. Events tracked before it arrives wait in the queue inject() sets
  * up. Called once, from main.tsx.
  */
 export function startAnalytics() {
-  if (import.meta.env.PROD) inject({ mode: "production" });
+  if (import.meta.env.PROD) {
+    inject({ mode: "production", beforeSend: keepCampaignParams });
+  }
 }
 
 export function track({ name, ...properties }: AnalyticsEvent) {

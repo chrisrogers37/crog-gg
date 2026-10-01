@@ -32,7 +32,15 @@ test("reports each CTA click once, with where it was", async ({ page }) => {
   await page.locator('.cl-hero a[href="#quickstart"]').click();
   await page.locator(`footer a[href="${REPO}"]`).click();
 
-  expect(await page.evaluate(() => window.vaq)).toEqual([
+  const queued = await page.evaluate(() =>
+    (window.vaq ?? []).map(([type, value]) =>
+      type === "beforeSend" ? [type, typeof value] : [type, value],
+    ),
+  );
+  // The filter that strips non-campaign query parameters is registered...
+  expect(queued).toContainEqual(["beforeSend", "function"]);
+  // ...and each click is reported once.
+  expect(queued.filter(([type]) => type === "event")).toEqual([
     ["event", { name: "star_click", data: { location: "hero" } }],
     ["event", { name: "quickstart_click", data: {} }],
     ["event", { name: "star_click", data: { location: "footer" } }],

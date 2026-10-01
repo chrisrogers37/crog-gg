@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { startAnalytics, track } from "./analytics";
+import { keepCampaignParams, startAnalytics, track } from "./analytics";
 
 const script = () =>
   document.head.querySelector("script[src]")?.getAttribute("src");
@@ -30,8 +30,20 @@ describe("analytics", () => {
 
     // Queued until the script loads, which consumes the queue.
     expect(window.vaq).toEqual([
+      ["beforeSend", keepCampaignParams],
       ["event", { name: "star_click", data: { location: "hero" } }],
       ["event", { name: "quickstart_click", data: {} }],
     ]);
+  });
+
+  it("reports a URL with its utm_* tags and nothing else from the query", () => {
+    const event = {
+      type: "pageview" as const,
+      url: "https://www.crog.gg/?email=a%40b.example&utm_source=hn&ref=x&utm_medium=post#quickstart",
+    };
+    expect(keepCampaignParams(event)).toEqual({
+      type: "pageview",
+      url: "https://www.crog.gg/?utm_source=hn&utm_medium=post#quickstart",
+    });
   });
 });

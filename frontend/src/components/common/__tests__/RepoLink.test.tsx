@@ -13,9 +13,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/** The repo's front page, where the Star button is, with or without an anchor. */
-const isFrontPage = (href: string) =>
-  href === CLAUDLOBBY_REPO || href.startsWith(`${CLAUDLOBBY_REPO}#`);
+/**
+ * The repo's front page, where the Star button is: with or without an anchor,
+ * a trailing slash or a query like `?tab=readme-ov-file`, which GitHub serves
+ * as the same page.
+ */
+const isFrontPage = (href: string) => {
+  const url = new URL(href);
+  return `${url.origin}${url.pathname.replace(/\/$/, "")}` === CLAUDLOBBY_REPO;
+};
 
 describe("RepoLink", () => {
   it("counts each click on / to the repo's front page once, with where the link sits", async () => {
