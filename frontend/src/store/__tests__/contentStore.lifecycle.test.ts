@@ -18,15 +18,15 @@ import { makeBio, makeEducation, makeEmployment } from "../../test/builders";
  * and the duplication here is a few lines.
  */
 
-const loadResumeData = vi.fn();
+const loadBio = vi.fn();
 const loadTimeline = vi.fn();
+const loadProjects = vi.fn();
+const loadResume = vi.fn();
 
-vi.mock("../../data/resume", () => ({
-  loadResumeData: () => loadResumeData(),
-}));
-vi.mock("../../utils/timelineLoader", () => ({
-  loadTimeline: () => loadTimeline(),
-}));
+vi.mock("../../utils/bioLoader", () => ({ loadBio: () => loadBio() }));
+vi.mock("../../utils/timelineLoader", () => ({ loadTimeline: () => loadTimeline() }));
+vi.mock("../../utils/projectLoader", () => ({ loadProjects: () => loadProjects() }));
+vi.mock("../../data/resume", () => ({ loadResume: () => loadResume() }));
 
 const { useContentStore } = await import("../contentStore");
 
@@ -41,15 +41,9 @@ const EXPERIENCE = [
   }),
 ];
 const EDUCATION = [makeEducation({ degree: "BSc", school: "Somewhere Else" })];
-const TIMELINE = { entries: [] };
-
-const resumePayload = () => ({
-  bio: BIO,
-  experience: EXPERIENCE,
-  education: EDUCATION,
-  skills: [{ name: "TypeScript" }],
-  projects: [{ id: "shuffify" }],
-});
+const TIMELINE = { entries: [], skill_categories: {} };
+const PROJECTS = [{ id: "shuffify" }];
+const RESUME = { experience: EXPERIENCE, education: EDUCATION, skills: [] };
 
 /** Return the store to the shape it has before anything has ever loaded. */
 const blankStore = () =>
@@ -57,11 +51,12 @@ const blankStore = () =>
     bio: null,
     experience: [],
     education: [],
+    timeline: null,
+    projects: [],
     originalBio: null,
     originalExperience: [],
     originalEducation: [],
-    isLoading: false,
-    error: null,
+    loads: { bio: "loading", timeline: "loading", projects: "loading" },
     regenerationError: null,
     hasModifiedContent: false,
   });
@@ -70,12 +65,15 @@ describe("loadContent", () => {
   beforeEach(() => {
     blankStore();
     vi.clearAllMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => vi.restoreAllMocks());
 
   it("captures the loaded content as the originals, which is the only thing that makes revert possible", async () => {
-    loadResumeData.mockResolvedValue(resumePayload());
+    loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockResolvedValue(PROJECTS);
+    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
@@ -89,37 +87,132 @@ describe("loadContent", () => {
     expect(s.originalBio).toEqual(BIO);
     expect(s.originalExperience).toEqual(EXPERIENCE);
     expect(s.originalEducation).toEqual(EDUCATION);
-    expect(s.isLoading).toBe(false);
-    expect(s.error).toBeNull();
+    expect(s.loads).toEqual({ bio: "ready", timeline: "ready", projects: "ready" });
   });
 
-  it("surfaces a load failure as the fatal error and stops loading", async () => {
-    // Unlike a regeneration failure, this one SHOULD reach `error`: there is
+  it("makes a failed bio the page's failure, naming the file, and leaves no half page", async () => {
+    // Unlike a regeneration failure, this one SHOULD reach the page: there is
     // no content to show, so the full-page error screen is the right outcome.
-    loadResumeData.mockRejectedValue(new Error("content unreachable"));
+    loadBio.mockRejectedValue(new Error("content/bio.yaml answered 404"));
     loadTimeline.mockResolvedValue(TIMELINE);
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    loadProjects.mockResolvedValue(PROJECTS);
+    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
     const s = useContentStore.getState();
-    expect(s.error).toBeTruthy();
-    expect(s.isLoading).toBe(false);
-    // and it must not leave a half-populated page behind
+    expect(s.loads.bio).toEqual({ error: "content/bio.yaml answered 404" });
     expect(s.bio).toBeNull();
     expect(s.originalBio).toBeNull();
   });
 
-  it("does not strand the page in a loading state when the timeline is what fails", async () => {
-    // Both loads are awaited together, so either one rejecting takes the pair.
-    loadResumeData.mockResolvedValue(resumePayload());
-    loadTimeline.mockRejectedValue(new Error("timeline unreachable"));
-    vi.spyOn(console, "error").mockImplementation(() => {});
+  it("keeps the rest when the timeline fails, and says which file (#190 M23)", async () => {
+    // These used to be awaited together, so one rejecting took the page.
+    loadBio.mockResolvedValue(BIO);
+    loadTimeline.mockRejectedValue(
+      new Error("content/timeline.yaml has 1 problem(s):\n  - entries.0.end_date: expected a date"),
+    );
+    loadProjects.mockResolvedValue(PROJECTS);
+    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
-    expect(useContentStore.getState().isLoading).toBe(false);
-    expect(useContentStore.getState().error).toBeTruthy();
+    const s = useContentStore.getState();
+    expect(s.loads).toEqual({
+      bio: "ready",
+      timeline: { error: "content/timeline.yaml has 1 problem(s)" },
+      projects: "ready",
+    });
+    expect(s.bio).toEqual(BIO);
+    expect(s.projects).toEqual(PROJECTS);
+  });
+
+  it("keeps the rest when the projects fail", async () => {
+    loadBio.mockResolvedValue(BIO);
+    loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockRejectedValue(new Error("content/projects/index.yaml answered 500"));
+    loadResume.mockResolvedValue(RESUME);
+
+    await useContentStore.getState().loadContent();
+
+    expect(useContentStore.getState().loads).toEqual({
+      bio: "ready",
+      timeline: "ready",
+      projects: { error: "content/projects/index.yaml answered 500" },
+    });
+  });
+
+  it("shows each part as soon as its own file is in", async () => {
+    loadBio.mockResolvedValue(BIO);
+    loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockReturnValue(new Promise(() => {})); // never answers
+    loadResume.mockResolvedValue(RESUME);
+
+    void useContentStore.getState().loadContent();
+    await vi.waitFor(() => expect(useContentStore.getState().loads.bio).toBe("ready"));
+
+    expect(useContentStore.getState().bio).toEqual(BIO);
+    expect(useContentStore.getState().loads.projects).toBe("loading");
+  });
+
+  it("takes nothing down when a résumé file no page renders fails (#159)", async () => {
+    loadBio.mockResolvedValue(BIO);
+    loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockResolvedValue(PROJECTS);
+    loadResume.mockRejectedValue(new Error("content/skills.yaml answered 404"));
+
+    await useContentStore.getState().loadContent();
+
+    const s = useContentStore.getState();
+    expect(s.loads).toEqual({ bio: "ready", timeline: "ready", projects: "ready" });
+    expect(s.experience).toEqual([]);
+  });
+});
+
+describe("reloading one part (#190 M23)", () => {
+  beforeEach(() => {
+    blankStore();
+    vi.clearAllMocks();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("shows the timeline's wait, then what came", async () => {
+    useContentStore.setState({ loads: { bio: "ready", timeline: { error: "x" }, projects: "ready" } });
+    let resolve!: (value: typeof TIMELINE) => void;
+    loadTimeline.mockReturnValue(new Promise((r) => (resolve = r)));
+
+    const reloading = useContentStore.getState().reloadTimeline();
+    expect(useContentStore.getState().loads.timeline).toBe("loading");
+    resolve(TIMELINE);
+    await reloading;
+
+    expect(useContentStore.getState().timeline).toEqual(TIMELINE);
+    expect(useContentStore.getState().loads).toEqual({ bio: "ready", timeline: "ready", projects: "ready" });
+    expect(loadBio).not.toHaveBeenCalled();
+  });
+
+  it("brings the projects back alone", async () => {
+    useContentStore.setState({ loads: { bio: "ready", timeline: "ready", projects: { error: "x" } } });
+    loadProjects.mockResolvedValue(PROJECTS);
+
+    await useContentStore.getState().reloadProjects();
+
+    expect(useContentStore.getState().projects).toEqual(PROJECTS);
+    expect(useContentStore.getState().loads.projects).toBe("ready");
+    expect(loadBio).not.toHaveBeenCalled();
+    expect(loadTimeline).not.toHaveBeenCalled();
+  });
+
+  it("says when the projects fail again", async () => {
+    useContentStore.setState({ loads: { bio: "ready", timeline: "ready", projects: { error: "x" } } });
+    loadProjects.mockRejectedValue(new Error("content/projects/a.yaml has 2 problem(s):\n  - id: missing"));
+
+    await useContentStore.getState().reloadProjects();
+
+    expect(useContentStore.getState().loads.projects).toEqual({
+      error: "content/projects/a.yaml has 2 problem(s)",
+    });
   });
 });
 
@@ -130,7 +223,7 @@ describe("resetContent", () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
-  it("restores the originals and clears both error channels", () => {
+  it("restores the originals and clears the regeneration's error", () => {
     useContentStore.setState({
       bio: makeBio({
         display_name: "Christopher Rogers",
@@ -142,7 +235,6 @@ describe("resetContent", () => {
       originalExperience: EXPERIENCE,
       originalEducation: EDUCATION,
       hasModifiedContent: true,
-      error: "stale fatal",
       regenerationError: "stale transient",
     });
 
@@ -153,7 +245,6 @@ describe("resetContent", () => {
     expect(s.experience).toEqual(EXPERIENCE);
     expect(s.education).toEqual(EDUCATION);
     expect(s.hasModifiedContent).toBe(false);
-    expect(s.error).toBeNull();
     expect(s.regenerationError).toBeNull();
   });
 
@@ -223,8 +314,10 @@ describe("the round trip a visitor actually performs", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("load, regenerate, revert lands back on exactly what was loaded", async () => {
-    loadResumeData.mockResolvedValue(resumePayload());
+    loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockResolvedValue(PROJECTS);
+    loadResume.mockResolvedValue(RESUME);
     await useContentStore.getState().loadContent();
 
     const asLoaded = useContentStore.getState().bio;

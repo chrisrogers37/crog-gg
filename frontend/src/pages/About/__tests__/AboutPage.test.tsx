@@ -16,20 +16,23 @@ describe("AboutPage before its content arrives", () => {
     useContentStore.setState(INITIAL, true);
   });
 
-  it("says a failed load failed, and Retry reloads the content rather than the page", () => {
+  it("says a failed load failed, naming the file, and Retry reloads the content rather than the page", () => {
     const loadContent = vi.fn();
-    useContentStore.setState({ isLoading: false, error: "x", loadContent });
+    useContentStore.setState({
+      loads: { ...INITIAL.loads, bio: { error: "content/bio.yaml answered 404" } },
+      loadContent,
+    });
     renderWithProviders(<AboutPage />, { initialRoute: "/about" });
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      /failed to load this page/i,
+      "This page didn't load: content/bio.yaml answered 404.",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(loadContent).toHaveBeenCalled();
   });
 
   it("names the page in the tab while it loads", async () => {
-    useContentStore.setState({ isLoading: true, error: null });
+    useContentStore.setState({ loads: { ...INITIAL.loads, bio: "loading" } });
     renderWithProviders(<AboutPage />, { initialRoute: "/about" });
 
     await waitFor(() => expect(document.title).toMatch(/^About \|/));

@@ -1,20 +1,5 @@
-import yaml from "js-yaml";
-import { BioData } from "../types/Bio";
+import { bioShape } from "../config/contentSchema";
+import type { BioData } from "../types/Bio";
+import { loadContentFile } from "./contentFile";
 
-export const loadBio = async (): Promise<BioData> => {
-  try {
-    // Fetch the YAML file from the content directory
-    const response = await fetch("/content/bio.yaml");
-    if (!response.ok) {
-      throw new Error(`Failed to fetch bio.yaml: ${response.statusText}`);
-    }
-    const content = await response.text();
-    const bioData = yaml.load(content) as BioData;
-
-    console.log("Bio data loaded from YAML:", bioData);
-    return bioData;
-  } catch (error) {
-    console.error("Error loading bio from YAML:", error);
-    throw error;
-  }
-};
+export const loadBio = (): Promise<BioData> => loadContentFile(bioShape, "bio.yaml");

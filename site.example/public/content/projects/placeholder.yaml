@@ -6,5 +6,4 @@ icon: "\U0001F4E6"
 category: web-app
 technologies:
   - Python
-order: 2
 status: experimental

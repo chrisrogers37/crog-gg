@@ -15,7 +15,7 @@ This is the interim guide. The owner's identity lives in one folder, `site/` (#1
 
 **`site/public/`**, served as the site's root (see CONTENT.md for every field):
 - `content/`: the bio, the timeline, the projects and the showcase;
-- `experience.yaml`, `education.yaml` and `skills.yaml` there too. Nothing renders them, but they load with the rest, so empty each to its list (`experience: []`) rather than deleting it: a missing or blank file takes `/about` and `/projects` down;
+- `experience.yaml`, `education.yaml` and `skills.yaml` there too. Nothing renders them, and a broken one only logs to the console (#190); empty each to its list (`experience: []`);
 - `content/projects/hedwig.yaml`, which `index.yaml` doesn't list but which is still served: delete it;
 - the photos: `profile-photo.jpg` and `profile-photos/`, with the originals in `frontend/scripts/photos/originals/`;
 - `logos/`: one PNG per organisation domain in your timeline;

@@ -19,51 +19,51 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 | `showcase.yaml` | `/about`: the photo strip |
 | `experience.yaml`, `education.yaml`, `skills.yaml` | nowhere ([below](#experienceyaml-educationyaml-and-skillsyaml)) |
 
+The files the site renders (`bio.yaml`, `timeline.yaml`, the projects and `showcase.yaml`) are held to a shape (`frontend/src/config/contentSchema.ts`, #190): by `npm run build`, by `npm run site:check`, and by the page as it loads them. A field that's missing or the wrong kind, or a key the file shouldn't have, fails with the file and the field named. On the page, a file that fails takes only its own part of the site with it, which says so and offers a retry: `bio.yaml` is the About page's, and a broken `showcase.yaml` only hides the photo strip. The résumé files nothing renders aren't checked ([below](#experienceyaml-educationyaml-and-skillsyaml)).
+
 ## bio.yaml
 
 - **`display_name` and `tagline`:** the top of `/about`.
 - **`about_text`:** the About section, as paragraphs separated by blank lines in one block string (`|`). The page keeps the breaks with `white-space: pre-line`, so write each paragraph on one line: a line break inside a paragraph shows on the page.
   - The collapsed About preview is cut at a fixed height, tuned to today's text (`about.preview_height` in `site/site.yaml`). After editing `about_text`, re-measure it (#162), or the fade can fall mid-line, or hide most of the text.
-- **`location`:** the contact card.
-- **`email` and `social_links`:** no longer read by the page, which takes the email address and the links from `site/site.yaml` (#188); #190 removes them from here. The server still puts them back after every rewrite (`_UNAUTHORED_KEYS` in `api/index.py`), so the model can't write them.
+- **`location`** (optional): the contact card. It and `tagline` (optional) show only when set.
+- The email address and the links are in `site/site.yaml` (#188), not here.
 - SUMMON NEW LORE rewrites the bio's text: the name, the tagline, the About text and the location.
-- `role` is typed but nothing reads it.
 
 ## timeline.yaml
 
 **`entries`**. The Journey tab sorts them by `end_date`, newest first, so file order only breaks ties. Each has:
 - `type`: `role`, `education` or `milestone`;
 - `title`, `organization` and `one_liner`;
-- `start_date` and `end_date`. A date is "Mon YYYY" (a three-letter month, e.g. "Nov 2025"), "YYYY", or `present`, in lowercase. Quote a bare year (`"2021"`): unquoted, YAML reads a number, and the date parser expects text.
+- `start_date` and `end_date`. A date is "Mon YYYY" (a three-letter month, e.g. "Nov 2025"), "YYYY", or `present` (any case). A bare year works quoted or not. Anything else fails, an unquoted ISO date (`2025-03-01`) included.
 - `domain` (optional): picks the organisation's logo, `site/public/logos/<domain>.png`, a self-hosted 64 px PNG (#178). With no file, there's no logo.
-- `skills`: these light up as bubbles while the entry is on screen. Required, even if empty (`skills: []`): an entry without it breaks the Journey tab.
+- `skills` (optional): these light up as bubbles while the entry is on screen.
 
 **`skill_categories`**, each with a `color` and the `skills` in it.
 - `color` is a quoted hex colour, `"#rrggbb"` or `"#rgb"`. Unquoted, YAML reads `#` as the start of a comment. Anything else shows in the default grey.
 - A skill in no category shows in grey too.
-- Each category's `skills` is required too (`skills: []` if empty): a category without it breaks the Journey tab.
+- A category's `skills` is optional too; a category with no body fails.
 
-If `timeline.yaml` won't load or parse, the Journey tab says "Loading journey..." and stays that way (#190 M23).
+If `timeline.yaml` won't load or doesn't fit, the Journey tab says so, naming the file, with a retry; with no entries, it says there's nothing yet.
 
 ## projects/
 
-**`index.yaml`** lists which project files the site shows.
+**`index.yaml`** lists which project files the site shows, in the order it shows them (#190), each as a lowercase file name (`my-project.yaml`), once.
 - A file it doesn't list is shown nowhere.
 - But it's still public: everything in `site/public/` is served as is.
 
 **Each project file:**
 - **`id`:** a lowercase slug (`my-project`). It's the page's URL, `/projects/<id>`, and the name of its prerendered file.
-- **`title` and `description`:** required.
-- **`url`:** the main link. Without one, the card falls back to `demo`, then `github`.
+- **`title`, `description`, `icon` and `category`:** required.
+- **`url`** (optional): the main link, `https`. Without one, the card falls back to `demo`, then `github`.
 - **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The card prints it as text, and no icon font is loaded.
-- **`technologies`:** the card shows the first three.
+- **`technologies`** (optional): the card shows the first three.
 - **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails. Without `github`, a `url` that is a GitHub repo is used instead.
 - **`demo`** (optional): when it differs from `url` and isn't on github.com, the page embeds it. Its exact origin must then be in `frame-src` in `vercel.json`, or the frame is blocked.
-- **`order`:** where the project sits, lowest first; `index.yaml`'s order only breaks ties. `order: 0` counts as unset and sorts last.
-- **`gradient`:** the card's header colour. Without one, the header is grey.
-- **`status`:** a badge on the project's page (`active`, `archived` or `experimental`).
+- **`gradient`** (optional): the card's header colour. Without one, the header is grey.
+- **`status`** (optional): a badge on the project's page (`active`, `archived` or `experimental`).
 - **`category`:** the filter buttons on `/projects`; the raw value is the button's label.
-- **`featured`, `tags` and `image`** are read but not shown (#190's M24 decides their future).
+- Nothing else: `order`, `featured`, `tags` and `image` were never shown and are gone (#190), so a file that still has one fails, naming it.
 
 The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through adding a project.
 
@@ -77,7 +77,7 @@ The strip needs at least three images. With fewer, it doesn't show.
 
 ## experience.yaml, education.yaml and skills.yaml
 
-They're loaded at start-up with the rest of the content, but nothing renders them: the Journey tab renders `timeline.yaml`. A valid edit changes nothing on the site, but a broken, blank or deleted file takes `/about` and `/projects` down (#190 M23). To retire one, leave its list empty (`experience: []`). #159's item 1 decides whether they're deleted, or rendered on `/about`.
+They're loaded at start-up with the rest of the content, but nothing renders them: the Journey tab renders `timeline.yaml`. An edit changes nothing on the site, and a broken file only logs to the console (#190). #159's item 1 decides whether they're deleted, or rendered on `/about`.
 
 ## site/site.yaml
 
@@ -106,7 +106,7 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
 
 ## What catches a mistake
 
-- **`npm run build`** checks `site/site.yaml`, and parses every project file `index.yaml` lists, so a mistake in either fails the build.
+- **`npm run build`** checks `site/site.yaml`, and holds `bio.yaml`, `timeline.yaml`, `showcase.yaml` and every project file `index.yaml` lists to their shapes, so a mistake in any fails the build, naming the file and the field.
 - **`npm run site:check`** (in `frontend/`, part of `npm run test:run` too) holds the active site to the rules its content must meet (#191):
   - the files `site.yaml` and `index.html` name exist, and every photo at every size, and a logo for each timeline domain;
   - the music player's origin is in the CSP;
@@ -114,5 +114,5 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
   - the projects: at least one, each in a category, one emoji icon, repos of the site's owner, and a `frame-src` entry for an embedded demo;
   - the About copy is at least one paragraph and, unless `features.regenerate` is `off`, ends on the sign-off that names the button (`regenerate.labels.button`);
   - the card's text matches `seo.image.alt`, the Person schema's role matches the timeline's current one, and with `home: landing` the card keeps the landing page's rules.
-- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A project id that can't be a page's URL fails the build and `npm run site:check` (`utils/projectLoader.ts`).
+- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A content file that doesn't fit its shape, a project id that can't be a page's URL among them, fails the build and `npm run site:check` (`config/contentSchema.ts`).
 - **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site with no landing page.

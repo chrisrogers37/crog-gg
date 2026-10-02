@@ -241,3 +241,14 @@ test.describe("A deep-linked project page while /api/features answers (#189 M21)
     expect(new Set(tops).size, `the footer's offsets: ${[...new Set(tops)].join(", ")}`).toBe(1);
   });
 });
+
+test.describe("Projects that won't load (#190 M23)", () => {
+  test("the page says which file, and offers a retry", async ({ page }) => {
+    await page.route("**/content/projects/index.yaml", (route) => route.fulfill({ status: 500 }));
+    await page.goto("/projects");
+
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("alert")).toContainText("content/projects/index.yaml");
+    await expect(page.getByRole("button", { name: /retry/i })).toBeVisible();
+  });
+});

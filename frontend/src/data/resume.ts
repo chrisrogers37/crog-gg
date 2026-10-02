@@ -1,42 +1,28 @@
-import { loadBio } from "../utils/bioLoader";
 import { loadExperience } from "../utils/experienceLoader";
 import { loadEducation } from "../utils/educationLoader";
 import { loadSkills } from "../utils/skillsLoader";
-import { loadProjects } from "../utils/projectLoader";
-import { BioData, Employment, Education, Skill, Project } from "../types";
+import { Employment, Education, Skill } from "../types";
 
-export interface ResumeData {
-  bio: BioData;
+/**
+ * The résumé files no page renders (#159, #190): experience, education and
+ * skills. They're still loaded, for DISPEL's originals, until #159 decides
+ * whether they go or get a page, and a failure in them takes nothing down.
+ */
+export type Resume = {
   experience: Employment[];
   education: Education[];
   skills: Skill[];
-  projects: Project[];
-}
+};
 
-// Create a function to load all resume data dynamically
-export const loadResumeData = async (): Promise<ResumeData> => {
-  try {
-    // Load all data in parallel for better performance
-    const [bioData, experienceData, educationData, skillsData, projectsData] =
-      await Promise.all([
-        loadBio(),
-        loadExperience(),
-        loadEducation(),
-        loadSkills(),
-        loadProjects(),
-      ]);
-
-    const result: ResumeData = {
-      bio: bioData,
-      experience: experienceData.experience,
-      education: educationData.education,
-      skills: skillsData.skills,
-      projects: projectsData,
-    };
-
-    return result;
-  } catch (error) {
-    console.error("Error in loadResumeData:", error);
-    throw error;
-  }
+export const loadResume = async (): Promise<Resume> => {
+  const [experience, education, skills] = await Promise.all([
+    loadExperience(),
+    loadEducation(),
+    loadSkills(),
+  ]);
+  return {
+    experience: experience.experience,
+    education: education.education,
+    skills: skills.skills,
+  };
 };

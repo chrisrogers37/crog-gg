@@ -59,23 +59,24 @@ describe("ProjectDetailPage before its project is found", () => {
     expect(screen.queryByText(/project not found/i)).not.toBeInTheDocument();
   });
 
-  it("offers a retry when the content failed to load", () => {
-    const loadContent = vi.fn();
+  it("offers a retry when the projects failed to load, naming the file (#190 M23)", () => {
+    const reloadProjects = vi.fn();
     useContentStore.setState({
       projects: [],
-      isLoading: false,
-      error: "Failed to load content.",
-      loadContent,
+      loads: { ...INITIAL.loads, projects: { error: "content/projects/benzo.yaml has 1 problem(s)" } },
+      reloadProjects,
     });
     renderAt(["/projects/benzo"]);
-    expect(screen.getByRole("alert")).toHaveTextContent(/failed to load/i);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The projects didn't load: content/projects/benzo.yaml has 1 problem(s).",
+    );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
-    expect(loadContent).toHaveBeenCalled();
+    expect(reloadProjects).toHaveBeenCalled();
     expect(screen.queryByText(/project not found/i)).not.toBeInTheDocument();
   });
 
   it("says 'Project Not Found' only for a loaded list without the slug", () => {
-    useContentStore.setState({ projects: [BENZO], isLoading: false, error: null });
+    useContentStore.setState({ projects: [BENZO], loads: { ...INITIAL.loads, projects: "ready" } });
     renderAt(["/projects/nope"]);
     expect(screen.getByRole("heading", { name: /project not found/i })).toBeInTheDocument();
   });
@@ -87,7 +88,7 @@ describe("ProjectDetailPage before its project is found", () => {
  */
 describe("ProjectDetailPage's Go Back", () => {
   beforeEach(() => {
-    useContentStore.setState({ projects: [BENZO], isLoading: false, error: null });
+    useContentStore.setState({ projects: [BENZO], loads: { ...INITIAL.loads, projects: "ready" } });
   });
 
   it("goes to /projects when the page was opened directly", () => {
@@ -118,8 +119,7 @@ describe("ProjectDetailPage across projects", () => {
       }) as Project;
     useContentStore.setState({
       projects: [project("alpha"), project("beta")],
-      isLoading: false,
-      error: null,
+      loads: { ...INITIAL.loads, projects: "ready" },
     });
     // alpha's stats can't render (no figures in the answer), so its section
     // crashes; beta's answer is whole.
@@ -171,7 +171,7 @@ describe("ProjectDetailPage's GitHub panels", () => {
   ];
 
   beforeEach(() => {
-    useContentStore.setState({ projects: [LINKED], isLoading: false, error: null });
+    useContentStore.setState({ projects: [LINKED], loads: { ...INITIAL.loads, projects: "ready" } });
     vi.spyOn(githubService, "getRepository").mockReturnValue(new Promise(() => {}));
     vi.spyOn(githubService, "getReadme").mockReturnValue(new Promise(() => {}));
   });

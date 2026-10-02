@@ -1,6 +1,6 @@
-# The projects the site shows. A file not listed here is shown nowhere, but it
-# is still served, like everything in public/. Each file's `order` sets where it
-# shows. See documentation/CONTENT.md, and the add-project skill.
+# The projects the site shows, in the order it shows them. A file not listed
+# here is shown nowhere, but it is still served, like everything in public/.
+# See documentation/CONTENT.md, and the add-project skill.
 
 projects:
   - storydump.yaml

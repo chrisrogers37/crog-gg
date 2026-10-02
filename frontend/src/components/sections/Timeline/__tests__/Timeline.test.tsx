@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { Timeline } from "../Timeline";
 import { logoUrl } from "../../../../utils/logos";
 
@@ -83,6 +83,28 @@ describe("Timeline", () => {
   it("renders loading state when data is null", () => {
     render(<Timeline data={null} />);
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
+  });
+
+  it("says there's nothing yet when the file has no entries, rather than loading forever (#190 M23)", () => {
+    render(<Timeline data={{ entries: [], skill_categories: {} }} />);
+    expect(screen.getByText("Nothing on the journey yet.")).toBeInTheDocument();
+    expect(screen.queryByText(/loading/i)).toBeNull();
+  });
+
+  it("keys two roles at one place, starting the same month, apart (#190 M22)", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const role = mockData.entries[0];
+    render(
+      <Timeline
+        data={{
+          ...mockData,
+          entries: [role, { ...role, title: "Another role there" }],
+        }}
+      />,
+    );
+    expect(screen.getByText("Another role there")).toBeInTheDocument();
+    expect(error.mock.calls.flat().join(" ")).not.toMatch(/same key/);
+    error.mockRestore();
   });
 
   it("displays one-liners for each entry", () => {

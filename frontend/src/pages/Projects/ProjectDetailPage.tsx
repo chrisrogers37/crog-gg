@@ -1,10 +1,5 @@
 import { useParams, Link, useLocation, useNavigate } from "react-router";
-import {
-  useProjects,
-  useIsLoading,
-  useContentError,
-  useContentStore,
-} from "../../store";
+import { useProjects, useLoad, useContentStore } from "../../store";
 import { Breadcrumbs } from "../../components/common/Breadcrumbs";
 import { LoadError } from "../../components/common/LoadError";
 import { SEO } from "../../components/SEO";
@@ -51,9 +46,8 @@ export function ProjectDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const projects = useProjects();
-  const isLoading = useIsLoading();
-  const error = useContentError();
-  const loadContent = useContentStore((s) => s.loadContent);
+  const load = useLoad("projects");
+  const reloadProjects = useContentStore((s) => s.reloadProjects);
 
   // Find the project by slug (id)
   const project = projects.find((p) => p.id === slug);
@@ -65,13 +59,13 @@ export function ProjectDetailPage() {
     // A deep link renders before the content has loaded, and a failed load is
     // no evidence the project is missing. Only a loaded list without this
     // slug is "not found" (#196 M41).
-    if (isLoading) return <ProjectDetailSkeleton />;
-    if (error) {
+    if (load === "loading") return <ProjectDetailSkeleton />;
+    if (typeof load === "object") {
       return (
         <div className="project-detail-page project-detail-page--placeholder">
           <LoadError
-            message="Failed to load this project. Please try again."
-            onRetry={() => loadContent()}
+            message={`The projects didn't load: ${load.error}.`}
+            onRetry={() => reloadProjects()}
           />
         </div>
       );

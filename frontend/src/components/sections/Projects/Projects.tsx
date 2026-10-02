@@ -1,4 +1,5 @@
-import { useProjects } from "../../../store";
+import { useContentStore, useLoad, useProjects } from "../../../store";
+import { LoadError } from "../../common/LoadError";
 import { ProjectCard } from "./ProjectCard";
 import "./Projects.css";
 
@@ -26,11 +27,25 @@ export function ProjectSkeletonGrid() {
 
 export function Projects() {
   const projects = useProjects();
+  const load = useLoad("projects");
+  const reloadProjects = useContentStore((s) => s.reloadProjects);
 
-  if (!projects || projects.length === 0) {
+  // A skeleton only while the projects load; a failure or an empty list
+  // says so in this tab, and the rest of the page stays up (#190 M23).
+  if (load !== "ready" || projects.length === 0) {
     return (
       <section className="projects-section">
-        <ProjectSkeletonGrid />
+        {load === "loading" ? (
+          <ProjectSkeletonGrid />
+        ) : typeof load === "object" ? (
+          <LoadError
+            compact
+            message={`The projects didn't load: ${load.error}.`}
+            onRetry={() => reloadProjects()}
+          />
+        ) : (
+          <p>No projects yet.</p>
+        )}
       </section>
     );
   }

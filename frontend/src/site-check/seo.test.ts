@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import yaml from "js-yaml";
 import site from "virtual:site-config";
 import timelineYaml from "@site/public/content/timeline.yaml?raw";
-import type { TimelineData } from "../types";
+import { timelineShape } from "../config/contentSchema";
 import { shareCard, textOf } from "../test/site";
+import { parseYaml } from "../utils/contentFile";
 
 const card = shareCard();
 
-const { entries } = yaml.load(timelineYaml) as TimelineData;
+const { entries } = parseYaml(timelineShape, timelineYaml, "content/timeline.yaml");
 const current = entries.find(
   ({ type, end_date }) => type === "role" && end_date === "present",
 );

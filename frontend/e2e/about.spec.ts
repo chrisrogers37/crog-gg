@@ -286,3 +286,17 @@ test.describe("Where SUMMON isn't served (#189 M21)", () => {
     await expect(page.locator(".generate-btn")).toHaveCount(0);
   });
 });
+
+test.describe("One file that won't load (#190 M23)", () => {
+  test("a timeline that won't load leaves the page up, and Journey names it", async ({ page }) => {
+    const journey = SECTIONS.find(({ id }) => id === "journey");
+    test.skip(!journey, "the site has no Journey tab");
+    await page.route("**/content/timeline.yaml", (route) => route.fulfill({ status: 404 }));
+    await page.goto(TABS_PATH);
+
+    await expect(page.locator(".about-page h1")).toBeVisible();
+    await page.getByRole("tab", { name: named(journey!.label) }).click();
+    await expect(page.getByRole("alert")).toContainText("content/timeline.yaml");
+    await expect(page.getByRole("button", { name: /retry/i })).toBeVisible();
+  });
+});

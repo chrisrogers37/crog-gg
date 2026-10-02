@@ -24,7 +24,6 @@ title: Shuffify
 description: A better way to manage your Spotify playlists
 icon: music
 category: web
-order: 1
 `;
 
 /** Route each URL to a canned body, the way the deployment actually would. */
@@ -63,7 +62,9 @@ describe("loadProjects", () => {
       "/content/projects/shuffify.yaml": null, // served the SPA HTML, status 200
     });
 
-    await expect(loadProjects()).rejects.toThrow(/did not parse to a project/);
+    await expect(loadProjects()).rejects.toThrow(
+      /content\/projects\/shuffify\.yaml has 1 problem\(s\):\n {2}- the file: expected a mapping/,
+    );
   });
 
   it("refuses an index that does not exist, rather than falling back to a different portfolio", async () => {
@@ -71,7 +72,9 @@ describe("loadProjects", () => {
       "/content/projects/index.yaml": null, // served the SPA HTML, status 200
     });
 
-    await expect(loadProjects()).rejects.toThrow(/did not parse to/);
+    await expect(loadProjects()).rejects.toThrow(
+      /content\/projects\/index\.yaml has 1 problem\(s\):\n {2}- the file: expected a mapping/,
+    );
   });
 
   it("refuses a non-ok index response", async () => {
@@ -82,9 +85,7 @@ describe("loadProjects", () => {
       text: () => Promise.resolve(""),
     });
 
-    await expect(loadProjects()).rejects.toThrow(
-      /Failed to fetch project index/,
-    );
+    await expect(loadProjects()).rejects.toThrow("content/projects/index.yaml answered 500");
   });
 
   it("does not invent projects the index omits", async () => {
@@ -111,15 +112,61 @@ describe("readProjects", () => {
       file === "index.yaml" ? "projects:\n  - broken.yaml\n" : yaml,
     );
 
+  const VALID = "id: a-b\ntitle: A\ndescription: B\nicon: x\ncategory: c\n";
+
   it("rejects an id that can't be one URL segment, naming the file", async () => {
-    await expect(
-      readOne("id: a/b\ntitle: A\ndescription: B\n"),
-    ).rejects.toThrow(/broken\.yaml: id "a\/b"/);
+    await expect(readOne(VALID.replace("id: a-b", "id: a/b"))).rejects.toThrow(
+      /content\/projects\/broken\.yaml has 1 problem\(s\):\n {2}- id: expected a lowercase id/,
+    );
   });
 
-  it("rejects a project without a description, naming the file", async () => {
-    await expect(readOne("id: a-b\ntitle: A\n")).rejects.toThrow(
-      /broken\.yaml: title and description/,
+  it("rejects a project without a description, naming the file (#190 M22)", async () => {
+    // Search lower-cased every description, so one without took the page down.
+    await expect(readOne(VALID.replace("description: B\n", ""))).rejects.toThrow(
+      /content\/projects\/broken\.yaml has 1 problem\(s\):\n {2}- description: missing/,
     );
+  });
+
+  it("names every problem in a file, and a key it doesn't know (#190 M22)", async () => {
+    const error = await readOne(`${VALID}order: 2\nurl: http://a.example\n`).catch((e) => e);
+    expect(error.message).toContain("  - order: unknown key");
+    expect(error.message).toContain("  - url: expected an https URL");
+  });
+
+  it("falls back from url to the demo, then the repo", async () => {
+    const [repoOnly] = await readOne(`${VALID}github: https://github.com/a/b\n`);
+    expect(repoOnly.url).toBe("https://github.com/a/b");
+    const [both] = await readOne(`${VALID}demo: https://d.example\ngithub: https://github.com/a/b\n`);
+    expect(both.url).toBe("https://d.example");
+  });
+
+  it("checks links where the browser has no URL.canParse (Safari 16)", async () => {
+    const canParse = URL.canParse;
+    Object.defineProperty(URL, "canParse", { value: undefined, configurable: true });
+    try {
+      const [project] = await readOne(`${VALID}url: https://a.example\n`);
+      expect(project.url).toBe("https://a.example");
+    } finally {
+      Object.defineProperty(URL, "canParse", { value: canParse, configurable: true });
+    }
+  });
+
+  it("refuses an index that lists a file twice", async () => {
+    await expect(
+      readProjects(async (file) =>
+        file === "index.yaml" ? "projects:\n  - a.yaml\n  - a.yaml\n" : VALID,
+      ),
+    ).rejects.toThrow("content/projects/index.yaml lists a.yaml twice");
+  });
+
+  it("keeps index.yaml's order", async () => {
+    const files: Record<string, string> = {
+      "index.yaml": "projects:\n  - zeta.yaml\n  - alpha.yaml\n  - mid.yaml\n",
+      "zeta.yaml": VALID.replace("a-b", "zeta"),
+      "alpha.yaml": VALID.replace("a-b", "alpha"),
+      "mid.yaml": VALID.replace("a-b", "mid"),
+    };
+    const projects = await readProjects(async (file) => files[file]);
+    expect(projects.map((project) => project.id)).toEqual(["zeta", "alpha", "mid"]);
   });
 });

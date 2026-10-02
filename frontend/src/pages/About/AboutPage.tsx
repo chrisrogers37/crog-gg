@@ -7,8 +7,7 @@ import type { SectionId } from "../../config/schema";
 import { useMediaQuery, useRegenerateOn, useRegeneration } from "../../hooks";
 import {
   useContentStore,
-  useIsLoading,
-  useContentError,
+  useLoad,
   useRegenerationError,
   useBio,
   useTimeline,
@@ -94,12 +93,15 @@ function AboutContent() {
   }, []);
 
   // Get state from stores
-  const isLoading = useIsLoading();
-  const error = useContentError();
+  // The page waits on bio.yaml alone; Journey waits on timeline.yaml, and
+  // says so in its own tab when it fails (#190 M23).
+  const bioLoad = useLoad("bio");
+  const timelineLoad = useLoad("timeline");
   const regenerationError = useRegenerationError();
   const bio = useBio();
   const timeline = useTimeline();
   const loadContent = useContentStore((s) => s.loadContent);
+  const reloadTimeline = useContentStore((s) => s.reloadTimeline);
 
   // The open section, or null while About shows as a preview. It's the page's
   // own, so every visit lands on About's preview.
@@ -162,7 +164,16 @@ function AboutContent() {
         </div>
       </section>
     ),
-    journey: () => <Timeline data={timeline} />,
+    journey: () =>
+      typeof timelineLoad === "object" ? (
+        <LoadError
+          compact
+          message={`The journey didn't load: ${timelineLoad.error}.`}
+          onRetry={() => reloadTimeline()}
+        />
+      ) : (
+        <Timeline data={timeline} />
+      ),
     projects: () => <Projects />,
     music: () => <Music />,
   };
@@ -191,7 +202,7 @@ function AboutContent() {
   };
 
   // Loading skeleton - matches real layout dimensions to prevent CLS
-  if (isLoading) {
+  if (bioLoad === "loading") {
     return (
       <div className="about-page">
         <header>
@@ -216,13 +227,13 @@ function AboutContent() {
     );
   }
 
-  // Fatal only: content never loaded, so there is no page to replace. A failed
-  // regeneration is surfaced inline next to the button instead.
-  if (error) {
+  // Fatal only: bio.yaml never loaded, so there is no page to replace. A
+  // failed regeneration is surfaced inline next to the button instead.
+  if (typeof bioLoad === "object") {
     return (
       <div className="about-page">
         <LoadError
-          message="Failed to load this page. Please try again."
+          message={`This page didn't load: ${bioLoad.error}.`}
           onRetry={() => loadContent()}
         />
       </div>

@@ -9,6 +9,5 @@ category: web-app
 technologies:
   - TypeScript
   - React
-order: 1
 status: active
 gradient: "linear-gradient(135deg, #4f46e5 0%, #0f172a 100%)"

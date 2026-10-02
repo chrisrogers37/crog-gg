@@ -70,10 +70,12 @@ export function Timeline({ data }: TimelineProps) {
     return Array.from(skills);
   }, [visibleIndex, sortedEntries]);
 
+  // The tab shows a failed load itself (AboutPage); here it's still on its
+  // way, or it came with nothing in it.
   if (!data || !sortedEntries.length) {
     return (
       <div className="timeline-container">
-        <p>Loading journey...</p>
+        <p>{data ? "Nothing on the journey yet." : "Loading journey..."}</p>
       </div>
     );
   }
@@ -110,7 +112,8 @@ export function Timeline({ data }: TimelineProps) {
 
           {sortedEntries.map((entry, index) => (
             <motion.div
-              key={`${entry.organization}-${entry.start_date}`}
+              // Two roles at one place can start the same month (#190 M22).
+              key={`${entry.organization}-${entry.start_date}-${entry.title}`}
               ref={(el) => {
                 entryRefs.current[index] = el;
               }}

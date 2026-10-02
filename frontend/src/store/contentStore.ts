@@ -4,12 +4,23 @@ import site from "virtual:site-config";
 import { API_URL } from "../config/api";
 import { BioData, Employment, Education, Skill, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
-import { loadResumeData } from "../data/resume";
+import { loadResume } from "../data/resume";
+import { loadBio } from "../utils/bioLoader";
+import { loadProjects } from "../utils/projectLoader";
 import { loadTimeline } from "../utils/timelineLoader";
 
 // ===========================================
 // TYPES
 // ===========================================
+
+/**
+ * A content file's load (#190 M23): under way, in, or failed, with what went
+ * wrong, naming the file.
+ */
+export type Load = "loading" | "ready" | { error: string };
+
+/** The content each part of the site waits on. */
+export type LoadedContent = "bio" | "timeline" | "projects";
 
 interface ContentState {
   // Data
@@ -25,11 +36,11 @@ interface ContentState {
   originalExperience: Employment[];
   originalEducation: Education[];
 
-  // Loading states
-  isLoading: boolean;
+  // Each file's load, apart (#190 M23): bio's failure is the About page's,
+  // timeline's the Journey tab's, and projects' the project pages' and the
+  // Projects tab's. One file can't take another's place down.
+  loads: Record<LoadedContent, Load>;
   isRegenerating: boolean;
-  // Fatal: the page has no content to show. Drives the full-page error screen.
-  error: string | null;
   // Transient: the page still has content, one regeneration just did not land.
   regenerationError: string | null;
 
@@ -48,8 +59,10 @@ interface ContentState {
 }
 
 interface ContentActions {
-  // Data loading
+  // Data loading: everything, then one part again after it failed
   loadContent: () => Promise<void>;
+  reloadTimeline: () => Promise<void>;
+  reloadProjects: () => Promise<void>;
 
   // Content regeneration
   regenerateContent: (useFantasy: boolean) => Promise<void>;
@@ -77,9 +90,8 @@ const initialState: ContentState = {
   originalBio: null,
   originalExperience: [],
   originalEducation: [],
-  isLoading: true,
+  loads: { bio: "loading", timeline: "loading", projects: "loading" },
   isRegenerating: false,
-  error: null,
   regenerationError: null,
   hasModifiedContent: false,
   cooldownEndsAt: null,
@@ -91,6 +103,13 @@ const initialState: ContentState = {
 // ===========================================
 // API HELPERS
 // ===========================================
+
+/** A failed load, as the page says it: the error's first line, naming the file. */
+const loadFailure = (error: unknown): Load => {
+  console.error(error);
+  const message = error instanceof Error ? error.message : String(error);
+  return { error: message.split("\n")[0].replace(/:$/, "") };
+};
 
 // Just above the 60 s the API function is allowed (#195 M37), so the server
 // always gets to answer first.
@@ -129,10 +148,6 @@ const cooldownFrom = (
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-// The bio keys the model never writes (api/index.py's _UNAUTHORED_KEYS). They
-// are rendered into links, so the page keeps its own copy whatever comes back.
-const UNAUTHORED_BIO_KEYS: ReadonlySet<string> = new Set(["email", "social_links"]);
-
 /**
  * A rewritten bio merged over the one it rewrites, or undefined if it brings
  * nothing usable (#196 M16). The server fills in what a rewrite leaves out;
@@ -144,7 +159,6 @@ const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
   if (!isPlainObject(incoming)) return undefined;
   const accepted: Record<string, string> = {};
   for (const [key, value] of Object.entries(prior)) {
-    if (UNAUTHORED_BIO_KEYS.has(key)) continue;
     const next = incoming[key];
     if (typeof value === "string" && typeof next === "string" && next.trim()) {
       accepted[key] = next;
@@ -160,8 +174,23 @@ const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
 // ===========================================
 
 export const useContentStore = create<ContentStore>()(
-  devtools(
-    (set, get) => ({
+  devtools((set, get) => {
+    /** One part's load again, after it failed: its own section shows the wait. */
+    const reload = async <T,>(
+      part: LoadedContent,
+      load: () => Promise<T>,
+      apply: (value: T) => Partial<ContentState>,
+    ) => {
+      set((state) => ({ loads: { ...state.loads, [part]: "loading" } }));
+      try {
+        const value = await load();
+        set((state) => ({ ...apply(value), loads: { ...state.loads, [part]: "ready" } }));
+      } catch (error) {
+        set((state) => ({ loads: { ...state.loads, [part]: loadFailure(error) } }));
+      }
+    };
+
+    return {
       // Initial state
       ...initialState,
 
@@ -170,39 +199,35 @@ export const useContentStore = create<ContentStore>()(
       // ===========================================
 
       /**
-       * Load all content from YAML files.
-       * Called once on app initialization.
+       * Load all content from YAML files, each on its own (#190 M23): each
+       * part shows as soon as its own file is in, and one that fails leaves
+       * the others' sections up.
+       * Called once on app initialization, and by the About page's retry.
        */
       loadContent: async () => {
-        try {
-          set({ isLoading: true, error: null });
-
-          const [data, timelineData] = await Promise.all([
-            loadResumeData(),
-            loadTimeline(),
-          ]);
-
-          set({
-            bio: data.bio,
-            experience: data.experience,
-            education: data.education,
-            skills: data.skills,
-            projects: data.projects,
-            timeline: timelineData,
-            // Store originals for reset
-            originalBio: data.bio,
-            originalExperience: data.experience,
-            originalEducation: data.education,
-            isLoading: false,
-          });
-        } catch (error) {
-          console.error("Failed to load content:", error);
-          set({
-            error: "Failed to load content. Please refresh the page.",
-            isLoading: false,
-          });
-        }
+        // Nothing renders the résumé files (#159), so a failure there is
+        // logged, not shown.
+        const resume = loadResume().then(
+          (value) =>
+            set({
+              ...value,
+              originalExperience: value.experience,
+              originalEducation: value.education,
+            }),
+          (error: unknown) => console.error(error),
+        );
+        await Promise.all([
+          // Stored for reset, too
+          reload("bio", loadBio, (bio) => ({ bio, originalBio: bio })),
+          reload("timeline", loadTimeline, (timeline) => ({ timeline })),
+          reload("projects", loadProjects, (projects) => ({ projects })),
+          resume,
+        ]);
       },
+
+      reloadTimeline: () => reload("timeline", loadTimeline, (timeline) => ({ timeline })),
+
+      reloadProjects: () => reload("projects", loadProjects, (projects) => ({ projects })),
 
       /**
        * Regenerate content using the AI API.
@@ -404,9 +429,9 @@ export const useContentStore = create<ContentStore>()(
        * Restore the content captured at load, undoing a regeneration.
        *
        * Restores from the originals already held in the store rather than
-       * re-reading them. The re-read ran behind the same `isLoading` flag the
-       * first page load uses, and the page renders a loading skeleton whenever
-       * that flag is set -- so undoing a regeneration replaced the entire page,
+       * re-reading them. The re-read ran behind the same loading state the
+       * first page load uses, and the page renders a loading skeleton while
+       * it lasts -- so undoing a regeneration replaced the entire page,
        * header and nav and the button that was just clicked included, in order
        * to fetch files whose contents were already in memory.
        *
@@ -435,7 +460,6 @@ export const useContentStore = create<ContentStore>()(
           experience: data.experience,
           education: data.education,
           hasModifiedContent: false,
-          error: null,
           regenerationError: null,
         });
 
@@ -464,9 +488,8 @@ export const useContentStore = create<ContentStore>()(
           }),
         );
       },
-    }),
-    { name: "content-store", enabled: import.meta.env.DEV },
-  ),
+    };
+  }, { name: "content-store", enabled: import.meta.env.DEV }),
 );
 
 // ===========================================
@@ -480,8 +503,9 @@ export const useContentStore = create<ContentStore>()(
 
 export const useBio = () => useContentStore((state) => state.bio);
 export const useProjects = () => useContentStore((state) => state.projects);
-export const useIsLoading = () => useContentStore((state) => state.isLoading);
-export const useContentError = () => useContentStore((state) => state.error);
+/** A part's load: under way, in, or failed (#190 M23). */
+export const useLoad = (part: LoadedContent) =>
+  useContentStore((state) => state.loads[part]);
 export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
 export const useTimeline = () => useContentStore((state) => state.timeline);

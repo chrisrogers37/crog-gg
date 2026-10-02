@@ -36,7 +36,7 @@ Collect:
 
 ### 2. Ask Placement Position
 
-Ask the user: **"Which position should this go in? Currently: [list current projects by order]"**
+Ask the user: **"Which position should this go in? Currently: [list the projects in `index.yaml`'s order]"**
 
 Do NOT assume position. Always ask.
 
@@ -76,25 +76,18 @@ technologies:
   - Tech1
   - Tech2
   - Tech3
-featured: true
-order: <chosen position>
 status: active
 gradient: "linear-gradient(135deg, #color1 0%, #color2 100%)"
-tags:
-  - relevant
-  - tags
 ```
+
+The site checks every project file as it loads (#190): a field it doesn't know (`order`, `featured`, `tags` and `image` are gone) fails the build, naming the file and the key.
 
 Optional fields (add only if available):
 - `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the site's GitHub owner (`github.username` in `site/site.yaml`) or one of its `allowed_owners`; leave it out for anyone else's repo, since the API serves no one else's. The same goes for a `url` on github.com: without `github`, the page reads `url` as the repo, so point another owner's project at its site, not its repo.
 - `demo: https://...` (only if different from `url`): the project page embeds it, and the site's Content-Security-Policy blocks frames from hosts it doesn't list. Add its exact origin to `frame-src` in `vercel.json` in the same PR (no wildcards), and say in the PR that it loosens the CSP. A demo this site serves can't be embedded: every path sends `X-Frame-Options: DENY`, so make it the `url` instead.
 
 **Update `site/public/content/projects/index.yaml`**:
-- Insert the new filename at the correct position in the list
-
-**Bump order numbers**:
-- Every existing project with `order >= chosen position` gets incremented by 1
-- The `github.yaml` project uses `order: 99` - leave it alone
+- Insert the new filename at the chosen position: the list's order is the order the site shows them in, and nothing else sets it.
 
 ### 6. Verify
 
@@ -107,22 +100,19 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 | id | Yes | Lowercase kebab-case |
 | title | Yes | Display name |
 | description | Yes | Casual, lowercase, 2-3 lines |
-| url | Yes | Primary link (fallback: url > demo > github) |
+| url | No | Primary link, https (fallback: url > demo > github) |
 | icon | Yes | One emoji, as a YAML escape (shown as plain text) |
 | category | Yes | web-app, ai-tools, native-app, data-science, open-source |
-| technologies | Yes | Top 3-4 (only 3 shown on card) |
-| order | Yes | Position number |
+| technologies | No | Top 3-4 (only 3 shown on card) |
 | gradient | No | CSS gradient for card header, defaults to gray |
-| featured | No | Defaults to false |
 | status | No | active, archived, experimental |
 | github | No | A public repo of the configured GitHub owner (see step 5) |
 | demo | No | Only if it differs from `url`; needs a `frame-src` entry (see step 5) |
-| tags | No | Metadata tags |
 
 ## Common Mistakes
 
 - **Overexploring the repo**: You need name, description, tech, colors. Don't read every file.
-- **Forgetting to bump orders**: Every project at or after the insertion point needs +1.
+- **Leaving it out of `index.yaml`**: a file the index doesn't list is shown nowhere.
 - **Corporate tone in description**: Keep it lowercase and casual. No em-dashes.
 - **Too many technologies**: Card only renders 3. Pick the most important ones first.
 - **Skipping the gradient**: A gray default card looks lazy. Always try to pull a color.

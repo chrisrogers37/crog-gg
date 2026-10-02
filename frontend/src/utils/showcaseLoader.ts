@@ -1,21 +1,17 @@
-import yaml from "js-yaml";
+import { showcaseShape } from "../config/contentSchema";
 import type { ShowcaseImage } from "../types/Showcase";
+import { loadContentFile } from "./contentFile";
 
-type ShowcaseData = {
-  images: ShowcaseImage[];
-};
-
+/**
+ * The photo strip's images. The strip is decoration, so a file that won't
+ * load leaves it out (ImageShowcase shows nothing under three images) and
+ * says why in the console, rather than taking anything else down.
+ */
 export const loadShowcase = async (): Promise<ShowcaseImage[]> => {
   try {
-    const response = await fetch("/content/showcase.yaml");
-    if (!response.ok) {
-      throw new Error(`Failed to fetch showcase.yaml: ${response.statusText}`);
-    }
-    const content = await response.text();
-    const data = yaml.load(content) as ShowcaseData;
-    return data.images || [];
+    return (await loadContentFile(showcaseShape, "showcase.yaml")).images;
   } catch (error) {
-    console.error("Error loading showcase from YAML:", error);
+    console.error(error);
     return [];
   }
 };
