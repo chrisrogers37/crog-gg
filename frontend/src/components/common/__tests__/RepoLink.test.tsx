@@ -53,6 +53,7 @@ describe("RepoLink", () => {
       );
     expect(repoClicks).toHaveLength(frontPage.length);
     expect(repoClicks.sort()).toEqual([
+      "factory",
       "footer",
       "header",
       "hero",

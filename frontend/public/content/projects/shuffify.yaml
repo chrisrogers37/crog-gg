@@ -12,6 +12,7 @@ technologies:
   - TypeScript
   - Spotify API
   - Node.js
+github: https://github.com/chrisrogers37/shuffify
 featured: true
 order: 3
 status: active
