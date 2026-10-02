@@ -19,7 +19,11 @@ npm run build
 
 ### 2. Type Safety
 
-Type checking is included in `npm run build` (runs tsc first).
+`npm run build` type-checks the app; `npm run typecheck` also covers the unit tests and e2e, as CI does:
+
+```sh
+cd frontend && npm run typecheck
+```
 
 - Ensure no TypeScript errors
 - Check for implicit `any` types

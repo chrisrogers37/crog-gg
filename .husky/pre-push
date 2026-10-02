@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-# pre-push hook: runs the frontend build and tests, and CI's Python checks,
-# for whichever side changed. Bypass with: git push --no-verify, or skip only
+# pre-push hook: runs the frontend's lint, type check, build and tests, and
+# CI's Python checks, for whichever side changed. Bypass with: git push --no-verify, or skip only
 # the Python half with SKIP_PY_CHECKS=1 (CI still runs it).
 
 set -e
@@ -65,7 +65,9 @@ check() {
 echo ""
 if [ "$FRONTEND_CHANGED" = true ]; then
   echo "=== Frontend checks ==="
-  check "TypeScript + build" npm --prefix frontend run build
+  check "lint" npm --prefix frontend run lint
+  check "type check" npm --prefix frontend run typecheck
+  check "build" npm --prefix frontend run build
   check "tests" npm --prefix frontend run test:run
 else
   echo "=== Frontend: no changes detected, skipping ==="

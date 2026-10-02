@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useContentStore } from "../contentStore";
+import { makeBio, makeEmployment } from "../../test/builders";
 
 /**
  * Regeneration is one request per click.
@@ -14,7 +15,10 @@ import { useContentStore } from "../contentStore";
  * screen and unmounts a page that still has content to show.
  */
 
-const BIO = { display_name: "Christopher Rogers", about_text: "original" };
+const BIO = makeBio({
+  display_name: "Christopher Rogers",
+  about_text: "original",
+});
 const realFetch = globalThis.fetch;
 
 // The server's real cooldown refusal (api/index.py), sent with a 429.
@@ -108,10 +112,8 @@ describe("regenerateContent", () => {
   });
 
   it("changes nothing for a reply that only carries a portfolio", async () => {
-    useContentStore.setState({
-      experience: [{ title: "Engineer" }],
-      hasModifiedContent: false,
-    });
+    const experience = [makeEmployment({ title: "Engineer" })];
+    useContentStore.setState({ experience, hasModifiedContent: false });
     respondWith({
       success: true,
       content: { portfolio: { experience: [{ title: "Rewritten" }] } },
@@ -122,7 +124,8 @@ describe("regenerateContent", () => {
 
     const state = useContentStore.getState();
     expect(state.bio).toEqual(BIO);
-    expect(state.experience).toEqual([{ title: "Engineer" }]);
+    // A fresh record, so an in-place edit of the seeded array would fail too.
+    expect(state.experience).toEqual([makeEmployment({ title: "Engineer" })]);
     expect(state.hasModifiedContent).toBe(false);
     expect(state.regenerationError).toBe("That one didn't come through. Press it again.");
   });
@@ -508,13 +511,13 @@ describe("hasModifiedContent reflects what was applied", () => {
  * now, taking only non-empty strings for the fields the page shows.
  */
 describe("a rewritten bio is merged, not swapped in", () => {
-  const FULL = {
+  const FULL = makeBio({
     display_name: "Christopher Rogers",
     tagline: "i build things that build things",
     location: "Brooklyn",
     about_text: "original",
     email: "hello@example.com",
-  };
+  });
 
   beforeEach(() => {
     seed();

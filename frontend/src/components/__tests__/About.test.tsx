@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import yaml from "js-yaml";
 import About from "../About";
 import { BioData } from "../../types/Bio";
+import { makeBio } from "../../test/builders";
 // Read through Vite rather than fs: the path is resolved by the same module
 // graph the app uses, so a moved content file fails here instead of resolving
 // to nothing against whatever the runner's cwd happened to be.
@@ -27,21 +28,15 @@ import bioYaml from "../../../public/content/bio.yaml?raw";
  * and are cited above.
  */
 
-const bio = (about_text: string) => ({
-  display_name: "Test User",
-  email: "test@example.com",
-  location: "New York",
-  about_text,
-  tagline: "",
-  social_links: {},
-});
-
 const PARAGRAPHS = ["first beat.", "second beat.", "third beat."];
 
 /** Render the blurb and hand back the node the text actually lives in. */
 const renderBio = () => {
   render(
-    <About onRegenerate={() => {}} content={bio(PARAGRAPHS.join("\n\n"))} />,
+    <About
+      onRegenerate={() => {}}
+      content={makeBio({ about_text: PARAGRAPHS.join("\n\n") })}
+    />,
   );
   const node = screen.getByText(/first beat/).closest("div");
   expect(node).not.toBeNull();

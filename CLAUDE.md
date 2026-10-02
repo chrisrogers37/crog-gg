@@ -16,7 +16,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 Give Claude verification loops for 2-3x quality improvement:
 
 1. Make changes
-2. Run typecheck: `cd frontend && npm run build` (tsc is part of build)
+2. Run typecheck: `cd frontend && npm run typecheck` (the app, unit tests and e2e; `npm run build` checks only the app)
 3. Run tests: `cd frontend && npm run test:run`
 4. Lint before committing: `cd frontend && npm run lint`
 5. Before creating PR: run full lint and test suite
@@ -26,7 +26,7 @@ Give Claude verification loops for 2-3x quality improvement:
 Husky pre-commit and pre-push hooks enforce quality locally, once installed: run `npm install` at the root of each checkout or worktree (husky's `prepare` sets git's `core.hooksPath` to `.husky/_`, which isn't committed, so a new worktree has none). Without that, git runs neither hook, and CI is the only gate.
 
 - **Pre-commit**: `lint-staged` runs ESLint on staged `.ts`/`.tsx` files
-- **Pre-push**: Runs `npm run build` and `npm run test:run` when `frontend/` changed, and CI's API Lint and API Tests commands when the Python side changed (exact paths and commands in `.husky/pre-push`)
+- **Pre-push**: Runs `npm run lint`, `npm run typecheck`, `npm run build` and `npm run test:run` when `frontend/` changed, as CI's lint, unit-test and build jobs do, and CI's API Lint and API Tests commands when the Python side changed (exact paths and commands in `.husky/pre-push`)
 - A missing Python tool fails the push: `pip install -r requirements-dev.txt`, or `SKIP_PY_CHECKS=1 git push` to skip just that half (CI still runs it)
 - Bypass with `--no-verify` when needed (e.g., WIP commits)
 
@@ -37,6 +37,7 @@ Husky pre-commit and pre-push hooks enforce quality locally, once installed: run
 npm run dev              # Start dev server (localhost:5173)
 npm run build            # TypeScript check + Vite build
 npm run lint             # ESLint
+npm run typecheck        # tsc over the app, unit tests and e2e (tsconfig.test.json)
 npm run test             # Vitest in watch mode
 npm run test:run         # Vitest single run
 npm run test:coverage    # Vitest with coverage

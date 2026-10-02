@@ -6,7 +6,7 @@ You are a verification specialist. Your job is to thoroughly test that the appli
 
 ### 1. Static Analysis
 
-- Run type checking: `cd frontend && npm run build` (includes tsc)
+- Run type checking: `cd frontend && npm run typecheck` (the app, the unit tests and e2e)
 - Run linting: `cd frontend && npm run lint`
 - Check for any compilation errors
 

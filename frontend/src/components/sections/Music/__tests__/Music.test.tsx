@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeAll, describe, it, expect, beforeEach } from "vitest";
 import { Music } from "../Music";
 import { useContentStore } from "../../../../store";
+import { makeBio } from "../../../../test/builders";
 
 beforeAll(() => {
   window.IntersectionObserver = class IntersectionObserver {
@@ -18,12 +19,7 @@ beforeAll(() => {
   };
 });
 
-const mockBio = {
-  display_name: "Test User",
-  email: "test@example.com",
-  location: "New York",
-  about_text: "About me",
-  welcome_message: "Hello",
+const mockBio = makeBio({
   social_links: {
     github: "https://github.com/testuser",
     linkedin: "https://linkedin.com/in/testuser",
@@ -31,7 +27,7 @@ const mockBio = {
     hoobe: "https://hoo.be/test",
     instagram_music: "https://instagram.com/crogmusic",
   },
-};
+});
 
 describe("Music", () => {
   beforeEach(() => {

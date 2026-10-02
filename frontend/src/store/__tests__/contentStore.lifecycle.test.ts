@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { makeBio, makeEducation, makeEmployment } from "../../test/builders";
 
 /**
  * The load -> revert round trip, which is the half of the critical path the
@@ -29,9 +30,17 @@ vi.mock("../../utils/timelineLoader", () => ({
 
 const { useContentStore } = await import("../contentStore");
 
-const BIO = { display_name: "Christopher Rogers", about_text: "the original" };
-const EXPERIENCE = [{ title: "Engineer", company: "Somewhere" }];
-const EDUCATION = [{ degree: "BSc", school: "Somewhere Else" }];
+const BIO = makeBio({
+  display_name: "Christopher Rogers",
+  about_text: "the original",
+});
+const EXPERIENCE = [
+  makeEmployment({
+    title: "Engineer",
+    company: "Somewhere",
+  }),
+];
+const EDUCATION = [makeEducation({ degree: "BSc", school: "Somewhere Else" })];
 const TIMELINE = { entries: [] };
 
 const resumePayload = () => ({
@@ -123,8 +132,11 @@ describe("resetContent", () => {
 
   it("restores the originals and clears both error channels", () => {
     useContentStore.setState({
-      bio: { display_name: "Christopher Rogers", about_text: "rewritten" },
-      experience: [{ title: "Wizard", company: "Elsewhere" }],
+      bio: makeBio({
+        display_name: "Christopher Rogers",
+        about_text: "rewritten",
+      }),
+      experience: [makeEmployment({ title: "Wizard", company: "Elsewhere" })],
       education: [],
       originalBio: BIO,
       originalExperience: EXPERIENCE,
@@ -151,7 +163,10 @@ describe("resetContent", () => {
     // originals -- the state a reset would actually damage. Without this
     // setup the assertion below passes against a resetContent that writes
     // empty originals straight over the page.
-    const onScreen = { display_name: "Christopher Rogers", about_text: "live" };
+    const onScreen = makeBio({
+      display_name: "Christopher Rogers",
+      about_text: "live",
+    });
     useContentStore.setState({
       bio: onScreen,
       experience: EXPERIENCE,
@@ -173,7 +188,10 @@ describe("resetContent", () => {
     // into their own state. If the revert does not reach them they keep
     // rendering the regenerated text while the store says it is original.
     useContentStore.setState({
-      bio: { display_name: "Christopher Rogers", about_text: "rewritten" },
+      bio: makeBio({
+        display_name: "Christopher Rogers",
+        about_text: "rewritten",
+      }),
       originalBio: BIO,
       originalExperience: EXPERIENCE,
       originalEducation: EDUCATION,
