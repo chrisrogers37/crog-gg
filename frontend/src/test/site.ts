@@ -8,27 +8,21 @@ export const inSite = <T>(files: Record<string, T>, path: string): T | undefined
 
 // The share cards' sources, where the site keeps them: each PNG is rendered
 // from one (scripts/og-image/render.mjs).
-const cardSource = import.meta.glob<string>("@site/og-image.html", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-});
-const claudlobbyCardSource = import.meta.glob<string>("@site/claudlobby-card.html", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-});
+const cardSources = import.meta.glob<string>(
+  ["@site/og-image.html", "@site/claudlobby-card.html"],
+  { query: "?raw", import: "default", eager: true },
+);
 
-const parsed = (sources: Record<string, string>): Document | undefined => {
-  const [html] = Object.values(sources);
+const parsedCard = (file: string): Document | undefined => {
+  const html = inSite(cardSources, `/${file}`);
   return html === undefined ? undefined : new DOMParser().parseFromString(html, "text/html");
 };
 
 /** The site's share card source (og-image.html), parsed, or undefined without one. */
-export const shareCard = () => parsed(cardSource);
+export const shareCard = () => parsedCard("og-image.html");
 
 /** Claudlobby's page's own card source (claudlobby-card.html), parsed, or undefined. */
-export const claudlobbyCard = () => parsed(claudlobbyCardSource);
+export const claudlobbyCard = () => parsedCard("claudlobby-card.html");
 
 /** A node's text with its whitespace collapsed, so a wrapped phrase reads as one. */
 export const textOf = (node: Node | null | undefined): string =>

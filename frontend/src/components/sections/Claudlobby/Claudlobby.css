@@ -1,18 +1,21 @@
-/* Claudlobby's project page (#173): what only its sections draw. The page,
-   hero and sections are the site's own (styles/page.css); buttons and cards
-   the global .btn and .card (index.css). */
+/* Claudlobby's project page (#173): what only its sections draw. The page
+   and its sections are the site's (styles/page.css), with the global .btn
+   and .card (index.css); the hero is Claudfather's panel, below. */
 
 /* Claudfather's look (palette.ts claudfather): the hero is the night behind
    its avatar, the same in both themes; below it, the sections follow the
-   site's theme with its orange for their accents. */
+   site's theme, their accents in its orange. The accent is the site's own
+   --primary-color (every link reads it), set again for this page alone:
+   the deeper orange on light ground, the orange on dark. */
 .cl-page {
   /* No box of its own: its sections stay the page's flex items. */
   display: contents;
-  --cl-accent: theme("colors.claudfather.orangeDeep");
+  --primary-color: theme("colors.claudfather.orangeDeep");
 }
 
-.dark .cl-page {
-  --cl-accent: theme("colors.claudfather.orange");
+.dark .cl-page,
+.cl-hero {
+  --primary-color: theme("colors.claudfather.orange");
 }
 
 .cl-hero {
@@ -29,7 +32,7 @@
   background-color: theme("colors.claudfather.charcoal");
   /* The avatar's rain of faint dots. */
   background-image: radial-gradient(
-    color-mix(in srgb, theme("colors.claudfather.cream") 9%, transparent) 1px,
+    theme("colors.claudfather.cream / 9%") 1px,
     transparent 1.5px
   );
   background-size: 12px 12px;
@@ -37,7 +40,7 @@
 
 /* Charcoal on the dark theme's navy: a rim, so the panel reads as one. */
 .dark .cl-hero {
-  border-color: color-mix(in srgb, theme("colors.claudfather.cream") 12%, transparent);
+  border-color: theme("colors.claudfather.cream / 12%");
 }
 
 /* A panel, padded all round and the column's width: above the project page's
@@ -57,46 +60,41 @@
   grid-area: body;
 }
 
+/* Not redundant: App.css colours every h1 in the theme's text colour. */
 .cl-hero .page-headline {
   color: theme("colors.claudfather.cream");
 }
 
-/* Cream, a step down: 8:1 and up on charcoal. */
+/* Cream, a step down: 9:1 on charcoal. */
 .cl-hero .page-sub,
 .cl-hero .page-note {
-  color: color-mix(
-    in srgb,
-    theme("colors.claudfather.cream") 82%,
-    theme("colors.claudfather.charcoal")
-  );
-}
-
-.cl-hero a:not(.btn) {
-  color: theme("colors.claudfather.orange");
+  color: theme("colors.claudfather.cream / 82%");
 }
 
 .cl-hero .badge {
-  border-color: color-mix(in srgb, theme("colors.claudfather.orange") 60%, transparent);
+  border-color: theme("colors.claudfather.orange / 60%");
   color: theme("colors.claudfather.orange");
 }
 
 /* The site's one filled button, in Claudfather's orange with its ink as the
-   text (5.7:1), as on the avatar; and the ghost in cream. */
+   text (5.7:1), as on the avatar; lighter under a cream veil on hover. */
 .cl-page .btn-primary {
   background-color: theme("colors.claudfather.orange");
   color: theme("colors.claudfather.ink");
 }
 
 .cl-page .btn-primary:hover {
-  background-color: color-mix(
-    in srgb,
-    theme("colors.claudfather.orange") 85%,
-    theme("colors.claudfather.cream")
+  background-color: theme("colors.claudfather.orange");
+  background-image: linear-gradient(
+    theme("colors.claudfather.cream / 15%"),
+    theme("colors.claudfather.cream / 15%")
   );
 }
 
+/* The ghost in cream. .cl-page outranks the ghost's own dark-theme rule,
+   .btn-ghost:is(.dark *) (index.css). */
 .cl-page .cl-hero .btn-ghost {
-  border-color: color-mix(in srgb, theme("colors.claudfather.cream") 35%, transparent);
+  border-color: theme("colors.claudfather.cream / 35%");
   color: theme("colors.claudfather.cream");
 }
 
@@ -112,9 +110,10 @@
   border-radius: 50%;
 }
 
-/* Below the hero, the accents are the page's orange. */
-.cl-page .page-section a:not(.btn) {
-  color: var(--cl-accent);
+/* The panel while the projects load (LoadingHero.tsx): its bars faint on
+   charcoal. */
+.cl-hero--loading .page-skeleton {
+  background: theme("colors.claudfather.cream / 14%");
 }
 
 .cl-maturity {
@@ -157,7 +156,7 @@
 .cl-step-code {
   display: block;
   margin-top: 0.25rem;
-  color: var(--cl-accent);
+  color: var(--primary-color);
 }
 
 .cl-step p,
@@ -203,7 +202,7 @@
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--cl-accent);
+  color: var(--primary-color);
 }
 
 .cl-counts dt {
@@ -273,6 +272,24 @@
 }
 
 @media (max-width: 480px) {
+  /* Edge to edge on a small phone: the page's gutters go to the words, so the
+     CTAs and the maturity note stay on even a 375x667 phone's first screen. */
+  .project-page .page-hero.cl-hero {
+    margin-inline: -1rem;
+    padding: 1.25rem 1rem;
+    border-radius: 0;
+    border-inline-width: 0;
+  }
+
+  .cl-hero-body {
+    margin-top: 1rem;
+  }
+
+  .cl-mark {
+    width: 44px;
+    height: 44px;
+  }
+
   .cl-counts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

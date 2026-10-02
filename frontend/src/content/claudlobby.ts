@@ -25,21 +25,6 @@ type Point = { title: string; body: string };
 type Count = { value: number; label: string };
 
 export const claudlobby = {
-  // Claudfather's look (the GitHub org Claudlobby lives in): its avatar is
-  // the page's mark, and the page has its own share card. Both are the
-  // owner's files in site/public; site:check finds them when the site lists
-  // Claudlobby (site-check/claudlobby.test.ts).
-  brand: {
-    mark: { photo: "/profile-photos/claudfather", alt: "Claudfather" },
-    card: {
-      path: "/claudlobby-card.png",
-      width: 1200,
-      height: 630,
-      // The card's words, in its order (site/claudlobby-card.html).
-      alt: "Build a dark factory. An open-source agent fleet: manager, engineer and reviewer agents that work 24/7.",
-    },
-  },
-
   hero: {
     headline: "Build a dark factory.",
     sub: "Claudlobby is an open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",

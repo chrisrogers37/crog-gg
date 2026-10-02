@@ -12,7 +12,7 @@ import {
   type PageMeta,
 } from ".";
 import site from "virtual:site-config";
-import { claudlobby } from "../content/claudlobby";
+import { CLAUDLOBBY_CARD } from "../content/claudlobbyBrand";
 import { CLAUDLOBBY_REPO } from "../content/links";
 import { createSeo } from "./site";
 
@@ -102,13 +102,13 @@ describe("a page of its own's head", () => {
 
   it("points link previews at its own card, with its size and words", () => {
     const meta = projectMeta(page);
-    const image = `${SITE_URL}${claudlobby.brand.card.path}`;
+    const image = `${SITE_URL}${CLAUDLOBBY_CARD.path}`;
     expect(tagValue(meta, "og:image")).toBe(image);
     expect(tagValue(meta, "twitter:image")).toBe(image);
     expect(tagValue(meta, "og:image:width")).toBe("1200");
     expect(tagValue(meta, "og:image:height")).toBe("630");
-    expect(tagValue(meta, "og:image:alt")).toBe(claudlobby.brand.card.alt);
-    expect(tagValue(meta, "twitter:image:alt")).toBe(claudlobby.brand.card.alt);
+    expect(tagValue(meta, "og:image:alt")).toBe(CLAUDLOBBY_CARD.alt);
+    expect(tagValue(meta, "twitter:image:alt")).toBe(CLAUDLOBBY_CARD.alt);
   });
 
   it("describes itself as source code, with its repository and license", () => {

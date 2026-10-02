@@ -1,6 +1,8 @@
 import { test, expect } from "./fixtures";
 import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
-import { CLAUDLOBBY, cardOf, expectBelowHeader, site } from "./site";
+import { CLAUDLOBBY_CARD } from "../src/content/claudlobbyBrand";
+import { claudfather } from "../src/styles/palette";
+import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
 
 /**
  * Claudlobby's project page: its own sections (#173), since the redesign one
@@ -19,7 +21,12 @@ test.skip(!CLAUDLOBBY, "the site doesn't list Claudlobby");
 const VIEWPORTS = [
   ["desktop", { width: 1366, height: 768 }],
   ["phone", { width: 390, height: 844 }],
+  ["small phone", { width: 375, height: 667 }],
 ] as const;
+
+/** A palette hex as getComputedStyle reports it. */
+const rgb = (hex: string) =>
+  `rgb(${[1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16)).join(", ")})`;
 
 for (const [label, viewport] of VIEWPORTS) {
   test(`the first screen names Claudlobby, shows both CTAs and its maturity (${label})`, async ({
@@ -57,15 +64,36 @@ test.describe("Claudlobby's page", () => {
   test("wears Claudfather's mark, loaded, and points link previews at its own card", async ({
     page,
   }) => {
-    // The mark is a real image, not a broken one.
+    // The mark is a real image, not a broken one, once its bytes are in.
     const mark = page.locator(".page-hero img.cl-mark");
     await expect(mark).toBeVisible();
-    expect(await mark.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+    await expect
+      .poll(() => mark.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
+      .toBe(true);
     // In the app's head as in the prerendered one (prerender.spec.ts).
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
-      `${site.site.url}${cardOf("/projects/claudlobby").path}`,
+      `${site.site.url}${CLAUDLOBBY_CARD.path}`,
     );
+  });
+
+  test("keeps its hero Claudfather's night in both themes; its links take each theme's orange", async ({
+    page,
+  }) => {
+    const hero = () =>
+      page.locator(".page-hero.cl-hero").evaluate((el) => getComputedStyle(el).backgroundColor);
+    const link = () =>
+      page.locator("#quickstart a").first().evaluate((el) => getComputedStyle(el).color);
+    expect(await hero()).toBe(rgb(claudfather.charcoal));
+    expect(await link()).toBe(rgb(claudfather.orangeDeep));
+
+    // Light, then dark.
+    await page.getByRole("button", { name: /current theme/i }).first().click();
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.classList.contains("dark")))
+      .toBe(true);
+    expect(await hero()).toBe(rgb(claudfather.charcoal));
+    expect(await link()).toBe(rgb(claudfather.orange));
   });
 
   test("says nothing of the owner's: the site around it does", async ({ page }) => {

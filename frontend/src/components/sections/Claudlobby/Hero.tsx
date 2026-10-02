@@ -1,4 +1,5 @@
 import { claudlobby } from "../../../content/claudlobby";
+import { CLAUDLOBBY_MARK } from "../../../content/claudlobbyBrand";
 import type { Project } from "../../../types";
 import { track } from "../../../services/analytics";
 import { photoSrc, photoSrcSet } from "../../../utils/photos";
@@ -22,7 +23,7 @@ function StarIcon() {
  * site around it. In Claudfather's colours, with its avatar as the mark.
  */
 export function Hero({ project }: { project: Project }) {
-  const { brand, hero, maturity } = claudlobby;
+  const { hero, maturity } = claudlobby;
   return (
     <section className="page-hero cl-hero" aria-labelledby="cl-hero-heading">
       <p className="page-eyebrow">
@@ -61,13 +62,13 @@ export function Hero({ project }: { project: Project }) {
           fetches src the moment it's set, before srcset can choose. */}
       <img
         className="cl-mark"
-        alt={brand.mark.alt}
+        alt={CLAUDLOBBY_MARK.alt}
         width={220}
         height={220}
         loading="eager"
         sizes="(max-width: 768px) 56px, 220px"
-        srcSet={photoSrcSet(brand.mark.photo)}
-        src={photoSrc(brand.mark.photo)}
+        srcSet={photoSrcSet(CLAUDLOBBY_MARK.photo)}
+        src={photoSrc(CLAUDLOBBY_MARK.photo)}
       />
     </section>
   );

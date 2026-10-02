@@ -1,6 +1,6 @@
 import type { SiteConfig } from "../config/schema";
 import { socialsIn } from "../config/socials";
-import { claudlobby } from "../content/claudlobby";
+import { CLAUDLOBBY_CARD } from "../content/claudlobbyBrand";
 import { CLAUDLOBBY_REPO } from "../content/links";
 import { hasOwnPage, type OwnPageId } from "../content/ownPages";
 import type { Project } from "../types/Project";
@@ -27,7 +27,7 @@ import type { Project } from "../types/Project";
  */
 
 /** A link preview's image: the site's card, or a page's own. */
-export type ShareImage = SiteConfig["seo"]["image"];
+type ShareImage = SiteConfig["seo"]["image"];
 
 export type PageMeta = {
   /**
@@ -184,7 +184,7 @@ export function createSeo(site: SiteConfig) {
     (project: ProjectSummary, description: string) => { image: ShareImage; schema: object }
   > = {
     claudlobby: (project, description) => ({
-      image: claudlobby.brand.card,
+      image: CLAUDLOBBY_CARD,
       schema: {
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",

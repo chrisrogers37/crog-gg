@@ -9,6 +9,7 @@ import {
 import { makeProject } from "../../../../test/builders";
 import { ClaudlobbyPage } from "../ClaudlobbyPage";
 import { claudlobby } from "../../../../content/claudlobby";
+import { CLAUDLOBBY_MARK } from "../../../../content/claudlobbyBrand";
 import {
   CLAUDLOBBY_GETTING_STARTED,
   CLAUDLOBBY_README_QUICKSTART,
@@ -23,12 +24,14 @@ const { hero, maturity, quickstart, roadmap } = claudlobby;
 const CLAUDLOBBY = makeProject({ id: "claudlobby", title: "Claudlobby", featured: true });
 
 describe("ClaudlobbyPage", () => {
-  it("wears Claudfather's mark in its hero, from its variants", () => {
-    renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
-    const mark = screen.getByRole("img", { name: claudlobby.brand.mark.alt });
+  it("wears Claudfather's look: the page's scope, and its mark in the hero", () => {
+    const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    // .cl-page carries the colours its sections read (Claudlobby.css).
+    expect(container.firstElementChild).toHaveClass("cl-page");
+    const mark = screen.getByRole("img", { name: CLAUDLOBBY_MARK.alt });
     expect(mark.closest(".cl-hero")).not.toBeNull();
-    expect(mark).toHaveAttribute("src", `${claudlobby.brand.mark.photo}-480.webp`);
-    expect(mark.getAttribute("srcset")).toContain(`${claudlobby.brand.mark.photo}-160.webp 160w`);
+    expect(mark).toHaveAttribute("src", `${CLAUDLOBBY_MARK.photo}-480.webp`);
+    expect(mark.getAttribute("srcset")).toContain(`${CLAUDLOBBY_MARK.photo}-160.webp 160w`);
     // Read after the words: the last thing in the hero.
     expect(mark.parentElement!.lastElementChild).toBe(mark);
   });

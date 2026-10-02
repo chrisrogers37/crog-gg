@@ -3,7 +3,7 @@ import path from "node:path";
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 import yaml from "js-yaml";
 import { projectIndexShape, projectShape } from "../src/config/contentSchema";
-import { claudlobby } from "../src/content/claudlobby";
+import { CLAUDLOBBY_CARD } from "../src/content/claudlobbyBrand";
 import type { BioData } from "../src/types/Bio";
 import { parseYaml } from "../src/utils/contentFile";
 import { readProjects } from "../src/utils/projectLoader";
@@ -35,7 +35,7 @@ export const CLAUDLOBBY = projectIndex.projects.map(projectId).includes("claudlo
 
 /** The card a page's link preview shows: Claudlobby's page has its own. */
 export const cardOf = (path: string) =>
-  path === "/projects/claudlobby" ? claudlobby.brand.card : site.seo.image;
+  path === "/projects/claudlobby" ? CLAUDLOBBY_CARD : site.seo.image;
 
 /** The featured project's id, if index.yaml features one. */
 export const FEATURED = projectIndex.featured && projectId(projectIndex.featured);

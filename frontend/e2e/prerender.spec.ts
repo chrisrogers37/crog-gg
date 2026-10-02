@@ -1,5 +1,6 @@
 import type { APIRequestContext } from "@playwright/test";
 import { test, expect } from "./fixtures";
+import { CLAUDLOBBY_CARD } from "../src/content/claudlobbyBrand";
 import { CLAUDLOBBY, cardOf, servedProjects, site } from "./site";
 
 /**
@@ -116,7 +117,7 @@ test.describe("Prerendered heads", () => {
       ["/apple-touch-icon.png", "image/png"],
       ["/manifest.json", "application/json"],
       // Claudlobby's page's own card, where the site lists it.
-      ...(CLAUDLOBBY ? [[cardOf("/projects/claudlobby").path, "image/png"]] : []),
+      ...(CLAUDLOBBY ? [[CLAUDLOBBY_CARD.path, "image/png"]] : []),
     ]) {
       const response = await request.get(path);
       expect(response.status(), path).toBe(200);

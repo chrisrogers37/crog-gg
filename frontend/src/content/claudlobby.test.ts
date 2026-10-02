@@ -1,15 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { claudlobby } from "./claudlobby";
+import { CLAUDLOBBY_CARD, CLAUDLOBBY_MARK } from "./claudlobbyBrand";
 import { PLANNED, strings } from "../test/claudlobbyRules";
 
 /**
- * The rules for Claudlobby's page copy (content/claudlobby.ts). Its shape is
- * the type checker's job; these are the rules a type can't express. What
- * says it off the page, its card and its page's head, is the site's project
- * file, so site:check holds that to them (site-check/projects.test.ts).
+ * The rules for Claudlobby's page copy (content/claudlobby.ts), and for the
+ * words of its look (claudlobbyBrand.ts: the mark's alt, and its share card's,
+ * which are the card's own words). Its shape is the type checker's job; these
+ * are the rules a type can't express. What says it off the page, its card and
+ * its page's head, is the site's project file, so site:check holds that to
+ * them (site-check/projects.test.ts).
  */
 
-const copy = strings(claudlobby);
+const look = strings([CLAUDLOBBY_MARK, CLAUDLOBBY_CARD]);
+const copy = [...strings(claudlobby), ...look];
 
 describe("Claudlobby's page copy", () => {
   it("has no empty strings", () => {
@@ -54,7 +58,7 @@ describe("tone split and maturity (#179)", () => {
     const { maturity, roadmap, ...rest } = claudlobby;
     const { planned, ...maturityRest } = maturity;
     const { next, ...roadmapRest } = roadmap;
-    for (const text of [...strings(rest), ...strings(maturityRest), ...strings(roadmapRest)]) {
+    for (const text of [...strings(rest), ...strings(maturityRest), ...strings(roadmapRest), ...look]) {
       expect(text, text).not.toMatch(PLANNED);
     }
     // And the two places that may name them still do, so PLANNED still

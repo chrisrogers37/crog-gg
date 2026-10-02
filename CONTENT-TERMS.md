@@ -6,7 +6,8 @@ The MIT License does **not** cover the personal content that makes this site abo
 
 - **Written content** in `site/public/content/`: the bio, career timeline, experience, education, skills, showcase entries and project write-ups.
 - **Photos and likeness**: everything in `site/public/profile-photos/`, `site/public/profile-photo.jpg`, and any other photograph or portrait of Chris Rogers anywhere in this repository.
-- **Link-preview card**: `site/public/og-image.png` and the text it shows, which lives in `site/og-image.html`. The script that renders it is code, so it's MIT.
+- **Link-preview cards**: `site/public/og-image.png` and the text it shows, which lives in `site/og-image.html`; and Claudlobby's page's card, `site/public/claudlobby-card.png`, and its text, in `site/claudlobby-card.html`. The script that renders them is code, so it's MIT.
+- **Claudfather's mark**: the avatar of Claudfather, Chris Rogers's GitHub organization: `frontend/scripts/photos/originals/claudfather.jpg` and its variants in `site/public/profile-photos/`.
 - **Personal copy in `site/site.yaml`, the source code and tests**: the owner's name, taglines, typewriter phrases, and the About, contact and music text shown on the site.
 - **Personal links and handles**: the social, music and contact links and the email address.
 
