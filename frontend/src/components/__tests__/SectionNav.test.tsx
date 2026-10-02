@@ -34,6 +34,15 @@ describe("SectionNav", () => {
     expect(onSelect.mock.calls).toEqual([["journey"], ["about"]]);
   });
 
+  it("makes the highlighted tab the one tab stop", () => {
+    render(<SectionNav activeSection="projects" onSelect={vi.fn()} />);
+    const stops = screen
+      .getAllByRole("tab")
+      .filter((tab) => tab.tabIndex === 0)
+      .map((tab) => tab.textContent);
+    expect(stops).toEqual(["Projects"]);
+  });
+
   it("does not scroll on initial render", () => {
     render(<SectionNav activeSection="about" onSelect={vi.fn()} />);
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();

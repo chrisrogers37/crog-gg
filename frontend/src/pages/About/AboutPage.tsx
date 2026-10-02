@@ -101,6 +101,8 @@ function AboutContent() {
   // The open section, or null while About shows as a preview. It's the page's
   // own, so every visit lands on About's preview.
   const [openSection, setOpenSection] = useState<string | null>(null);
+  // The tab that shows as selected: the open section, or About's preview.
+  const selectedTab = openSection ?? "about";
   const isNarrowViewport = useMediaQuery(NARROW_VIEWPORT);
 
   // Whether the expanded section is actually in the DOM, as opposed to merely
@@ -140,7 +142,7 @@ function AboutContent() {
   };
 
   // Before the early returns below, so the menu lists these while loading too.
-  useSectionMenu(SECTIONS, openSection ?? "about", setOpenSection);
+  useSectionMenu(SECTIONS, selectedTab, setOpenSection);
 
   // "see more" opens About: the preview is always About's.
   const handlePreviewExpand = () => setOpenSection("about");
@@ -271,7 +273,7 @@ function AboutContent() {
 
       {/* Navigation */}
       <SectionNav
-        activeSection={openSection ?? "about"}
+        activeSection={selectedTab}
         onSelect={handleTabClick}
       />
 

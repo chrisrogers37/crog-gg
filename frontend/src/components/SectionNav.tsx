@@ -1,12 +1,12 @@
 import { useRef, useCallback, useEffect } from "react";
 import { SECTIONS, SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
 
-interface SectionNavProps {
+type SectionNavProps = {
   /** The highlighted tab: the open section, or About while it's previewed. */
   activeSection: string;
   /** A tab was clicked. The page decides what that opens or closes. */
   onSelect: (section: string) => void;
-}
+};
 
 export default function SectionNav({ activeSection, onSelect }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);

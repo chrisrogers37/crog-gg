@@ -286,7 +286,8 @@ test.describe("see more survives a collapse (#165)", () => {
     await expect(page.locator(".generate-btn")).toBeVisible({ timeout: 10000 });
 
     // Collapse the way a reader does -- clicking the tab that is already
-    // active. SectionNav reports that as an empty section id.
+    // open. SectionNav reports the clicked id, and AboutPage turns a click on
+    // the open tab back into About's preview.
     await page.locator(".section-nav-button.active").first().click();
     await expect(page.locator(".section-fade-btn")).toBeVisible({
       timeout: 10000,
