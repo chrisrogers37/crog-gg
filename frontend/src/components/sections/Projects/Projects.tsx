@@ -3,6 +3,12 @@ import { LoadError } from "../../common/LoadError";
 import { ProjectCard } from "./ProjectCard";
 import "./Projects.css";
 
+/**
+ * Six blank tiles. Each line is a blank line of the real tile's own type, so a
+ * tile keeps its height when the projects arrive: a title, a two-line
+ * description, and three pills and a "+N", which wrap on a phone as the real
+ * ones do.
+ */
 export function ProjectSkeletonGrid() {
   return (
     <div className="projects-grid" role="status" aria-label="Loading projects">
@@ -10,13 +16,18 @@ export function ProjectSkeletonGrid() {
         <div key={i} className="project-tile skeleton-tile" aria-hidden="true">
           <div className="project-tile-header skeleton-header" />
           <div className="project-tile-body">
-            <div className="skeleton-line skeleton-title-line" />
-            <div className="skeleton-line skeleton-desc-line-1" />
-            <div className="skeleton-line skeleton-desc-line-2" />
+            <div className="project-tile-title">&nbsp;</div>
+            <div className="project-tile-description">
+              &nbsp;
+              <br />
+              &nbsp;
+            </div>
             <div className="project-tile-tech">
-              <span className="skeleton-pill" />
-              <span className="skeleton-pill" />
-              <span className="skeleton-pill" />
+              {Array.from({ length: 4 }).map((_, j) => (
+                <span key={j} className="project-tile-tech-pill">
+                  &nbsp;
+                </span>
+              ))}
             </div>
           </div>
         </div>

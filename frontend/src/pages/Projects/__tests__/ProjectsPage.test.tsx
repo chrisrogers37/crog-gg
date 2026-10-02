@@ -40,6 +40,14 @@ describe("ProjectsPage when the content failed to load", () => {
     expect(screen.queryByRole("status", { name: /loading projects/i })).toBeNull();
   });
 
+  it("keeps the filters above the skeleton while it loads, so the grid doesn't drop", () => {
+    useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "loading" } });
+    renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
+    expect(screen.getByRole("status", { name: /loading projects/i })).toBeInTheDocument();
+    expect(screen.getByRole("searchbox")).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^all$/i })).toBeInTheDocument();
+  });
+
   it("names the page in the tab while it loads, not only once it has", async () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "loading" } });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });

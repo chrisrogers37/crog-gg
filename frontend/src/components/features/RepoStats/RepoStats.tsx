@@ -9,6 +9,28 @@ interface RepoStatsProps {
   repoName: string;
 }
 
+/** A typical repo's figures, which the panel lays out unseen while it loads. */
+const PLACEHOLDER: Pick<
+  Repository,
+  | "stargazers_count"
+  | "forks_count"
+  | "watchers_count"
+  | "open_issues_count"
+  | "language"
+  | "license"
+  | "pushed_at"
+  | "topics"
+> = {
+  stargazers_count: 0,
+  forks_count: 0,
+  watchers_count: 0,
+  open_issues_count: 0,
+  language: "TypeScript",
+  license: { name: "MIT License", spdx_id: "MIT" },
+  pushed_at: "2026-01-01T00:00:00Z",
+  topics: [],
+};
+
 /**
  * RepoStats
  *
@@ -54,40 +76,37 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
     };
   }, [owner, repoName]);
 
-  if (isLoading) {
-    return (
-      <div className="repo-stats loading">
-        <div className="stats-skeleton" />
-      </div>
-    );
-  }
-
-  if (!repo) {
+  if (!isLoading && !repo) {
     return null;
   }
 
+  // While it loads, the panel is a typical repo's, unseen behind a skeleton,
+  // so the real figures arriving move nothing below it, at any width: a
+  // fixed-height block was shorter than the panel, which wraps on a phone.
+  const shown = repo ?? PLACEHOLDER;
+
   const stats = [
-    { label: "Stars", value: repo.stargazers_count, icon: "⭐" },
-    { label: "Forks", value: repo.forks_count, icon: "🍴" },
-    { label: "Watchers", value: repo.watchers_count, icon: "👀" },
-    { label: "Issues", value: repo.open_issues_count, icon: "🐛" },
+    { label: "Stars", value: shown.stargazers_count, icon: "⭐" },
+    { label: "Forks", value: shown.forks_count, icon: "🍴" },
+    { label: "Watchers", value: shown.watchers_count, icon: "👀" },
+    { label: "Issues", value: shown.open_issues_count, icon: "🐛" },
   ];
 
-  const lastUpdated = new Date(repo.pushed_at).toLocaleDateString("en-US", {
+  const lastUpdated = new Date(shown.pushed_at).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 
-  return (
-    <div className="repo-stats">
+  const panel = (
+    <>
       {/* Main stats */}
       <div className="stats-grid">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
             className="stat-item"
-            initial={{ opacity: 0, y: 10 }}
+            initial={repo ? { opacity: 0, y: 10 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
@@ -100,18 +119,18 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
 
       {/* Meta info */}
       <div className="repo-meta">
-        {repo.language && (
+        {shown.language && (
           <span className="meta-item">
             <span
               className="meta-dot"
-              style={{ background: getLanguageColor(repo.language) }}
+              style={{ background: getLanguageColor(shown.language) }}
             />
-            {repo.language}
+            {shown.language}
           </span>
         )}
-        {repo.license && (
+        {shown.license && (
           <span className="meta-item">
-            <span className="meta-icon">📜</span> {repo.license.spdx_id}
+            <span className="meta-icon">📜</span> {shown.license.spdx_id}
           </span>
         )}
         <span className="meta-item">
@@ -120,15 +139,23 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
       </div>
 
       {/* Topics */}
-      {repo.topics && repo.topics.length > 0 && (
+      {shown.topics && shown.topics.length > 0 && (
         <div className="repo-topics">
-          {repo.topics.map((topic) => (
+          {shown.topics.map((topic) => (
             <span key={topic} className="topic-tag">
               {topic}
             </span>
           ))}
         </div>
       )}
+    </>
+  );
+
+  return repo ? (
+    <div className="repo-stats">{panel}</div>
+  ) : (
+    <div className="repo-stats loading" role="status" aria-label="Loading repository stats">
+      <div aria-hidden="true">{panel}</div>
     </div>
   );
 }

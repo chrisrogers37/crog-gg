@@ -4,8 +4,9 @@ import {
   isValidElement,
   useEffect,
   useState,
+  type ComponentProps,
 } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import {
@@ -21,6 +22,39 @@ import "./GitHubReadme.css";
 
 // Import highlight.js theme
 import "highlight.js/styles/github.css";
+
+/** A wide table scrolls in a box a keyboard can focus, like code. */
+function ReadmeTable({ node: _node, ...props }: ComponentProps<"table"> & ExtraProps) {
+  return (
+    <div className="readme-table" tabIndex={0}>
+      <table {...props} />
+    </div>
+  );
+}
+
+/**
+ * highlight.js makes the <code> inside the element that scrolls sideways, so
+ * that is what a keyboard must be able to focus.
+ */
+function ReadmeCodeBlock({ children }: ComponentProps<"pre">) {
+  return (
+    <pre className="readme-code-block">
+      {Children.map(children, (child) =>
+        isValidElement<{ tabIndex?: number }>(child)
+          ? cloneElement(child, { tabIndex: 0 })
+          : child,
+      )}
+    </pre>
+  );
+}
+
+/**
+ * A task list's checkbox says what it shows to a screen reader. With no raw
+ * HTML rendered, a task list is the only place a README has an input.
+ */
+function TaskCheckbox({ node: _node, ...props }: ComponentProps<"input"> & ExtraProps) {
+  return <input {...props} aria-label={props.checked ? "done" : "to do"} />;
+}
 
 interface GitHubReadmeProps {
   /** The repo's owner, from the project's own GitHub URL. */
@@ -141,17 +175,9 @@ export function GitHubReadme({
                 className="readme-image"
               />
             ),
-            // highlight.js makes the <code> inside the element that scrolls
-            // sideways, so that is what a keyboard must be able to focus.
-            pre: ({ children }) => (
-              <pre className="readme-code-block">
-                {Children.map(children, (child) =>
-                  isValidElement<{ tabIndex?: number }>(child)
-                    ? cloneElement(child, { tabIndex: 0 })
-                    : child,
-                )}
-              </pre>
-            ),
+            table: ReadmeTable,
+            input: TaskCheckbox,
+            pre: ReadmeCodeBlock,
           }}
         >
           {readme.text}

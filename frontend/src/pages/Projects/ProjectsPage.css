@@ -71,8 +71,8 @@
 }
 
 .category-button.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: var(--button-color);
+  border-color: var(--button-color);
   color: white;
 }
 
@@ -86,7 +86,7 @@
 .clear-filters {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background: var(--primary-color);
+  background: var(--button-color);
   color: white;
   border: none;
   border-radius: 6px;
@@ -94,7 +94,7 @@
 }
 
 .clear-filters:hover {
-  background: var(--secondary-color);
+  background: var(--hover-color);
 }
 
 /* Responsive */

@@ -46,7 +46,10 @@ export function ProjectsPage() {
 
   // The page's shell, heading and head tags are the same in every state; only
   // the body switches: a skeleton while loading, an error naming the file if
-  // that failed, and a line when there's nothing to show (#190 M23).
+  // that failed, and a line when there's nothing to show (#190 M23). The
+  // filters stand above the skeleton too, so the grid doesn't drop when the
+  // projects arrive. Only "All" is known until then, so on a phone, where the
+  // categories wrap, it still drops by their extra rows.
   const status =
     projects.length > 0
       ? null
@@ -67,6 +70,33 @@ export function ProjectsPage() {
           </p>
         </header>
 
+        {(status === null || status === "loading") && (
+          <div className="projects-filters">
+            <input
+              type="search"
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={status === "loading"}
+              className="search-input"
+            />
+
+            <div className="category-filters">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`category-button ${
+                    selectedCategory === category ? "active" : ""
+                  }`}
+                >
+                  {category === "all" ? "All" : category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {status === "loading" && <ProjectSkeletonGrid />}
         {typeof load === "object" && status === "error" && (
           <LoadError
@@ -79,56 +109,27 @@ export function ProjectsPage() {
             <p>No projects yet.</p>
           </div>
         )}
-        {status === null && (
-          <>
-            {/* Filters */}
-            <div className="projects-filters">
-              <input
-                type="search"
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-
-              <div className="category-filters">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`category-button ${
-                      selectedCategory === category ? "active" : ""
-                    }`}
-                  >
-                    {category === "all" ? "All" : category}
-                  </button>
-                ))}
-              </div>
+        {status === null &&
+          (filteredProjects.length > 0 ? (
+            <div className="projects-grid">
+              {filteredProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
             </div>
-
-            {/* Projects Grid */}
-            {filteredProjects.length > 0 ? (
-              <div className="projects-grid">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="no-results">
-                <p>No projects match your search criteria.</p>
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("all");
-                  }}
-                  className="clear-filters"
-                >
-                  Clear filters
-                </button>
-              </div>
-            )}
-          </>
-        )}
+          ) : (
+            <div className="no-results">
+              <p>No projects match your search criteria.</p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                }}
+                className="clear-filters"
+              >
+                Clear filters
+              </button>
+            </div>
+          ))}
       </div>
     </>
   );

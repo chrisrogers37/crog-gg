@@ -8,24 +8,26 @@
  */
 :root {
   --primary-color: #2563eb; /* primary.600 */
-  --secondary-color: #1e40af; /* primary.800 */
   --background-color: #f8fafc; /* slate.50 */
   --text-color: #1e293b; /* slate.800 */
   --text-color-secondary: #64748b; /* slate.500 */
   --card-background: #ffffff; /* white */
-  --hover-color: #3b82f6; /* primary.500 */
   --border-color: #e2e8f0; /* slate.200 */
+  /* Filled buttons and active tabs, under white text, in both themes, as
+     .btn-primary (index.css): white is 5.2:1 on primary.600 and 6.7:1 on
+     primary.700. --primary-color is the text accent, and in the dark theme it
+     is too light to put white on. */
+  --button-color: #2563eb; /* primary.600 */
+  --hover-color: #1d4ed8; /* primary.700 */
 }
 
 /* Dark mode overrides */
 .dark {
   --primary-color: #60a5fa; /* primary.400 */
-  --secondary-color: #3b82f6; /* primary.500 */
   --background-color: #0f172a; /* slate.900 */
   --text-color: #f1f5f9; /* slate.100 */
   --text-color-secondary: #94a3b8; /* slate.400 */
   --card-background: #1e293b; /* slate.800 */
-  --hover-color: #93c5fd; /* primary.300 */
   --border-color: #334155; /* slate.700 */
   --logo-chip: #f1f5f9; /* slate.100 */
 }
@@ -171,7 +173,7 @@ h1 {
 }
 
 .generate-btn {
-  background-color: var(--primary-color);
+  background-color: var(--button-color);
   color: white;
 }
 
@@ -180,7 +182,7 @@ h1 {
 }
 
 .generate-btn:disabled {
-  background-color: var(--primary-color);
+  background-color: var(--button-color);
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -534,9 +536,9 @@ a:hover {
 }
 
 .section-nav-button.active {
-  background-color: var(--primary-color);
+  background-color: var(--button-color);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--button-color);
   transform: translateY(-1px);
 }
 
@@ -586,8 +588,9 @@ a:hover {
   margin-bottom: 0;
 }
 
-/* Adjust main content layout */
-main,
+/* Adjust main content layout. Not the Layout's <main>: as a column flexbox it
+   sized each page to its content, so a README's widest line made a project
+   page wider than a phone, and the projects arriving widened /projects. */
 .about-main {
   display: flex;
   flex-direction: column;

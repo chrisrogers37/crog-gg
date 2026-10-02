@@ -6,14 +6,12 @@
 }
 
 .repo-stats.loading {
-  height: 6rem;
+  background-color: var(--border-color);
+  animation: pulse 2s infinite;
 }
 
-.stats-skeleton {
-  height: 100%;
-  background-color: var(--border-color);
-  border-radius: 8px;
-  animation: pulse 2s infinite;
+.repo-stats.loading > * {
+  visibility: hidden;
 }
 
 @keyframes pulse {

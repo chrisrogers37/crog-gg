@@ -50,7 +50,8 @@
   font-size: 0.875rem;
   border-radius: 4px;
   background-color: var(--border-color);
-  color: var(--text-color-secondary);
+  /* The secondary grey is under 4.5:1 on this grey, as on the tech pills. */
+  color: var(--text-color);
   border: none;
   cursor: pointer;
   transition: background-color 0.15s ease;

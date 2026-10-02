@@ -85,7 +85,8 @@
   font-size: 0.65rem;
   padding: 0.15rem 0.4rem;
   background: var(--border-color);
-  color: var(--text-color-secondary);
+  /* The secondary grey was under 4.5:1 on the pill's own grey, in both themes. */
+  color: var(--text-color);
   border-radius: 4px;
   white-space: nowrap;
 }
@@ -114,31 +115,18 @@
   background: var(--border-color);
 }
 
-.skeleton-line {
+.skeleton-tile .project-tile-title,
+.skeleton-tile .project-tile-description {
   border-radius: 4px;
   background: var(--border-color);
 }
 
-.skeleton-title-line {
+.skeleton-tile .project-tile-title {
   width: 60%;
-  height: 14px;
 }
 
-.skeleton-desc-line-1 {
-  width: 90%;
-  height: 10px;
-}
-
-.skeleton-desc-line-2 {
-  width: 70%;
-  height: 10px;
-}
-
-.skeleton-pill {
+.skeleton-tile .project-tile-tech-pill {
   width: 40px;
-  height: 16px;
-  border-radius: 4px;
-  background: var(--border-color);
 }
 
 /* Responsive */

@@ -27,4 +27,21 @@ describe("GitHubReadme", () => {
       "https://github.com/someone/example",
     );
   });
+
+  it("names a task list's checkboxes, and puts a table in a box that scrolls", async () => {
+    vi.spyOn(githubService, "getReadme").mockResolvedValue({
+      text: "- [x] shipped\n- [ ] planned\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n",
+      htmlUrl: "https://github.com/someone/example/blob/main/README.md",
+      downloadUrl: "https://raw.githubusercontent.com/someone/example/main/README.md",
+    });
+
+    render(<GitHubReadme owner="someone" repoName="example" />);
+
+    expect(await screen.findByRole("checkbox", { name: /done/i })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: /to do/i })).not.toBeChecked();
+    const table = screen.getByRole("table");
+    // A box a keyboard can reach, since it may need scrolling sideways.
+    expect(table.parentElement).toHaveClass("readme-table");
+    expect(table.parentElement).toHaveAttribute("tabindex", "0");
+  });
 });
