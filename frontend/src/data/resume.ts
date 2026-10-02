@@ -11,12 +11,6 @@ export interface ResumeData {
   education: Education[];
   skills: Skill[];
   projects: Project[];
-  // Legacy fields for backwards compatibility
-  about: BioData;
-  portfolio: {
-    experience: Employment[];
-    education: Education[];
-  };
 }
 
 // Create a function to load all resume data dynamically
@@ -33,18 +27,11 @@ export const loadResumeData = async (): Promise<ResumeData> => {
       ]);
 
     const result: ResumeData = {
-      // New flat structure
       bio: bioData,
       experience: experienceData.experience,
       education: educationData.education,
       skills: skillsData.skills,
       projects: projectsData,
-      // Legacy fields for backwards compatibility
-      about: bioData,
-      portfolio: {
-        experience: experienceData.experience,
-        education: educationData.education,
-      },
     };
 
     return result;

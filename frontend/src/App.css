@@ -30,18 +30,6 @@
   --logo-chip: #f1f5f9; /* slate.100 */
 }
 
-.app {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: var(--card-background);
-  min-height: 100vh;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
-
 body {
   margin: 0;
   padding: 0;
@@ -167,8 +155,7 @@ h1 {
   }
 }
 
-/* Global Button Group */
-
+/* Generate and Reset Buttons */
 .generate-btn,
 .reset-btn {
   padding: 0.75rem 1.5rem;
@@ -248,12 +235,6 @@ a:hover {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .app {
-    padding: 1rem;
-    margin: 0;
-    box-shadow: none;
-  }
-
   header {
     text-align: center;
     padding: 0 1rem;
@@ -282,10 +263,6 @@ a:hover {
     border-radius: 0;
   }
 
-  .portfolio-section {
-    padding: 0;
-  }
-
   .content-section {
     padding: 0.75rem;
   }
@@ -300,10 +277,6 @@ a:hover {
 }
 
 @media (max-width: 480px) {
-  .app {
-    padding: 1rem;
-  }
-
   .section-content {
     padding: 0.5rem;
   }
@@ -380,29 +353,6 @@ a:hover {
   transform: scale(1.02);
 }
 
-/* Employment Section */
-
-.achievements {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.achievements li {
-  position: relative;
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-  line-height: 1.5;
-  color: var(--text-color);
-}
-
-.achievements li::before {
-  content: "•";
-  position: absolute;
-  left: 0.5rem;
-  color: var(--primary-color);
-}
-
 /* Loading Overlay */
 .loading-overlay {
   position: absolute;
@@ -457,11 +407,7 @@ a:hover {
   transition: opacity 500ms ease-in-out;
 }
 
-/* Portfolio Section */
-.portfolio-section {
-  margin-top: 2rem;
-}
-
+/* Spotify Embed */
 .spotify-embed {
   margin-top: 1rem;
   background-color: var(--card-background);
@@ -630,13 +576,6 @@ a:hover {
   background-color: var(--card-background);
   min-height: 100px;
   padding: 1rem;
-}
-
-/* Container for all sections */
-
-.portfolio-section {
-  display: none;
-  background-color: var(--card-background);
 }
 
 .section-content {

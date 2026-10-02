@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { CSSTransition } from "react-transition-group";
 import { BioData } from "../types/Bio";
-import "../styles/transitions.css";
 
 interface AboutProps {
   onRegenerate: () => void;

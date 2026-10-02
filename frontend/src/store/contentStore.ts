@@ -57,11 +57,6 @@ interface ContentActions {
 
   // Restore the content captured at load, undoing a regeneration
   resetContent: () => void;
-
-  // Update specific content (for compatibility with existing components)
-  updateBio: (bio: BioData) => void;
-  updateExperience: (experience: Employment[]) => void;
-  updateEducation: (education: Education[]) => void;
 }
 
 type ContentStore = ContentState & ContentActions;
@@ -497,30 +492,6 @@ export const useContentStore = create<ContentStore>()(
             },
           }),
         );
-      },
-
-      /**
-       * Clear the current error message.
-       */
-      /**
-       * Update bio content directly.
-       */
-      updateBio: (bio: BioData) => {
-        set({ bio, hasModifiedContent: true });
-      },
-
-      /**
-       * Update experience content directly.
-       */
-      updateExperience: (experience: Employment[]) => {
-        set({ experience, hasModifiedContent: true });
-      },
-
-      /**
-       * Update education content directly.
-       */
-      updateEducation: (education: Education[]) => {
-        set({ education, hasModifiedContent: true });
       },
     }),
     { name: "content-store", enabled: import.meta.env.DEV },

@@ -1,9 +1,5 @@
 import yaml from "js-yaml";
-
-type ShowcaseImage = {
-  src: string;
-  alt: string;
-};
+import type { ShowcaseImage } from "../types/Showcase";
 
 type ShowcaseData = {
   images: ShowcaseImage[];

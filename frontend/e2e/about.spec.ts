@@ -93,7 +93,7 @@ test.describe("Section Navigation", () => {
 
     // Some content area should become visible
     const contentArea = page
-      .locator('.section-content, .portfolio-section, [class*="section"]')
+      .locator('.section-content, [class*="section"]')
       .first();
     await expect(contentArea).toBeVisible({ timeout: 5000 });
   });
