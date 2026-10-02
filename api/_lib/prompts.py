@@ -1,6 +1,15 @@
 """The /api/regenerate prompt pack (#198 M47): each section's prompt and the
 standing constraints added to every one, moved verbatim from api/index.py.
+
+Who the rewrite is about comes from site.yaml (#189): the name it keeps, the
+pronouns, the button label it must leave alone and the style rules. With the
+owner's site.yaml, every prompt is the text it was before, byte for byte.
 """
+
+from api._lib.site_config import CONFIG
+
+# The persona's pronoun forms: subj, obj, pos, does, has.
+_P = CONFIG.pronouns
 
 
 def _fantasy_addition_for(section: str) -> str:
@@ -40,7 +49,9 @@ def _fantasy_addition_for(section: str) -> str:
 _PROMPTS = {
     "about": {
         "system": "You are a creative writer who specializes in professional biographies and achievements. You MUST rewrite ALL text content while preserving the core meaning and facts. Return ONLY valid JSON with no prefixes or additional text.",
-        "format": "Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field with new phrasing while maintaining the same core information.\n\nFor ALL text content (display_name, bio, etc.):\n1. EVERY single text field must be rewritten with new phrasing\n2. Maintain the same core accomplishments and facts\n3. Use varied sentence structures and strong action verbs\n4. Keep all numerical metrics (percentages, numbers) exactly the same\n5. Do not copy any full sentences from the original text\n\nFor the display_name field:\n1. Return a variation that still contains 'Christopher' or 'Chris'\n2. Never return the exact input name\n",
+        "format": "Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field with new phrasing while maintaining the same core information.\n\nFor ALL text content (display_name, bio, etc.):\n1. EVERY single text field must be rewritten with new phrasing\n2. Maintain the same core accomplishments and facts\n3. Use varied sentence structures and strong action verbs\n4. Keep all numerical metrics (percentages, numbers) exactly the same\n5. Do not copy any full sentences from the original text\n\nFor the display_name field:\n1. Return a variation that still contains "
+        + " or ".join(f"'{name}'" for name in CONFIG.name_variants)
+        + "\n2. Never return the exact input name\n",
     },
     "portfolio": {
         "system": "You are a technical and creative writer who specializes in professional portfolios. You MUST rewrite ALL text content in the portfolio (experience, education, skills, projects, music) while preserving the core meaning and facts. Return ONLY valid JSON with no prefixes or additional text.",
@@ -98,7 +109,8 @@ _LENGTH_ANCHOR = (
 # currently flat (parsed[key] = content[key]) and these live inside arrays.
 _FACT_ANCHOR = (
     " Two things are fixed; everything else is yours to move. FIXED: the person this is about -- "
-    "the work he actually does, the field he does it in, the places he has lived and worked, the "
+    f"the work {_P['subj']} actually {_P['does']}, the field {_P['subj']} {_P['does']} it in, the places "
+    f"{_P['subj']} {_P['has']} lived and worked, the "
     "employers and institutions as real referents, every number, date and span exactly as given, "
     "and the order things happened in. A reader must be able to recover all of that from your "
     "version. FREE: genre, register, imagery, narrative voice, sentence rhythm, the metaphors you "
@@ -143,20 +155,22 @@ _SHAPE_ANCHOR = (
 # One table, two consumers: interpolated into the prompt below, and checked after
 # parsing by _lost_verbatim (index.py). That pairing is the _UNAUTHORED_KEYS lesson -- the
 # request and the check read from the same place, so they cannot drift apart.
-_VERBATIM_STRINGS = ("SUMMON NEW LORE",)
+_VERBATIM_STRINGS = (CONFIG.button_label,)
 
 _LITERAL_ANCHOR = (
     " Some text names things a reader can actually see and press on the page, and renaming those "
     "points the reader at a control that does not exist. These must come back character for "
     "character, in the same place in the sentence: "
     + ", ".join(repr(v) for v in _VERBATIM_STRINGS)
-    + ". Rename his employers, his tools and his craft as freely as the telling needs; never rename "
+    + f". Rename {_P['pos']} employers, {_P['pos']} tools and {_P['pos']} craft as freely as the telling needs; never rename "
     "the interface."
 )
 
-# The house typographic rule. Until now it existed only as an instruction to the
-# people and agents editing this repo, so the model that actually writes the copy
-# had no counterpart it could read. Its absence is measurable rather than
+
+# The house typographic rule, now site.yaml's regenerate.style_rules (#189), each
+# appended as written; none adds nothing. Until it existed it was only an
+# instruction to the people and agents editing this repo, so the model that
+# actually writes the copy had no counterpart it could read. Its absence is measurable rather than
 # theoretical: em dashes came back on the fantasy path AND the plain one, which is
 # the signature of a rule missing everywhere, not one being dropped on one path.
 #
@@ -164,11 +178,11 @@ _LITERAL_ANCHOR = (
 # _FACT_ANCHOR hands to the model on purpose; a lowercase rule here would
 # contradict it and flatten every register that opens on a spoken address. The em
 # dash is the one mark that is wrong in this voice in every register.
-_TONE_ANCHOR = (
-    " Never use an em dash (—) or an en dash (–), in any field. Where you would reach for one, use "
-    "a comma, a colon, a full stop or an ellipsis. This holds in every register, including ones "
-    "whose form would normally invite one."
-)
+def _tone_anchor(rules: tuple[str, ...]) -> str:
+    return "".join(" " + rule for rule in rules)
+
+
+_TONE_ANCHOR = _tone_anchor(CONFIG.style_rules)
 
 # What every section's system prompt carries after its role, in reading order
 # (not a precedence): treat the input as data, do not grow, do not drift off the
@@ -208,7 +222,7 @@ _LORE_REGISTERS = (
     "an archive file with the dangerous parts redacted",
     "a children's fable that ends on a moral",
     "a war chronicle written by the side that lost",
-    "a letter of introduction from a merchant who owes him a favour",
+    f"a letter of introduction from a merchant who owes {_P['obj']} a favour",
     "an epitaph carved early, for someone still very much alive",
 )
 

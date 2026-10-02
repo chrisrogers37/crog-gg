@@ -112,7 +112,7 @@ describe("ProjectDetailPage across projects", () => {
     });
     // alpha's stats can't render (no figures in the answer), so its section
     // crashes; beta's answer is whole.
-    vi.spyOn(githubService, "getRepository").mockImplementation(async (name) =>
+    vi.spyOn(githubService, "getRepository").mockImplementation(async (_owner, name) =>
       name === "alpha"
         ? ({} as Repository)
         : ({

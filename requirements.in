@@ -6,3 +6,5 @@ flask>=3.0,<4.0
 flask-cors>=4.0,<7.0
 openai>=1.0,<2.0
 requests>=2.31,<3.0
+# Reads site/site.yaml, the same file the frontend reads (#189).
+pyyaml>=6,<7

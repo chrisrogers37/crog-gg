@@ -109,16 +109,16 @@ git diff                # Review changes before commit
 
 #### Backend Endpoints
 
-| Endpoint                          | Method | Description                                   |
-| --------------------------------- | ------ | --------------------------------------------- |
-| `/api/regenerate`                 | POST   | AI content regeneration (30 s cooldown per visitor) |
-| `/api/limits`                     | GET    | Current cooldown status                       |
-| `/api/health`                     | GET    | Health checks for uptime monitors (200 / 503) |
-| `/api/v1/github/repo/<name>`      | GET    | GitHub repo details                           |
-| `/api/v1/github/readme/<name>`    | GET    | GitHub README content                         |
-| `/api/v1/github/languages/<name>` | GET    | Language stats for repo                       |
-| `/api/v1/github/languages`        | GET    | Aggregated language stats                     |
-| `/api/v1/github/contributions`    | GET    | GitHub contribution calendar (GraphQL)        |
+| Endpoint                                 | Method | Description                                         |
+| ---------------------------------------- | ------ | --------------------------------------------------- |
+| `/api/regenerate`                        | POST   | AI content regeneration (30 s cooldown per visitor) |
+| `/api/limits`                            | GET    | Current cooldown status                             |
+| `/api/health`                            | GET    | Health checks for uptime monitors (200 / 503)       |
+| `/api/v1/github/repo/[<owner>/]<name>`   | GET    | GitHub repo details (allowed owners only)           |
+| `/api/v1/github/readme/[<owner>/]<name>` | GET    | GitHub README content (allowed owners only)         |
+| `/api/v1/github/languages/<name>`        | GET    | Language stats for repo                             |
+| `/api/v1/github/languages`               | GET    | Aggregated language stats                           |
+| `/api/v1/github/contributions`           | GET    | GitHub contribution calendar (GraphQL)              |
 
 ### Styling
 
@@ -161,7 +161,7 @@ await expect(welcomeArea).toBeVisible();
 
 ### Content Files
 
-- Who the site is (the owner, the URLs, the socials, the copy around the content) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188; fields: documentation/CONTENT.md). Don't type an owner value into the code: `npm run site:check` fails on its distinctive ones (the name, email, host, descriptions and URLs). Code that `vite.config.ts` imports can't import the virtual module; it calls `siteConfig()` (`frontend/scripts/site-config.ts`)
+- Who the site is (the owner, the URLs, the socials, the copy around the content) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188; fields: documentation/CONTENT.md). Don't type an owner value into the code: `npm run site:check` fails on its distinctive ones (the name, email, host, descriptions and URLs). Code that `vite.config.ts` imports can't import the virtual module; it calls `siteConfig()` (`frontend/scripts/site-config.ts`). The API reads the same file (`api/_lib/site_config.py`, #189): its CORS origins, GitHub owner, the button's label and the rewrite's persona
 - Content lives in `site/public/content/` as YAML files
 - Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules, on the copy and on `/`'s title, meta description, share card and JSON-LD: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
@@ -227,7 +227,7 @@ The site has two voices (#179), one per page:
 - **`/` (Claudlobby): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case, apart from the "i build things that build things." line. Copy is `frontend/src/content/claudlobby.ts`.
 - **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact, music and typewriter lines in `site/site.yaml`.
 - **Claims on `/` stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
-- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on `/`; on `/about` it's a convention. The regenerate prompt asks the model for the same (`_TONE_ANCHOR` in `api/_lib/prompts.py`): a request, not a check.
+- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on `/`; on `/about` it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
 
 ## Image Handling
 

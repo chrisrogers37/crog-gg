@@ -16,12 +16,12 @@ from api._lib import rate_limit
 from api._lib.request_utils import (
     GITHUB_API,
     GITHUB_TIMEOUT_SECONDS,
-    GITHUB_USERNAME,
     Visitor,
     current_visitor,
     github_headers,
     validate_repo_name,
 )
+from api._lib.site_config import CONFIG
 
 logger = logging.getLogger("crog")
 
@@ -50,12 +50,25 @@ def _gh_rate_limit_or_429(endpoint: str):
     return None
 
 
-def _guard_repo_request(repo_name: str, endpoint: str):
-    """Shared entry guard for the single-repo proxy routes: per-IP rate limit
-    then repo-name validation. Returns an error response to short-circuit on,
-    or None to proceed."""
+def _allowed_owner(owner: str) -> bool:
+    """Whether the proxy serves this owner's repos: site.yaml's github.username
+    (or GITHUB_OWNER) and its allowed_owners, compared case-insensitively.
+    site_config checked each is a GitHub name, so a match is one too."""
+    return owner.lower() in CONFIG.allowed_owners
+
+
+def _guard_repo_request(owner: str, repo_name: str, endpoint: str):
+    """Shared entry guard for the single-repo proxy routes: per-IP rate limit,
+    the owner, then repo-name validation. Returns an error response to
+    short-circuit on, or None to proceed.
+
+    Another owner gets the same generic 404 as a missing repo, before any
+    GitHub call, so the proxy can't be pointed at the rest of GitHub (#189).
+    """
     if (resp := _gh_rate_limit_or_429(endpoint)) is not None:
         return resp
+    if not _allowed_owner(owner):
+        return jsonify({"error": "Repository not found"}), 404
     is_valid, error_msg = validate_repo_name(repo_name)
     if not is_valid:
         return jsonify({"error": error_msg}), 400
@@ -87,8 +100,8 @@ def _github_unavailable(endpoint: str, repo: str, r=None, exc=None):
     return jsonify({"error": "GitHub is unavailable right now"}), 503 if status in (403, 429) else 502
 
 
-def _fetch_public_repo(repo_name: str, endpoint: str):
-    """Fetch the owner's repo metadata, enforcing the public-only guard.
+def _fetch_public_repo(owner: str, repo_name: str, endpoint: str):
+    """Fetch an allowed owner's repo metadata, enforcing the public-only guard.
 
     Returns ``(data, None)`` when ``repo_name`` is a public repo of the owner,
     else ``(None, <error response>)``. This is the single source of truth for the
@@ -103,7 +116,7 @@ def _fetch_public_repo(repo_name: str, endpoint: str):
     """
     try:
         r = requests.get(
-            f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}",
+            f"{GITHUB_API}/repos/{owner}/{repo_name}",
             headers=github_headers(),
             timeout=GITHUB_TIMEOUT_SECONDS,
         )
@@ -139,7 +152,12 @@ def _cdn_cached(response: Response) -> Response:
 
 
 def _proxy_sub_resource(
-    repo_name: str, path: str | tuple[str, ...], label: str, endpoint: str, missing_msg: str | None = None
+    owner: str,
+    repo_name: str,
+    path: str | tuple[str, ...],
+    label: str,
+    endpoint: str,
+    missing_msg: str | None = None,
 ):
     """GET a sub-resource of an already-validated public repo. ``path`` is
     appended to the repo URL (e.g. ``/readme``), and a tuple of paths is tried in
@@ -151,7 +169,7 @@ def _proxy_sub_resource(
     for i, candidate in enumerate(candidates):
         try:
             r = requests.get(
-                f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}{candidate}",
+                f"{GITHUB_API}/repos/{owner}/{repo_name}{candidate}",
                 headers=github_headers(),
                 timeout=GITHUB_TIMEOUT_SECONDS,
             )

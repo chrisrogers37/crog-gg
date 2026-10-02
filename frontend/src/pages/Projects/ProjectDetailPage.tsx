@@ -144,7 +144,7 @@ export function ProjectDetailPage() {
           <section className="project-section">
             <h2 className="section-title">Repository Stats</h2>
             <ErrorBoundary compact>
-              <RepoStats repoName={repo.name} />
+              <RepoStats owner={repo.owner} repoName={repo.name} />
             </ErrorBoundary>
           </section>
         )}

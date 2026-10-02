@@ -14,3 +14,6 @@ cd frontend
 SITE_DIR=site.example npm run build
 SITE_DIR=site.example npm run site:check
 ```
+
+The API reads the same variable (`SITE_DIR=site.example python api/index.py`,
+from the repo root), and its tests always use this folder.

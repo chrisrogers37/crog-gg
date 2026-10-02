@@ -35,14 +35,13 @@ describe("the shipped projects", () => {
   it("only link GitHub repos of the site's owner", (ctx) => {
     const linked = projects.filter((project) => githubRepo(project));
     if (linked.length === 0) ctx.skip(); // no project links a repo
-    // The API looks a repo's name up under this owner, so another owner's repo
-    // would show the owner's same-named repo, or no README. site.yaml's github
-    // social stands in for the API's GITHUB_USERNAME until #189 reads it too.
-    const github = site.socials.find((social) => social.icon === "github");
-    expect(github, "a github social in site.yaml").toBeDefined();
-    const owner = new URL(github!.url).pathname.split("/")[1];
+    // The API serves the public repos of github.username (and any
+    // allowed_owners), so another owner's repo would show no stats or README.
+    const owners = [site.github.username, ...(site.github.allowed_owners ?? [])].map(
+      (name) => name.toLowerCase(),
+    );
     for (const project of linked) {
-      expect(githubRepo(project)?.owner, project.id).toBe(owner);
+      expect(owners, project.id).toContain(githubRepo(project)?.owner.toLowerCase());
     }
   });
 

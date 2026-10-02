@@ -25,10 +25,7 @@ This is the interim guide. Most of the owner's identity lives in one folder, `si
 **Still in the code:**
 - The Claudlobby landing page: set `home: profile` in `site/site.yaml`, and the personal page becomes `/`, with no landing page, no Claudlobby links and no Claudlobby head. To keep a landing page of your own instead, replace `frontend/src/content/claudlobby.ts`, the sections in `frontend/src/components/sections/Claudlobby/`, and the landing page's head (`HOME_META` in `frontend/src/seo/site.ts`).
 
-**The API:**
-- `GITHUB_USERNAME` in `api/_lib/request_utils.py`: whose public repos the proxy serves;
-- `_cors_origins` in `api/index.py`: your domain;
-- the persona in `api/_lib/prompts.py`: its name (the About prompt asks for "Christopher" or "Chris") and its pronouns.
+**The API** reads `site/site.yaml` too (#189): `github.username` for the project pages' GitHub owner, `site.url` and `site.aliases` for CORS, and `regenerate` for the button's labels, the persona's names and pronouns, and the style rules every rewrite is asked to keep.
 
 **Hosting:**
 - the Content-Security-Policy in `vercel.json`: add any host you frame or load images from (`site:check` fails if the music player's isn't there);

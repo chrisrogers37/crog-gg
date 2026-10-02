@@ -37,7 +37,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api._lib.prompts import _LORE_REGISTERS, _VERBATIM_STRINGS
+from api._lib.prompts import _LORE_REGISTERS, _VERBATIM_STRINGS, _tone_anchor
+from api._lib.site_config import CONFIG
 from api.index import _lost_paragraphs, _lost_verbatim
 
 
@@ -93,11 +94,13 @@ def test_every_standing_constraint_rides_every_section_in_both_modes(client, use
         assert "must not be longer than the content provided" in p["system"]
         assert "do not expand it" in p["system"].lower()
         assert "Preserve the paragraph structure" in p["system"]
-        assert "Never use an em dash" in p["system"]
         assert "never rename the interface" in p["system"]
+        # site.yaml's style rules, each word for word (#189).
+        for rule in CONFIG.style_rules:
+            assert rule in p["system"]
 
 
-def test_the_em_dash_rule_reaches_the_model_at_all(client):
+def test_the_style_rules_reach_the_model_at_all(client):
     """The rule existed only as a repo instruction, so the model never saw it.
 
     "NEVER use em-dashes" is a house rule in CLAUDE.md, which is addressed to the
@@ -115,11 +118,31 @@ def test_the_em_dash_rule_reaches_the_model_at_all(client):
     Delivery, not compliance. That the instruction is in front of the model, not
     that the model obeys it -- obedience is only observable against the live
     endpoint, and the em dash rate there is the acceptance test, not this.
+
+    The rules are site.yaml's now (#189): the owner's is the em dash rule, the
+    tests' site has one of its own.
     """
+    assert CONFIG.style_rules, "the tests' site.yaml names a style rule to check"
     system = _press(client)[0]["system"]
-    assert "\u2014" in system, "the banned character is never shown to the model"
-    assert "in any field" in system
-    assert "every register" in system
+    for rule in CONFIG.style_rules:
+        assert " " + rule in system
+
+
+def test_no_style_rules_add_no_tone_anchor():
+    """A site with no style rules asks for nothing extra, not an empty clause;
+    each rule rides as written, in order."""
+    assert _tone_anchor(()) == ""
+    assert _tone_anchor(("Be brief.", "Be kind.")) == " Be brief. Be kind."
+
+
+def test_a_they_persona_reads_grammatically(client):
+    """The tests' site writes its persona as they/them (#189)."""
+    assert CONFIG.pronouns["subj"] == "they"
+    system = _press(client)[0]["system"]
+    assert "the work they actually do, the field they do it in" in system
+    assert "the places they have lived and worked" in system
+    assert "Rename their employers, their tools and their craft" in system
+    assert any("a merchant who owes them a favour" in register for register in _LORE_REGISTERS)
 
 
 def test_the_paragraph_rule_survives_the_press_it_has_to_survive(client):
@@ -247,6 +270,8 @@ def test_the_worked_examples_are_gone(client):
         "Serpent's Tongue of Command",
         "Christopher the Dataweaver",
         "Christopher T. Rogers",
+        # The same worked example, for whoever the tests' site is about.
+        *(f"{name} the Dataweaver" for name in CONFIG.name_variants),
     ):
         assert attractor not in user, f"worked example back in the prompt: {attractor}"
 

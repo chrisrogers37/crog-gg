@@ -1,0 +1,137 @@
+"""Who the site is, for the API (#189): the same site/site.yaml the frontend reads.
+
+The frontend checks the file's whole shape when it builds (frontend/src/config/
+schema.ts). This reads only the keys the API uses, and names the key when one
+is missing or wrong, so a bad file fails the function at import with a reason
+rather than a KeyError somewhere later.
+"""
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# SITE_DIR picks another site folder, as it does for the frontend (the tests
+# use site.example, #191).
+PATH = REPO_ROOT / (os.environ.get("SITE_DIR") or "site") / "site.yaml"
+
+# The forms a prompt needs, by site.yaml's regenerate.persona.pronouns.
+PRONOUN_FORMS = {
+    "he": {"subj": "he", "obj": "him", "pos": "his", "does": "does", "has": "has"},
+    "she": {"subj": "she", "obj": "her", "pos": "her", "does": "does", "has": "has"},
+    "they": {
+        "subj": "they",
+        "obj": "them",
+        "pos": "their",
+        "does": "do",
+        "has": "have",
+    },
+}
+
+# What GitHub accepts as a username or organisation.
+GITHUB_NAME_LENGTH = 39
+
+
+class SiteConfigError(RuntimeError):
+    """site.yaml is missing, or a key the API reads is missing or wrong."""
+
+
+@dataclass(frozen=True)
+class SiteConfig:
+    site_url: str
+    # The origins a browser may call the API from: site.url and its aliases.
+    cors_origins: tuple[str, ...]
+    # Whose repos the one-segment proxy routes serve.
+    github_owner: str
+    # Owners whose public repos the proxy serves at all, lower-cased.
+    allowed_owners: frozenset[str]
+    # The regenerate button's label, which the rewrite must leave as it is.
+    button_label: str
+    # The rewrite keeps one of these in the name it writes.
+    name_variants: tuple[str, ...]
+    pronouns: dict[str, str]
+    # Rules every rewrite is asked to keep, appended to the prompt.
+    style_rules: tuple[str, ...]
+
+
+def _at(data: Any, key: str, source: Path) -> Any:
+    node = data
+    for part in key.split("."):
+        if not isinstance(node, dict) or part not in node:
+            raise SiteConfigError(f"{source}: {key} is missing")
+        node = node[part]
+    return node
+
+
+def _text(data: Any, key: str, source: Path) -> str:
+    value = _at(data, key, source)
+    if not isinstance(value, str) or not value.strip():
+        raise SiteConfigError(f"{source}: {key} must be text")
+    return value
+
+
+def _texts(data: Any, key: str, source: Path, *, required: bool) -> tuple[str, ...]:
+    try:
+        value = _at(data, key, source)
+    except SiteConfigError:
+        if required:
+            raise
+        return ()
+    if value is None and not required:
+        return ()
+    if not isinstance(value, list) or not all(isinstance(v, str) and v.strip() for v in value):
+        raise SiteConfigError(f"{source}: {key} must be a list of text")
+    if required and not value:
+        raise SiteConfigError(f"{source}: {key} must name at least one")
+    return tuple(value)
+
+
+def _github_name(value: Any, key: str, source: Path) -> str:
+    if (
+        not isinstance(value, str)
+        or not 0 < len(value) <= GITHUB_NAME_LENGTH
+        or not all(c.isalnum() or c == "-" for c in value)
+    ):
+        raise SiteConfigError(f"{source}: {key} must be a GitHub username")
+    return value
+
+
+def load(path: Path = PATH) -> SiteConfig:
+    """site.yaml's keys the API reads, checked; a SiteConfigError names the key."""
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        # On Vercel the file reaches the function only through vercel.json's
+        # functions.includeFiles.
+        raise SiteConfigError(f"{path} not found; is it in vercel.json's functions.includeFiles?") from exc
+
+    site_url = _text(data, "site.url", path)
+    aliases = _texts(data, "site.aliases", path, required=False)
+
+    owner = os.environ.get("GITHUB_OWNER") or _at(data, "github.username", path)
+    owner = _github_name(owner, "github.username", path)
+    allowed = _texts(data, "github.allowed_owners", path, required=False)
+    for index, extra in enumerate(allowed):
+        _github_name(extra, f"github.allowed_owners.{index}", path)
+
+    pronouns = _at(data, "regenerate.persona.pronouns", path)
+    if pronouns not in PRONOUN_FORMS:
+        raise SiteConfigError(f"{path}: regenerate.persona.pronouns must be one of {', '.join(PRONOUN_FORMS)}")
+
+    return SiteConfig(
+        site_url=site_url,
+        cors_origins=(site_url, *aliases),
+        github_owner=owner,
+        allowed_owners=frozenset(name.lower() for name in (owner, *allowed)),
+        button_label=_text(data, "regenerate.labels.button", path),
+        name_variants=_texts(data, "regenerate.persona.name_variants", path, required=True),
+        pronouns=PRONOUN_FORMS[pronouns],
+        style_rules=_texts(data, "regenerate.style_rules", path, required=False),
+    )
+
+
+CONFIG = load()

@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { useContentStore } from "../../../store";
 import { ActionButtons } from "../ActionButtons";
+import site from "virtual:site-config";
 
 /**
  * The in-flight affordances, pinned because another test leans on them.
@@ -45,7 +46,7 @@ describe("ActionButtons while a regeneration is in flight", () => {
 
   it("says what it is doing rather than going quiet", () => {
     render(<ActionButtons {...props} isRegenerating />);
-    expect(button()).toHaveTextContent(/weaving/i);
+    expect(button()).toHaveTextContent(site.regenerate.labels.busy);
   });
 
   it("is pressable and named again once the press has finished", () => {
@@ -54,7 +55,7 @@ describe("ActionButtons while a regeneration is in flight", () => {
     // own defect -- so pin the state they are supposed to be distinguishable from.
     render(<ActionButtons {...props} />);
     expect(button()).toBeEnabled();
-    expect(button()).toHaveTextContent(/summon new lore/i);
+    expect(button()).toHaveTextContent(site.regenerate.labels.button);
   });
 });
 
@@ -64,10 +65,10 @@ describe("ActionButtons accessible names", () => {
   it("names each button by its visible text", () => {
     render(<ActionButtons {...props} hasModifiedContent />);
     expect(
-      screen.getByRole("button", { name: "SUMMON NEW LORE" }),
+      screen.getByRole("button", { name: site.regenerate.labels.button }),
     ).toHaveAccessibleDescription(/regenerates the text with ai/i);
     expect(
-      screen.getByRole("button", { name: "DISPEL ENCHANTMENT" }),
+      screen.getByRole("button", { name: site.regenerate.labels.reset }),
     ).toHaveAccessibleDescription(/restores the original text/i);
   });
 

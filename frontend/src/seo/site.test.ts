@@ -131,7 +131,7 @@ describe("createSeo, on a made-up site", () => {
   // schema leaves out.
   const madeUp = createSeo({
     ...site,
-    site: { url: "https://www.example.org" },
+    site: { url: "https://www.example.org", aliases: undefined },
     owner: { ...site.owner, name: "Ada Example", works_for: undefined },
     socials: [
       { id: "a", label: "a", icon: "link", url: "https://a.example", show_in: ["schema"] },

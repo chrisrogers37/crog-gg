@@ -42,12 +42,12 @@ describe("RepoStats when the repo changes (#196 M68)", () => {
   it("ignores the last repo's answer when it arrives after this one's", async () => {
     const first = deferred<Repository>();
     const second = deferred<Repository>();
-    vi.spyOn(githubService, "getRepository").mockImplementation((name) =>
+    vi.spyOn(githubService, "getRepository").mockImplementation((_owner, name) =>
       name === "first" ? first.promise : second.promise,
     );
 
-    const { rerender } = render(<RepoStats repoName="first" />);
-    rerender(<RepoStats repoName="second" />);
+    const { rerender } = render(<RepoStats owner="owner" repoName="first" />);
+    rerender(<RepoStats owner="owner" repoName="second" />);
 
     await act(async () => second.resolve(repo("second", 222)));
     expect(screen.getByText("222")).toBeInTheDocument();
@@ -60,16 +60,16 @@ describe("RepoStats when the repo changes (#196 M68)", () => {
 
   it("drops the last repo's figures while the next one loads", async () => {
     const second = deferred<Repository>();
-    vi.spyOn(githubService, "getRepository").mockImplementation((name) =>
+    vi.spyOn(githubService, "getRepository").mockImplementation((_owner, name) =>
       name === "first"
         ? Promise.resolve(repo("first", 111))
         : second.promise,
     );
 
-    const { rerender, container } = render(<RepoStats repoName="first" />);
+    const { rerender, container } = render(<RepoStats owner="owner" repoName="first" />);
     expect(await screen.findByText("111")).toBeInTheDocument();
 
-    rerender(<RepoStats repoName="second" />);
+    rerender(<RepoStats owner="owner" repoName="second" />);
     expect(screen.queryByText("111")).not.toBeInTheDocument();
     expect(container.querySelector(".repo-stats.loading")).toBeInTheDocument();
   });
