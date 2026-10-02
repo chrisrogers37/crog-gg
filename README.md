@@ -6,7 +6,15 @@ crog.gg is two sites in one:
 - **`/` is the front door for [Claudlobby](https://github.com/Claudfather/Claudlobby)**, Chris Rogers's agent-fleet compositor for software "dark factories": what it is, a quickstart, the roadmap, and how to follow releases.
 - **`/about` is Choose Your Own Chris**, the personal portfolio. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
 
-For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md); to make it your own site, [FORKING.md](FORKING.md).
+For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Make it yours
+
+**Use this template** (GitHub's green button) for a repo of your own, then run `npm run site:init`: it swaps this site's content for a fictional one to start from. [FORKING.md](FORKING.md) is the checklist, to a deployed site.
+
+Or make the copy and deploy it in one go. It needs no settings: with none, SUMMON NEW LORE and the GitHub panels are hidden. It deploys this site's content until you run `npm run site:init` and push, so do that first.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchrisrogers37%2Fcrog-gg&project-name=my-site&repository-name=my-site)
 
 ## Features
 
@@ -191,8 +199,8 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 | Var                                     | Required          | Notes                                                                                                                                                                                           |
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`                        | for SUMMON        | SUMMON NEW LORE; without it the button doesn't show, and `/api/regenerate` answers 503 `regeneration_disabled`                                                                                  |
-| `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data (CLAUDE.md has the settings) |
-| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
+| `GITHUB_TOKEN`                          | recommended       | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data (CLAUDE.md has the settings) |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | for SUMMON        | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
 | `OPENAI_MODEL`                          | optional          | Overrides the rewrite model (`gpt-5.6-luna`). Changing it means checking `OPENAI_SAMPLING` in `api/index.py`, which depends on the model. `REGEN_GLOBAL_DAILY_MAX` is sized from the default model's worst-case cost |
 | `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
