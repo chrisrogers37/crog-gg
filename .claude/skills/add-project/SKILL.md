@@ -54,9 +54,7 @@ The dark variant is usually a much darker shade or `#1a1a2e` for good contrast.
 
 ### 4. Pick an Icon
 
-Use FontAwesome classes. Browse existing projects for examples:
-- `fas fa-*` for solid icons
-- `fab fa-*` for brand icons (GitHub, Telegram, etc.)
+Pick one emoji, written as a YAML escape (e.g. `icon: "\U0001F680"` for a rocket). The card renders `icon` as plain text and no icon font is loaded, so an icon-font class name would print as literal text. The existing project YAMLs all use this form.
 
 Match the icon to the project's core function, not its tech stack.
 
@@ -72,7 +70,7 @@ description: |
   lowercase casual description of what the project does.
   keep it to 2-3 lines max - card clamps to 2 lines anyway.
 url: https://example.com
-icon: fas fa-icon-name
+icon: "\U0001F680"
 category: web-app
 technologies:
   - Tech1
@@ -88,8 +86,8 @@ tags:
 ```
 
 Optional fields (add only if available):
-- `github: https://github.com/...`
-- `demo: https://...` (if different from url)
+- `github: https://github.com/<owner>/<repo>`: a public repo owned by the site's configured GitHub owner (today `GITHUB_USERNAME` in `api/_lib/request_utils.py`). The project page keeps only the repo name and looks it up under that owner, so another owner's repo shows the owner's same-named repo, or no README.
+- `demo: https://...` (if different from url): the project page embeds a `demo` that differs from `url`, and the site's Content-Security-Policy blocks frames from any host it doesn't list. Add the demo's exact origin to `frame-src` in `vercel.json` in the same PR, with no wildcards (or `'self'` for a demo this site serves), and say in the PR that it loosens the CSP.
 
 **Update `frontend/public/content/projects/index.yaml`**:
 - Insert the new filename at the correct position in the list
@@ -110,14 +108,14 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 | title | Yes | Display name |
 | description | Yes | Casual, lowercase, 2-3 lines |
 | url | Yes | Primary link (fallback: url > demo > github) |
-| icon | Yes | FontAwesome class |
+| icon | Yes | One emoji, as a YAML escape (shown as plain text) |
 | category | Yes | web-app, ai-tools, native-app, data-science, open-source |
 | technologies | Yes | Top 3-4 (only 3 shown on card) |
 | order | Yes | Position number |
 | gradient | No | CSS gradient for card header, defaults to gray |
 | featured | No | Defaults to false |
 | status | No | active, archived, experimental |
-| github | No | GitHub repo URL |
+| github | No | A public repo of the configured GitHub owner (see step 5) |
 | tags | No | Metadata tags |
 
 ## Common Mistakes
