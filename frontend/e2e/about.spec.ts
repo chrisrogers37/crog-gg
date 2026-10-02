@@ -67,7 +67,8 @@ test.describe("About Page", () => {
   test("lands on About's preview whatever tab was open before", async ({
     page,
   }) => {
-    // The selected tab lives in a global store that outlives the page.
+    // The open tab is the page's own state; this guards against it moving
+    // back to a global store, which outlived the page.
     await page.getByRole("tab", { name: /journey/i }).click();
     await page.locator('header a[href="/"]').first().click();
     await expect(page).toHaveURL(/\/$/);

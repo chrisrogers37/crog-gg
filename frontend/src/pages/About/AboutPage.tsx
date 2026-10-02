@@ -72,6 +72,18 @@ const ABOUT_CLAMP_WIDE = 329;
 const NARROW_VIEWPORT = "(max-width: 768px)";
 
 export function AboutPage() {
+  // The head in every state: after an in-app hop from /, the tab would
+  // otherwise keep the home page's title while the content loads, and for
+  // good if the load fails.
+  return (
+    <>
+      <SEO {...ABOUT_META} />
+      <AboutContent />
+    </>
+  );
+}
+
+function AboutContent() {
   // Random profile photo (selected once on mount)
   const profilePhoto = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * PROFILE_PHOTOS.length);
@@ -223,148 +235,148 @@ export function AboutPage() {
   if (error) {
     return (
       <div className="about-page">
-        <LoadError message={error} onRetry={() => loadContent()} />
+        <LoadError
+          message="Failed to load this page. Please try again."
+          onRetry={() => loadContent()}
+        />
       </div>
     );
   }
 
   return (
-    <>
-      <SEO {...ABOUT_META} />
-      <div className="about-page">
-        {/* Header */}
-        <header>
-          <div className="header-content">
-            {/* src goes last: attributes are set in order, and Safari starts
-                fetching src the moment it is set, before srcset can choose. */}
-            <img
-              alt={`${bio?.display_name || "Profile"}'s profile photo`}
-              className="profile-photo"
-              width={240}
-              height={240}
-              loading="eager"
-              // The .profile-photo widths in App.css, per breakpoint.
-              sizes="(max-width: 360px) 110px, (max-width: 480px) 140px, (max-width: 768px) 180px, 240px"
-              srcSet={photoSrcSet(profilePhoto)}
-              src={photoSrc(profilePhoto)}
-            />
-            <div className="header-text">
-              <h1>{bio?.display_name || "Loading..."}</h1>
-              {bio?.tagline && <p className="header-tagline">{bio.tagline}</p>}
-              <div className="welcome-message">
-                <TypewriterLoop
-                  messages={[
-                    "hey there!",
-                    "welcome to my website",
-                    "i use this as a bit of a portfolio / digital resume / hobby page",
-                    "it's crazy, you can just make #$%@ in 2026!!!",
-                    "anyways, take a look around at what ive been up to",
-                    "i try to keep this relatively up to date...",
-                    "there are some easter eggs if you go exploring",
-                    "hope you enjoy!",
-                    "have a nice day =)",
-                  ]}
-                  typeSpeed={25}
-                  deleteSpeed={15}
-                  pauseTime={2000}
-                  initialDelay={1000}
-                  className="welcome-typewriter"
-                />
-              </div>
+    <div className="about-page">
+      {/* Header */}
+      <header>
+        <div className="header-content">
+          {/* src goes last: attributes are set in order, and Safari starts
+              fetching src the moment it is set, before srcset can choose. */}
+          <img
+            alt={`${bio?.display_name || "Profile"}'s profile photo`}
+            className="profile-photo"
+            width={240}
+            height={240}
+            loading="eager"
+            // The .profile-photo widths in App.css, per breakpoint.
+            sizes="(max-width: 360px) 110px, (max-width: 480px) 140px, (max-width: 768px) 180px, 240px"
+            srcSet={photoSrcSet(profilePhoto)}
+            src={photoSrc(profilePhoto)}
+          />
+          <div className="header-text">
+            <h1>{bio?.display_name || "Loading..."}</h1>
+            {bio?.tagline && <p className="header-tagline">{bio.tagline}</p>}
+            <div className="welcome-message">
+              <TypewriterLoop
+                messages={[
+                  "hey there!",
+                  "welcome to my website",
+                  "i use this as a bit of a portfolio / digital resume / hobby page",
+                  "it's crazy, you can just make #$%@ in 2026!!!",
+                  "anyways, take a look around at what ive been up to",
+                  "i try to keep this relatively up to date...",
+                  "there are some easter eggs if you go exploring",
+                  "hope you enjoy!",
+                  "have a nice day =)",
+                ]}
+                typeSpeed={25}
+                deleteSpeed={15}
+                pauseTime={2000}
+                initialDelay={1000}
+                className="welcome-typewriter"
+              />
             </div>
           </div>
-        </header>
-
-        {/* Navigation */}
-        <SectionNav
-          activeSection={activeSection}
-          onSectionChange={handleSectionChange}
-        />
-
-        {/* Main Content (inside the Layout's <main>, so not a landmark of its own) */}
-        <div className="about-main">
-          <AnimatePresence mode="wait">
-            {activeSection && !previewMode ? (
-              <motion.div
-                key={activeSection}
-                className="content-section"
-                role="tabpanel"
-                id={SECTION_PANEL_ID}
-                aria-labelledby={sectionTabId(activeSection)}
-                // Attach is the first moment the expanded content occupies
-                // layout; detach is the moment it stops, which under
-                // AnimatePresence is when its exit animation has finished
-                // rather than when the collapse was asked for. Both edges are
-                // wanted, so the node is reported either way.
-                ref={(node) => setContentMounted(!!node)}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              >
-                {renderActiveSection()}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="preview"
-                // The collapsed preview is the About tab's panel.
-                role="tabpanel"
-                id={SECTION_PANEL_ID}
-                aria-labelledby={sectionTabId("about")}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              >
-                <div className="section-fade-previews">
-                  <SectionFadePreview
-                    id="about"
-                    onExpand={handlePreviewExpand}
-                    maxHeight={
-                      isNarrowViewport ? ABOUT_CLAMP_NARROW : ABOUT_CLAMP_WIDE
-                    }
-                    index={0}
-                  >
-                    <section className="section-content about-section">
-                      <div className="about-content">
-                        <About
-                          onRegenerate={() => {}}
-                          content={bio ?? undefined}
-                        />
-                      </div>
-                    </section>
-                  </SectionFadePreview>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
+      </header>
 
-        {/* Action Buttons — gated on the content being present, not requested.
-            previewMode is deliberately not consulted: it is the request, and
-            reading it here is what unmounted these ahead of the content. */}
-        {contentMounted && (
-          <>
-            <ActionButtons
-              onRegenerate={() => regenerate(true)}
-              onReset={reset}
-              isRegenerating={isRegenerating}
-              hasModifiedContent={hasModifiedContent}
-            />
-            {regenerationError && (
-              <div className="regeneration-notice" role="status">
-                {regenerationError}
+      {/* Navigation */}
+      <SectionNav
+        activeSection={activeSection}
+        onSectionChange={handleSectionChange}
+      />
+
+      {/* Main Content (inside the Layout's <main>, so not a landmark of its own) */}
+      <div className="about-main">
+        <AnimatePresence mode="wait">
+          {activeSection && !previewMode ? (
+            <motion.div
+              key={activeSection}
+              className="content-section"
+              role="tabpanel"
+              id={SECTION_PANEL_ID}
+              aria-labelledby={sectionTabId(activeSection)}
+              // Attach is the first moment the expanded content occupies
+              // layout; detach is the moment it stops, which under
+              // AnimatePresence is when its exit animation has finished
+              // rather than when the collapse was asked for. Both edges are
+              // wanted, so the node is reported either way.
+              ref={(node) => setContentMounted(!!node)}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {renderActiveSection()}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="preview"
+              // The collapsed preview is the About tab's panel.
+              role="tabpanel"
+              id={SECTION_PANEL_ID}
+              aria-labelledby={sectionTabId("about")}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <div className="section-fade-previews">
+                <SectionFadePreview
+                  id="about"
+                  onExpand={handlePreviewExpand}
+                  maxHeight={
+                    isNarrowViewport ? ABOUT_CLAMP_NARROW : ABOUT_CLAMP_WIDE
+                  }
+                  index={0}
+                >
+                  <section className="section-content about-section">
+                    <div className="about-content">
+                      <About
+                        onRegenerate={() => {}}
+                        content={bio ?? undefined}
+                      />
+                    </div>
+                  </section>
+                </SectionFadePreview>
               </div>
-            )}
-          </>
-        )}
-
-        {/* Image Showcase */}
-        <ImageShowcase />
-
-        {/* Contact CTA */}
-        <ContactCTA />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </>
+
+      {/* Action Buttons — gated on the content being present, not requested.
+          previewMode is deliberately not consulted: it is the request, and
+          reading it here is what unmounted these ahead of the content. */}
+      {contentMounted && (
+        <>
+          <ActionButtons
+            onRegenerate={() => regenerate(true)}
+            onReset={reset}
+            isRegenerating={isRegenerating}
+            hasModifiedContent={hasModifiedContent}
+          />
+          {regenerationError && (
+            <div className="regeneration-notice" role="status">
+              {regenerationError}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Image Showcase */}
+      <ImageShowcase />
+
+      {/* Contact CTA */}
+      <ContactCTA />
+    </div>
   );
 }

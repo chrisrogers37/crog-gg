@@ -187,6 +187,13 @@ test.describe("Mobile Menu", () => {
     await expect(
       page.locator(".mobile-menu-section-btn", { hasText: "about" }),
     ).not.toHaveClass(/active/);
+
+    // Leaving /about takes its sections out of the menu.
+    await page.locator(".mobile-menu-link", { hasText: "home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await page.locator(".nav-hamburger").click();
+    await expect(page.locator(".mobile-menu")).toBeVisible();
+    await expect(page.locator(".mobile-menu-section-btn")).toHaveCount(0);
   });
 
   test("hamburger hidden on desktop", async ({ page }) => {

@@ -11,7 +11,8 @@ export function DarkFactory() {
       heading={darkFactory.heading}
       intro={darkFactory.intro}
     >
-      <ol className="cl-steps">
+      {/* role="list": Safari drops list semantics under list-style: none. */}
+      <ol className="cl-steps" role="list">
         {darkFactory.steps.map((step, index) => (
           <li key={step.title} className="card cl-step">
             <span className="cl-step-number" aria-hidden="true">

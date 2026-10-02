@@ -161,7 +161,7 @@
   margin: 1rem 0 0;
 }
 
-/* The value reads first on screen; screen readers get "skills: 54". */
+/* The value reads first on screen; screen readers get the label first. */
 .cl-counts > div {
   display: flex;
   flex-direction: column-reverse;
