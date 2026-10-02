@@ -4,10 +4,16 @@ import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
 import App from "./App.tsx";
 import { startAnalytics } from "./services/analytics";
-import { applyTheme, readStoredTheme } from "./store/theme";
+import { useUIStore } from "./store/uiStore";
+import { applyTheme, DARK_QUERY } from "./store/theme";
 
-// Before React renders, so the first paint is already in the stored theme.
-applyTheme(readStoredTheme());
+// The store has already loaded the saved theme, or kept the default when site
+// data is blocked (#196 M70). It goes on <html> before React renders, so the
+// first paint is in it, and again whenever the OS theme switches, which shows
+// under "system".
+const applyCurrentTheme = () => applyTheme(useUIStore.getState().theme);
+applyCurrentTheme();
+window.matchMedia(DARK_QUERY).addEventListener("change", applyCurrentTheme);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

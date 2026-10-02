@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
-import { applyTheme, type Theme, UI_STORAGE_KEY } from "./theme";
+import { applyTheme, type Theme } from "./theme";
 
 // ===========================================
 // TYPES
@@ -76,7 +76,7 @@ export const useUIStore = create<UIStore>()(
         },
       }),
       {
-        name: UI_STORAGE_KEY,
+        name: "ui-storage",
         // Only persist theme preference
         partialize: (state) => ({ theme: state.theme }),
       },

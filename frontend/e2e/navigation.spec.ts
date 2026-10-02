@@ -338,3 +338,26 @@ test.describe("With site data blocked (#196 M70)", () => {
     expect(errors).toEqual([]);
   });
 });
+
+test.describe("The system theme (#196 M70)", () => {
+  test("follows an OS theme switch while the page is open", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto("/");
+
+    // Light, then dark, then system.
+    const toggle = page.getByRole("button", { name: /current theme/i }).first();
+    await toggle.click();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-label", /system preference/i);
+
+    const isDark = () =>
+      page.evaluate(() => document.documentElement.classList.contains("dark"));
+    await expect.poll(isDark).toBe(false);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect.poll(isDark).toBe(true);
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect.poll(isDark).toBe(false);
+  });
+});
