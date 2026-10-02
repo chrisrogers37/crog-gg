@@ -170,6 +170,15 @@ _TONE_ANCHOR = (
     "whose form would normally invite one."
 )
 
+# What every section's system prompt carries after its role, in reading order
+# (not a precedence): treat the input as data, do not grow, do not drift off the
+# person, keep the shape you were handed, leave the names of on-screen controls
+# alone, and never reach for an em dash. The mode-specific half rides each
+# section's "format".
+_STANDING_CONSTRAINTS = (
+    _INJECTION_GUARD + _LENGTH_ANCHOR + _FACT_ANCHOR + _SHAPE_ANCHOR + _LITERAL_ANCHOR + _TONE_ANCHOR
+)
+
 # The wildness dial. The button is SUMMON NEW LORE and it is supposed to escalate,
 # but escalation was reaching for intensity inside one fixed register -- high
 # fantasy, every press -- and there is no second helping of epic to give.
@@ -180,8 +189,9 @@ _TONE_ANCHOR = (
 #
 # Not a temperature substitute -- this model rejects an explicit temperature
 # outright (see OPENAI_SAMPLING), so prompt-side variation is the only dial there
-# is. Sampling here rather than asking the model to choose keeps the instruction
-# genuinely different per press even when the input text is identical.
+# is. Sampling from this list (once per press, in index.py) rather than asking
+# the model to choose keeps the instruction genuinely different per press even
+# when the input text is identical.
 _LORE_REGISTERS = (
     "a tavern song a bard is improvising badly",
     "a prophecy recovered in fragments, with gaps where the stone broke",

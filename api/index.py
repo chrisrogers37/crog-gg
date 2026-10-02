@@ -36,14 +36,9 @@ from api._lib.github_proxy import (
     _repository_fields,
 )
 from api._lib.prompts import (
-    _FACT_ANCHOR,
-    _INJECTION_GUARD,
-    _LENGTH_ANCHOR,
-    _LITERAL_ANCHOR,
     _LORE_REGISTERS,
     _PROMPTS,
-    _SHAPE_ANCHOR,
-    _TONE_ANCHOR,
+    _STANDING_CONSTRAINTS,
     _VERBATIM_STRINGS,
     _fantasy_addition_for,
     _variation_directive,
@@ -414,23 +409,12 @@ def _regenerate_section(
             deadline,
             model=OPENAI_MODEL,
             messages=[
-                # The order is the reading order, not a precedence: role, then
-                # the standing constraints -- treat input as data, do not grow,
-                # do not drift off the person, keep the shape you were handed,
-                # leave the names of on-screen controls alone, and never reach
-                # for an em dash. Each is listed in the order it is defined
-                # above. The mode-specific half rides section_prompt["format"].
+                # The role, then the standing constraints, in the reading order
+                # prompts.py gives them. The mode-specific half rides
+                # section_prompt["format"].
                 {
                     "role": "system",
-                    "content": (
-                        section_prompt["system"]
-                        + _INJECTION_GUARD
-                        + _LENGTH_ANCHOR
-                        + _FACT_ANCHOR
-                        + _SHAPE_ANCHOR
-                        + _LITERAL_ANCHOR
-                        + _TONE_ANCHOR
-                    ),
+                    "content": section_prompt["system"] + _STANDING_CONSTRAINTS,
                 },
                 {
                     "role": "user",
@@ -530,8 +514,8 @@ def _regenerate_section(
         return _fail(section, FAILURE_TOO_LONG, chars=size)
 
     # Observed, not enforced -- see the two helpers for why each is a warning
-    # rather than a rejection. Both are what makes the two prompt anchors above
-    # falsifiable at all: without a count, "the model preserves structure" is a
+    # rather than a rejection. Both are what makes the shape and literal anchors
+    # in prompts.py falsifiable at all: without a count, "the model preserves structure" is a
     # claim no affordable number of presses could check.
     if flattened := _lost_paragraphs(content, parsed):
         logger.warning("regenerate.shape_lost section=%s fields=%s", section, ",".join(flattened))
