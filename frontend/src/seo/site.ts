@@ -1,5 +1,8 @@
 import type { SiteConfig } from "../config/schema";
 import { socialsIn } from "../config/socials";
+import { claudlobby } from "../content/claudlobby";
+import { CLAUDLOBBY_REPO } from "../content/links";
+import { hasOwnPage, type OwnPageId } from "../content/ownPages";
 import type { Project } from "../types/Project";
 
 /**
@@ -23,6 +26,9 @@ import type { Project } from "../types/Project";
  * `virtual:site-config` itself, because vite.config.ts imports it.
  */
 
+/** A link preview's image: the site's card, or a page's own. */
+export type ShareImage = SiteConfig["seo"]["image"];
+
 export type PageMeta = {
   /**
    * Site-relative path: the canonical URL and og:url. A page that must not be
@@ -39,6 +45,8 @@ export type PageMeta = {
   noIndex?: boolean;
   /** JSON-LD objects describing the page. */
   schemas?: object[];
+  /** The page's own link preview, where it isn't the site's card. */
+  image?: ShareImage;
 };
 
 /** A page a visitor can land on, so it has a URL. */
@@ -95,7 +103,8 @@ export function createSeo(site: SiteConfig) {
    */
   function headTags(meta: PageMeta): HeadTag[] {
     const title = pageTitle(meta);
-    const image = absoluteUrl(OG_IMAGE.path);
+    const card = meta.image ?? OG_IMAGE;
+    const image = absoluteUrl(card.path);
     const canonical = meta.path ? absoluteUrl(meta.path) : undefined;
 
     return [
@@ -107,9 +116,9 @@ export function createSeo(site: SiteConfig) {
       property("og:title", title),
       property("og:description", meta.description),
       property("og:image", image),
-      property("og:image:width", String(OG_IMAGE.width)),
-      property("og:image:height", String(OG_IMAGE.height)),
-      property("og:image:alt", OG_IMAGE.alt),
+      property("og:image:width", String(card.width)),
+      property("og:image:height", String(card.height)),
+      property("og:image:alt", card.alt),
       property("og:type", meta.type ?? "website"),
       property("og:site_name", site.seo.site_name),
       ...(canonical ? [property("og:url", canonical)] : []),
@@ -117,7 +126,7 @@ export function createSeo(site: SiteConfig) {
       named("twitter:title", title),
       named("twitter:description", meta.description),
       named("twitter:image", image),
-      named("twitter:image:alt", OG_IMAGE.alt),
+      named("twitter:image:alt", card.alt),
     ];
   }
 
@@ -165,15 +174,43 @@ export function createSeo(site: SiteConfig) {
     noIndex: true,
   };
 
+  /**
+   * A page of its own says what it is in its own terms: Claudlobby's is
+   * source code, with its own share card in Claudfather's colours. Every own
+   * page has an entry, or the type check fails.
+   */
+  const OWN_PAGE_HEADS: Record<
+    OwnPageId,
+    (project: ProjectSummary, description: string) => { image: ShareImage; schema: object }
+  > = {
+    claudlobby: (project, description) => ({
+      image: claudlobby.brand.card,
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "SoftwareSourceCode",
+        name: project.title,
+        description,
+        url: absoluteUrl(`/projects/${project.id}`),
+        codeRepository: CLAUDLOBBY_REPO,
+        license: "https://www.apache.org/licenses/LICENSE-2.0",
+        programmingLanguage: "Python",
+        runtimePlatform: "Claude Code",
+        author: AUTHOR,
+      },
+    }),
+  };
+
   function projectMeta(project: ProjectSummary): LandingPage {
     // YAML block scalars keep their line breaks; a description reads as one line.
     const description = project.description.replace(/\s+/g, " ").trim();
+    const own = hasOwnPage(project.id) ? OWN_PAGE_HEADS[project.id](project, description) : undefined;
     return {
       path: `/projects/${project.id}`,
       title: project.title,
       description,
+      ...(own && { image: own.image }),
       schemas: [
-        {
+        own?.schema ?? {
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
           name: project.title,

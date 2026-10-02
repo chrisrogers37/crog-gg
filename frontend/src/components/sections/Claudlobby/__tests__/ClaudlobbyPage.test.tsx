@@ -23,6 +23,16 @@ const { hero, maturity, quickstart, roadmap } = claudlobby;
 const CLAUDLOBBY = makeProject({ id: "claudlobby", title: "Claudlobby", featured: true });
 
 describe("ClaudlobbyPage", () => {
+  it("wears Claudfather's mark in its hero, from its variants", () => {
+    renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    const mark = screen.getByRole("img", { name: claudlobby.brand.mark.alt });
+    expect(mark.closest(".cl-hero")).not.toBeNull();
+    expect(mark).toHaveAttribute("src", `${claudlobby.brand.mark.photo}-480.webp`);
+    expect(mark.getAttribute("srcset")).toContain(`${claudlobby.brand.mark.photo}-160.webp 160w`);
+    // Read after the words: the last thing in the hero.
+    expect(mark.parentElement!.lastElementChild).toBe(mark);
+  });
+
   it("leads with one heading and both next steps", () => {
     renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);

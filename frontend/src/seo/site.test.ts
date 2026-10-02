@@ -12,6 +12,8 @@ import {
   type PageMeta,
 } from ".";
 import site from "virtual:site-config";
+import { claudlobby } from "../content/claudlobby";
+import { CLAUDLOBBY_REPO } from "../content/links";
 import { createSeo } from "./site";
 
 const tagValue = (meta: PageMeta, key: string) => {
@@ -87,6 +89,44 @@ describe("projectMeta", () => {
       `${SITE_URL}/projects`,
       `${SITE_URL}/projects/example-app`,
     ]);
+  });
+});
+
+describe("a page of its own's head", () => {
+  const page = {
+    id: "claudlobby",
+    title: "Claudlobby",
+    description: "an open-source agent fleet.",
+    url: CLAUDLOBBY_REPO,
+  };
+
+  it("points link previews at its own card, with its size and words", () => {
+    const meta = projectMeta(page);
+    const image = `${SITE_URL}${claudlobby.brand.card.path}`;
+    expect(tagValue(meta, "og:image")).toBe(image);
+    expect(tagValue(meta, "twitter:image")).toBe(image);
+    expect(tagValue(meta, "og:image:width")).toBe("1200");
+    expect(tagValue(meta, "og:image:height")).toBe("630");
+    expect(tagValue(meta, "og:image:alt")).toBe(claudlobby.brand.card.alt);
+    expect(tagValue(meta, "twitter:image:alt")).toBe(claudlobby.brand.card.alt);
+  });
+
+  it("describes itself as source code, with its repository and license", () => {
+    const [schema] = projectMeta(page).schemas ?? [];
+    expect(schema).toMatchObject({
+      "@type": "SoftwareSourceCode",
+      name: "Claudlobby",
+      url: `${SITE_URL}/projects/claudlobby`,
+      codeRepository: CLAUDLOBBY_REPO,
+      license: "https://www.apache.org/licenses/LICENSE-2.0",
+    });
+  });
+
+  it("leaves every other project the site's card and an application schema", () => {
+    const meta = projectMeta({ ...page, id: "benzo", title: "Benzo" });
+    expect(tagValue(meta, "og:image")).toBe(`${SITE_URL}${OG_IMAGE.path}`);
+    expect(tagValue(meta, "og:image:alt")).toBe(OG_IMAGE.alt);
+    expect(meta.schemas?.[0]).toMatchObject({ "@type": "SoftwareApplication" });
   });
 });
 

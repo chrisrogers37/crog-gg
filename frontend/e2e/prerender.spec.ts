@@ -1,6 +1,6 @@
 import type { APIRequestContext } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { servedProjects, site } from "./site";
+import { CLAUDLOBBY, cardOf, servedProjects, site } from "./site";
 
 /**
  * The crawler's view (#174): each page's raw HTML with no JavaScript run,
@@ -46,8 +46,8 @@ const expectLandingHead = async (
   expect(head.ogTitles, `${path} og:title count`).toBe(1);
   expect(head.twitterCard, `${path} twitter:card`).toBe("summary_large_image");
   // Crawlers resolve nothing, so the card image must be an absolute URL: the
-  // site's card, on its canonical origin.
-  expect(head.ogImage, `${path} og:image`).toBe(`${site.site.url}${site.seo.image.path}`);
+  // site's card (or the page's own), on its canonical origin.
+  expect(head.ogImage, `${path} og:image`).toBe(`${site.site.url}${cardOf(path).path}`);
   expect(head.robots, `${path} robots`).toBeUndefined();
   expect(new URL(head.canonical ?? "").pathname, `${path} canonical`).toBe(path);
   return head;
@@ -115,6 +115,8 @@ test.describe("Prerendered heads", () => {
       [site.owner.image, "image/"],
       ["/apple-touch-icon.png", "image/png"],
       ["/manifest.json", "application/json"],
+      // Claudlobby's page's own card, where the site lists it.
+      ...(CLAUDLOBBY ? [[cardOf("/projects/claudlobby").path, "image/png"]] : []),
     ]) {
       const response = await request.get(path);
       expect(response.status(), path).toBe(200);

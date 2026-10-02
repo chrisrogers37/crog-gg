@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures";
 import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
-import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
+import { CLAUDLOBBY, cardOf, expectBelowHeader, site } from "./site";
 
 /**
  * Claudlobby's project page: its own sections (#173), since the redesign one
@@ -31,9 +31,9 @@ for (const [label, viewport] of VIEWPORTS) {
     const hero = page.locator(".page-hero");
     await expect(hero.locator("h1")).toBeVisible();
     await expect(hero).toContainText(/claudlobby/i);
-    // Wholly on screen, without scrolling: both CTAs, and the maturity note
-    // that qualifies them (#179).
-    for (const selector of [`a[href="${REPO}"]`, 'a[href="#quickstart"]', ".cl-maturity"]) {
+    // Wholly on screen, without scrolling: both CTAs, the maturity note that
+    // qualifies them (#179), and Claudfather's mark.
+    for (const selector of [`a[href="${REPO}"]`, 'a[href="#quickstart"]', ".cl-maturity", ".cl-mark"]) {
       await expect(hero.locator(selector)).toBeInViewport({ ratio: 1 });
     }
   });
@@ -52,6 +52,20 @@ test.describe("Claudlobby's page", () => {
     // The owner's site around it: Claudlobby is one of its projects.
     await expect(page.locator(`header.compact-header a[href^="${REPO}"]`)).toHaveCount(0);
     await expect(page.locator(`footer a[href^="${REPO}"]`)).toHaveCount(0);
+  });
+
+  test("wears Claudfather's mark, loaded, and points link previews at its own card", async ({
+    page,
+  }) => {
+    // The mark is a real image, not a broken one.
+    const mark = page.locator(".page-hero img.cl-mark");
+    await expect(mark).toBeVisible();
+    expect(await mark.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+    // In the app's head as in the prerendered one (prerender.spec.ts).
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      `${site.site.url}${cardOf("/projects/claudlobby").path}`,
+    );
   });
 
   test("says nothing of the owner's: the site around it does", async ({ page }) => {

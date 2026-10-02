@@ -31,6 +31,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The share card is the owner's (#247): the tagline and a photo, where it was Claudlobby's.
 - `site.yaml` and the project index (#247): `home` and `about` (which held only `preview_height`) are gone, so a `site.yaml` that still has either fails, naming the key; `sections` is the home page's, in order; `featured` in `projects/index.yaml` names the project shown first. The About text renders from the store, so the store's events for the old About component and `react-transition-group` are gone (#198 PR 2).
 - The 404 and error pages, and a section that fails to load, are in the same look, with the site's one radius and its buttons; so is the photo strip (#247).
+- Claudlobby's page wears its GitHub org's look, Claudfather's: the org's avatar as its mark, its charcoal, cream and orange, and its own link-preview card. Its head describes it as source code, with its repository and license (#249).
 - Only the standard project page loads the README renderer, so Claudlobby's page doesn't, and the music section loads Spotify's player once it's near the screen rather than with the page (#247).
 
 ### Fixed
