@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-# pre-push hook: runs the frontend build and tests, and CI's Python checks,
-# for whichever side changed. Bypass with: git push --no-verify, or skip only
+# pre-push hook: runs the frontend's lint, type check, build and tests, and
+# CI's Python checks, for whichever side changed. Bypass with: git push --no-verify, or skip only
 # the Python half with SKIP_PY_CHECKS=1 (CI still runs it).
 
 set -e

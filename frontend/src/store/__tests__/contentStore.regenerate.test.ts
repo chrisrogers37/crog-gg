@@ -124,7 +124,8 @@ describe("regenerateContent", () => {
 
     const state = useContentStore.getState();
     expect(state.bio).toEqual(BIO);
-    expect(state.experience).toEqual(experience);
+    // A fresh record, so an in-place edit of the seeded array would fail too.
+    expect(state.experience).toEqual([makeEmployment({ title: "Engineer" })]);
     expect(state.hasModifiedContent).toBe(false);
     expect(state.regenerationError).toBe("That one didn't come through. Press it again.");
   });

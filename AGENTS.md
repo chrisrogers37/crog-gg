@@ -18,5 +18,5 @@ This is a single-product portfolio site (`crog.gg`): a Vite/React frontend in `f
 
 ### Lint / test / build (see `CLAUDE.md` and `.github/workflows/ci.yml` for exact commands)
 
-- Frontend lives in `frontend/`: `npm run lint`, `npm run test:run` (Vitest), `npm run test:e2e` (Playwright, starts its own dev server), `npm run build`.
+- Frontend lives in `frontend/`: `npm run lint`, `npm run typecheck` (the app, unit tests and e2e), `npm run test:run` (Vitest), `npm run test:e2e` (Playwright, starts its own dev server), `npm run build`.
 - Backend Python tooling installs to `~/.local/bin` (added to PATH via `~/.bashrc`). Invoking via `python3 -m <tool>` also works regardless of PATH. Tests: `python3 -m pytest -q` from the repo root (`conftest.py` puts the repo root on `sys.path`). Lint: `flake8 api --max-line-length=120 --ignore=E501,W503`, `black --check --line-length=120 api`, `isort --check-only --profile black api`.
