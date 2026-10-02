@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useContentStore } from "../../../store";
-import { fireEvent, renderWithProviders, screen } from "../../../test/utils";
+import {
+  fireEvent,
+  renderWithProviders,
+  screen,
+  waitFor,
+} from "../../../test/utils";
 import { ProjectsPage } from "../ProjectsPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -25,5 +30,11 @@ describe("ProjectsPage when the content failed to load", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(loadContent).toHaveBeenCalled();
+  });
+
+  it("names the page in the tab while it loads, not only once it has", async () => {
+    useContentStore.setState({ projects: [], isLoading: true, error: null });
+    renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
+    await waitFor(() => expect(document.title).toMatch(/^Projects \|/));
   });
 });

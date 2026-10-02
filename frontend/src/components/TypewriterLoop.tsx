@@ -5,6 +5,7 @@ interface TypewriterLoopProps {
   typeSpeed?: number;
   deleteSpeed?: number;
   pauseTime?: number;
+  /** The least wait before typing starts; up to INITIAL_DELAY_JITTER_MS more is added. */
   initialDelay?: number;
   className?: string;
 }
@@ -31,42 +32,40 @@ export default function TypewriterLoop({
 }: TypewriterLoopProps) {
   const [displayText, setDisplayText] = useState("");
   const [messageIndex, setMessageIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>(
-    initialDelay > 0 ? "initial" : "typing",
+  const [phase, setPhase] = useState<Phase>("initial");
+  // Picked once, at mount, so a re-render never restarts the wait.
+  const [startDelay] = useState(
+    () => initialDelay + Math.floor(Math.random() * INITIAL_DELAY_JITTER_MS),
   );
-  const [charIndex, setCharIndex] = useState(0);
 
   const currentMessage = messages[messageIndex];
   const isLastMessage = messageIndex === messages.length - 1;
 
-  // The initial delay: `initialDelay`, plus up to INITIAL_DELAY_JITTER_MS.
-  // (It used to ignore the prop and wait 1-4 s whatever was passed, #193.)
+  // The initial delay. (It used to ignore `initialDelay` and wait 1-4 s
+  // whatever was passed, #193.)
   useEffect(() => {
     if (phase !== "initial") return;
 
-    const delay =
-      initialDelay + Math.floor(Math.random() * INITIAL_DELAY_JITTER_MS);
     const timer = setTimeout(() => {
       setPhase("typing");
-    }, delay);
+    }, startDelay);
     return () => clearTimeout(timer);
-  }, [phase, initialDelay]);
+  }, [phase, startDelay]);
 
   // Handle typing
   useEffect(() => {
     if (phase !== "typing") return;
 
-    if (charIndex < currentMessage.length) {
+    if (displayText.length < currentMessage.length) {
       const timer = setTimeout(() => {
-        setDisplayText(currentMessage.slice(0, charIndex + 1));
-        setCharIndex((prev) => prev + 1);
+        setDisplayText(currentMessage.slice(0, displayText.length + 1));
       }, randomize(typeSpeed));
       return () => clearTimeout(timer);
     } else {
       // Done typing, start pausing
       setPhase("pausing");
     }
-  }, [phase, charIndex, currentMessage, typeSpeed]);
+  }, [phase, displayText, currentMessage, typeSpeed]);
 
   // Handle pausing (blinking cursor)
   useEffect(() => {
@@ -109,7 +108,6 @@ export default function TypewriterLoop({
     const randomWait = Math.floor(Math.random() * 1000) + 1000; // 1000-2000ms
     const timer = setTimeout(() => {
       setMessageIndex((prev) => prev + 1);
-      setCharIndex(0);
       setPhase("typing");
     }, randomWait);
     return () => clearTimeout(timer);
@@ -145,22 +143,14 @@ export default function TypewriterLoop({
       </div>
       <div className="typewriter-text">
         {displayText}
+        {/* It blinks (App.css) except while characters are going on or off. */}
         <span
           className="typewriter-cursor"
-          style={{
-            animation:
-              phase === "pausing" ||
-              phase === "initial" ||
-              phase === "waiting"
-                ? "blink 0.7s infinite"
-                : "none",
-            opacity:
-              phase === "pausing" ||
-              phase === "initial" ||
-              phase === "waiting"
-                ? undefined
-                : 1,
-          }}
+          style={
+            phase === "typing" || phase === "deleting"
+              ? { animation: "none" }
+              : undefined
+          }
         >
           |
         </span>
