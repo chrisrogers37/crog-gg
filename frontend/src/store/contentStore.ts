@@ -155,20 +155,6 @@ const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
     : undefined;
 };
 
-/**
- * A non-empty list of objects, or undefined. An empty list is rejected rather
- * than applied: the model returning nothing to say is not a reason to erase
- * the experience or education a visitor was reading.
- */
-const asPopulatedList = <T>(value: unknown): T[] | undefined =>
-  Array.isArray(value) && value.length > 0 && value.every(isPlainObject)
-    ? (value as T[])
-    : undefined;
-
-/** True when the server sent something for a section and validation refused it. */
-const wasRejected = (received: unknown, accepted: unknown): boolean =>
-  received !== undefined && accepted === undefined;
-
 // ===========================================
 // STORE IMPLEMENTATION
 // ===========================================
@@ -282,13 +268,10 @@ export const useContentStore = create<ContentStore>()(
             credentials: "include",
             signal: controller.signal,
             body: JSON.stringify({
-              sections: {
-                about: bio,
-                portfolio: {
-                  experience: state.experience,
-                  education: state.education,
-                },
-              },
+              // Only the section the page shows. The server meters every
+              // section sent, so the unseen portfolio cost a second slot of
+              // the visitor's daily cap, and the press waited for it (#190 M07).
+              sections: { about: bio },
               use_fantasy: useFantasy,
             }),
           });
@@ -332,42 +315,32 @@ export const useContentStore = create<ContentStore>()(
           // object, an empty array or a bare string replaced what the visitor
           // was reading -- a blank section arriving from an HTTP 200 the server
           // called a success, with no error raised anywhere to notice it by.
-          // A section that fails validation is treated exactly like one the
-          // server named in failed_sections: keep what was there and say so.
+          // Only `about` is sent, so only `about` is read: anything else in
+          // the reply isn't this press's. A press that applied nothing failed,
+          // whatever the reply says about itself: missing, refused by the
+          // validation above, or named in failed_sections, keep what was there
+          // and say so.
           const about = mergeBio(bio, result.content?.about);
-          const portfolio = result.content?.portfolio;
-          const experience = asPopulatedList<Employment>(portfolio?.experience);
-          const education = asPopulatedList<Education>(portfolio?.education);
-
-          const rejected =
-            wasRejected(result.content?.about, about) ||
-            wasRejected(portfolio?.experience, experience) ||
-            wasRejected(portfolio?.education, education);
-          const anyFailed =
-            (result.failed_sections ?? []).length > 0 || rejected;
+          const failed = about === undefined;
 
           // The flag claims "your content was modified", and the reset button
           // offers to undo that. Reaching the success path is a different
-          // claim: every section can be refused by the validation above, in
-          // which case about/experience/education are all undefined, the `??`
-          // fallbacks below deliberately keep what was already on screen, and
-          // nothing changed. Deriving the flag from what was applied rather
+          // claim: the section can be refused by the validation above, in
+          // which case `about` is undefined, the `??` fallback below
+          // deliberately keeps what was already on screen, and nothing
+          // changed. Deriving the flag from what was applied rather
           // than from where we arrived stops the UI offering to revert a
           // modification that never happened.
           //
           // Sticky, because a previous regeneration that did apply is still
           // modified content: one later all-refused attempt must not retract
           // it and hide a reset the visitor can still legitimately use.
-          const applied = Boolean(about || experience || education);
-
           set({
             bio: about ?? bio,
-            experience: experience ?? state.experience,
-            education: education ?? state.education,
-            hasModifiedContent: state.hasModifiedContent || applied,
+            hasModifiedContent: state.hasModifiedContent || Boolean(about),
             isRegenerating: false,
-            regenerationError: anyFailed
-              ? "Some of that didn't come through. Press it again for the rest."
+            regenerationError: failed
+              ? "That one didn't come through. Press it again."
               : null,
             ...cooldown,
           });
@@ -377,26 +350,19 @@ export const useContentStore = create<ContentStore>()(
           // listeners assign the payload straight into their own state, so
           // announcing an absent section would blank the content the set()
           // above just deliberately preserved. For the same reason they are
-          // handed the validated values: a shape the store refused would
+          // handed the validated value: a shape the store refused would
           // otherwise blank these listeners by the back door.
-          const announce = (section: string, content: unknown) => {
-            if (content === undefined) return;
+          if (about) {
             window.dispatchEvent(
               new CustomEvent("contentRegenerated", {
-                detail: { section, content, use_fantasy: useFantasy },
+                detail: {
+                  section: "about",
+                  content: about,
+                  use_fantasy: useFantasy,
+                },
               }),
             );
-          };
-          announce("about", about);
-          announce(
-            "portfolio",
-            experience || education
-              ? {
-                  ...(experience && { experience }),
-                  ...(education && { education }),
-                }
-              : undefined,
-          );
+          }
         } catch (error) {
           const timedOut = controller.signal.aborted;
           if (!timedOut) console.error("Regeneration failed:", error);
@@ -440,9 +406,10 @@ export const useContentStore = create<ContentStore>()(
        * header and nav and the button that was just clicked included, in order
        * to fetch files whose contents were already in memory.
        *
-       * Only the three sections a regeneration can touch are restored. Skills,
-       * projects and timeline are never rewritten, so re-reading them was
-       * always a no-op.
+       * Only the slices a regeneration could touch are restored: the bio, and
+       * experience and education until #190's step 2 settles them (a press
+       * sends only the bio now). Skills, projects and timeline are never
+       * rewritten, so re-reading them was always a no-op.
        */
       resetContent: () => {
         const state = get();

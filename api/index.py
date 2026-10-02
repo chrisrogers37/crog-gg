@@ -700,7 +700,8 @@ def regenerate_content():
             jsonify(
                 {
                     "success": False,
-                    "error": "Content generation failed",
+                    # Shown to the visitor as it is, like every refusal here.
+                    "error": "That one didn't come through. Press it again.",
                     "failed_sections": failed,
                     "failures": failures,
                     # Metered already, so the cooldown is running (#196 M44).
