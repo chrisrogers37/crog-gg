@@ -24,6 +24,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The API reads who the site is from `site/site.yaml`: the CORS origins, the GitHub owner (project pages can link another allowed owner's repos), and the rewrite's button label, persona and style rules. It adds PyYAML, and its tests run on `site.example/` (#242).
 - SUMMON NEW LORE and the project pages' GitHub panels show only where the deployment can serve them (`GET /api/features`), and `features` in `site/site.yaml` can turn either off; a keyless fork no longer shows a button that fails (#243).
 - The content files the site renders are checked by the build, by `npm run site:check` and as they load, naming the file and the field; a file that fails takes only its own section down, and `projects/index.yaml` alone sets the projects' order. `order`, `featured`, `tags` and `image` are gone from project files, and links must be https (#244).
+- `npm run site:init` starts a fork from the fictional `site.example/`, and FORKING.md is the checklist from a copy of the repo to a deployed site (#245).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).
