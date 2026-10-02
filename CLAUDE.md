@@ -231,7 +231,7 @@ The site has two voices (#179):
 - **Claudlobby's page (`/projects/claudlobby`): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case. Copy is `frontend/src/content/claudlobby.ts`.
 - **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact, music and typewriter lines in `site/site.yaml`.
 - **Claims on Claudlobby's page stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
-- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on Claudlobby's page and `share-card.test.ts` on the share card; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
+- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on Claudlobby's page and `site-check/cards.test.ts` on the link-preview cards; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
 
 ## Image Handling
 

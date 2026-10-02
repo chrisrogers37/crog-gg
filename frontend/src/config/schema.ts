@@ -15,7 +15,7 @@ import {
   oneOf,
   optional,
   parseUrl,
-  positiveInteger,
+  shareImage,
   sitePath,
   slug,
   text,
@@ -102,12 +102,7 @@ const siteShape = object({
   seo: object({
     /** Appended to every page title. */
     site_name: text,
-    image: object({
-      path: sitePath,
-      width: positiveInteger,
-      height: positiveInteger,
-      alt: text,
-    }),
+    image: shareImage,
     about: object({ description: text }),
     projects: object({ description: text }),
   }),

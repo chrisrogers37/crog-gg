@@ -11,7 +11,7 @@ import { projectBreadcrumbs, projectMeta } from "../../seo";
 import { ProjectDemo } from "../../components/features/ProjectDemo";
 import { RepoStats } from "../../components/features/RepoStats";
 import { hasOwnPage } from "../../content/ownPages";
-import { PROJECT_PAGES } from "../../content/projectPages";
+import { PROJECT_PAGE_LOADING, PROJECT_PAGES } from "../../content/projectPages";
 import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
 import { useGithubOn, useScrollToHash } from "../../hooks";
 import "./ProjectDetailPage.css";
@@ -37,20 +37,39 @@ function ReadmeFallback() {
   );
 }
 
-/** The hero's boxes while the projects load (#196 M41). */
-function ProjectDetailSkeleton() {
+/**
+ * The page's frame while the projects load (#196 M41). The breadcrumbs' row is held, so
+ * the hero lands where its stand-in stood; a project with a page of its own
+ * stands in its own hero (projectPages.ts).
+ */
+function ProjectDetailSkeleton({ slug }: { slug?: string }) {
+  const OwnHero = slug !== undefined && hasOwnPage(slug) ? PROJECT_PAGE_LOADING[slug] : undefined;
+  const lines = (
+    <>
+      <div className="page-skeleton page-skeleton--eyebrow" />
+      <div className="page-skeleton page-skeleton--headline" />
+      <div className="page-skeleton" />
+      <div className="page-skeleton page-skeleton--short" />
+    </>
+  );
   return (
     <div
       className="page project-page project-page--loading"
       role="status"
       aria-label="Loading project"
     >
-      <div className="page-hero" aria-hidden="true">
-        <div className="page-skeleton page-skeleton--eyebrow" />
-        <div className="page-skeleton page-skeleton--headline" />
-        <div className="page-skeleton" />
-        <div className="page-skeleton page-skeleton--short" />
+      <div className="breadcrumbs" aria-hidden="true">
+        <ol className="breadcrumb-list">
+          <li className="breadcrumb-item">&nbsp;</li>
+        </ol>
       </div>
+      {OwnHero ? (
+        <OwnHero>{lines}</OwnHero>
+      ) : (
+        <div className="page-hero" aria-hidden="true">
+          {lines}
+        </div>
+      )}
     </div>
   );
 }
@@ -155,7 +174,7 @@ export function ProjectDetailPage() {
     // A deep link renders before the content has loaded, and a failed load is
     // no evidence the project is missing. Only a loaded list without this
     // slug is "not found" (#196 M41).
-    if (load === "loading") return <ProjectDetailSkeleton />;
+    if (load === "loading") return <ProjectDetailSkeleton slug={slug} />;
     if (typeof load === "object") {
       return (
         <div className="page project-page">

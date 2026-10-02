@@ -25,6 +25,10 @@ type Point = { title: string; body: string };
 type Count = { value: number; label: string };
 
 export const claudlobby = {
+  // Claudfather's avatar (the GitHub org Claudlobby lives in), the page's
+  // mark: the owner's photo variants in site/public/profile-photos.
+  mark: { photo: "/profile-photos/claudfather", alt: "Claudfather" },
+
   hero: {
     headline: "Build a dark factory.",
     sub: "Claudlobby is an open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",

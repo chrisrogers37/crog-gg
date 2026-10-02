@@ -6,7 +6,8 @@
   margin-bottom: -3rem;
 }
 
-.project-page .page-hero {
+/* The hero right under the trail, which a page of its own's hero isn't. */
+.project-page > .breadcrumbs + .page-hero {
   padding-top: 0;
 }
 

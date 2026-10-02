@@ -1,5 +1,5 @@
-import type { ComponentType } from "react";
-import { ClaudlobbyPage } from "../components/sections/Claudlobby";
+import type { ComponentType, ReactNode } from "react";
+import { ClaudlobbyLoadingHero, ClaudlobbyPage } from "../components/sections/Claudlobby";
 import type { Project } from "../types";
 import type { OwnPageId } from "./ownPages";
 
@@ -11,4 +11,12 @@ import type { OwnPageId } from "./ownPages";
  */
 export const PROJECT_PAGES: Record<OwnPageId, ComponentType<{ project: Project }>> = {
   claudlobby: ClaudlobbyPage,
+};
+
+/**
+ * Each one's hero frame while the projects load, in its own look, around the
+ * lines the project page's skeleton gives it.
+ */
+export const PROJECT_PAGE_LOADING: Record<OwnPageId, ComponentType<{ children: ReactNode }>> = {
+  claudlobby: ClaudlobbyLoadingHero,
 };

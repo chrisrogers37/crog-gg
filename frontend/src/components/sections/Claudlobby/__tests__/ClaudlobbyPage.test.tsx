@@ -9,6 +9,7 @@ import {
 import { makeProject } from "../../../../test/builders";
 import { ClaudlobbyPage } from "../ClaudlobbyPage";
 import { claudlobby } from "../../../../content/claudlobby";
+import { photoSrc, photoSrcSet } from "../../../../utils/photos";
 import {
   CLAUDLOBBY_GETTING_STARTED,
   CLAUDLOBBY_README_QUICKSTART,
@@ -23,6 +24,18 @@ const { hero, maturity, quickstart, roadmap } = claudlobby;
 const CLAUDLOBBY = makeProject({ id: "claudlobby", title: "Claudlobby", featured: true });
 
 describe("ClaudlobbyPage", () => {
+  it("wears Claudfather's look: the page's scope, and its mark in the hero", () => {
+    const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    // .cl-page carries the colours its sections read (Claudlobby.css).
+    expect(container.firstElementChild).toHaveClass("cl-page");
+    const mark = screen.getByRole("img", { name: claudlobby.mark.alt });
+    expect(mark.closest(".cl-hero")).not.toBeNull();
+    expect(mark).toHaveAttribute("src", photoSrc(claudlobby.mark.photo));
+    expect(mark).toHaveAttribute("srcset", photoSrcSet(claudlobby.mark.photo));
+    // Read after the words: the last thing in the hero.
+    expect(mark.parentElement!.lastElementChild).toBe(mark);
+  });
+
   it("leads with one heading and both next steps", () => {
     renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);

@@ -7,3 +7,10 @@ category: cli
 technologies:
   - Python
 status: archived
+# A link preview of its own (`share_card`): here a copy of the site's card, so
+# the checks and the head have a project's own card to cover.
+share_card:
+  path: /sample-cli-card.png
+  width: 1200
+  height: 630
+  alt: Ada Example. A fictional site, for tests and forks.

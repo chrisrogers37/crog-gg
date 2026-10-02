@@ -14,14 +14,15 @@ import "./Claudlobby.css";
  * of the project (whether it's featured) comes from `project`.
  */
 export function ClaudlobbyPage({ project }: { project: Project }) {
+  // .cl-page: Claudfather's colours, for this page's sections alone.
   return (
-    <>
+    <div className="cl-page">
       <Hero project={project} />
       <DarkFactory />
       <WhyClaudlobby />
       <Quickstart />
       <Roadmap />
       <Updates />
-    </>
+    </div>
   );
 }

@@ -17,6 +17,7 @@ import {
   oneOf,
   optional,
   record,
+  shareImage,
   sitePath,
   slug,
   text,
@@ -108,6 +109,8 @@ export const projectShape = object({
   technologies: withDefault(list(text), noSkills),
   gradient: optional(text),
   status: optional(oneOf(PROJECT_STATUSES)),
+  /** The project's own link preview, where it isn't the site's card. */
+  share_card: optional(shareImage),
 });
 
 /** A project file's fields, as checked. */

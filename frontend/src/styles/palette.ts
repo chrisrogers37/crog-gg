@@ -11,6 +11,7 @@
  *
  * Scales follow Tailwind's 50..950 convention:
  *   primary = blue (brand)   accent = purple   slate = neutral
+ * claudfather is named colours, not a scale: Claudlobby's page alone.
  */
 
 export const primary = {
@@ -52,6 +53,19 @@ export const slate = {
   800: "#1e293b",
   900: "#0f172a",
   950: "#020617",
+} as const;
+
+/**
+ * Claudfather's colours, read off its avatar (the GitHub org Claudlobby lives
+ * in): the medallion's orange, the night behind it, the robot's cream face.
+ * Only Claudlobby's page and its share card wear them (Claudlobby.css).
+ */
+export const claudfather = {
+  orange: "#e5711f", // 4.8:1 on charcoal, 5.7:1 under ink text
+  orangeDeep: "#ad5214", // orange text on light ground: 5.3:1 on white
+  charcoal: "#262627", // the avatar's background
+  ink: "#171717", // the suit
+  cream: "#faedd4", // the face: 13:1 on charcoal
 } as const;
 
 export const palette = { primary, accent, slate } as const;

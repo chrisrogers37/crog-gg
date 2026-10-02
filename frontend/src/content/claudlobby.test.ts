@@ -5,8 +5,9 @@ import { PLANNED, strings } from "../test/claudlobbyRules";
 /**
  * The rules for Claudlobby's page copy (content/claudlobby.ts). Its shape is
  * the type checker's job; these are the rules a type can't express. What
- * says it off the page, its card and its page's head, is the site's project
- * file, so site:check holds that to them (site-check/projects.test.ts).
+ * says it off the page, its card and its page's head, its share card's words
+ * included, is the site's project file, so site:check holds that to them
+ * (site-check/projects.test.ts, site-check/cards.test.ts).
  */
 
 const copy = strings(claudlobby);

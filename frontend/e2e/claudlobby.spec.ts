@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures";
 import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
-import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
+import { claudfather } from "../src/styles/palette";
+import { CLAUDLOBBY, cardOf, expectBelowHeader, site } from "./site";
 
 /**
  * Claudlobby's project page: its own sections (#173), since the redesign one
@@ -21,7 +22,14 @@ const VIEWPORTS = [
   ["phone", { width: 390, height: 844 }],
 ] as const;
 
-for (const [label, viewport] of VIEWPORTS) {
+/** A palette hex as getComputedStyle reports it. */
+const rgb = (hex: string) =>
+  `rgb(${[1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16)).join(", ")})`;
+
+// And an iPhone SE's screen, for the first screen alone.
+const SMALL_PHONE = { width: 375, height: 667 };
+
+for (const [label, viewport] of [...VIEWPORTS, ["small phone", SMALL_PHONE] as const]) {
   test(`the first screen names Claudlobby, shows both CTAs and its maturity (${label})`, async ({
     page,
   }) => {
@@ -31,11 +39,27 @@ for (const [label, viewport] of VIEWPORTS) {
     const hero = page.locator(".page-hero");
     await expect(hero.locator("h1")).toBeVisible();
     await expect(hero).toContainText(/claudlobby/i);
-    // Wholly on screen, without scrolling: both CTAs, and the maturity note
-    // that qualifies them (#179).
-    for (const selector of [`a[href="${REPO}"]`, 'a[href="#quickstart"]', ".cl-maturity"]) {
+    // Wholly on screen, without scrolling: both CTAs and Claudfather's mark.
+    for (const selector of [`a[href="${REPO}"]`, 'a[href="#quickstart"]', ".cl-mark"]) {
       await expect(hero.locator(selector)).toBeInViewport({ ratio: 1 });
     }
+    const maturity = hero.locator(".cl-maturity");
+    if (viewport === SMALL_PHONE) {
+      // The panel runs edge to edge there, its gutters given to the words:
+      // that keeps the maturity note on a phone's first screen (it ends at
+      // 570 px). CI's fonts wrap wider than a phone's, so here the note is
+      // held to begin on it.
+      const panel = (await hero.boundingBox())!;
+      expect(panel.x).toBe(0);
+      expect(panel.width).toBe(viewport.width);
+      await expect(maturity.locator(".badge")).toBeInViewport({ ratio: 1 });
+    } else {
+      // The maturity note that qualifies them (#179), wholly.
+      await expect(maturity).toBeInViewport({ ratio: 1 });
+    }
+    // A panel padded all round: the project page's rule for the hero under
+    // its breadcrumbs (no top padding) isn't this one's.
+    await expect(hero).not.toHaveCSS("padding-top", "0px");
   });
 }
 
@@ -52,6 +76,29 @@ test.describe("Claudlobby's page", () => {
     // The owner's site around it: Claudlobby is one of its projects.
     await expect(page.locator(`header.compact-header a[href^="${REPO}"]`)).toHaveCount(0);
     await expect(page.locator(`footer a[href^="${REPO}"]`)).toHaveCount(0);
+  });
+
+  test("wears Claudfather's mark, loaded", async ({ page }) => {
+    // A real image, not a broken one, once its bytes are in.
+    const mark = page.locator(".page-hero img.cl-mark");
+    await expect(mark).toBeVisible();
+    await expect
+      .poll(() => mark.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
+      .toBe(true);
+  });
+
+  test("keeps its hero Claudfather's night in both themes; its links take each theme's orange", async ({
+    page,
+  }) => {
+    const hero = page.locator(".page-hero.cl-hero");
+    const link = page.locator("#quickstart a").first();
+    await expect(hero).toHaveCSS("background-color", rgb(claudfather.charcoal));
+    await expect(link).toHaveCSS("color", rgb(claudfather.orangeDeep));
+
+    // Light, then dark: the links turn, the hero doesn't.
+    await page.getByRole("button", { name: /current theme/i }).first().click();
+    await expect(link).toHaveCSS("color", rgb(claudfather.orange));
+    await expect(hero).toHaveCSS("background-color", rgb(claudfather.charcoal));
   });
 
   test("says nothing of the owner's: the site around it does", async ({ page }) => {
@@ -104,6 +151,20 @@ test.describe("Claudlobby's page", () => {
       expect(value).toMatch(/^\d+$/);
     }
     await expect(page.locator(`.cl-source a[href^="${REPO}/blob/"]`)).toBeVisible();
+  });
+});
+
+test.describe("Reached in the app", () => {
+  test("the page's head points link previews at its own card", async ({ page }) => {
+    // From /projects, whose head names the site's card, so only the app's own
+    // update can name this page's (prerender.spec.ts holds the built head).
+    await page.goto("/projects");
+    await page.locator(`a[href="${PAGE}"]`).first().click();
+    await expect(page).toHaveURL(new RegExp(`${PAGE}$`));
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      `${site.site.url}${cardOf(PAGE).path}`,
+    );
   });
 });
 

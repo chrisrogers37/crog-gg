@@ -1,6 +1,7 @@
 import { claudlobby } from "../../../content/claudlobby";
 import type { Project } from "../../../types";
 import { track } from "../../../services/analytics";
+import { photoSrc, photoSrcSet } from "../../../utils/photos";
 import { RepoLink } from "../../common/RepoLink";
 import { InlineCode } from "../../common/InlineCode";
 
@@ -16,43 +17,71 @@ function StarIcon() {
 }
 
 /**
+ * Claudfather's avatar, the page's mark. One element for the hero and its
+ * loading stand-in, so both ask for the same image and the hero reuses the
+ * stand-in's download. Its sizes are Claudlobby.css's at each breakpoint.
+ */
+export function ClaudfatherMark({ alt }: { alt: string }) {
+  const { photo } = claudlobby.mark;
+  return (
+    // src goes last: Safari fetches it the moment it's set, before srcset
+    // can choose.
+    <img
+      className="cl-mark"
+      alt={alt}
+      width={220}
+      height={220}
+      loading="eager"
+      sizes="(max-width: 480px) 44px, (max-width: 768px) 56px, 220px"
+      srcSet={photoSrcSet(photo)}
+      src={photoSrc(photo)}
+    />
+  );
+}
+
+/**
  * What it is, how mature it is, and the two next steps, all above the fold on
  * a phone (#173, #179, #181 G2/G9). Only Claudlobby's: who built it is the
- * site around it.
+ * site around it. In Claudfather's colours, with its avatar as the mark.
  */
 export function Hero({ project }: { project: Project }) {
-  const { hero, maturity } = claudlobby;
+  const { hero, maturity, mark } = claudlobby;
   return (
-    <section className="page-hero" aria-labelledby="cl-hero-heading">
+    <section className="page-hero cl-hero" aria-labelledby="cl-hero-heading">
       <p className="page-eyebrow">
         {project.featured ? `${project.title} · Featured project` : project.title}
       </p>
-      <h1 id="cl-hero-heading" className="page-headline">
-        {hero.headline}
-      </h1>
-      <p className="page-sub">
-        <InlineCode text={hero.sub} />
-      </p>
-      <div className="page-ctas">
-        <RepoLink location="hero" className="btn btn-primary">
-          <StarIcon />
-          {hero.ctaStar}
-        </RepoLink>
-        <a
-          className="btn btn-ghost"
-          href="#quickstart"
-          onClick={() => track({ name: "quickstart_click" })}
-        >
-          {hero.ctaQuickstart}
-        </a>
+      <div className="cl-hero-body">
+        <h1 id="cl-hero-heading" className="page-headline">
+          {hero.headline}
+        </h1>
+        <p className="page-sub">
+          <InlineCode text={hero.sub} />
+        </p>
+        <div className="page-ctas">
+          <RepoLink location="hero" className="btn btn-primary">
+            <StarIcon />
+            {hero.ctaStar}
+          </RepoLink>
+          <a
+            className="btn btn-ghost"
+            href="#quickstart"
+            onClick={() => track({ name: "quickstart_click" })}
+          >
+            {hero.ctaQuickstart}
+          </a>
+        </div>
+        <p className="cl-maturity page-note">
+          <span className="badge">{maturity.label}</span> {maturity.today}{" "}
+          {maturity.planned}{" "}
+          <a href="#roadmap">{maturity.link}</a>
+          {" · "}
+          <a href="#updates">{maturity.updatesLink}</a>
+        </p>
       </div>
-      <p className="cl-maturity page-note">
-        <span className="badge">{maturity.label}</span> {maturity.today}{" "}
-        {maturity.planned}{" "}
-        <a href="#roadmap">{maturity.link}</a>
-        {" · "}
-        <a href="#updates">{maturity.updatesLink}</a>
-      </p>
+      {/* Last, so it's read after the words; the grid draws it beside them
+          (a corner of the eyebrow's row, on a phone). */}
+      <ClaudfatherMark alt={mark.alt} />
     </section>
   );
 }

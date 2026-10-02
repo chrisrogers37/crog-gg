@@ -1,6 +1,112 @@
-/* Claudlobby's project page (#173): what only its sections draw. The page,
-   hero and sections are the site's own (styles/page.css); buttons and cards
-   the global .btn and .card (index.css). */
+/* Claudlobby's project page (#173): what only its sections draw. The page
+   and its sections are the site's (styles/page.css), with the global .btn
+   and .card (index.css); the hero is Claudfather's panel, below. */
+
+/* Claudfather's look (palette.ts claudfather): the hero is the night behind
+   its avatar, the same in both themes; below it, the sections follow the
+   site's theme, their accents in its orange. The accent is the site's own
+   --primary-color (every link reads it), set again for this page alone:
+   the deeper orange on light ground, the orange on dark. */
+.cl-page {
+  /* No box of its own: its sections stay the page's flex items. */
+  display: contents;
+  --primary-color: theme("colors.claudfather.orangeDeep");
+}
+
+.dark .cl-page,
+.cl-hero {
+  --primary-color: theme("colors.claudfather.orange");
+}
+
+.cl-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "eyebrow mark"
+    "body mark";
+  column-gap: 3rem;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  /* Its own text colours, for whatever in it reads the theme's: cream, a
+     step down (9:1 on charcoal), and the lines of its loading stand-in. */
+  --text-color: theme("colors.claudfather.cream");
+  --text-color-secondary: theme("colors.claudfather.cream / 82%");
+  --border-color: theme("colors.claudfather.cream / 14%");
+  color: var(--text-color);
+  background-color: theme("colors.claudfather.charcoal");
+  /* The avatar's rain of faint dots. */
+  background-image: radial-gradient(
+    theme("colors.claudfather.cream / 9%") 1px,
+    transparent 1.5px
+  );
+  background-size: 12px 12px;
+}
+
+/* Charcoal on the dark theme's navy: a rim, so the panel reads as one. */
+.dark .cl-hero {
+  border-color: theme("colors.claudfather.cream / 12%");
+}
+
+/* A panel, padded all round and the column's width. */
+.page-hero.cl-hero {
+  max-width: none;
+  padding: 3rem;
+}
+
+.cl-hero > .page-eyebrow {
+  grid-area: eyebrow;
+  color: theme("colors.claudfather.orange");
+}
+
+.cl-hero-body {
+  grid-area: body;
+}
+
+.cl-hero .page-sub {
+  color: var(--text-color-secondary);
+}
+
+.cl-hero .badge {
+  border-color: theme("colors.claudfather.orange / 60%");
+  color: theme("colors.claudfather.orange");
+}
+
+/* The site's one filled button, and the steps' numbers, in Claudfather's
+   orange with its ink as the text (5.7:1), as on the avatar; the button
+   lighter under a cream veil on hover. */
+.cl-page .btn-primary,
+.cl-step-number {
+  background-color: theme("colors.claudfather.orange");
+  color: theme("colors.claudfather.ink");
+}
+
+.cl-page .btn-primary:hover {
+  background-color: theme("colors.claudfather.orange");
+  background-image: linear-gradient(
+    theme("colors.claudfather.cream / 15%"),
+    theme("colors.claudfather.cream / 15%")
+  );
+}
+
+/* The ghost in cream. .cl-page outranks the ghost's own dark-theme rule,
+   .btn-ghost:is(.dark *) (index.css). */
+.cl-page .cl-hero .btn-ghost {
+  border-color: theme("colors.claudfather.cream / 35%");
+  color: theme("colors.claudfather.cream");
+}
+
+.cl-page .cl-hero .btn-ghost:hover {
+  border-color: theme("colors.claudfather.cream");
+}
+
+/* Claudfather's avatar: the medallion, cut round. */
+.cl-mark {
+  grid-area: mark;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+}
 
 .cl-maturity {
   margin: 1.25rem 0 0;
@@ -24,9 +130,7 @@
   padding: 1.25rem;
 }
 
-/* White on primary-600 in both themes, like .btn-primary. */
 .cl-step-number {
-  @apply bg-primary-600 text-white;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -87,6 +191,7 @@
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--primary-color);
 }
 
 .cl-counts dt {
@@ -117,6 +222,33 @@
 }
 
 @media (max-width: 768px) {
+  /* The mark shrinks into a corner of the eyebrow's row, so the CTAs and the
+     maturity note stay on a phone's first screen. */
+  .cl-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "mark eyebrow"
+      "body body";
+    column-gap: 0.75rem;
+  }
+
+  .page-hero.cl-hero {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .cl-hero > .page-eyebrow {
+    margin: 0;
+  }
+
+  .cl-hero-body {
+    margin-top: 1.25rem;
+  }
+
+  .cl-mark {
+    width: 56px;
+    height: 56px;
+  }
+
   .cl-steps,
   .cl-points,
   .cl-roadmap {
@@ -129,6 +261,24 @@
 }
 
 @media (max-width: 480px) {
+  /* Edge to edge on a small phone: the page's gutters go to the words, so the
+     CTAs and the maturity note stay on even a 375x667 phone's first screen. */
+  .page-hero.cl-hero {
+    margin-inline: calc(-1 * var(--page-gutter, 1rem));
+    padding: 1.25rem var(--page-gutter, 1rem);
+    border-radius: 0;
+    border-inline-width: 0;
+  }
+
+  .cl-hero-body {
+    margin-top: 1rem;
+  }
+
+  .cl-mark {
+    width: 44px;
+    height: 44px;
+  }
+
   .cl-counts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

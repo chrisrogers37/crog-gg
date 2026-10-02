@@ -27,13 +27,18 @@ export const bio = yaml.load(
 const projectsFile = (file: string) =>
   fs.readFileSync(path.join(siteDir(), "public/content/projects", file), "utf8");
 const projectIndex = parseYaml(projectIndexShape, projectsFile("index.yaml"), "index.yaml");
-const projectId = (file: string) => parseYaml(projectShape, projectsFile(file), file).id;
+const project = (file: string) => parseYaml(projectShape, projectsFile(file), file);
+const projects = projectIndex.projects.map(project);
 
 /** Whether the site lists Claudlobby, whose page is its own (content/ownPages.ts). */
-export const CLAUDLOBBY = projectIndex.projects.map(projectId).includes("claudlobby");
+export const CLAUDLOBBY = projects.some(({ id }) => id === "claudlobby");
+
+/** The link-preview card a page shows: a project's own where its file names one, else the site's. */
+export const cardOf = (path: string) =>
+  projects.find(({ id }) => path === `/projects/${id}`)?.share_card ?? site.seo.image;
 
 /** The featured project's id, if index.yaml features one. */
-export const FEATURED = projectIndex.featured && projectId(projectIndex.featured);
+export const FEATURED = projectIndex.featured && project(projectIndex.featured).id;
 
 /** The projects as the running site serves them, through the app's own loader. */
 export const servedProjects = (request: APIRequestContext) =>
