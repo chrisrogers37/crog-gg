@@ -43,6 +43,20 @@ export default tseslint.config(
         "warn",
         { argsIgnorePattern: "^_" },
       ],
+      // react-router's own RouterProvider lacks react-dom's flushSync, and
+      // editors offer it first (#198 M73).
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react-router",
+              importNames: ["RouterProvider"],
+              message: "Use RouterProvider from react-router/dom.",
+            },
+          ],
+        },
+      ],
     },
   },
 );
