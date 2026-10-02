@@ -128,6 +128,13 @@ export const SOCIAL_ICONS = [
 ] as const;
 export type SocialIcon = (typeof SOCIAL_ICONS)[number];
 
+/**
+ * What `/` is: "landing", the Claudlobby landing page, with the personal page
+ * at /about; or "profile", the personal page itself, with no landing page.
+ */
+export const HOMES = ["landing", "profile"] as const;
+export type Home = (typeof HOMES)[number];
+
 /** /about's sections; each id is a component, so the list is fixed. */
 export const SECTION_IDS = ["about", "journey", "projects", "music"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -151,6 +158,7 @@ const siteShape = object({
     knows_about: list(text),
   }),
   site: object({ url: origin }),
+  home: oneOf(HOMES),
   seo: object({
     /** Appended to every page title. */
     site_name: text,

@@ -75,13 +75,12 @@ describe("landingPages, over the shipped content", () => {
     projects = await shippedProjects();
   });
 
-  it("covers home, about, projects and every indexed project, in index order", () => {
+  it("covers the site's own pages and every indexed project, in index order", () => {
     expect(landingPages(seo, projects).map((page) => page.path)).toEqual([
-      "/",
-      "/about",
-      "/projects",
+      ...seo.PAGES.map((page) => page.path),
       ...projects.map((project) => `/projects/${project.id}`),
     ]);
+    expect(projects.length).toBeGreaterThan(0);
   });
 
   it("gives each project page its own title, description and canonical", () => {

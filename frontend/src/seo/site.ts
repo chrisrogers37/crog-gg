@@ -1,3 +1,4 @@
+import { aboutPath } from "../config/routes";
 import type { SiteConfig } from "../config/schema";
 import { socialsIn } from "../config/socials";
 import type { Project } from "../types/Project";
@@ -150,7 +151,7 @@ export function createSeo(site: SiteConfig) {
 
   /** The personal page, which is who the Person schema describes. */
   const ABOUT_META: LandingPage = {
-    path: "/about",
+    path: aboutPath(site),
     title: "About",
     description: site.seo.about.description,
     type: "profile",
@@ -217,6 +218,12 @@ export function createSeo(site: SiteConfig) {
     };
   }
 
+  /** The site's own pages, before the projects, in sitemap order. */
+  const PAGES: LandingPage[] =
+    site.home === "landing"
+      ? [HOME_META, ABOUT_META, PROJECTS_META]
+      : [ABOUT_META, PROJECTS_META];
+
   return {
     SITE_URL,
     OG_IMAGE,
@@ -227,6 +234,7 @@ export function createSeo(site: SiteConfig) {
     ABOUT_META,
     PROJECTS_META,
     NOT_FOUND_META,
+    PAGES,
     projectMeta,
   };
 }

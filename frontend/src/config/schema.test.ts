@@ -92,6 +92,12 @@ describe("parseSiteConfig", () => {
     expect(problems(raw)).toContain("owner.image: expected a path that starts with one");
   });
 
+  it("knows two homes", () => {
+    const raw = shipped();
+    raw.home = "blog";
+    expect(problems(raw)).toContain("home: expected one of landing, profile");
+  });
+
   it("needs {artist} in the music intro, once", () => {
     const raw = shipped();
     at(raw, "music").intro = "i make music.";

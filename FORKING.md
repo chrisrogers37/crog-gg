@@ -21,8 +21,7 @@ This is the interim guide. Most of the owner's identity lives in one folder, `si
 - `manifest.json`, the favicons and the app icons.
 
 **Still in the code:**
-- `frontend/src/content/claudlobby.ts`, and the sections in `frontend/src/components/sections/Claudlobby/`: the homepage is the Claudlobby landing page, so replace it with your own, along with the Claudlobby links in the header, footer and mobile menu;
-- `frontend/src/seo/site.ts`: the landing page's head (`HOME_META`: Claudlobby's title, description and JSON-LD).
+- The Claudlobby landing page: set `home: profile` in `site/site.yaml`, and the personal page becomes `/`, with no landing page, no Claudlobby links and no Claudlobby head. To keep a landing page of your own instead, replace `frontend/src/content/claudlobby.ts`, the sections in `frontend/src/components/sections/Claudlobby/`, and the landing page's head (`HOME_META` in `frontend/src/seo/site.ts`). Until #191 lands, the e2e tests still expect the landing page.
 
 **The API:**
 - `GITHUB_USERNAME` in `api/_lib/request_utils.py`: whose public repos the proxy serves;

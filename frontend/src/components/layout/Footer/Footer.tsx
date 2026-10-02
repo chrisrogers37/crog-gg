@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import site from "virtual:site-config";
 import { socialsIn } from "../../../config/socials";
+import { sourceUrl } from "../../../config/source";
 import { RepoLink } from "../../common/RepoLink";
 import "./Footer.css";
 
@@ -23,8 +24,12 @@ export function Footer() {
           &copy; {currentYear} {site.owner.name}
         </p>
         <div className="footer-links">
-          <RepoLink location="footer">claudlobby</RepoLink>
-          <Link to="/about">about</Link>
+          {site.home === "landing" && (
+            <>
+              <RepoLink location="footer">claudlobby</RepoLink>
+              <Link to="/about">about</Link>
+            </>
+          )}
           {socialsIn(site, "footer").map((link) => (
             <a
               key={link.id}
@@ -36,7 +41,11 @@ export function Footer() {
             </a>
           ))}
           {sourceRepoUrl && (
-            <a href={sourceRepoUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={sourceUrl(sourceRepoUrl, __SITE_COMMIT__)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               view source
             </a>
           )}

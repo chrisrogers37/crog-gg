@@ -1,17 +1,25 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HelmetProvider } from "react-helmet-async";
 import { createMemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
-import { routes } from "../../../router";
+import site from "virtual:site-config";
+import { routesFor } from "../../../router";
 import { CLAUDLOBBY_REPO } from "../../../content/links";
 import { track } from "../../../services/analytics";
 
 vi.mock("../../../services/analytics", () => ({ track: vi.fn() }));
 
+// The landing page's links: the header, footer and menu draw them only with
+// home: landing, whatever the tests' site says.
+const configuredHome = site.home;
+beforeEach(() => {
+  site.home = "landing";
+});
 afterEach(() => {
   vi.unstubAllGlobals();
+  site.home = configuredHome;
 });
 
 /**
@@ -32,7 +40,7 @@ describe("RepoLink", () => {
     render(
       <HelmetProvider>
         <RouterProvider
-          router={createMemoryRouter(routes, { initialEntries: ["/"] })}
+          router={createMemoryRouter(routesFor("landing"), { initialEntries: ["/"] })}
         />
       </HelmetProvider>,
     );

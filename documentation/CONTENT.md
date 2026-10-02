@@ -85,16 +85,17 @@ Read when the dev server, the build or the tests start, checked, and served to t
 
 - **`owner`:** `name` (the header, the footer, the Person schema and the landing page's byline), `email` (the contact card), `job_title`, `works_for` (optional: `name`, `url`), `image` (a path in `site/public/`) and `knows_about`, for the Person schema.
 - **`site.url`:** the canonical origin, `https://` with no path or trailing slash. Every absolute link to the site is built from it.
+- **`home`:** what `/` is. `landing` is the Claudlobby landing page, with the personal page at `/about`. `profile` makes the personal page `/`, and drops the landing page and every Claudlobby link.
 - **`seo`:** `site_name` (appended to every title), `image` (the social card: `path`, `width`, `height`, and `alt`, which must match the card's text in `site/og-image.html`), and the `description` of `about` and `projects`.
 - **`socials`:** each has an `id`, a `label` (the link's text and its name to a screen reader), an `icon` (`github`, `linkedin`, `telegram`, `instagram`, `spotify`, `hoobe` or `link`), an `https` `url`, and `show_in`: any of `footer`, `menu`, `contact`, `music` and `schema` (the Person schema's `sameAs`). They show in the order listed.
-- **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source".
-- **`sections`:** `/about`'s tabs, in order: `about`, `journey`, `projects` and `music`, each with a `label`. `about` is required, since the collapsed preview is About's; leave another out to hide it.
+- **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source", at the commit the site was built from when Vercel names it (`VERCEL_GIT_COMMIT_SHA`).
+- **`sections`:** the personal page's tabs (at `/about`, or `/` with `home: profile`), in order: `about`, `journey`, `projects` and `music`, each with a `label`. `about` is required, since the collapsed preview is About's; leave another out to hide it.
 - **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the header types out).
 - **`about.preview_height`:** `narrow` and `wide`, in px: where the collapsed About text fades, tuned to `bio.yaml`'s `about_text` (#162).
 - **`contact`:** the card's `heading` and `text`.
 - **`music`:** the tab's `intro`, with `{artist}` where the `artist` name goes; `embed` (optional), the player's URL, whose origin must be in `frame-src` in `vercel.json`; and `embed_title` (optional), the player's name to a screen reader, "music player" if left out.
 
-The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules, and a fork replaces it ([FORKING.md](../FORKING.md)).
+The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules. A fork sets `home: profile` instead ([FORKING.md](../FORKING.md)).
 
 ## What catches a mistake
 

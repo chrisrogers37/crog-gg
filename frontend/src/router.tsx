@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { RouterProvider } from "react-router/dom";
+import site from "virtual:site-config";
+import type { Home } from "./config/schema";
 
 // Layout (loaded immediately as it's the shell)
 import { Layout } from "./components/layout";
@@ -12,7 +14,9 @@ import { NotFoundPage } from "./pages/NotFound";
 import { RouteError } from "./pages/RouteError";
 import { lazyPage } from "./utils/lazyPage";
 
-// HomePage is the likely first visit, so it is eager and kept light
+// HomePage is the likely first visit with home: landing, so it is eager and
+// kept light. With home: profile, / is the lazy AboutPage, whose chunk loads
+// beside the content fetch.
 import { HomePage } from "./pages/Home";
 
 // Lazy-loaded pages: /about carries the personal page's sections and motion,
@@ -58,12 +62,14 @@ function LazyPage({ children }: { children: React.ReactNode }) {
 /**
  * Application Router Configuration
  *
- * Routes:
+ * Routes, with site.yaml's `home: landing` (#188):
  * /                    - Home page (Claudlobby)
  * /about               - About (the personal page)
  * /projects            - Projects listing
  * /projects/:slug      - Individual project detail
  * /*                   - 404 Not Found
+ *
+ * With `home: profile`, the personal page is / and there's no /about.
  *
  * Every landable route needs a prerendered page in seo/prerender.ts, or it
  * 404s in production (#174); router.test.tsx checks the two agree.
@@ -71,59 +77,70 @@ function LazyPage({ children }: { children: React.ReactNode }) {
 // Exported for router.test.tsx. This module is the app root, which Fast Refresh
 // reloads in full anyway, so the component-only-exports rule buys nothing here.
 // eslint-disable-next-line react-refresh/only-export-components
-export const routes: RouteObject[] = [
-  {
-    path: "/",
-    element: <Layout />,
+export function routesFor(home: Home): RouteObject[] {
+  const about = {
+    // The personal page draws its own full-width card (Layout.tsx).
+    handle: { fullBleed: true },
+    element: (
+      <LazyPage>
+        <AboutPage />
+      </LazyPage>
+    ),
     errorElement: <RouteError />,
-    children: [
-      {
-        index: true,
-        element: <HomePage />,
-        errorElement: <RouteError />,
-      },
-      {
-        path: "about",
-        // The personal page draws its own full-width card (Layout.tsx).
-        handle: { fullBleed: true },
-        element: (
-          <LazyPage>
-            <AboutPage />
-          </LazyPage>
-        ),
-        errorElement: <RouteError />,
-      },
-      {
-        path: "projects",
-        errorElement: <RouteError />,
-        children: [
-          {
-            index: true,
-            element: (
-              <LazyPage>
-                <ProjectsPage />
-              </LazyPage>
-            ),
-          },
-          {
-            path: ":slug",
-            element: (
-              <LazyPage>
-                <ProjectDetailPage />
-              </LazyPage>
-            ),
-          },
-        ],
-      },
-      // Inside the Layout, so a 404 keeps the site's header, footer and its
-      // one <main> landmark.
-      {
-        path: "*",
-        element: <NotFoundPage />,
-      },
-    ],
-  },
-];
+  };
+
+  return [
+    {
+      path: "/",
+      element: <Layout />,
+      errorElement: <RouteError />,
+      children: [
+        ...(home === "landing"
+          ? [
+              {
+                index: true,
+                element: <HomePage />,
+                errorElement: <RouteError />,
+              },
+              { path: "about", ...about },
+            ]
+          : [{ index: true, ...about }]),
+        {
+          path: "projects",
+          errorElement: <RouteError />,
+          children: [
+            {
+              index: true,
+              element: (
+                <LazyPage>
+                  <ProjectsPage />
+                </LazyPage>
+              ),
+            },
+            {
+              path: ":slug",
+              element: (
+                <LazyPage>
+                  <ProjectDetailPage />
+                </LazyPage>
+              ),
+            },
+          ],
+        },
+        // Inside the Layout, so a 404 keeps the site's header, footer and its
+        // one <main> landmark.
+        {
+          path: "*",
+          element: <NotFoundPage />,
+        },
+      ],
+    },
+  ];
+}
+
+/** The routes for the shipped site.yaml. */
+// eslint-disable-next-line react-refresh/only-export-components
+export const routes = routesFor(site.home);
 
 const router = createBrowserRouter(routes);
 

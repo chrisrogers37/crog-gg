@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router";
 import site from "virtual:site-config";
 import { socialsIn } from "../../../../config/socials";
@@ -19,6 +19,15 @@ vi.mock("../../../../store", () => ({
 }));
 
 describe("MobileMenu", () => {
+  // These name the landing's links; "with home: profile" below covers the other.
+  const configuredHome = site.home;
+  beforeEach(() => {
+    site.home = "landing";
+  });
+  afterEach(() => {
+    site.home = configuredHome;
+  });
+
   const sections = [
     { id: "about", label: "About" },
     { id: "journey", label: "Journey" },
@@ -68,6 +77,26 @@ describe("MobileMenu", () => {
       "/about",
     );
     expect(screen.getByText("all projects")).toBeInTheDocument();
+  });
+
+  describe("with home: profile (#188)", () => {
+    const home = site.home;
+    afterEach(() => {
+      site.home = home;
+    });
+
+    it("links home and the projects, with no about me or Claudlobby link", () => {
+      site.home = "profile";
+      render(
+        <MemoryRouter>
+          <MobileMenu />
+        </MemoryRouter>,
+      );
+      expect(screen.getByRole("link", { name: "home" })).toHaveAttribute("href", "/");
+      expect(screen.getByText("all projects")).toBeInTheDocument();
+      expect(screen.queryByText("about me")).toBeNull();
+      expect(screen.queryByText("claudlobby on github")).toBeNull();
+    });
   });
 
   it("marks active section", () => {

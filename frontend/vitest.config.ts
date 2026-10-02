@@ -4,7 +4,8 @@ import { site } from "./scripts/vite-site";
 
 export default defineConfig({
   // site() also lets tests read the site's files as @site/... (#188).
-  plugins: [react(), site()],
+  // A commit of the tests' own, so the footer's link doesn't follow the shell.
+  plugins: [react(), site({ commit: "c0ffee" })],
   resolve: {
     // Node's own resolution includes "module-sync"; vitest's doesn't, and
     // react-router's Node exports give ESM only under it. Without it, a test

@@ -1,9 +1,12 @@
 import type { ReactElement } from "react";
 import { beforeAll, describe, it, expect } from "vitest";
 import { matchPath, matchRoutes, type RouteObject } from "react-router";
-import { routes } from "./router";
-import { seo } from "./seo";
+import site from "virtual:site-config";
+import { aboutPath } from "./config/routes";
+import { HOMES } from "./config/schema";
+import { routesFor } from "./router";
 import { landingPages } from "./seo/prerender";
+import { createSeo } from "./seo/site";
 import { NotFoundPage } from "./pages/NotFound";
 import { RouteError } from "./pages/RouteError";
 import { shippedProjects } from "./test/content";
@@ -59,12 +62,21 @@ const landablePatterns = (tree: RouteObject[]): string[] => [
   ),
 ];
 
-describe("routes and prerendered pages", () => {
+// For each `home` site.yaml can name (#188), not just the shipped one.
+describe.each(HOMES)("routes and prerendered pages, with home: %s", (home) => {
+  const routes = routesFor(home);
+
   // Over the shipped projects, so a project id the router can't match (one
   // with a slash, say) fails here instead of shipping a 200 that shows a 404.
   let pages: ReturnType<typeof landingPages>;
   beforeAll(async () => {
-    pages = landingPages(seo, await shippedProjects());
+    pages = landingPages(createSeo({ ...site, home }), await shippedProjects());
+  });
+
+  it("puts the personal page where site.yaml's home says", () => {
+    // AboutPage's route is the one that draws its own full-width card.
+    const matches = matchRoutes(routes, aboutPath({ home })) ?? [];
+    expect(matches.at(-1)?.route.handle).toEqual({ fullBleed: true });
   });
 
   it("prerenders a page for every route a visitor can land on", () => {
