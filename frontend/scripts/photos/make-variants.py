@@ -3,7 +3,7 @@
 Photos ship as small variants, never the camera originals (#178: five
 full-size JPEGs were ~1.1 MB of a 1.3 MB page, for images shown at 80-240px).
 For every JPEG in originals/, this writes <name>-<width>.webp for each width
-into public/profile-photos/, which is where src/utils/photos.ts looks.
+into site/public/profile-photos/, which is where src/utils/photos.ts looks.
 
 To add a photo: put the original in originals/, run this, then reference
 /profile-photos/<name> in content/showcase.yaml or PROFILE_PHOTOS.
@@ -18,7 +18,7 @@ from PIL import Image, ImageOps
 
 HERE = Path(__file__).resolve().parent
 ORIGINALS = HERE / "originals"
-OUT = HERE.parent.parent / "public" / "profile-photos"
+OUT = HERE.parents[2] / "site" / "public" / "profile-photos"
 
 # Keep in step with PHOTO_WIDTHS in src/utils/photos.ts; photos.test.ts fails
 # for any width a referenced photo is missing.

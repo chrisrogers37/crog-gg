@@ -7,7 +7,7 @@ import { makeBio } from "../../test/builders";
 // Read through Vite rather than fs: the path is resolved by the same module
 // graph the app uses, so a moved content file fails here instead of resolving
 // to nothing against whatever the runner's cwd happened to be.
-import bioYaml from "../../../public/content/bio.yaml?raw";
+import bioYaml from "../../../../site/public/content/bio.yaml?raw";
 
 /**
  * The About blurb is authored as paragraphs and rendered as one text node.

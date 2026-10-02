@@ -2,7 +2,7 @@
  * Photos ship as resized WebP variants rather than the camera originals
  * (#178: five full-size JPEGs were ~1.1 MB of a 1.3 MB page, for images shown
  * at 80-240px). A photo is named by its base path, and each width lives at
- * `<base>-<width>.webp` in public/; photos.test.ts checks every referenced
+ * `<base>-<width>.webp` in site/public/; photos.test.ts checks every referenced
  * photo has all of them. To add or replace one, see
  * scripts/photos/make-variants.py.
  */

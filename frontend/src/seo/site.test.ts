@@ -14,8 +14,8 @@ import {
   type PageMeta,
 } from "./site";
 import type { TimelineData } from "../types";
-import ogImageHtml from "../../scripts/og-image/og-image.html?raw";
-import timelineYaml from "../../public/content/timeline.yaml?raw";
+import ogImageHtml from "../../../site/og-image.html?raw";
+import timelineYaml from "../../../site/public/content/timeline.yaml?raw";
 
 const tagValue = (meta: PageMeta, key: string) => {
   const found = headTags(meta).find(

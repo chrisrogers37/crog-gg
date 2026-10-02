@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { prerender } from "./scripts/vite-prerender";
@@ -17,8 +18,15 @@ const insightsPreview: Plugin = {
   },
 };
 
+/**
+ * The owner's files live in site/ at the repo root (#188), so a fork replaces
+ * one folder. Its public/ is served as is, at the site's root.
+ */
+const SITE_PUBLIC = fileURLToPath(new URL("../site/public", import.meta.url));
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  publicDir: SITE_PUBLIC,
   build: {
     rollupOptions: {
       output: {

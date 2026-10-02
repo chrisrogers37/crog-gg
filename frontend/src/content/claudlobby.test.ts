@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { claudlobby } from "./claudlobby";
 import { HOME_META, OG_IMAGE, pageTitle } from "../seo/site";
-import ogImageHtml from "../../scripts/og-image/og-image.html?raw";
+import ogImageHtml from "../../../site/og-image.html?raw";
 
 /**
  * The homepage copy's rules (content/claudlobby.ts). Its shape is the type

@@ -30,7 +30,7 @@ export const OG_IMAGE = {
   path: "/og-image.png",
   width: 1200,
   height: 630,
-  // The card's own text (scripts/og-image/og-image.html); site.test.ts checks
+  // The card's own text (site/og-image.html); site.test.ts checks
   // the two agree.
   alt: "Build a dark factory. Claudlobby runs a fleet of always-on Claude Code agents on your own hardware, composed from one fleet.yaml.",
 } as const;

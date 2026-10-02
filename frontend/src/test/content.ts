@@ -2,14 +2,14 @@ import { readProjects } from "../utils/projectLoader";
 
 // The shipped project YAML, read through Vite so a moved file fails here.
 const projectFiles = import.meta.glob<string>(
-  "../../public/content/projects/*.yaml",
+  "../../../site/public/content/projects/*.yaml",
   { query: "?raw", import: "default", eager: true },
 );
 
 /** The projects the site ships, read with the site's own loader. */
 export const shippedProjects = () =>
   readProjects(async (file) => {
-    const text = projectFiles[`../../public/content/projects/${file}`];
+    const text = projectFiles[`../../../site/public/content/projects/${file}`];
     if (text === undefined) {
       throw new Error(`index.yaml lists ${file}, which does not exist`);
     }
