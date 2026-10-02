@@ -11,7 +11,7 @@ import { useContentStore } from "../contentStore";
  *
  * These tests pin what came out of that: one click is one request, a partial
  * failure keeps the sections that worked, and a failure never lands in `error`,
- * which drives HomePage's full-page fatal screen and unmounts a page that still
+ * which drives AboutPage's full-page fatal screen and unmounts a page that still
  * has content to show.
  */
 
@@ -141,7 +141,7 @@ describe("regenerateContent", () => {
   });
 
   it("does not set the fatal error on a failed regeneration", async () => {
-    // The white-screen regression: `error` drives HomePage's full-page error
+    // The white-screen regression: `error` drives AboutPage's full-page error
     // screen, so putting a transient failure there unmounted a working page.
     respondWith({ success: false, error: "nope" });
 

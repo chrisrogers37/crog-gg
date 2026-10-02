@@ -4,7 +4,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 
 ## Project Overview
 
-**Choose Your Own Chris** - An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
+**crog.gg** - The front door for Claudlobby (Chris's agent-fleet compositor for software "dark factories") on `/`, and **Choose Your Own Chris**, the personal portfolio with AI-regenerated content, on `/about`. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
 - **Backend**: Flask (`api/index.py`) on Vercel Python runtime, OpenAI API, Upstash Redis for rate limiting
@@ -154,6 +154,7 @@ await expect(welcomeArea).toBeVisible();
 ### Content Files
 
 - Content lives in `frontend/public/content/` as YAML files
+- Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules: no "open source" until the Claudlobby repo has a LICENSE, no em-dashes, and every number carries a commit-pinned source and an `asOf` date
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `frontend/public/content/projects/` directory
 - Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime

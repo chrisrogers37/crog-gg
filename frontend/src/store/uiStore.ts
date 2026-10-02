@@ -8,9 +8,6 @@ import { persist, devtools } from "zustand/middleware";
 type Theme = "light" | "dark" | "system";
 
 interface UIState {
-  // Navigation
-  activeSection: string;
-
   // Theme
   theme: Theme;
 
@@ -19,11 +16,6 @@ interface UIState {
 }
 
 interface UIActions {
-  // Navigation
-  setActiveSection: (section: string) => void;
-  toggleSection: (section: string) => void;
-  clearActiveSection: () => void;
-
   // Theme
   setTheme: (theme: Theme) => void;
 
@@ -39,7 +31,6 @@ type UIStore = UIState & UIActions;
 // ===========================================
 
 const initialState: UIState = {
-  activeSection: "",
   theme: "light", // Default to light as per user preference
   isMobileMenuOpen: false,
 };
@@ -54,34 +45,6 @@ export const useUIStore = create<UIStore>()(
       (set) => ({
         // Initial state
         ...initialState,
-
-        // ===========================================
-        // NAVIGATION ACTIONS
-        // ===========================================
-
-        /**
-         * Set the active section directly.
-         */
-        setActiveSection: (section: string) => {
-          set({ activeSection: section });
-        },
-
-        /**
-         * Toggle a section - if already active, clear it.
-         * This matches the current UX behavior.
-         */
-        toggleSection: (section: string) => {
-          set((state) => ({
-            activeSection: state.activeSection === section ? "" : section,
-          }));
-        },
-
-        /**
-         * Clear the active section.
-         */
-        clearActiveSection: () => {
-          set({ activeSection: "" });
-        },
 
         // ===========================================
         // THEME ACTIONS
@@ -140,8 +103,6 @@ export const useUIStore = create<UIStore>()(
 // SELECTORS
 // ===========================================
 
-export const useActiveSection = () =>
-  useUIStore((state) => state.activeSection);
 export const useTheme = () => useUIStore((state) => state.theme);
 export const useIsMobileMenuOpen = () =>
   useUIStore((state) => state.isMobileMenuOpen);

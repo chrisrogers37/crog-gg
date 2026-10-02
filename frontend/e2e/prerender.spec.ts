@@ -52,10 +52,11 @@ const expectLandingHead = async (
 };
 
 test.describe("Prerendered heads", () => {
-  test("the home and projects pages ship their own heads", async ({
+  test("the home, about and projects pages ship their own heads", async ({
     request,
   }) => {
     await expectLandingHead(request, "/");
+    await expectLandingHead(request, "/about");
     await expectLandingHead(request, "/projects");
   });
 

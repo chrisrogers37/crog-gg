@@ -41,8 +41,9 @@ describe("headTags", () => {
     expect(tagValue(HOME_META, "og:image:height")).toBe("630");
   });
 
-  it("uses the bare site name as the home page title", () => {
-    expect(pageTitle(HOME_META)).not.toContain("|");
+  it("names the page first, then the site", () => {
+    // The front door is Claudlobby's, so its tab and share titles say so.
+    expect(pageTitle(HOME_META)).toMatch(/^Claudlobby \| /);
     expect(pageTitle(PROJECTS_META)).toMatch(/^Projects \| /);
   });
 

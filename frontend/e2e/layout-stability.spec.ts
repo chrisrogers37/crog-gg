@@ -91,7 +91,7 @@ test.describe("action button layout stability", () => {
   test("expanding About does not displace the regenerate button", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.waitForTimeout(1000); // let the preview's entry animation finish
 
@@ -116,7 +116,7 @@ test.describe("action button layout stability", () => {
   }) => {
     await stubRegenerate(page);
 
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.click(".section-fade-btn");
     await page.waitForSelector(".generate-btn", { timeout: 10000 });
@@ -161,7 +161,7 @@ test.describe("action button layout stability", () => {
  */
 test.describe("journey section post-mount stability", () => {
   const openJourney = async (page: import("@playwright/test").Page) => {
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.waitForTimeout(1000);
     await page.evaluate(ARM);
@@ -208,7 +208,7 @@ test.describe("undoing a regeneration", () => {
     page,
   }) => {
     await stubRegenerate(page);
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.click(".section-fade-btn");
     await page.waitForSelector(".generate-btn", { timeout: 10000 });
@@ -241,7 +241,7 @@ test.describe("undoing a regeneration", () => {
   // of *source*: the restore now comes from the originals held in the store, and
   // this asserts that produces the same result the file read did.
   test("restores the original content", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.click(".section-fade-btn");
     await page.waitForSelector(".generate-btn", { timeout: 10000 });
@@ -335,7 +335,7 @@ test.describe("idle typewriter does not reflow the page (#148)", () => {
   }) => {
     test.setTimeout(120000);
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-nav", { timeout: 15000 });
     await page.waitForTimeout(1500); // past the entry animation
 
@@ -388,7 +388,7 @@ test.describe("collapsing a section moves the page once (#149)", () => {
   test("the button card unmounts in the same frame the content moves", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/about");
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.click(".section-fade-btn");
     await page.waitForSelector(".generate-btn", { timeout: 10000 });

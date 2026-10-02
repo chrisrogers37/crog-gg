@@ -1,0 +1,232 @@
+/* Claudlobby homepage (#173). Buttons and cards are the global .btn and .card
+   (index.css); colours are theme variables or palette shades, so both themes
+   work. */
+
+.cl-home {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.5rem 0 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4.5rem;
+  color: var(--text-color);
+}
+
+.cl-home code {
+  font-family: theme("fontFamily.mono");
+  font-size: 0.9em;
+}
+
+.cl-home a:not(.btn) {
+  color: var(--primary-color);
+  text-underline-offset: 2px;
+}
+
+/* Hero */
+.cl-hero {
+  max-width: 780px;
+  padding-top: 1.5rem;
+}
+
+.cl-eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-color-secondary);
+}
+
+.cl-hero-headline {
+  margin: 0;
+  font-size: clamp(2.25rem, 6vw, 3.75rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.cl-hero-sub {
+  margin: 1.25rem 0 0;
+  font-size: clamp(1.125rem, 2.2vw, 1.3rem);
+  line-height: 1.55;
+}
+
+.cl-hero-credibility {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text-color-secondary);
+}
+
+.cl-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+/* Sections */
+/* The header sticks, so an in-page link (#quickstart and the like) stops its
+   section's heading below the header rather than under it. */
+.cl-section {
+  scroll-margin-top: 5rem;
+}
+
+.cl-section h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.cl-section h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.cl-lead {
+  max-width: 680px;
+  margin: 0 0 2rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-color-secondary);
+}
+
+/* minmax(0, ...) throughout: a grid column otherwise grows to its widest
+   unbreakable content (a command in <code>, say) and widens the whole page. */
+
+/* What's a dark factory */
+.cl-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cl-step {
+  padding: 1.25rem;
+}
+
+/* White on primary-600 in both themes, like .btn-primary. */
+.cl-step-number {
+  @apply bg-primary-600 text-white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.cl-step-code {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--primary-color);
+}
+
+.cl-step p,
+.cl-points p {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text-color-secondary);
+}
+
+/* Why Claudlobby */
+.cl-points {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.cl-library {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+}
+
+.cl-library h3 {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}
+
+.cl-counts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 0;
+}
+
+/* The value reads first on screen; screen readers get the label first. */
+.cl-counts > div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.cl-counts dd {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cl-counts dt {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}
+
+.cl-source {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+}
+
+/* Quickstart */
+.cl-prereqs {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+  line-height: 1.6;
+}
+
+.cl-prereqs li + li {
+  margin-top: 0.5rem;
+}
+
+.cl-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 2rem 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .cl-home {
+    padding-top: 0;
+    gap: 3.5rem;
+  }
+
+  .cl-hero {
+    padding-top: 0.5rem;
+  }
+
+  .cl-steps,
+  .cl-points {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cl-counts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .cl-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

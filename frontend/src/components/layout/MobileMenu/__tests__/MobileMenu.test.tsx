@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { MobileMenu } from "../MobileMenu";
+import { CLAUDLOBBY_REPO } from "../../../../content/links";
 
 // Mock the store
 vi.mock("../../../../store", () => ({
@@ -40,6 +41,9 @@ describe("MobileMenu", () => {
     );
     expect(screen.getByText("github")).toBeInTheDocument();
     expect(screen.getByText("linkedin")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "claudlobby on github" }),
+    ).toHaveAttribute("href", CLAUDLOBBY_REPO);
   });
 
   it("renders page links", () => {
@@ -49,6 +53,11 @@ describe("MobileMenu", () => {
       </MemoryRouter>,
     );
     expect(screen.getByText("home")).toBeInTheDocument();
+    // "about me", so it can't be mistaken for /about's own About section.
+    expect(screen.getByRole("link", { name: "about me" })).toHaveAttribute(
+      "href",
+      "/about",
+    );
     expect(screen.getByText("all projects")).toBeInTheDocument();
   });
 

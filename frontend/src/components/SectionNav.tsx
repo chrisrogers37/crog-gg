@@ -1,17 +1,10 @@
 import { useRef, useCallback, useEffect } from "react";
-import { SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
+import { SECTIONS, SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
 
 interface SectionNavProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
 }
-
-const sections = [
-  { id: "about", label: "About" },
-  { id: "journey", label: "Journey" },
-  { id: "projects", label: "Projects" },
-  { id: "music", label: "Music" },
-];
 
 export default function SectionNav({
   activeSection,
@@ -49,7 +42,7 @@ export default function SectionNav({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const currentIndex = sections.findIndex(
+      const currentIndex = SECTIONS.findIndex(
         (s) => s.id === document.activeElement?.getAttribute("data-section"),
       );
       if (currentIndex === -1) return;
@@ -57,10 +50,10 @@ export default function SectionNav({
       let nextIndex = currentIndex;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         e.preventDefault();
-        nextIndex = (currentIndex + 1) % sections.length;
+        nextIndex = (currentIndex + 1) % SECTIONS.length;
       } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         e.preventDefault();
-        nextIndex = (currentIndex - 1 + sections.length) % sections.length;
+        nextIndex = (currentIndex - 1 + SECTIONS.length) % SECTIONS.length;
       } else {
         return;
       }
@@ -80,7 +73,7 @@ export default function SectionNav({
         role="tablist"
         onKeyDown={handleKeyDown}
       >
-        {sections.map((section) => (
+        {SECTIONS.map((section) => (
           <button
             key={section.id}
             role="tab"
@@ -90,7 +83,7 @@ export default function SectionNav({
             data-section={section.id}
             tabIndex={
               activeSection === section.id ||
-              (!activeSection && section.id === sections[0].id)
+              (!activeSection && section.id === SECTIONS[0].id)
                 ? 0
                 : -1
             }

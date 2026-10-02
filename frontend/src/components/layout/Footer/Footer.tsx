@@ -1,4 +1,11 @@
+import { Link } from "react-router-dom";
+import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../../../content/links";
 import "./Footer.css";
+
+const PROFILE_LINKS = [
+  { href: PROFILE_URLS.github, label: "GitHub" },
+  { href: PROFILE_URLS.linkedin, label: "LinkedIn" },
+];
 
 /**
  * Footer Component
@@ -15,20 +22,20 @@ export function Footer() {
           &copy; {currentYear} Chris Rogers. All rights reserved.
         </p>
         <div className="footer-links">
-          <a
-            href="https://github.com/chrisrogers37"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
+          <a href={CLAUDLOBBY_REPO} target="_blank" rel="noopener noreferrer">
+            Claudlobby
           </a>
-          <a
-            href="https://linkedin.com/in/chrisrogers37"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            LinkedIn
-          </a>
+          <Link to="/about">About</Link>
+          {PROFILE_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
       </div>
     </footer>

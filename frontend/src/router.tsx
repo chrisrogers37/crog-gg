@@ -15,11 +15,16 @@ import { NotFoundPage } from "./pages/NotFound";
 import { RouteError } from "./pages/RouteError";
 import { lazyPage } from "./utils/lazyPage";
 
-// Lazy-loaded pages for code splitting
-// HomePage is likely first visit, so keep it eager
+// HomePage is the likely first visit, so it is eager and kept light
 import { HomePage } from "./pages/Home";
 
-// Project pages are lazy-loaded since they have heavy dependencies (react-markdown, highlight.js)
+// Lazy-loaded pages: /about carries the personal page's sections and motion,
+// the project pages react-markdown and highlight.js
+const AboutPage = lazyPage(() =>
+  import("./pages/About/AboutPage").then((m) => ({
+    default: m.AboutPage,
+  })),
+);
 const ProjectsPage = lazyPage(() =>
   import("./pages/Projects/ProjectsPage").then((m) => ({
     default: m.ProjectsPage,
@@ -57,7 +62,8 @@ function LazyPage({ children }: { children: React.ReactNode }) {
  * Application Router Configuration
  *
  * Routes:
- * /                    - Home page (portfolio)
+ * /                    - Home page (Claudlobby)
+ * /about               - About (the personal page)
  * /projects            - Projects listing
  * /projects/:slug      - Individual project detail
  * /*                   - 404 Not Found
@@ -77,6 +83,17 @@ export const routes: RouteObject[] = [
       {
         index: true,
         element: <HomePage />,
+        errorElement: <RouteError />,
+      },
+      {
+        path: "about",
+        // The personal page draws its own full-width card (Layout.tsx).
+        handle: { fullBleed: true },
+        element: (
+          <LazyPage>
+            <AboutPage />
+          </LazyPage>
+        ),
         errorElement: <RouteError />,
       },
       {

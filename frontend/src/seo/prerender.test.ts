@@ -51,7 +51,11 @@ describe("renderPage", () => {
   });
 
   it("writes a $ in page text literally rather than as a replacement pattern", () => {
-    const html = renderPage(TEMPLATE, { path: "/x", description: "costs $& and $1" });
+    const html = renderPage(TEMPLATE, {
+      path: "/x",
+      title: "x",
+      description: "costs $& and $1",
+    });
     expect(html).toContain("costs $&amp; and $1");
   });
 });
@@ -70,9 +74,10 @@ describe("landingPages, over the shipped content", () => {
     projects = await shippedProjects();
   });
 
-  it("covers the home page, the projects page and every indexed project, in index order", () => {
+  it("covers home, about, projects and every indexed project, in index order", () => {
     expect(landingPages(projects).map((page) => page.path)).toEqual([
       "/",
+      "/about",
       "/projects",
       ...projects.map((project) => `/projects/${project.id}`),
     ]);

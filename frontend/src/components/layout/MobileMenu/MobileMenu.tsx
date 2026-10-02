@@ -3,13 +3,26 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
+import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../../../content/links";
+import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
 
-type MobileMenuProps = {
-  sections?: { id: string; label: string }[];
-  onSectionChange?: (section: string) => void;
-  activeSection?: string;
-};
+// "about me", so it can't be mistaken for /about's own About section.
+const PAGE_LINKS = [
+  { to: "/", label: "home" },
+  { to: "/about", label: "about me" },
+  { to: "/projects", label: "all projects" },
+];
+
+const CONNECT_LINKS = [
+  { href: CLAUDLOBBY_REPO, label: "claudlobby on github" },
+  { href: PROFILE_URLS.github, label: "github" },
+  { href: PROFILE_URLS.linkedin, label: "linkedin" },
+  { href: PROFILE_URLS.spotify, label: "spotify" },
+];
+
+/** The page's sections, when it has registered some (see sectionMenu.ts). */
+type MobileMenuProps = Partial<SectionMenu>;
 
 export function MobileMenu({
   sections,
@@ -87,23 +100,19 @@ export function MobileMenu({
             <div className="mobile-menu-content">
               {/* Page links */}
               <div className="mobile-menu-section">
-                <Link
-                  to="/"
-                  className="mobile-menu-link"
-                  onClick={handleLinkClick}
-                >
-                  home
-                </Link>
-                <Link
-                  to="/projects"
-                  className="mobile-menu-link"
-                  onClick={handleLinkClick}
-                >
-                  all projects
-                </Link>
+                {PAGE_LINKS.map((page) => (
+                  <Link
+                    key={page.to}
+                    to={page.to}
+                    className="mobile-menu-link"
+                    onClick={handleLinkClick}
+                  >
+                    {page.label}
+                  </Link>
+                ))}
               </div>
 
-              {/* Section links (only on homepage) */}
+              {/* Section links, from the page being viewed (see sectionMenu.ts) */}
               {sections && sections.length > 0 && (
                 <div className="mobile-menu-section">
                   <span className="mobile-menu-section-label">sections</span>
@@ -124,33 +133,18 @@ export function MobileMenu({
               {/* Social links */}
               <div className="mobile-menu-section">
                 <span className="mobile-menu-section-label">connect</span>
-                <a
-                  href="https://github.com/chrisrogers37"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-menu-link"
-                  onClick={handleLinkClick}
-                >
-                  github
-                </a>
-                <a
-                  href="https://linkedin.com/in/chrisrogers37"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-menu-link"
-                  onClick={handleLinkClick}
-                >
-                  linkedin
-                </a>
-                <a
-                  href="https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-menu-link"
-                  onClick={handleLinkClick}
-                >
-                  spotify
-                </a>
+                {CONNECT_LINKS.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mobile-menu-link"
+                    onClick={handleLinkClick}
+                  >
+                    {link.label}
+                  </a>
+                ))}
               </div>
 
               {/* Theme toggle */}

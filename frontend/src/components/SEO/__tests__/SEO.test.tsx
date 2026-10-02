@@ -62,7 +62,7 @@ describe("SEO", () => {
       ).toBe(`${SITE_URL}/projects`),
     );
     expect(document.head.querySelectorAll('meta[property="og:url"]')).toHaveLength(1);
-    // The home page's Person JSON-LD belongs to the home page only.
+    // The home page's JSON-LD belongs to the home page only.
     expect(
       document.head.querySelectorAll('script[type="application/ld+json"]'),
     ).toHaveLength(0);

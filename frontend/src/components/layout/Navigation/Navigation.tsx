@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "../../common/ThemeToggle";
+import { GitHubMark } from "../../common/GitHubMark";
+import { CLAUDLOBBY_REPO } from "../../../content/links";
 import { useUIStore } from "../../../store";
 import "./Navigation.css";
 
@@ -15,6 +17,7 @@ export function Navigation() {
 
   const navItems = [
     { path: "/", label: "Home" },
+    { path: "/about", label: "About" },
     { path: "/projects", label: "Projects" },
   ];
 
@@ -42,6 +45,15 @@ export function Navigation() {
             </li>
           ))}
         </ul>
+        <a
+          className="btn btn-ghost btn-sm nav-repo"
+          href={CLAUDLOBBY_REPO}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <GitHubMark />
+          <span>Claudlobby</span>
+        </a>
         <ThemeToggle />
 
         {/* Hamburger button - visible on mobile only */}

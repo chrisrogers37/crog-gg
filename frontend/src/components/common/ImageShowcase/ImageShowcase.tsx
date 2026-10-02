@@ -52,7 +52,7 @@ export function ImageShowcase({ images: propImages }: ImageShowcaseProps) {
               key={`${image.src}-${index}`}
               aria-hidden={index >= images.length || undefined}
             >
-              {/* src last, as in HomePage: set first, Safari fetches it eagerly. */}
+              {/* src last, as in AboutPage: set first, Safari fetches it eagerly. */}
               <img
                 alt={image.alt}
                 className="image-showcase-photo"

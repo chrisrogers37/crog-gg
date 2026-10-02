@@ -5,54 +5,8 @@ describe("uiStore", () => {
   beforeEach(() => {
     // Reset store to initial state before each test
     useUIStore.setState({
-      activeSection: "",
       theme: "light",
       isMobileMenuOpen: false,
-    });
-  });
-
-  describe("Section Navigation", () => {
-    it("setActiveSection updates the active section", () => {
-      const { setActiveSection } = useUIStore.getState();
-
-      setActiveSection("about");
-
-      expect(useUIStore.getState().activeSection).toBe("about");
-    });
-
-    it("toggleSection opens a section when none is active", () => {
-      const { toggleSection } = useUIStore.getState();
-
-      toggleSection("experience");
-
-      expect(useUIStore.getState().activeSection).toBe("experience");
-    });
-
-    it("toggleSection closes the section when already active", () => {
-      useUIStore.setState({ activeSection: "experience" });
-      const { toggleSection } = useUIStore.getState();
-
-      toggleSection("experience");
-
-      expect(useUIStore.getState().activeSection).toBe("");
-    });
-
-    it("toggleSection switches to a new section", () => {
-      useUIStore.setState({ activeSection: "about" });
-      const { toggleSection } = useUIStore.getState();
-
-      toggleSection("experience");
-
-      expect(useUIStore.getState().activeSection).toBe("experience");
-    });
-
-    it("clearActiveSection clears the active section", () => {
-      useUIStore.setState({ activeSection: "about" });
-      const { clearActiveSection } = useUIStore.getState();
-
-      clearActiveSection();
-
-      expect(useUIStore.getState().activeSection).toBe("");
     });
   });
 
