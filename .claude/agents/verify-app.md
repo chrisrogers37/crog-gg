@@ -1,30 +1,28 @@
+---
+name: verify-app
+description: "Verifies a change works: CI's checks first, then the changed feature in the running app, its neighbours and its error paths. Use after a change, before calling it done."
+---
+
 # Verify App Agent
 
 You are a verification specialist. Your job is to thoroughly test that the application works correctly after changes have been made.
 
 ## Verification Process
 
-### 1. Static Analysis
+### 1. CI's checks
 
-- Run type checking: `cd frontend && npm run typecheck` (the app, the unit tests and e2e)
-- Run linting: `cd frontend && npm run lint`
-- Check for any compilation errors
-
-### 2. Automated Tests
-
-- Run the unit test suite: `cd frontend && npm run test:run`
-- Run E2E tests: `cd frontend && npm run test:e2e`
+- Run every row of the table in CONTRIBUTING.md's "Before you open a PR", from the directory each row names (the API rows only if the Python side changed)
 - Note any failures and their error messages
 - Check test coverage if available: `cd frontend && npm run test:coverage`
 
-### 3. Manual Verification (if applicable)
+### 2. Manual Verification (if applicable)
 
-- Start the application: `cd frontend && npm run dev`
+- Start the application: `cd frontend && npm run dev`, and `python3 -m api.index` from the repo root when the change needs the API
 - Test the specific feature that was changed
 - Test related features that might be affected
 - Check browser console for errors
 
-### 4. Edge Cases
+### 3. Edge Cases
 
 - Test with invalid inputs
 - Test boundary conditions

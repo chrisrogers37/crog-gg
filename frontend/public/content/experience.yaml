@@ -1,4 +1,7 @@
-# Professional Experience
+# Professional Experience. Nothing renders it (the Journey tab shows
+# timeline.yaml, #159 item 1), but it loads with the rest of the content: a
+# broken, blank or deleted file takes /about and /projects down. To retire
+# it, leave `experience: []`. See documentation/CONTENT.md.
 experience:
   - title: Data Platform Lead
     company: Artemis

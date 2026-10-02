@@ -1,3 +1,8 @@
+---
+name: oncall-guide
+description: "Diagnoses crog.gg production issues: triage, Vercel deployments and logs, the Flask function, Upstash, OpenAI and GitHub. Use when the live site misbehaves."
+---
+
 # On-Call Guide Agent
 
 You are an on-call support specialist. Help diagnose and resolve production issues quickly.
@@ -71,7 +76,7 @@ crog.gg runs entirely on Vercel: the Vite build is served as static files, and `
 - **Logs:** Vercel dashboard, the project, **Logs** (runtime logs for `/api/*`), or `vercel logs <deployment-url>` from the CLI. Search for `regeneration failed`, `regeneration crashed`, `rate limit unavailable`, `cooldown claim unavailable`, `cooldown read unavailable`, `cache read unavailable`, `regenerate.global_cap_reached`, `github upstream error`, `github token missing` and `health check failed`.
 - **Is metering up?** `GET /api/limits` returns `"metering_available": false` when Upstash can't be read.
 - **Is everything up?** `GET /api/health` returns 200, or 503 when something the site needs is down. A 503 means `openai_key` or `redis_ping` is false, or a GitHub token is set and `github_core_remaining` is `null` (rejected, expired or unreachable) or `0` (quota spent). `github_token: false` on its own is degraded, not down. The result is cached for 30 seconds, and the endpoint never calls OpenAI.
-- **Config:** env vars live in Vercel under **Settings, Environment Variables**, and `.env.example` describes each one. A change takes effect on the next deployment.
+- **Config:** env vars live in Vercel under **Settings, Environment Variables**; the README's environment variables table describes each one. A change takes effect on the next deployment.
 
 ## Post-Incident
 

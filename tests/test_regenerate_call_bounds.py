@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from api._lib.prompts import _PROMPTS
 from api._lib.request_utils import client_tag
 from api.index import _MAX_COMPLETION_TOKENS, FAILURE_TRUNCATED
 
@@ -21,6 +22,12 @@ def _model(content='{"bio": "rewritten"}', finish_reason="stop", usage=None):
     fake = MagicMock()
     fake.chat.completions.create.return_value = MagicMock(choices=[choice], usage=usage)
     return fake
+
+
+def test_every_section_the_allowlist_accepts_has_an_output_budget():
+    # The allowlist is _PROMPTS. A section it accepts with no budget would be
+    # charged a daily slot, then fail every press at the model call.
+    assert set(_PROMPTS) == set(_MAX_COMPLETION_TOKENS)
 
 
 @pytest.mark.parametrize("section, body", [("about", {"bio": "hi"}), ("portfolio", {"experience": []})])

@@ -1,4 +1,7 @@
-# Education Background
+# Education Background. Nothing renders it (the Journey tab shows
+# timeline.yaml, #159 item 1), but it loads with the rest of the content: a
+# broken, blank or deleted file takes /about and /projects down. To retire
+# it, leave `education: []`. See documentation/CONTENT.md.
 education:
   - school: Columbia University
     degree: MS (partial); Applied Analytics

@@ -1,5 +1,6 @@
 # Career Timeline - Chronological journey with contextual skills
-# Entries are ordered newest-first (present at top, oldest at bottom)
+# The Journey tab sorts entries by end_date, newest first, so file order only
+# breaks ties. See documentation/CONTENT.md.
 
 entries:
   - type: role

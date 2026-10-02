@@ -8,8 +8,10 @@ This file provides project-specific guidance for Claude Code. Update this file w
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
 - **Backend**: Flask (`api/index.py`) on Vercel Python runtime, OpenAI API, Upstash Redis for rate limiting
-- **Testing**: Vitest + React Testing Library (unit), Playwright (E2E)
+- **Testing**: Vitest + React Testing Library (unit), Playwright (E2E), pytest (API)
 - **Deployment**: Full Vercel — frontend (static) + Python API functions (`api/index.py`) on crog.gg, rate-limit/cooldown state in Upstash Redis
+
+**Read before you change.** `/api/regenerate`, the GitHub proxy or metering: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md). The content YAML: [documentation/CONTENT.md](documentation/CONTENT.md). The checks CI runs, and how to link issues: [CONTRIBUTING.md](CONTRIBUTING.md). Environment variables: the README's [table](README.md#environment-variables).
 
 ## Development Workflow
 
@@ -19,7 +21,11 @@ Give Claude verification loops for 2-3x quality improvement:
 2. Run typecheck: `cd frontend && npm run typecheck` (the app, unit tests and e2e; `npm run build` checks only the app)
 3. Run tests: `cd frontend && npm run test:run`
 4. Lint before committing: `cd frontend && npm run lint`
-5. Before creating PR: run full lint and test suite
+5. Before creating a PR: run every row of the table in CONTRIBUTING.md's "Before you open a PR" (the API rows only if the Python side changed)
+
+**Linking issues (#169):** `Closes #N` only for a full fix; otherwise `Refs #N`, with no closing keyword for #N anywhere in the PR (even a negated one), and an issue naming what's left. Details: CONTRIBUTING.md.
+
+**Docs travel with the change:** a PR that changes behaviour, an environment variable, a command or a limit updates the doc that owns the fact (CONTRIBUTING.md lists which), and adds a CHANGELOG.md line for anything a visitor or a forker would notice.
 
 ## Git Hooks
 
@@ -99,13 +105,13 @@ git diff                # Review changes before commit
 
 - In production, frontend calls same-origin `/api/*` (Flask function on the same Vercel domain). `VITE_API_URL` should be empty/unset in Vercel so the code default kicks in.
 - For local dev: run `python3 -m api.index` from the repo root (port 5001); Vite dev proxy in `vite.config.ts` forwards `/api` requests there. `python api/index.py` fails with `ModuleNotFoundError`.
-- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`). The paid `/api/regenerate` path fails closed (503) when Redis is unavailable or not configured, so it can never run unmetered (#113); the free GitHub endpoints fail open. Don't "fix" a 503 by making the paid path fall open.
+- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`). The paid `/api/regenerate` path fails closed (503) when Redis is unavailable or not configured, so it can never run unmetered (#113). The GitHub endpoints' rate limiter fails open, but the `/languages` aggregate answers 503 when its Redis cache can't be read, rather than fan out to GitHub uncached (#194 M33). Don't "fix" a 503 by making the paid path fall open.
 
 #### Backend Endpoints
 
 | Endpoint                          | Method | Description                                   |
 | --------------------------------- | ------ | --------------------------------------------- |
-| `/api/regenerate`                 | POST   | AI content regeneration (30s cooldown per IP) |
+| `/api/regenerate`                 | POST   | AI content regeneration (30 s cooldown per visitor) |
 | `/api/limits`                     | GET    | Current cooldown status                       |
 | `/api/health`                     | GET    | Health checks for uptime monitors (200 / 503) |
 | `/api/v1/github/repo/<name>`      | GET    | GitHub repo details                           |
@@ -113,8 +119,6 @@ git diff                # Review changes before commit
 | `/api/v1/github/languages/<name>` | GET    | Language stats for repo                       |
 | `/api/v1/github/languages`        | GET    | Aggregated language stats                     |
 | `/api/v1/github/contributions`    | GET    | GitHub contribution calendar (GraphQL)        |
-
-Backend env vars (set in Vercel project settings): `OPENAI_API_KEY` (required for `/api/regenerate`), `GITHUB_TOKEN` (required for `/api/v1/github/contributions`; bumps REST rate limits for other GitHub endpoints), `KV_REST_API_URL` + `KV_REST_API_TOKEN` (auto-injected by Upstash marketplace; client also accepts `UPSTASH_REDIS_REST_*` as fallbacks).
 
 ### Styling
 
@@ -160,6 +164,7 @@ await expect(welcomeArea).toBeVisible();
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `frontend/public/content/projects/` directory
 - Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime
+- Each file's fields, where it shows and its gotchas: [documentation/CONTENT.md](documentation/CONTENT.md)
 
 ## Design System
 
@@ -189,7 +194,7 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 Deployed on Vercel. Every push to `main` auto-deploys to production at https://www.crog.gg, the canonical host (the apex `crog.gg` 308s to it, a Vercel domain setting); every push to any other branch gets a preview URL posted on the PR.
 
-Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` and `robots.txt` are generated at build time from the prerendered page list, so there are no static copies in `public/`.
+Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` is generated at build time from the prerendered page list, and `robots.txt` beside it points to it, so there are no static copies in `public/`.
 
 ### Layout
 
@@ -197,36 +202,28 @@ Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robo
 - Every route is prerendered to its own HTML file carrying that page's title, description, canonical, Open Graph/Twitter tags and JSON-LD (`frontend/scripts/vite-prerender.ts`; page list in `frontend/src/seo/prerender.ts`, tags in `frontend/src/seo/site.ts`, which the `SEO` component also renders from). `vercel.json` serves them with `cleanUrls` and has **no SPA catch-all**, so an unknown path is a real 404 (`404.html`). A new route needs a prerendered page or it 404s in production; `src/router.test.tsx` fails until it has one, and `e2e/prerender.spec.ts` (its own Playwright project, run against `vite preview` of a real build) checks the heads the build actually wrote.
 - Link-preview card: `frontend/public/og-image.png`, rendered from `frontend/scripts/og-image/og-image.html` (`node scripts/og-image/render.mjs`). Keep its text in step with `OG_IMAGE.alt` in `src/seo/site.ts`.
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Function under Fluid Compute; all `/api/*` routes are rewritten to it by `vercel.json`
-- Shared helpers: `api/_lib/` (Upstash REST client, rate limiter, request utils)
+- Shared helpers: `api/_lib/`, one module per concern (listed in [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md#api))
 - Python deps: edit `requirements.in` / `requirements-dev.in`, then regenerate the hash-pinned `requirements.txt` / `requirements-dev.txt` with the `uv pip compile` command in each file's header
 
 ### Vercel project env vars
 
-- `OPENAI_API_KEY` — required for `/api/regenerate`
+The README's [table](README.md#environment-variables) lists them all. The token's scope matters enough to keep here:
+
 - `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data: a classic PAT with **no scopes**, or a fine-grained token set to "Public repositories (read-only)". Any authenticated token gets the 5000/hr REST quota and can run the GraphQL contributions query, so no scope is needed. Don't use `public_repo` (it can push to your public repos) or `repo`. The per-repo proxy endpoints (`repo` / `readme` / `languages`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
-- `KV_REST_API_URL` / `KV_REST_API_TOKEN` — auto-injected by the Upstash Marketplace integration; client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks
-- `VITE_API_URL` — leave empty/unset so the frontend defaults to same-origin `/api/*`
-- `VITE_SOURCE_REPO_URL`: the repo the footer's "view source" links to; unset, there's no link. Read at build time, so redeploy after changing it
 
 ### CI
 
-- **CI** (`ci.yml`): Runs automatically on push — lint, test, build
+- **CI** (`ci.yml`) runs on pushes and PRs to `main`; the README's [CI/CD](README.md#cicd) lists its jobs. The post-deploy smoke (`smoke.yml`) checks each successful deployment.
 - No separate deploy workflow; Vercel handles deploys directly from the Git integration
 
-## Tone & Content Style
-
-Chris prefers a **casual, lowercase tone** in content:
-
-- Use lowercase for casual/friendly copy
-- **NEVER use em-dashes** (—) - use regular dashes or ellipses instead
-- Keep it conversational, not corporate
-- Example: "alright, here goes..." not "Here's what makes me tick—"
+## Site copy style (crog.gg instance; forks replace this)
 
 The site has two voices (#179), one per page:
 
 - **`/` (Claudlobby): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case, apart from the "i build things that build things." line. Copy is `frontend/src/content/claudlobby.ts`.
-- **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual, jokes welcome, SUMMON NEW LORE included. Copy is `frontend/public/content/*.yaml`.
+- **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `frontend/public/content/*.yaml`.
 - **Claims on `/` stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
+- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on `/`; on `/about` it's a convention. The regenerate prompt asks the model for the same (`_TONE_ANCHOR` in `api/_lib/prompts.py`): a request, not a check.
 
 ## Image Handling
 

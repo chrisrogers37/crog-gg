@@ -2,46 +2,34 @@
 
 [![CI](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml)
 
-An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. The site showcases professional experience, projects, and musical endeavors with a unique twist - content can be regenerated on demand for a fresh perspective!
+crog.gg is two sites in one:
+- **`/` is the front door for [Claudlobby](https://github.com/Claudfather/Claudlobby)**, Chris Rogers's agent-fleet compositor for software "dark factories": what it is, a quickstart, the roadmap, and how to follow releases.
+- **`/about` is Choose Your Own Chris**, the personal portfolio. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
+
+For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md); to make it your own site, [FORKING.md](FORKING.md).
 
 ## Features
 
-### Dynamic Content Generation
+### The Claudlobby landing page (`/`)
 
-- **AI-Powered Regeneration**: Uses OpenAI's GPT-3.5 to create unique variations of content while maintaining factual accuracy
-- **Fantasy Mode**: Transform professional experiences into epic fantasy narratives
-- **Section-Specific Updates**: Ability to regenerate individual sections or the entire portfolio
-- **Smooth Transitions**: Elegant animations when content changes
+- Its copy is a typed module (`frontend/src/content/claudlobby.ts`), bundled so the hero needs no request, and its calls to action are counted ([Web Analytics](#web-analytics)).
 
-### Professional Sections
+### Choose Your Own Chris (`/about`)
 
-- **About Me**: Dynamic biography and professional summary
-- **Experience**: Interactive work history with achievements
-- **Education**: Academic background and qualifications
-- **Skills**: Comprehensive list of technical and professional skills
+- **Tabs:** About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects, and Music (a Spotify embed and links).
+- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location on the contact card) with OpenAI's `gpt-5.6-luna` (`OPENAI_MODEL` in `api/index.py`), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
+- **Rate limits** on `/api/regenerate`: a 30 s cooldown, plus daily caps of 30 rewrites per visitor and 300 site-wide. A press rewrites one section, so it uses one of each. An IPv6 /64 counts as one visitor. They're backed by Upstash Redis, and the paid endpoint refuses to run without it (see [Troubleshooting](#troubleshooting)).
 
-### Portfolio Integration
+### Projects (`/projects`)
 
-- **Technical Projects**: Showcase of development work and side projects
-- **Music Portfolio**: Integration with Spotify artist profile
-- **Social Links**: Connected profiles and professional networks
+- A searchable grid, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only.
 
-### Technical Features
+### Under the hood
 
-- **Modern Stack**: React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function
-- **Responsive Design**: Mobile-friendly layout with CSS Grid and Flexbox
-- **Same-Origin API**: Frontend and `/api/*` served from the same Vercel domain — no CORS in production
-- **Error Handling**: Robust error management for API interactions
-- **Rate Limiting**: on `/api/regenerate`, a 30s cooldown plus daily caps of 30 section rewrites per visitor and 300 site-wide; a sliding-window limiter (30/min) on GitHub endpoints. An IPv6 /64 counts as one visitor. Backed by Upstash Redis
-- **Smooth Animations**: Framer Motion transitions for content updates
-
-### Testing & CI/CD
-
-- **Unit Testing**: Vitest with React Testing Library
-- **E2E Testing**: Playwright for browser automation
-- **Continuous Integration**: GitHub Actions for automated testing
-- **Code Quality**: ESLint + TypeScript strict mode; flake8 / black / isort for Python (`api/`)
-- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (the frontend's lint, type check, build and tests when `frontend/` changed; CI's Python lint and pytest when the Python side changed)
+- **One origin:** the static frontend and the Flask API (`/api/*`) are served from the same Vercel domain, so there's no CORS in production.
+- **Prerendered heads:** each landing page ships its own title, description and social card, and the build generates the sitemap from the same page list (robots.txt points to it).
+- **Light and dark themes:** light by default; the toggle cycles light, dark and system, which follows the OS.
+- **Quality gates:** lint, type checks and tests on both halves, run by Husky locally and by [CI](#cicd) on every PR.
 
 ## Tech Stack
 
@@ -52,6 +40,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - Vite
 - Tailwind CSS + CSS Variables for theming
 - Framer Motion for animations
+- Zustand for state, react-router for routing
 
 ### Backend
 
@@ -61,6 +50,8 @@ An interactive portfolio website featuring dynamic content generation using Open
 - Upstash Redis (via Vercel Marketplace) for rate-limit and cooldown state
 
 ## Local Development Setup
+
+Run `npm install` once at the repo root: it installs the git hooks ([CONTRIBUTING](CONTRIBUTING.md#setup)). The frontend has its own install, below.
 
 ### Prerequisites
 
@@ -119,6 +110,8 @@ An interactive portfolio website featuring dynamic content generation using Open
 
 ## Testing
 
+The checks CI runs, and where to run each, are the table in [CONTRIBUTING.md](CONTRIBUTING.md#before-you-open-a-pr). Below are the variants for development.
+
 ### Running Unit Tests
 
 ```bash
@@ -135,9 +128,14 @@ npm run typecheck
 
 # Run tests with coverage report
 npm run test:coverage
+```
 
-# Run tests with UI
-npm run test:ui
+### Running the API Tests
+
+`conftest.py` stubs Redis, so pytest needs no secrets. From the repo root, with `requirements-dev.txt` installed:
+
+```bash
+python3 -m pytest -q
 ```
 
 ### Running E2E Tests
@@ -160,13 +158,17 @@ npm run test:e2e:headed
 
 ### CI/CD
 
-The project uses GitHub Actions for continuous integration. On every push to `main` and on pull requests:
+GitHub Actions runs CI (`.github/workflows/ci.yml`) on every push to `main` and every pull request into it. It needs no secrets.
 
-1. **Frontend Lint**: Runs ESLint to check code quality
-2. **Frontend Unit Tests**: Runs Vitest with coverage reporting
-3. **Frontend E2E Tests**: Runs Playwright browser tests
-4. **Frontend Build**: Verifies production build succeeds
-5. **API Lint**: Runs flake8, black, and isort against `api/`
+1. **Frontend Lint**: ESLint and the type check (`npm run typecheck`).
+2. **Frontend Unit Tests**: Vitest, with a coverage report.
+3. **Frontend E2E Tests**: Playwright.
+4. **Frontend Build**: the production build, including the prerendered heads.
+5. **API Lint**: flake8, black and isort on `api/`.
+6. **API Tests**: pytest.
+7. **CI Success**: passes only when all of the above do.
+
+**Post-deploy smoke** (`.github/workflows/smoke.yml`) checks each successful Vercel deployment: production, and previews when the `VERCEL_AUTOMATION_BYPASS_SECRET` secret is set (without it, a preview is skipped with a notice).
 
 There is no manually-triggered deploy workflow. Vercel deploys directly from the Git integration.
 
@@ -178,19 +180,29 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 
 - Frontend: `frontend/` → Vite build → `frontend/dist`, served as static assets by Vercel. The build writes one HTML file per route with that page's meta/OG tags (`frontend/scripts/vite-prerender.ts`), `vercel.json` serves them with `cleanUrls`, and anything else is a real 404 (`404.html`).
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Python Function under Fluid Compute. `vercel.json` rewrites `/api/(.*)` → `/api/index` so Flask handles all internal routing.
-- Shared helpers: `api/_lib/` (Upstash REST client, sliding-window rate limiter, request utils). Underscore prefix keeps Vercel from treating them as separate functions.
+- Shared helpers: `api/_lib/`, one module per concern ([ARCHITECTURE](documentation/ARCHITECTURE.md#api)). The underscore prefix keeps Vercel from treating them as separate functions.
 - Python deps: edit `requirements.in` (runtime) or `requirements-dev.in` (tools), then regenerate the hash-pinned `requirements.txt` and `requirements-dev.txt` with the `uv pip compile` command in each file's header. CI and local installs check the hashes. Vercel installs the same pinned versions, but its builder converts `requirements.txt` into a uv project and drops the hashes.
 
-### Vercel project env vars
+### Environment variables
+
+Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one that's local only). This table is the list the other docs point to; local development needs none of them ([`.env.example`](.env.example) is the template).
 
 | Var                                     | Required          | Notes                                                                                                                                                                                           |
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`                        | yes               | `/api/regenerate` won't work without it                                                                                                                                                         |
-| `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints                                                                                    |
-| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
+| `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data (CLAUDE.md has the settings) |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
+| `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 | `VITE_SOURCE_REPO_URL`                  | optional          | The repo this site is built from. When set, the footer links to it as "view source"; left empty, there's no link. It's read at build time, so redeploy after changing it.                       |
+
+### Bounding OpenAI spend
+
+- Caps are charged before any OpenAI call, and without Redis the endpoint answers 503 rather than run unmetered ([ARCHITECTURE](documentation/ARCHITECTURE.md#apiregenerate-gate-by-gate), #113).
+- The per-visitor cap (`REGEN_DAILY_MAX`) bounds one address; the site-wide cap (`REGEN_GLOBAL_DAILY_MAX`) bounds all of them together, so many addresses can't multiply the spend past it.
+- Both caps live in this code and in Redis. Set a **monthly budget in the OpenAI billing dashboard**, and check that it stops requests rather than only alerting: it's the one limit outside this infrastructure, so it holds even if a cap is raised by mistake.
+- Previews share production's Upstash database and OpenAI key, so a press on a preview spends production's site-wide daily slots (#139). If Preview uses Production's `IP_HASH_SALT` (or neither sets one), it also spends the presser's own daily slots and cooldown.
 
 ### Provisioning Upstash Redis
 
@@ -217,11 +229,12 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `/api/regenerate` returns `"OpenAI API key not configured"`                            | `OPENAI_API_KEY` missing in Vercel env vars or last deploy predates the env var being set — set it and redeploy                         |
 | `/api/v1/github/contributions` returns `"GitHub token required for contribution data"` | `GITHUB_TOKEN` missing — same fix                                                                                                       |
-| `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints fail open), so fix Upstash, not the endpoint |
+| `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints' rate limiter fails open), so fix Upstash, not the endpoint |
 | `/api/regenerate` returns 503 `"Daily regeneration budget reached"`                   | The site-wide daily ceiling (`REGEN_GLOBAL_DAILY_MAX` in `api/index.py`) is used up; each refusal logs `regenerate.global_cap_reached`. It frees up as the rolling 24 h window moves. Raise it only if the OpenAI budget allows |
 | `/api/regenerate` failures with reason `model_error`                                    | The OpenAI key is invalid, or its quota or budget is used up. Check the OpenAI usage page.                                               |
-| Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy currently reports these as "not found".       |
-| GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. The free GitHub endpoints fail open by design.                                                                  |
+| Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy answers 502, or 503 when GitHub rate-limits it, with "GitHub is unavailable right now", and logs `github upstream error`. |
+| GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. Their rate limiter fails open by design.                                                                  |
+| `/api/v1/github/languages` returns 503 `"Language stats are unavailable right now"` | Upstash is unavailable. The aggregate refuses rather than fan out to GitHub uncached (#194 M33). |
 | Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
 
 ## License
