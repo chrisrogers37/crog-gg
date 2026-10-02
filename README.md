@@ -41,7 +41,7 @@ An interactive portfolio website featuring dynamic content generation using Open
 - **E2E Testing**: Playwright for browser automation
 - **Continuous Integration**: GitHub Actions for automated testing
 - **Code Quality**: ESLint + TypeScript strict mode; flake8 / black / isort for Python (`api/`)
-- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (build, tests, Python lint when `api/` files changed)
+- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (the frontend build and tests when `frontend/` changed; CI's Python lint and pytest when the Python side changed)
 
 ## Tech Stack
 
