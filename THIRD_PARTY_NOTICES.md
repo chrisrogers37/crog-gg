@@ -4,7 +4,7 @@ A few assets in this repository come from other projects and keep their own lice
 
 ## Twemoji
 
-- **Files:** `frontend/public/favicon.ico`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png`, and any other icons derived from them.
+- **Files:** `site/public/favicon.ico`, `apple-touch-icon.png`, `icon-192.png` and `icon-512.png`, and any other icons derived from them.
 - **Source:** the "alien monster" emoji (U+1F47E, `1f47e.svg`) from Twemoji, https://github.com/jdecked/twemoji
 - **Copyright:** Twitter, Inc and other contributors.
 - **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
@@ -57,4 +57,4 @@ SOFTWARE.
 
 The GitHub, LinkedIn, Telegram, Instagram, Spotify and hoo.be names and logos belong to their owners. They're used here only to link to the site owner's profiles on those services.
 
-The Artemis, Citadel, Meta, Columbia University, Cornell University, Memorial Sloan Kettering Cancer Center and VillageMD names and logos (`frontend/public/logos/*.png`) belong to their owners. They're used here only to identify the site owner's employers and schools.
+The Artemis, Citadel, Meta, Columbia University, Cornell University, Memorial Sloan Kettering Cancer Center and VillageMD names and logos (`site/public/logos/*.png`) belong to their owners. They're used here only to identify the site owner's employers and schools.

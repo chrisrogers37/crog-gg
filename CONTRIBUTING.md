@@ -19,6 +19,7 @@ Run what CI runs. None of it needs a secret.
 | Unit tests | `npm run test:run` | `frontend/` |
 | E2E tests | `npm run test:e2e` | `frontend/` |
 | Build, with the prerendered heads | `npm run build` | `frontend/` |
+| The site config's files and owner values (part of the unit tests; on its own for a fork) | `npm run site:check` | `frontend/` |
 | API lint | `flake8 api --max-line-length=120 --ignore=E501,W503`, `black --check --line-length=120 api`, `isort --check-only --profile black api` | the repo root |
 | API tests | `python3 -m pytest -q` | the repo root |
 

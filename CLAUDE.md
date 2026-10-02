@@ -142,7 +142,7 @@ Tests should verify **structure and behavior**, not specific content:
 - **DO**: Skip tests gracefully when genuinely optional data (external APIs, live GitHub stats) isn't available
 - **DON'T**: Test for exact text content that changes frequently
 - **DON'T**: Hard-code copy like "hey there!" or "Welcome to my site"
-- **DON'T**: Skip or vacuously pass when repo-shipped content is missing - YAML under `frontend/public/content/` ships with the repo, so a page rendering without it is a bug to fail on, not an environment to tolerate (see #120, where skip-gates hid a live production bug)
+- **DON'T**: Skip or vacuously pass when repo-shipped content is missing - YAML under `site/public/content/` ships with the repo, so a page rendering without it is a bug to fail on, not an environment to tolerate (see #120, where skip-gates hid a live production bug)
 
 Example - Bad:
 
@@ -159,10 +159,11 @@ await expect(welcomeArea).toBeVisible();
 
 ### Content Files
 
-- Content lives in `frontend/public/content/` as YAML files
+- The owner's identity (name, email, URLs, SEO copy, socials, photos, typewriter lines, sections, contact and music copy) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188). Don't type an owner value into the code: `npm run site:check` fails on it. Code that `vite.config.ts` imports can't import the virtual module; it calls `readSiteConfig()` (`frontend/scripts/vite-site.ts`)
+- Content lives in `site/public/content/` as YAML files
 - Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules, on the copy and on `/`'s title, meta description, share card and JSON-LD: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
-- Projects are in `frontend/public/content/projects/` directory
+- Projects are in `site/public/content/projects/` directory
 - Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime
 - Each file's fields, where it shows and its gotchas: [documentation/CONTENT.md](documentation/CONTENT.md)
 
@@ -194,13 +195,14 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 Deployed on Vercel. Every push to `main` auto-deploys to production at https://www.crog.gg, the canonical host (the apex `crog.gg` 308s to it, a Vercel domain setting); every push to any other branch gets a preview URL posted on the PR.
 
-Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` is generated at build time from the prerendered page list, and `robots.txt` beside it points to it, so there are no static copies in `public/`.
+Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `site.url` in `site/site.yaml`, through `createSeo` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` is generated at build time from the prerendered page list, and `robots.txt` beside it points to it, so there are no static copies in `public/`.
 
 ### Layout
 
 - Frontend: `frontend/` — Vite build, output at `frontend/dist`, served as static assets
+- The owner's files: `site/` (`site.yaml`, and `public/`, which Vite serves as the site's root)
 - Every route is prerendered to its own HTML file carrying that page's title, description, canonical, Open Graph/Twitter tags and JSON-LD (`frontend/scripts/vite-prerender.ts`; page list in `frontend/src/seo/prerender.ts`, tags in `frontend/src/seo/site.ts`, which the `SEO` component also renders from). `vercel.json` serves them with `cleanUrls` and has **no SPA catch-all**, so an unknown path is a real 404 (`404.html`). A new route needs a prerendered page or it 404s in production; `src/router.test.tsx` fails until it has one, and `e2e/prerender.spec.ts` (its own Playwright project, run against `vite preview` of a real build) checks the heads the build actually wrote.
-- Link-preview card: `frontend/public/og-image.png`, rendered from `frontend/scripts/og-image/og-image.html` (`node scripts/og-image/render.mjs`). Keep its text in step with `OG_IMAGE.alt` in `src/seo/site.ts`.
+- Link-preview card: `site/public/og-image.png`, rendered from `site/og-image.html` (`node scripts/og-image/render.mjs` in `frontend/`). Keep its text in step with `seo.image.alt` in `site/site.yaml`.
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Function under Fluid Compute; all `/api/*` routes are rewritten to it by `vercel.json`
 - Shared helpers: `api/_lib/`, one module per concern (listed in [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md#api))
 - Python deps: edit `requirements.in` / `requirements-dev.in`, then regenerate the hash-pinned `requirements.txt` / `requirements-dev.txt` with the `uv pip compile` command in each file's header
@@ -221,7 +223,7 @@ The README's [table](README.md#environment-variables) lists them all. The token'
 The site has two voices (#179), one per page:
 
 - **`/` (Claudlobby): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case, apart from the "i build things that build things." line. Copy is `frontend/src/content/claudlobby.ts`.
-- **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `frontend/public/content/*.yaml`.
+- **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact, music and typewriter lines in `site/site.yaml`.
 - **Claims on `/` stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
 - **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on `/`; on `/about` it's a convention. The regenerate prompt asks the model for the same (`_TONE_ANCHOR` in `api/_lib/prompts.py`): a request, not a check.
 
@@ -232,7 +234,7 @@ When working with images:
 - **DON'T rotate images** unless explicitly requested - images are usually oriented correctly
 - Use **CSS `object-position`** for cropping (e.g., `object-position: top` to hide bottom of image)
 - Use **CSS `object-fit: cover`** for responsive image sizing
-- Profile photos are served from `frontend/public/profile-photos/` as WebP variants. The originals are in `frontend/scripts/photos/originals/`: to add or change a photo, edit there and run `python frontend/scripts/photos/make-variants.py`
+- Profile photos are served from `site/public/profile-photos/` as WebP variants. The originals are in `frontend/scripts/photos/originals/`: to add or change a photo, edit there and run `python frontend/scripts/photos/make-variants.py`
 
 Example - cropping with CSS (not image manipulation):
 

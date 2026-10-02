@@ -27,6 +27,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### Under the hood
 
 - **One origin:** the static frontend and the Flask API (`/api/*`) are served from the same Vercel domain, so there's no CORS in production.
+- **One folder for the owner:** `site/site.yaml` holds who the site is (name, URLs, SEO copy, socials, photos), checked at build time, and `site/public/` holds the content and images ([CONTENT.md](documentation/CONTENT.md)).
 - **Prerendered heads:** each landing page ships its own title, description and social card, and the build generates the sitemap from the same page list (robots.txt points to it).
 - **Light and dark themes:** light by default; the toggle cycles light, dark and system, which follows the OS.
 - **Quality gates:** lint, type checks and tests on both halves, run by Husky locally and by [CI](#cicd) on every PR.
@@ -195,7 +196,6 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
 | `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
-| `VITE_SOURCE_REPO_URL`                  | optional          | The repo this site is built from. When set, the footer links to it as "view source"; left empty, there's no link. It's read at build time, so redeploy after changing it.                       |
 
 ### Bounding OpenAI spend
 
