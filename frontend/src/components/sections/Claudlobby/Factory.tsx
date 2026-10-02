@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { claudlobby } from "../../../content/claudlobby";
 import { factoryStats } from "../../../content/factory";
 import { formatDay, formatMonth } from "../../../utils/formatDate";

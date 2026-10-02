@@ -3,6 +3,7 @@ import { claudlobby } from "./claudlobby";
 import { factoryStats } from "./factory";
 import type { Project } from "../types/Project";
 import { shippedProjects } from "../test/content";
+import { githubRepo } from "../utils/projectLinks";
 
 let projects: Project[];
 beforeAll(async () => {
@@ -19,8 +20,10 @@ describe("Built by the factory (#176)", () => {
       expect(project, `no listed project with id ${app.slug}`).toBeDefined();
       expect(app.name).toBe(project?.title);
       expect(app.url).toBe(project?.url);
-      expect(`https://github.com/${factoryStats.apps[app.slug].repo}`).toBe(
-        project?.github,
+      // The repo the project's page reads: `github`, or a github.com `url`.
+      const repo = project && githubRepo(project);
+      expect(factoryStats.apps[app.slug].repo).toBe(
+        repo && `${repo.owner}/${repo.name}`,
       );
     },
   );
@@ -28,7 +31,9 @@ describe("Built by the factory (#176)", () => {
   it("has a snapshot for every listed project with a repo", () => {
     // A project added without rerunning scripts/factory-stats.mjs would show
     // no numbers on its page.
-    const withRepo = projects.filter(({ github }) => github).map(({ id }) => id);
+    const withRepo = projects
+      .filter((project) => githubRepo(project))
+      .map(({ id }) => id);
     expect(Object.keys(factoryStats.apps).sort()).toEqual(withRepo.sort());
   });
 
