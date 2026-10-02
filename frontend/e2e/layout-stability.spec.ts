@@ -59,6 +59,27 @@ const READ = () => {
   }[];
 };
 
+type Page = import("@playwright/test").Page;
+
+/** /about, collapsed, once the preview's entry animation has finished. */
+const openAbout = async (page: Page) => {
+  await page.goto("/about");
+  await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
+  await expect(page.locator("#section-panel")).toHaveCSS("opacity", "1");
+};
+
+/**
+ * /about with About expanded, once its entry animation has finished. It waits
+ * on the expanded panel's class rather than the shared panel id: defensive,
+ * since by the time `.generate-btn` exists the preview has already gone.
+ */
+const expandAbout = async (page: Page) => {
+  await openAbout(page);
+  await page.click(".section-fade-btn");
+  await page.waitForSelector(".generate-btn", { timeout: 10000 });
+  await expect(page.locator(".content-section")).toHaveCSS("opacity", "1");
+};
+
 /** Regeneration answered without calling the model, returning one section the
  *  store will accept so the reset button mounts.
  *
@@ -69,7 +90,7 @@ const READ = () => {
  *  these tests time out waiting for one. `about_text` is a key of the real bio
  *  being replaced, which is what the store's validation requires before it will
  *  apply a section. */
-const stubRegenerate = (page: import("@playwright/test").Page) =>
+const stubRegenerate = (page: Page) =>
   page.route("**/api/regenerate", (route) =>
     route.fulfill({
       status: 200,
@@ -91,14 +112,12 @@ test.describe("action button layout stability", () => {
   test("expanding About does not displace the regenerate button", async ({
     page,
   }) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.waitForTimeout(1000); // let the preview's entry animation finish
+    await openAbout(page);
 
     await page.evaluate(ARM);
     await page.click(".section-fade-btn");
     await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    await page.waitForTimeout(1200); // past the section transition
+    await page.waitForTimeout(1200); // sampling window: past the section transition
 
     const samples = await page.evaluate(READ);
     const mounted = samples.filter((s) => s.top !== null);
@@ -116,16 +135,12 @@ test.describe("action button layout stability", () => {
   }) => {
     await stubRegenerate(page);
 
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    await page.waitForTimeout(1200);
+    await expandAbout(page);
 
     await page.evaluate(ARM);
     await page.click(".generate-btn");
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(800); // sampling window: the reset button arriving
 
     const samples = await page.evaluate(READ);
 
@@ -160,17 +175,16 @@ test.describe("action button layout stability", () => {
  * because the desktop grid hides the second cause entirely.
  */
 test.describe("journey section post-mount stability", () => {
-  const openJourney = async (page: import("@playwright/test").Page) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.waitForTimeout(1000);
+  const openJourney = async (page: Page) => {
+    await openAbout(page);
     await page.evaluate(ARM);
     await page
       .locator(".section-nav-button", { hasText: /^journey$/i })
       .first()
       .click();
     await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    // long enough for the logos to resolve, which is what grows the track
+    // sampling window: long enough for the logos to resolve, which is what
+    // grows the track
     await page.waitForTimeout(3000);
     return page.evaluate(READ);
   };
@@ -208,19 +222,20 @@ test.describe("undoing a regeneration", () => {
     page,
   }) => {
     await stubRegenerate(page);
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    await page.waitForTimeout(1000);
+    await expandAbout(page);
 
     await page.click(".generate-btn");
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
-    await page.waitForTimeout(600);
+    // The regeneration lands through About's prop at once, then again through
+    // About's own replay, which shows a spinner for its ~600 ms; wait for both.
+    await expect(page.locator(".about-content")).toContainText(
+      "stubbed regeneration",
+    );
+    await expect(page.locator(".about-content .loading-overlay")).toHaveCount(0);
 
     await page.evaluate(ARM);
     await page.click(".reset-btn");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(2000); // sampling window: the undo, start to end
     const samples = await page.evaluate(READ);
 
     // The reset has to have actually happened, or every assertion below passes
@@ -241,10 +256,7 @@ test.describe("undoing a regeneration", () => {
   // of *source*: the restore now comes from the originals held in the store, and
   // this asserts that produces the same result the file read did.
   test("restores the original content", async ({ page }) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
+    await expandAbout(page);
     const original = await page.locator(".about-content").innerText();
 
     // A regeneration that genuinely changes the rendered bio, so the restore
@@ -270,14 +282,19 @@ test.describe("undoing a regeneration", () => {
     });
     await page.click(".generate-btn");
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
-    // the About section applies a regeneration behind its own ~600ms transition
-    await page.waitForTimeout(1600);
-    const regenerated = await page.locator(".about-content").innerText();
-    expect(regenerated).not.toBe(original);
+    // The regeneration lands through About's prop at once, then again through
+    // About's own replay, which shows a spinner for its ~600 ms; wait for both.
+    const about = page.locator(".about-content");
+    const replaying = about.locator(".loading-overlay");
+    await expect(about).toContainText(
+      "an arcane placeholder, woven for the test suite",
+    );
+    await expect(replaying).toHaveCount(0);
 
     await page.click(".reset-btn");
-    await page.waitForTimeout(1800);
-    expect(await page.locator(".about-content").innerText()).toBe(original);
+    await expect(page.locator(".reset-btn")).toHaveCount(0); // the reset committed
+    await expect(replaying).toHaveCount(0); // and About's replay of it landed
+    expect(await about.innerText()).toBe(original);
   });
 });
 
@@ -335,12 +352,11 @@ test.describe("idle typewriter does not reflow the page (#148)", () => {
   }) => {
     test.setTimeout(120000);
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/about");
-    await page.waitForSelector(".section-nav", { timeout: 15000 });
-    await page.waitForTimeout(1500); // past the entry animation
+    await openAbout(page);
 
     await page.evaluate(ARM_IDLE);
-    await page.waitForTimeout(45000); // nothing is clicked; the loop runs alone
+    // observation window: nothing is clicked; the loop runs alone
+    await page.waitForTimeout(45000);
     const samples = await page.evaluate(READ_IDLE);
 
     const mounted = samples.filter((s) => s.navTop !== null);
@@ -388,15 +404,11 @@ test.describe("collapsing a section moves the page once (#149)", () => {
   test("the button card unmounts in the same frame the content moves", async ({
     page,
   }) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    await page.waitForTimeout(1500); // let the expansion settle
+    await expandAbout(page);
 
     await page.evaluate(ARM_COLLAPSE);
     await page.locator(".section-nav-button.active").first().click(); // collapse back to the preview
-    await page.waitForTimeout(1600); // past the exit transition
+    await page.waitForTimeout(1600); // sampling window: past the exit transition
     const s = await page.evaluate(READ_COLLAPSE);
 
     // POSITIVE CONTROLS. The card must have been present and then gone, and

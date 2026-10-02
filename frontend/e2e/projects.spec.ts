@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { readProjects } from "../src/utils/projectLoader";
 
 /**
  * Projects Page E2E Tests
@@ -141,22 +142,57 @@ test.describe("Project Detail Page", () => {
     await expect(backNav.first()).toBeVisible();
   });
 
-  test("non-existent project shows error or redirects", async ({ page }) => {
+  test("non-existent project says so, once the content has loaded", async ({
+    page,
+  }) => {
     await page.goto("/projects/this-project-does-not-exist-12345");
+    // Only a loaded, unknown slug says Not Found (#196 M41).
+    await expect(
+      page.getByRole("heading", { name: /project not found/i }),
+    ).toBeVisible();
+  });
 
-    // Should either show 404/not found OR redirect to projects list
-    const notFound = page.locator(
-      '.not-found, .project-not-found, [class*="not-found"], [class*="error"]',
+  test("deep link to a real project renders its title", async ({
+    page,
+    request,
+  }) => {
+    // The first listed project, from the content that ships with the repo.
+    const [project] = await readProjects(async (file) =>
+      (await request.get(`/content/projects/${file}`)).text(),
     );
-    const projectsHeading = page.locator("h1");
+    expect(project, "index.yaml lists a project").toBeDefined();
 
-    await page.waitForTimeout(1000);
+    // Content arrives late, as on a slow network: "Project Not Found" must
+    // never show while it loads (#196 M41). Holding the project index holds
+    // all of it, since the store sets every field from one Promise.all; a
+    // wider glob also caught the dev server's own /src/content/ modules.
+    await page.addInitScript(() => {
+      const w = window as unknown as { __sawNotFound: boolean };
+      w.__sawNotFound = false;
+      new MutationObserver(() => {
+        if (/project not found/i.test(document.body?.innerText ?? "")) {
+          w.__sawNotFound = true;
+        }
+      }).observe(document, { subtree: true, childList: true, characterData: true });
+    });
+    await page.route("**/content/projects/index.yaml", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
 
-    const showsError = await notFound.isVisible().catch(() => false);
-    const currentUrl = page.url();
-    const redirected =
-      currentUrl.endsWith("/projects") || currentUrl.endsWith("/projects/");
-
-    expect(showsError || redirected).toBe(true);
+    await page.goto(`/projects/${project.id}`);
+    // The loading skeleton shows while the index is held, which also proves
+    // the hold landed.
+    await expect(
+      page.getByRole("status", { name: "Loading project" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: project.title }),
+    ).toBeVisible({ timeout: 10_000 });
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __sawNotFound: boolean }).__sawNotFound,
+      ),
+    ).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
-import yaml from "js-yaml";
+import { readProjects } from "../src/utils/projectLoader";
 
 /**
  * The crawler's view (#174): each page's raw HTML with no JavaScript run,
@@ -63,15 +63,12 @@ test.describe("Prerendered heads", () => {
   test("every indexed project ships a head naming that project", async ({
     request,
   }) => {
-    const index = yaml.load(
-      await (await request.get("/content/projects/index.yaml")).text(),
-    ) as { projects: string[] };
-    expect(index.projects.length).toBeGreaterThan(0);
+    const projects = await readProjects(async (file) =>
+      (await request.get(`/content/projects/${file}`)).text(),
+    );
+    expect(projects.length).toBeGreaterThan(0);
 
-    for (const file of index.projects) {
-      const project = yaml.load(
-        await (await request.get(`/content/projects/${file}`)).text(),
-      ) as { id: string; title: string };
+    for (const project of projects) {
       const head = await expectLandingHead(request, `/projects/${project.id}`);
       expect(head.title).toContain(project.title);
     }

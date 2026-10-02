@@ -15,8 +15,10 @@ export default defineConfig({
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
 
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  // One retry on CI, and a test that only passes on its retry fails the run:
+  // a flaky test is reported, not hidden (#198 M72).
+  retries: process.env.CI ? 1 : 0,
+  failOnFlakyTests: !!process.env.CI,
 
   // Parallel workers
   workers: process.env.CI ? 1 : undefined,
@@ -29,8 +31,10 @@ export default defineConfig({
     // Base URL for the dev server
     baseURL: "http://localhost:5173",
 
-    // Collect trace when retrying the failed test
-    trace: "on-first-retry",
+    // On CI, trace the first attempt and keep it only if it fails. With flaky
+    // tests failing CI, a flake's trace is then the failing run, not the retry
+    // that passed (#198 M72). Locally, nothing is traced, as before.
+    trace: process.env.CI ? "retain-on-first-failure" : "off",
 
     // Take screenshot on failure
     screenshot: "only-on-failure",
