@@ -21,6 +21,8 @@ Give Claude verification loops for 2-3x quality improvement:
 4. Lint before committing: `cd frontend && npm run lint`
 5. Before creating PR: run full lint and test suite
 
+**Linking issues from a PR (#169).** Use `Closes #N` only when the PR fully resolves the issue. For partial work use `Refs #N`, with no closing keyword in any arrangement, including a negated one ("nothing here closes #N" still contains the keyword). If a PR resolves one issue and partially advances another, use both forms on separate lines, and open or update an issue naming what's left.
+
 ## Git Hooks
 
 Husky pre-commit and pre-push hooks enforce quality locally, once installed: run `npm install` at the root of each checkout or worktree (husky's `prepare` sets git's `core.hooksPath` to `.husky/_`, which isn't committed, so a new worktree has none). Without that, git runs neither hook, and CI is the only gate.

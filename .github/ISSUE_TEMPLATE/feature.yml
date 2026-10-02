@@ -1,0 +1,14 @@
+name: Idea
+description: Suggest a change to the site or the repo.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem, or the opportunity?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you change?
