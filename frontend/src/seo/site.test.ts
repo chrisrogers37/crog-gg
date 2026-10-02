@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import yaml from "js-yaml";
 import {
   ABOUT_META,
   HOME_META,
@@ -14,10 +13,7 @@ import {
   type PageMeta,
 } from ".";
 import site from "virtual:site-config";
-import type { TimelineData } from "../types";
 import { createSeo } from "./site";
-import ogImageHtml from "@site/og-image.html?raw";
-import timelineYaml from "@site/public/content/timeline.yaml?raw";
 
 const tagValue = (meta: PageMeta, key: string) => {
   const found = headTags(meta).find(
@@ -43,8 +39,8 @@ describe("headTags", () => {
     const image = `${SITE_URL}${OG_IMAGE.path}`;
     expect(tagValue(HOME_META, "og:image")).toBe(image);
     expect(tagValue(HOME_META, "twitter:image")).toBe(image);
-    expect(tagValue(HOME_META, "og:image:width")).toBe("1200");
-    expect(tagValue(HOME_META, "og:image:height")).toBe("630");
+    expect(tagValue(HOME_META, "og:image:width")).toBe(String(site.seo.image.width));
+    expect(tagValue(HOME_META, "og:image:height")).toBe(String(site.seo.image.height));
   });
 
   it("names the page first, then the site", () => {
@@ -67,52 +63,17 @@ describe("headTags", () => {
   });
 });
 
-describe("OG_IMAGE", () => {
-  it("describes what the card actually says", () => {
-    // The PNG is rendered from this HTML (scripts/og-image/render.mjs), so a
-    // headline edited in one place and not the other fails here.
-    const card = new DOMParser().parseFromString(ogImageHtml, "text/html");
-    const text = (selector: string) =>
-      card.querySelector(selector)?.textContent?.replace(/\s+/g, " ").trim();
-    expect(`${text("h1")} ${text(".sub")}`).toBe(OG_IMAGE.alt);
-  });
-});
-
-describe("ABOUT_META", () => {
-  it("gives the Person schema the current role from timeline.yaml", () => {
-    // The head is prerendered before any content loads, so the role is written
-    // out in site.yaml too (owner.job_title, owner.works_for); a job change
-    // edited in one place fails here.
-    // timeline.yaml is the career history /about renders.
-    const { entries } = yaml.load(timelineYaml) as TimelineData;
-    const current = entries.find(
-      ({ type, end_date }) => type === "role" && end_date === "present",
-    );
-    const person = ABOUT_META.schemas?.find(
-      (schema) => (schema as { "@type": string })["@type"] === "Person",
-    );
-    expect(current).toBeDefined();
-    expect(person).toMatchObject({
-      jobTitle: current?.title,
-      worksFor: {
-        name: current?.organization,
-        url: `https://${current?.domain}`,
-      },
-    });
-  });
-});
-
 describe("projectMeta", () => {
   const project = {
-    id: "storydump",
-    title: "Storydump",
-    description: "a telegram bot for managing\ninstagram stories.\n",
-    url: "https://storydump.app",
+    id: "example-app",
+    title: "Example App",
+    description: "a bot for managing\nexample stories.\n",
+    url: "https://app.example.com",
   };
 
   it("folds a YAML block description onto one line", () => {
     expect(projectMeta(project).description).toBe(
-      "a telegram bot for managing instagram stories.",
+      "a bot for managing example stories.",
     );
   });
 
@@ -125,7 +86,7 @@ describe("projectMeta", () => {
     expect(breadcrumbs.itemListElement.map((crumb) => crumb.item)).toEqual([
       `${SITE_URL}/`,
       `${SITE_URL}/projects`,
-      `${SITE_URL}/projects/storydump`,
+      `${SITE_URL}/projects/example-app`,
     ]);
   });
 });
@@ -136,6 +97,21 @@ describe("jsonLd", () => {
     const serialized = jsonLd(schema);
     expect(serialized).not.toContain("</script");
     expect(JSON.parse(serialized)).toEqual(schema);
+  });
+});
+
+describe("the Person schema's role", () => {
+  it("is site.yaml's job_title and works_for", () => {
+    // site:check holds those to timeline.yaml's current role; this holds the
+    // schema to them.
+    const employed = createSeo({
+      ...site,
+      owner: { ...site.owner, works_for: { name: "Example Co", url: "https://example.com" } },
+    });
+    expect(employed.ABOUT_META.schemas?.[0]).toMatchObject({
+      jobTitle: site.owner.job_title,
+      worksFor: { "@type": "Organization", name: "Example Co", url: "https://example.com" },
+    });
   });
 });
 

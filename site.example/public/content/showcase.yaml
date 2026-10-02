@@ -1,0 +1,8 @@
+# Fictional photos (site.example, #191). The strip needs at least three.
+images:
+  - src: /profile-photos/example-1
+    alt: an example photo
+  - src: /profile-photos/example-2
+    alt: another example photo
+  - src: /profile-photos/example-3
+    alt: a third example photo

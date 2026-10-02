@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeAll, describe, it, expect } from "vitest";
+import site from "virtual:site-config";
 import { ImageShowcase } from "../ImageShowcase";
 
 beforeAll(() => {
@@ -64,7 +65,7 @@ describe("ImageShowcase", () => {
   it("is a labelled group of photos", () => {
     render(<ImageShowcase images={mockImages} />);
     expect(
-      screen.getByRole("group", { name: "Photos of Chris" }),
+      screen.getByRole("group", { name: `Photos of ${site.owner.name}` }),
     ).toBeInTheDocument();
   });
 

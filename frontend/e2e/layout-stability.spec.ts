@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { SECTIONS, TABS_PATH, named, withLongAbout } from "./site";
 
 /**
  * Interaction-shift gates for the action buttons.
@@ -61,9 +62,10 @@ const READ = () => {
 
 type Page = import("@playwright/test").Page;
 
-/** /about, collapsed, once the preview's entry animation has finished. */
+/** The tabs' page, collapsed, once the preview's entry animation has finished. */
 const openAbout = async (page: Page) => {
-  await page.goto("/about");
+  await withLongAbout(page);
+  await page.goto(TABS_PATH);
   await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
   await expect(page.locator("#section-panel")).toHaveCSS("opacity", "1");
 };
@@ -175,11 +177,15 @@ test.describe("action button layout stability", () => {
  * because the desktop grid hides the second cause entirely.
  */
 test.describe("journey section post-mount stability", () => {
+  // It guards Timeline's growth, so it needs the site's Journey tab.
+  const journey = SECTIONS.find(({ id }) => id === "journey");
+  test.skip(!journey, "the site has no journey section");
+
   const openJourney = async (page: Page) => {
     await openAbout(page);
     await page.evaluate(ARM);
     await page
-      .locator(".section-nav-button", { hasText: /^journey$/i })
+      .locator(".section-nav-button", { hasText: named(journey!.label) })
       .first()
       .click();
     await page.waitForSelector(".generate-btn", { timeout: 10000 });

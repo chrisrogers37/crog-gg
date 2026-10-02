@@ -1,0 +1,87 @@
+# A fictional site (#191): the fixture the unit tests read, and a starting
+# point for a fork. Everything in site.example/ is made up, and dedicated to the
+# public domain (LICENSE). Its fields are described in documentation/CONTENT.md.
+
+owner:
+  name: Ada Example
+  email: ada@example.com
+  job_title: Example Engineer
+  image: /profile-photo.jpg
+  knows_about:
+    - Examples
+    - Test fixtures
+
+site:
+  url: https://ada.example
+
+home: profile
+
+seo:
+  site_name: Ada Example - a site made up for tests
+  image:
+    path: /og-image.png
+    width: 1200
+    height: 630
+    alt: Ada Example. A fictional site, for tests and forks.
+  about:
+    description: Ada Example builds example things. This site is fictional, made for tests and forks.
+  projects:
+    description: Example projects, made up for tests.
+
+socials:
+  - id: code
+    label: code
+    icon: github
+    url: https://example.com/ada/code
+    show_in: [footer, menu, contact, schema]
+  - id: posts
+    label: posts
+    icon: link
+    url: https://example.com/ada/posts
+    show_in: [footer, contact]
+  - id: music
+    label: music
+    icon: spotify
+    url: https://example.com/ada/music
+    show_in: [menu, contact, music, schema]
+  - id: links
+    label: all links
+    icon: link
+    url: https://example.com/ada/links
+    show_in: [contact, music]
+
+footer:
+  # No "view source" link.
+  source_repo_url: ""
+
+sections:
+  - id: about
+    label: About
+  - id: journey
+    label: Journey
+  - id: projects
+    label: Projects
+  - id: music
+    label: Music
+
+hero:
+  photos:
+    - /profile-photos/example-1
+    - /profile-photos/example-2
+  typewriter:
+    - "hello!"
+    - "this site is made up"
+    - "it exists so the tests have something to read"
+
+about:
+  preview_height:
+    narrow: 400
+    wide: 300
+
+contact:
+  heading: say hello
+  text: questions about the example? there's nobody here, but the form is real.
+
+music:
+  intro: "i make example music as {artist}."
+  artist: ada

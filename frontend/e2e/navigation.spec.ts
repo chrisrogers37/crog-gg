@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { ABOUT, OTHER_TABS, TABS_PATH, named, withLongAbout } from "./site";
 
 /**
  * Navigation E2E Tests
@@ -126,8 +127,9 @@ test.describe("External Links", () => {
   test("social links open in new tab", async ({ page }) => {
     await page.goto("/");
 
-    // Home ships external links (the Claudlobby repo, in the header, hero and
-    // footer), so a count-gate here would be inconsistent with the suite.
+    // Home ships external links (with home: landing, the Claudlobby repo in
+    // the header, hero and footer; with home: profile, the owner's socials),
+    // so a count-gate here would be inconsistent with the suite.
     // Worse, this is a security assertion: under the gate, removing every
     // target="_blank" made the rel="noopener" check silently stop running
     // instead of failing, which is the one outcome it exists to prevent.
@@ -161,31 +163,35 @@ test.describe("Mobile Menu", () => {
   });
 
   test("mobile menu section navigation works", async ({ page }) => {
+    // A tab that isn't About, which is selected on load.
+    const [second] = OTHER_TABS;
+    test.skip(!second, "needs a tab other than About");
     await page.setViewportSize({ width: 375, height: 812 });
     // The section links live on the personal page's menu.
-    await page.goto("/about");
+    await page.goto(TABS_PATH);
 
     // Open menu
     await page.locator(".nav-hamburger").click();
 
-    // Click a section
+    // Click a section (the menu prints its label in lowercase)
     const journeyBtn = page.locator(".mobile-menu-section-btn", {
-      hasText: "journey",
+      hasText: named(second.label),
     });
     await journeyBtn.click();
 
     // Menu should close
     await expect(page.locator(".mobile-menu")).not.toBeVisible();
 
-    // Timeline should be visible
-    const timeline = page.locator(".timeline-container");
-    await expect(timeline).toBeVisible({ timeout: 5000 });
+    // The section's panel should be visible
+    await expect(page.getByRole("tabpanel", { name: named(second.label) })).toBeVisible({
+      timeout: 5000,
+    });
 
     // Reopened, the menu marks the section the page now has open.
     await page.locator(".nav-hamburger").click();
     await expect(journeyBtn).toHaveClass(/active/);
     await expect(
-      page.locator(".mobile-menu-section-btn", { hasText: "about" }),
+      page.locator(".mobile-menu-section-btn", { hasText: named(ABOUT.label) }),
     ).not.toHaveClass(/active/);
 
     // Choosing the open section again keeps it open: only a tab click
@@ -195,13 +201,32 @@ test.describe("Mobile Menu", () => {
     await expect(page.locator(".mobile-menu")).not.toBeVisible();
     await page.locator(".nav-hamburger").click();
     await expect(journeyBtn).toHaveClass(/active/);
+  });
 
-    // Leaving /about takes its sections out of the menu.
-    await page.locator(".mobile-menu-link", { hasText: "home" }).click();
-    await expect(page).toHaveURL(/\/$/);
+  test("leaving the personal page takes its sections out of the menu", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(TABS_PATH);
+    await page.locator(".nav-hamburger").click();
+    await expect(page.locator(".mobile-menu-section-btn").first()).toBeVisible();
+
+    // To /projects, which every site has, whatever its home.
+    await page.locator(".mobile-menu-link", { hasText: "all projects" }).click();
+    await expect(page).toHaveURL(/\/projects$/);
     await page.locator(".nav-hamburger").click();
     await expect(page.locator(".mobile-menu")).toBeVisible();
     await expect(page.locator(".mobile-menu-section-btn")).toHaveCount(0);
+  });
+
+  test("the header's logo stays on one line on a small phone", async ({
+    page,
+  }) => {
+    // Every site's: the logo is the owner's name, from site.yaml.
+    await page.setViewportSize({ width: 360, height: 740 });
+    await page.goto("/");
+    const logo = await page.locator("header .nav-logo").boundingBox();
+    expect(logo!.height).toBeLessThan(45);
   });
 
   test("hamburger hidden on desktop", async ({ page }) => {
@@ -277,7 +302,8 @@ test.describe("Page Load Performance", () => {
 
 test.describe("see more survives a collapse (#165)", () => {
   test("expand, collapse, expand again", async ({ page }) => {
-    await page.goto("/about");
+    await withLongAbout(page);
+    await page.goto(TABS_PATH);
 
     // First expansion. This is the POSITIVE CONTROL: without it the test
     // would also pass on a page where "see more" never worked at all.
@@ -322,7 +348,7 @@ test.describe("With site data blocked (#196 M70)", () => {
     page.on("pageerror", (error) => errors.push(error.message));
 
     await page.goto("/");
-    await expect(page.locator(".cl-hero h1")).toBeVisible();
+    await expect(page.locator("h1").first()).toBeVisible();
 
     // The toggle still cycles the theme, kept in memory for the visit.
     const toggle = page.getByRole("button", { name: /current theme/i }).first();
@@ -336,7 +362,7 @@ test.describe("With site data blocked (#196 M70)", () => {
       )
       .not.toBe(before);
 
-    await page.goto("/about");
+    await page.goto(TABS_PATH);
     await expect(page.locator(".about-page h1")).toBeVisible();
     expect(errors).toEqual([]);
   });

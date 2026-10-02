@@ -78,7 +78,9 @@ export default defineConfig({
     {
       command: "npm run dev",
       url: "http://localhost:5173",
-      reuseExistingServer: !process.env.CI,
+      // A dev server already running may serve another site than SITE_DIR
+      // names, so a run that names one starts its own.
+      reuseExistingServer: !process.env.CI && !process.env.SITE_DIR,
       timeout: 120 * 1000,
     },
     {

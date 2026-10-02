@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { TABS_PATH, site } from "./site";
 
 /**
  * Page head E2E tests (#174)
@@ -36,21 +37,23 @@ test.describe("Page head", () => {
     expect(tags.description).toBe(1);
     expect(tags.twitterCard).toBe(1);
     expect(tags.canonical).toEqual(["/"]);
-    // Crawlers resolve nothing, so the preview image has to be absolute.
-    expect(tags.ogImage).toMatch(/^https:\/\/.+\.png$/);
+    // Crawlers resolve nothing, so the preview image has to be absolute: the
+    // site's card on its canonical origin.
+    expect(tags.ogImage).toBe(`${site.site.url}${site.seo.image.path}`);
   });
 
   test("the about page, reached in the app, replaces the entry page's tags", async ({
     page,
   }) => {
-    await page.goto("/");
-    await page.locator('footer a[href="/about"]').click();
-    await expect(page).toHaveURL(/\/about$/);
+    // Entered at /projects, which every site has, whatever its home.
+    await page.goto("/projects");
+    await page.locator(`header a[href="${TABS_PATH}"]`).first().click();
+    await expect(page).toHaveURL((url) => url.pathname === TABS_PATH);
     await expect(page.locator(".profile-photo")).toBeVisible();
 
     await expect
       .poll(async () => (await headTags(page)).canonical)
-      .toEqual(["/about"]);
+      .toEqual([TABS_PATH]);
     expect((await headTags(page)).ogTitle).toBe(1);
   });
 

@@ -1,0 +1,22 @@
+# A fictional bio (site.example, #191). See documentation/CONTENT.md.
+display_name: Ada Example
+email: ada@example.com
+location: Exampleton
+
+tagline: |
+  i build example things.
+  tests, fixtures and the odd placeholder.
+
+# One paragraph per line, blank line between.
+about_text: |
+  hello, i'm ada, and i don't exist.
+
+  i was made up so the tests have a site to read that isn't anybody's real one. everything here, from the projects to the photos, is a placeholder.
+
+  if you're forking this site, copy this folder, rename it site, and make it yours. then press SUMMON NEW LORE to see what the model makes of you.
+
+social_links:
+  github: https://example.com/ada/code
+  hoobe: https://example.com/ada/links
+  spotify: https://example.com/ada/music
+  linkedin: https://example.com/ada/work

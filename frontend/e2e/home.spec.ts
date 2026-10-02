@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { LANDING } from "./site";
 
 /**
  * Home Page E2E Tests: Claudlobby's front door (#173)
@@ -9,6 +10,9 @@ import { test, expect } from "@playwright/test";
  */
 
 const REPO = "https://github.com/Claudfather/Claudlobby";
+
+// The whole file is the landing page's (#191).
+test.skip(!LANDING, "home: profile has no landing page");
 
 const VIEWPORTS = [
   ["desktop", { width: 1366, height: 768 }],
@@ -108,14 +112,6 @@ test.describe("Home Page", () => {
     const readme = page.locator(`#quickstart a[href="${REPO}#quick-start"]`);
     await expect(readme).toBeVisible();
     expect(await readme.getAttribute("rel")).toContain("noopener");
-  });
-
-  test("the header's logo stays on one line on a small phone", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 360, height: 740 });
-    const logo = await page.locator("header .nav-logo").boundingBox();
-    expect(logo!.height).toBeLessThan(45);
   });
 
   test("shows the library counts with their source", async ({ page }) => {

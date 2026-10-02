@@ -1,5 +1,6 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 import { readProjects } from "../src/utils/projectLoader";
+import { site, TABS_PATH } from "./site";
 
 /**
  * The crawler's view (#174): each page's raw HTML with no JavaScript run,
@@ -44,20 +45,22 @@ const expectLandingHead = async (
   expect(head.description, `${path} description`).toBeTruthy();
   expect(head.ogTitles, `${path} og:title count`).toBe(1);
   expect(head.twitterCard, `${path} twitter:card`).toBe("summary_large_image");
-  // Crawlers resolve nothing, so the card image must be an absolute URL.
-  expect(head.ogImage, `${path} og:image`).toMatch(/^https:\/\/.+\.png$/);
+  // Crawlers resolve nothing, so the card image must be an absolute URL: the
+  // site's card, on its canonical origin.
+  expect(head.ogImage, `${path} og:image`).toBe(`${site.site.url}${site.seo.image.path}`);
   expect(head.robots, `${path} robots`).toBeUndefined();
   expect(new URL(head.canonical ?? "").pathname, `${path} canonical`).toBe(path);
   return head;
 };
 
 test.describe("Prerendered heads", () => {
-  test("the home, about and projects pages ship their own heads", async ({
+  test("home, the personal page and the projects ship their own heads", async ({
     request,
   }) => {
-    await expectLandingHead(request, "/");
-    await expectLandingHead(request, "/about");
-    await expectLandingHead(request, "/projects");
+    // The personal page is /about beside the landing page, else / itself.
+    for (const path of new Set(["/", TABS_PATH, "/projects"])) {
+      await expectLandingHead(request, path);
+    }
   });
 
   test("every indexed project ships a head naming that project", async ({
@@ -104,9 +107,11 @@ test.describe("Prerendered heads", () => {
   test("the assets the heads point at exist with real content types", async ({
     request,
   }) => {
+    // The card and the Person schema's photo, from site.yaml, and what
+    // index.html links: each served with an image or JSON type.
     for (const [path, type] of [
-      ["/og-image.png", "image/png"],
-      ["/profile-photo.jpg", "image/jpeg"],
+      [site.seo.image.path, "image/"],
+      [site.owner.image, "image/"],
       ["/apple-touch-icon.png", "image/png"],
       ["/manifest.json", "application/json"],
     ]) {

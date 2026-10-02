@@ -2,22 +2,21 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import site from "virtual:site-config";
-import { SITE_DIR } from "../../scripts/site-config";
 import { frameSrc } from "../test/csp";
 import { PHOTO_WIDTHS, photoVariant } from "../utils/photos";
 
 /**
- * `npm run site:check` (#188): what the schema can't see, checked against the
- * files. The schema itself, and the rule against a hand-kept sitemap.xml or
+ * `npm run site:check` (#188, #191): what the schema can't see, checked against
+ * the active site's files (SITE_DIR, else site/). The schema itself, and the rule against a hand-kept sitemap.xml or
  * robots.txt in site/public, run whenever the dev server, the build or the
  * tests start (scripts/vite-site.ts), so a site that reaches these checks has
  * passed them.
  */
 
 const FRONTEND = resolve(__dirname, "../..");
-const PUBLIC = join(SITE_DIR, "public");
+const PUBLIC = join(__SITE_DIR__, "public");
 
-describe("site/", () => {
+describe("the site's files", () => {
   it("has every file site.yaml and index.html point to", () => {
     const indexHtml = readFileSync(join(FRONTEND, "index.html"), "utf8");
     const linked = [...indexHtml.matchAll(/href="(\/[^"]+)"/g)].map(([, path]) => path);
@@ -27,7 +26,7 @@ describe("site/", () => {
       PHOTO_WIDTHS.map((width) => photoVariant(base, width)),
     );
     for (const path of [site.owner.image, site.seo.image.path, ...heroPhotos, ...linked]) {
-      expect(existsSync(join(PUBLIC, path)), `site/public${path}`).toBe(true);
+      expect(existsSync(join(PUBLIC, path)), `public${path}`).toBe(true);
     }
   });
 

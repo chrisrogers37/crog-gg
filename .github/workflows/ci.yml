@@ -78,8 +78,15 @@ jobs:
           retention-days: 7
 
   frontend-e2e-tests:
-    name: Frontend E2E Tests
+    # Twice: the owner's site, and the fictional one a fork starts from (#191).
+    name: Frontend E2E Tests (${{ matrix.site }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [site, site.example]
+    env:
+      SITE_DIR: ${{ matrix.site }}
     defaults:
       run:
         working-directory: frontend
@@ -110,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.site }}
           path: frontend/playwright-report/
           retention-days: 7
 
@@ -118,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.site }}
           path: frontend/test-results/
           retention-days: 7
 
@@ -154,6 +161,16 @@ jobs:
           name: frontend-build
           path: frontend/dist/
           retention-days: 7
+
+      # The fictional site a fork starts from (#191) checks out and builds too.
+      # After the upload: this build replaces dist/. Vite alone: the type
+      # checks above don't depend on the site.
+      - name: Check and build site.example
+        env:
+          SITE_DIR: site.example
+        run: |
+          npm run site:check
+          npx vite build
 
   api-lint:
     name: API Lint

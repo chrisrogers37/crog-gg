@@ -100,6 +100,12 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
 ## What catches a mistake
 
 - **`npm run build`** checks `site/site.yaml`, and parses every project file `index.yaml` lists, so a mistake in either fails the build.
-- **`npm run site:check`** (in `frontend/`) checks what the shape can't: the files `site.yaml` and `index.html` name exist (the header photos at every size too), the music player's origin is in the CSP, and none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code.
-- **The unit tests** read the shipped content with the site's own loaders. `shippedContent.test.ts` holds each project to the rules above (one emoji icon, repos of the site's owner, a `frame-src` entry for an embedded demo), `photos.test.ts` checks every photo's variants exist, and a project id the router can't serve fails `router.test.tsx`.
-- **The e2e tests** run against the shipped content, and fail rather than skip when it's missing (#120).
+- **`npm run site:check`** (in `frontend/`, part of `npm run test:run` too) holds the active site to the rules its content must meet (#191):
+  - the files `site.yaml` and `index.html` name exist, and every photo at every size, and a logo for each timeline domain;
+  - the music player's origin is in the CSP;
+  - none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code;
+  - the projects: at least one, each in a category, one emoji icon, repos of the site's owner, and a `frame-src` entry for an embedded demo;
+  - the About copy is at least one paragraph and ends on the sign-off that names SUMMON NEW LORE;
+  - the card's text matches `seo.image.alt`, the Person schema's role matches the timeline's current one, and with `home: landing` the card keeps the landing page's rules.
+- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A project id that can't be a page's URL fails the build and `npm run site:check` (`utils/projectLoader.ts`).
+- **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site with no landing page.

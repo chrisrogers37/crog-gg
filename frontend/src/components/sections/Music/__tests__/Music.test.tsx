@@ -20,9 +20,10 @@ beforeAll(() => {
 });
 
 describe("Music", () => {
-  const embed = site.music.embed;
+  const { embed, embed_title: embedTitle } = site.music;
   afterEach(() => {
     site.music.embed = embed;
+    site.music.embed_title = embedTitle;
   });
 
   it("introduces the artist by name, as site.yaml words it", () => {
@@ -47,11 +48,13 @@ describe("Music", () => {
     }
   });
 
-  it("embeds the player site.yaml names", () => {
+  it("embeds the player site.yaml names, by the title it gives", () => {
+    site.music.embed = "https://player.example/embed/1";
+    site.music.embed_title = "a player";
     render(<Music />);
-    expect(screen.getByTitle(site.music.embed_title ?? "music player")).toHaveAttribute(
+    expect(screen.getByTitle("a player")).toHaveAttribute(
       "src",
-      site.music.embed,
+      "https://player.example/embed/1",
     );
   });
 

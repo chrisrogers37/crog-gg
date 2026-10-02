@@ -1,0 +1,42 @@
+# A fictional career (site.example, #191). See documentation/CONTENT.md.
+
+entries:
+  - type: role
+    title: Example Engineer
+    organization: Example Co
+    start_date: "Jan 2024"
+    end_date: present
+    one_liner: building the examples other people's tests run against
+    skills:
+      - typescript
+      - testing
+
+  - type: role
+    title: Fixture Maintainer
+    organization: Placeholder Ltd
+    start_date: "2021"
+    end_date: "Dec 2023"
+    one_liner: kept the fixtures tidy and the placeholders believable
+    skills:
+      - python
+      - testing
+
+  - type: education
+    title: BSc, Example Studies
+    organization: University of Exampleton
+    start_date: "2017"
+    end_date: "2021"
+    one_liner: studied examples, and wrote a thesis on placeholders
+    skills:
+      - python
+
+skill_categories:
+  languages:
+    color: "#4f46e5"
+    skills:
+      - typescript
+      - python
+  practice:
+    color: "#0891b2"
+    skills:
+      - testing
