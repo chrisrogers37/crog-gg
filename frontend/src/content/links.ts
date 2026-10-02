@@ -4,6 +4,17 @@
  */
 export const CLAUDLOBBY_REPO = "https://github.com/Claudfather/Claudlobby";
 
+/**
+ * Whether a link goes to the Claudlobby repo's front page, where the Star
+ * button is: with or without an anchor, a trailing slash or a query like
+ * `?tab=readme-ov-file`, which GitHub serves as the same page. The clicks
+ * RepoLink counts (#177).
+ */
+export const isClaudlobbyFrontPage = (href: string) => {
+  const url = new URL(href);
+  return `${url.origin}${url.pathname.replace(/\/$/, "")}` === CLAUDLOBBY_REPO;
+};
+
 export const CLAUDLOBBY_ISSUES = `${CLAUDLOBBY_REPO}/issues`;
 
 export const CLAUDLOBBY_README_QUICKSTART = `${CLAUDLOBBY_REPO}#quick-start`;

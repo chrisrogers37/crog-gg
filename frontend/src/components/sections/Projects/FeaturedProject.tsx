@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
 import type { Project } from "../../../types";
 import { RepoLink } from "../../common/RepoLink";
 import "./Projects.css";
@@ -32,22 +31,12 @@ export function FeaturedProject({ project, headingLevel = 3 }: FeaturedProjectPr
         <Link to={`/projects/${project.id}`} className="btn btn-primary">
           View project
         </Link>
-        {project.github &&
-          (project.github.replace(/\/$/, "") === CLAUDLOBBY_REPO ? (
-            // A visit to Claudlobby's repo, counted as its page's links are (#177).
-            <RepoLink location="featured" className="btn btn-ghost">
-              GitHub
-            </RepoLink>
-          ) : (
-            <a
-              href={project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-ghost"
-            >
-              GitHub
-            </a>
-          ))}
+        {project.github && (
+          // Counted when it's Claudlobby's repo, as its page's links are (#177).
+          <RepoLink location="featured" href={project.github} className="btn btn-ghost">
+            GitHub
+          </RepoLink>
+        )}
       </div>
     </article>
   );
