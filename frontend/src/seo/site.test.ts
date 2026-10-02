@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import yaml from "js-yaml";
 import {
   ABOUT_META,
   HOME_META,
@@ -14,10 +13,7 @@ import {
   type PageMeta,
 } from ".";
 import site from "virtual:site-config";
-import type { TimelineData } from "../types";
 import { createSeo } from "./site";
-import ogImageHtml from "@site/og-image.html?raw";
-import timelineYaml from "@site/public/content/timeline.yaml?raw";
 
 const tagValue = (meta: PageMeta, key: string) => {
   const found = headTags(meta).find(
@@ -64,41 +60,6 @@ describe("headTags", () => {
       ({ attrs }) => attrs.name ?? attrs.property ?? attrs.rel,
     );
     expect(new Set(keys).size).toBe(keys.length);
-  });
-});
-
-describe("OG_IMAGE", () => {
-  it("describes what the card actually says", () => {
-    // The PNG is rendered from this HTML (scripts/og-image/render.mjs), so a
-    // headline edited in one place and not the other fails here.
-    const card = new DOMParser().parseFromString(ogImageHtml, "text/html");
-    const text = (selector: string) =>
-      card.querySelector(selector)?.textContent?.replace(/\s+/g, " ").trim();
-    expect(`${text("h1")} ${text(".sub")}`).toBe(OG_IMAGE.alt);
-  });
-});
-
-describe("ABOUT_META", () => {
-  it("gives the Person schema the current role from timeline.yaml", () => {
-    // The head is prerendered before any content loads, so the role is written
-    // out in site.yaml too (owner.job_title, owner.works_for); a job change
-    // edited in one place fails here.
-    // timeline.yaml is the career history /about renders.
-    const { entries } = yaml.load(timelineYaml) as TimelineData;
-    const current = entries.find(
-      ({ type, end_date }) => type === "role" && end_date === "present",
-    );
-    const person = ABOUT_META.schemas?.find(
-      (schema) => (schema as { "@type": string })["@type"] === "Person",
-    );
-    expect(current).toBeDefined();
-    expect(person).toMatchObject({
-      jobTitle: current?.title,
-      worksFor: {
-        name: current?.organization,
-        url: `https://${current?.domain}`,
-      },
-    });
   });
 });
 

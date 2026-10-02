@@ -1,36 +1,9 @@
 import { describe, it, expect } from "vitest";
-import yaml from "js-yaml";
-import site from "virtual:site-config";
-import {
-  PHOTO_WIDTHS,
-  photoSrc,
-  photoSrcSet,
-  photoVariant,
-} from "./photos";
-import type { ShowcaseImage } from "../types/Showcase";
-import showcaseYaml from "@site/public/content/showcase.yaml?raw";
-import { inSite } from "../test/site";
+import { photoSrc, photoSrcSet } from "./photos";
 
-const variants = import.meta.glob("@site/public/profile-photos/*.webp", {
-  query: "?url",
-  eager: true,
-});
-
-const showcase = (
-  yaml.load(showcaseYaml) as { images: ShowcaseImage[] }
-).images.map((image) => image.src);
-
+// That every photo the site names ships at every width is site:check's:
+// src/site-check/photos.test.ts.
 describe("photos", () => {
-  it.each([...new Set([...site.hero.photos, ...showcase])])(
-    "%s ships every width it is served at",
-    (base) => {
-      for (const width of PHOTO_WIDTHS) {
-        const file = photoVariant(base, width);
-        expect(inSite(variants, `/public${file}`), `public${file}`).toBeDefined();
-      }
-    },
-  );
-
   it("describes each variant by its width", () => {
     expect(photoSrcSet("/p/a")).toBe(
       "/p/a-160.webp 160w, /p/a-320.webp 320w, /p/a-480.webp 480w",

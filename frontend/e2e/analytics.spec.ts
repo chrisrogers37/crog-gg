@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { LANDING } from "./site";
 
 /**
  * Analytics in the production build (#177). Vercel serves the real script
@@ -26,6 +27,7 @@ test("loads the analytics script from the site's own origin", async ({
 });
 
 test("reports each CTA click once, with where it was", async ({ page }) => {
+  test.skip(!LANDING, "the calls to action are the landing page's");
   await page.goto("/");
 
   await page.locator(`.cl-hero a[href="${REPO}"]`).click();

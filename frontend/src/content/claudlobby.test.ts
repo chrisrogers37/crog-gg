@@ -1,46 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { claudlobby } from "./claudlobby";
-import { HOME_META, OG_IMAGE, pageTitle } from "../seo";
-import ogImageHtml from "@site/og-image.html?raw";
+import { HOME_META, pageTitle } from "../seo";
+import { PLANNED, strings } from "../test/claudlobbyRules";
 
 /**
  * The homepage copy's rules (content/claudlobby.ts). Its shape is the type
  * checker's job; these are the rules a type can't express.
  */
 
-/** Every string in the value. */
-const strings = (value: unknown): string[] =>
-  typeof value === "string"
-    ? [value]
-    : Array.isArray(value)
-      ? value.flatMap(strings)
-      : value && typeof value === "object"
-        ? Object.values(value).flatMap(strings)
-        : [];
-
 const copy = strings(claudlobby);
 
 /**
- * The share card's own words, as rendered into og-image.png. One string with
- * the whitespace collapsed, so a phrase the HTML wraps across lines (say,
- * "local models") still reads as one.
- */
-const cardText = (
-  new DOMParser().parseFromString(ogImageHtml, "text/html").body.textContent ??
-  ""
-)
-  .replace(/\s+/g, " ")
-  .trim();
-
-/**
  * What `/` says about Claudlobby off the page: the tab and share title, the
- * search snippet, the share card and its alt text, and the JSON-LD.
+ * search snippet and the JSON-LD. The share card and its alt text are the
+ * site's (site.yaml), so site:check holds them to these rules
+ * (site-check/landing.test.ts).
  */
 const homeHead = [
   pageTitle(HOME_META),
   HOME_META.description,
-  OG_IMAGE.alt,
-  cardText,
   ...strings(HOME_META.schemas),
 ];
 
@@ -86,11 +64,6 @@ describe("homepage copy", () => {
 });
 
 describe("tone split and maturity (#179)", () => {
-  // Other agents and providers are the plan, not the product: they may be
-  // named only where the page says they're planned.
-  const PLANNED =
-    /openai|chatgpt|\bgpt|gemini|codex|mistral|llama|qwen|deepseek|grok|local models?|multi[- ]?provider|provider[- ]?agnostic|model[- ]?agnostic|any llm/i;
-
   it("names other model providers only in the maturity note's plan and the roadmap's Next column", () => {
     const { maturity, roadmap, ...rest } = claudlobby;
     const { planned, ...maturityRest } = maturity;

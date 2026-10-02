@@ -4,8 +4,8 @@ import { parseSiteConfig } from "./schema";
 
 type Data = Record<string, unknown>;
 
-/** The active site.yaml as plain data, fresh for each test to break. */
-const shipped = () => readSiteYaml() as Data;
+/** The tests' site.yaml as plain data, fresh for each test to break. */
+const shipped = () => readSiteYaml(__SITE_DIR__) as Data;
 
 /** The mapping (or list) at a dotted path: "socials.0". */
 const at = (data: Data, path: string) =>

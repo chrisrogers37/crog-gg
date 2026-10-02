@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { LANDING, site } from "./site";
 
 /**
  * Page head E2E tests (#174)
@@ -36,13 +37,15 @@ test.describe("Page head", () => {
     expect(tags.description).toBe(1);
     expect(tags.twitterCard).toBe(1);
     expect(tags.canonical).toEqual(["/"]);
-    // Crawlers resolve nothing, so the preview image has to be absolute.
-    expect(tags.ogImage).toMatch(/^https:\/\/.+\.png$/);
+    // Crawlers resolve nothing, so the preview image has to be absolute: the
+    // site's card on its canonical origin.
+    expect(tags.ogImage).toBe(`${site.site.url}${site.seo.image.path}`);
   });
 
   test("the about page, reached in the app, replaces the entry page's tags", async ({
     page,
   }) => {
+    test.skip(!LANDING, "with home: profile, the about page is the entry page");
     await page.goto("/");
     await page.locator('footer a[href="/about"]').click();
     await expect(page).toHaveURL(/\/about$/);

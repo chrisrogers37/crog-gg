@@ -47,12 +47,19 @@ describe("Music", () => {
     }
   });
 
-  it("embeds the player site.yaml names", () => {
-    render(<Music />);
-    expect(screen.getByTitle(site.music.embed_title ?? "music player")).toHaveAttribute(
-      "src",
-      site.music.embed,
-    );
+  it("embeds the player site.yaml names, by the title it gives", () => {
+    const title = site.music.embed_title;
+    site.music.embed = "https://player.example/embed/1";
+    site.music.embed_title = "a player";
+    try {
+      render(<Music />);
+      expect(screen.getByTitle("a player")).toHaveAttribute(
+        "src",
+        "https://player.example/embed/1",
+      );
+    } finally {
+      site.music.embed_title = title;
+    }
   });
 
   it("shows no player when site.yaml leaves it empty", () => {

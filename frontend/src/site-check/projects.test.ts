@@ -2,8 +2,8 @@ import { beforeAll, describe, expect, it } from "vitest";
 import site from "virtual:site-config";
 import type { Project } from "../types/Project";
 import { githubRepo, hasLiveDemo } from "../utils/projectLinks";
-import { shippedProjects } from "./content";
-import { frameSrc } from "./csp";
+import { shippedProjects } from "../test/content";
+import { frameSrc } from "../test/csp";
 
 /**
  * The add-project skill's rules (#197 M17), held by the test suite rather than
@@ -15,8 +15,11 @@ describe("the shipped projects", () => {
     projects = await shippedProjects();
   });
 
-  it("are there to check", () => {
+  it("are there to check, each in a category the filter can show", () => {
+    // Shipped content must render (#120): no projects is a broken page, and
+    // the filter needs categories to offer.
     expect(projects.length).toBeGreaterThan(0);
+    for (const project of projects) expect(project.category, project.id).toMatch(/\S/);
   });
 
   it("each use one emoji as the icon, which the card prints as text", () => {

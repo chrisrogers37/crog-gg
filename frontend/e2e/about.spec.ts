@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { LANDING, SECTIONS, TABS_PATH, named, withLongAbout } from "./site";
 
 /**
  * About Page E2E Tests (the personal page, which was the homepage until #173)
@@ -8,8 +9,14 @@ import { test, expect } from "@playwright/test";
  * not that it contains exact copy.
  */
 
+// The tabs a test steps through: the second and third, since the first is
+// selected on load, and the last. A site with fewer skips what needs more.
+const [, SECOND, THIRD] = SECTIONS;
+const LAST = SECTIONS[SECTIONS.length - 1];
+
 test.beforeEach(async ({ page }) => {
-  await page.goto("/about");
+  await withLongAbout(page);
+  await page.goto(TABS_PATH);
 });
 
 test.describe("About Page", () => {
@@ -20,10 +27,8 @@ test.describe("About Page", () => {
   });
 
   test("displays location information", async ({ page }) => {
-    // Test that location text exists (city name visible on page)
-    await expect(
-      page.getByText(/New York|NYC|Location/i).first(),
-    ).toBeVisible();
+    // The contact card's location line, whatever city it names.
+    await expect(page.locator(".contact-location")).toBeVisible();
   });
 
   test("displays contact information", async ({ page }) => {
@@ -46,9 +51,8 @@ test.describe("About Page", () => {
     const sectionTabs = page.getByRole("tablist").getByRole("tab");
     await expect(sectionTabs.first()).toBeVisible();
 
-    // Should have multiple section tabs
-    const count = await sectionTabs.count();
-    expect(count).toBeGreaterThan(3);
+    // One tab per section site.yaml lists
+    await expect(sectionTabs).toHaveCount(SECTIONS.length);
   });
 
   test("displays tagline in header", async ({ page }) => {
@@ -65,9 +69,10 @@ test.describe("About Page", () => {
   test("lands on About's preview whatever tab was open before", async ({
     page,
   }) => {
+    test.skip(!LANDING || !SECOND, "needs the landing page to leave for, and a second tab");
     // The open tab is the page's own state; this guards against it moving
     // back to a global store, which outlived the page.
-    await page.getByRole("tab", { name: /journey/i }).click();
+    await page.getByRole("tab", { name: named(SECOND.label) }).click();
     await page.locator('header a[href="/"]').first().click();
     await expect(page).toHaveURL(/\/$/);
     await page.locator('header a[href="/about"]').first().click();
@@ -85,14 +90,16 @@ test.describe("Section Navigation", () => {
   test("clicking a section tab shows that section's panel", async ({ page }) => {
     // Not the default tab: the collapsed preview is already a panel (About's),
     // so only a panel named for the clicked tab proves the switch.
-    await page.getByRole("tab", { name: /^journey$/i }).click();
+    test.skip(!SECOND, "needs a second tab");
+    await page.getByRole("tab", { name: named(SECOND.label) }).click();
     await expect(
-      page.getByRole("tabpanel", { name: /^journey$/i }),
+      page.getByRole("tabpanel", { name: named(SECOND.label) }),
     ).toBeVisible();
   });
 
   test("clicking same section twice toggles it off", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
+    test.skip(!SECOND, "needs a second tab");
+    const journeyButton = page.locator(`button[data-section="${SECOND.id}"]`);
 
     // Click journey to activate it
     await journeyButton.click();
@@ -120,7 +127,8 @@ test.describe("Section Navigation", () => {
   });
 
   test("section buttons show active state when clicked", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
+    test.skip(!SECOND, "needs a second tab");
+    const journeyButton = page.locator(`button[data-section="${SECOND.id}"]`);
 
     // Journey starts inactive (about is auto-selected on mount)
     await expect(journeyButton).not.toHaveClass(/active/);
@@ -131,8 +139,9 @@ test.describe("Section Navigation", () => {
   });
 
   test("switching sections deactivates previous", async ({ page }) => {
-    const journeyButton = page.locator('button[data-section="journey"]');
-    const projectsButton = page.locator('button[data-section="projects"]');
+    test.skip(!THIRD, "needs three tabs");
+    const journeyButton = page.locator(`button[data-section="${SECOND.id}"]`);
+    const projectsButton = page.locator(`button[data-section="${THIRD.id}"]`);
 
     // Click journey (not auto-selected, so clean activation)
     await journeyButton.click();
@@ -149,7 +158,9 @@ test.describe("Section Navigation", () => {
 
 test.describe("Projects tab", () => {
   test("its cards open their pages on the site (#196 M43)", async ({ page }) => {
-    await page.getByRole("tab", { name: /^projects$/i }).click();
+    const projects = SECTIONS.find(({ id }) => id === "projects");
+    test.skip(!projects, "the site has no Projects tab");
+    await page.getByRole("tab", { name: named(projects!.label) }).click();
     const card = page.locator(".projects-section a.project-tile").first();
     const href = await card.getAttribute("href");
     expect(href).toMatch(/^\/projects\/[a-z0-9-]+$/);
@@ -160,8 +171,9 @@ test.describe("Projects tab", () => {
 
 test.describe("Section Flow Navigation", () => {
   test("section navigator shows next section", async ({ page }) => {
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
+    test.skip(!THIRD, "needs a tab after the second");
+    // The second tab (not auto-selected, avoids preview mode)
+    await page.locator(`button[data-section="${SECOND.id}"]`).click();
 
     // Check for navigator
     const navigator = page.locator(".section-navigator");
@@ -172,11 +184,11 @@ test.describe("Section Flow Navigation", () => {
   });
 
   test("section navigator not shown on last section", async ({ page }) => {
-    // Click Music tab (last section)
-    await page.locator('button[data-section="music"]').click();
+    test.skip(SECTIONS.length < 2, "needs a last tab that isn't the first");
+    await page.locator(`button[data-section="${LAST.id}"]`).click();
 
     // Wait for the section's content to render
-    await expect(page.locator(".music-section")).toBeVisible();
+    await expect(page.getByRole("tabpanel", { name: named(LAST.label) })).toBeVisible();
 
     // Navigator should not be visible
     const navigator = page.locator(".section-navigator");
@@ -184,8 +196,9 @@ test.describe("Section Flow Navigation", () => {
   });
 
   test("clicking section navigator switches section", async ({ page }) => {
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
+    test.skip(!THIRD, "needs a tab after the second");
+    // The second tab (not auto-selected, avoids preview mode)
+    await page.locator(`button[data-section="${SECOND.id}"]`).click();
 
     // Wait for navigator to appear
     const navigatorBtn = page.locator(".section-navigator-btn");
@@ -194,17 +207,17 @@ test.describe("Section Flow Navigation", () => {
     // Click the navigator
     await navigatorBtn.click();
 
-    // Projects tab should now be active (next after journey)
-    const projectsButton = page.locator('button[data-section="projects"]');
+    // The next tab is now active
+    const projectsButton = page.locator(`button[data-section="${THIRD.id}"]`);
     await expect(projectsButton).toHaveClass(/active/);
   });
 });
 
 test.describe("Action Buttons", () => {
   test("action buttons appear when section is active", async ({ page }) => {
-
-    // Click journey (not auto-selected, avoids preview mode)
-    await page.locator('button[data-section="journey"]').click();
+    test.skip(!SECOND, "needs a second tab");
+    // The second tab (not auto-selected, avoids preview mode)
+    await page.locator(`button[data-section="${SECOND.id}"]`).click();
 
     // Action buttons should appear
     const actionButtons = page.locator(
