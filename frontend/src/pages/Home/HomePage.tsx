@@ -5,6 +5,7 @@ import {
   Hero,
   Quickstart,
   Roadmap,
+  Updates,
   WhyClaudlobby,
 } from "../../components/sections/Claudlobby";
 import "../../components/sections/Claudlobby/Claudlobby.css";
@@ -26,6 +27,7 @@ export function HomePage() {
         <WhyClaudlobby />
         <Quickstart />
         <Roadmap />
+        <Updates />
       </div>
     </>
   );

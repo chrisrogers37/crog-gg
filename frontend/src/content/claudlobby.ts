@@ -43,6 +43,7 @@ export const claudlobby = {
     planned:
       "Other model providers (OpenAI, Gemini, local models) are on the roadmap.",
     link: "What's next",
+    updatesLink: "Get updates",
   },
 
   darkFactory: {
@@ -119,6 +120,18 @@ export const claudlobby = {
     issuesLink: "Report a setup problem",
     readmeLink: "Quickstart in the README",
     docsLink: "Full setup guide",
+  },
+
+  // #175, as Chris chose on 2026-09-30: GitHub's own release notifications
+  // and feed, not a mailing list, so the site keeps no email addresses.
+  updates: {
+    heading: "Get updates",
+    intro:
+      "Not ready to set it up yet? Watch the repo's releases on GitHub, and GitHub lets you know when Claudlobby publishes one.",
+    watchLink: "Watch releases on GitHub",
+    feedLink: "Releases feed (Atom)",
+    howTo:
+      "On the repo, choose Watch, then Custom, check Releases and click Apply.",
   },
 
   roadmap: {

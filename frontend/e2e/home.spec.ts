@@ -86,6 +86,22 @@ test.describe("Home Page", () => {
     expect(box!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
   });
 
+  test("Get updates points at the repo's releases and their feed", async ({
+    page,
+  }) => {
+    // Instant scrolling, so the check below sees where the jump lands.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.locator('.cl-hero a[href="#updates"]').click();
+    await expect(page).toHaveURL(/#updates$/);
+    await expect(page.locator("#updates h2")).toBeInViewport();
+    for (const href of [`${REPO}/releases`, `${REPO}/releases.atom`]) {
+      const link = page.locator(`#updates a[href="${href}"]`);
+      await expect(link, href).toBeVisible();
+      expect(await link.getAttribute("rel"), href).toContain("noopener");
+    }
+    await expect(page.locator("#updates form")).toHaveCount(0);
+  });
+
   test("the quickstart sends you to the README's own steps", async ({
     page,
   }) => {

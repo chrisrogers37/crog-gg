@@ -38,25 +38,33 @@ describe("RepoLink", () => {
     await user.click(screen.getByRole("button", { name: "Open menu" }));
 
     // Every link into the repo. The deeper ones (issues, the setup guide, the
-    // pinned README) aren't the repo's front page, so they must report nothing.
+    // pinned README, the releases) aren't the repo's front page, so none may report a repo_click.
     const intoRepo = (await screen.findAllByRole("link"))
       .map((link) => [link, link.getAttribute("href")!] as const)
       .filter(([, href]) => href.startsWith(CLAUDLOBBY_REPO));
     for (const [link] of intoRepo) await user.click(link);
 
     const frontPage = intoRepo.filter(([, href]) => isFrontPage(href));
-    expect(track).toHaveBeenCalledTimes(frontPage.length);
-    const locations = vi
+    const repoClicks = vi
       .mocked(track)
-      .mock.calls.map(([event]) =>
-        event.name === "repo_click" ? event.location : event.name,
+      .mock.calls.flatMap(([event]) =>
+        event.name === "repo_click" ? [event.location] : [],
       );
-    expect(locations.sort()).toEqual([
+    expect(repoClicks).toHaveLength(frontPage.length);
+    expect(repoClicks.sort()).toEqual([
       "footer",
       "header",
       "hero",
       "menu",
       "quickstart",
     ]);
+    // The one other event is "Watch releases" reporting updates_click; the
+    // feed and the deeper links report nothing.
+    expect(
+      vi
+        .mocked(track)
+        .mock.calls.map(([event]) => event)
+        .filter((event) => event.name !== "repo_click"),
+    ).toEqual([{ name: "updates_click" }]);
   });
 });

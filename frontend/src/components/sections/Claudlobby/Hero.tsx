@@ -50,6 +50,8 @@ export function Hero() {
         <span className="cl-badge">{maturity.label}</span> {maturity.today}{" "}
         {maturity.planned}{" "}
         <a href="#roadmap">{maturity.link}</a>
+        {" · "}
+        <a href="#updates">{maturity.updatesLink}</a>
       </p>
     </section>
   );
