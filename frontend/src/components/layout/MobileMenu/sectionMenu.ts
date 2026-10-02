@@ -1,12 +1,9 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect } from "react";
 
 export type SectionLink = { id: string; label: string };
 
-export type SectionMenu = {
-  sections: SectionLink[];
-  activeSection: string;
-  onSectionChange: (sectionId: string) => void;
-};
+/** A page's sections, which the mobile menu links to as #id. */
+export type SectionMenu = { sections: SectionLink[] };
 
 /**
  * Lets a page add its own sections to the site's one mobile menu. Layout
@@ -18,28 +15,13 @@ export const SectionMenuContext = createContext<
 >(() => {});
 
 /**
- * Lists `sections` in the mobile menu while the calling page is mounted, with
- * `activeSection` marked. `sections` should be stable (a module constant);
- * `onSectionChange` may be a new function every render.
+ * Lists `sections` in the mobile menu while the calling page is mounted.
+ * `sections` should be stable (a module constant).
  */
-export function useSectionMenu(
-  sections: SectionLink[],
-  activeSection: string,
-  onSectionChange: (sectionId: string) => void,
-) {
+export function useSectionMenu(sections: SectionLink[]) {
   const register = useContext(SectionMenuContext);
-  const handler = useRef(onSectionChange);
-
   useEffect(() => {
-    handler.current = onSectionChange;
-  });
-
-  useEffect(() => {
-    register({
-      sections,
-      activeSection,
-      onSectionChange: (id) => handler.current(id),
-    });
+    register({ sections });
     return () => register(null);
-  }, [register, sections, activeSection]);
+  }, [register, sections]);
 }

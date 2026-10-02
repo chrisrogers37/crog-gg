@@ -2,7 +2,11 @@
 # here is shown nowhere, but it is still served, like everything in public/.
 # See documentation/CONTENT.md, and the add-project skill.
 
+# Shown first and largest, on the home page and /projects.
+featured: claudlobby.yaml
+
 projects:
+  - claudlobby.yaml
   - storydump.yaml
   - benzo.yaml
   - shuffify.yaml

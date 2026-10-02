@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useContentStore } from "../../../../store";
 import { fireEvent, renderWithProviders, screen } from "../../../../test/utils";
-import type { Project } from "../../../../types";
-import { Projects } from "../Projects";
+import { makeProject } from "../../../../test/builders";
+import { ProjectList } from "../Projects";
 
-/** The Projects tab shows its own load (#190 M23). */
+/** The home page's projects section shows its own load (#190 M23). */
 
 const INITIAL = useContentStore.getState();
 afterEach(() => useContentStore.setState(INITIAL, true));
@@ -14,10 +14,10 @@ const loads = (projects: (typeof INITIAL.loads)["projects"]) => ({
   projects,
 });
 
-describe("Projects", () => {
+describe("ProjectList, as the home page's section", () => {
   it("shows a skeleton only while the projects load", () => {
     useContentStore.setState({ projects: [], loads: loads("loading") });
-    renderWithProviders(<Projects />);
+    renderWithProviders(<ProjectList limit={3} compact />);
     expect(screen.getByRole("status", { name: /loading projects/i })).toBeInTheDocument();
   });
 
@@ -28,7 +28,7 @@ describe("Projects", () => {
       loads: loads({ error: "content/projects/a.yaml has 1 problem(s)" }),
       reloadProjects,
     });
-    renderWithProviders(<Projects />);
+    renderWithProviders(<ProjectList limit={3} compact />);
     expect(screen.getByRole("alert")).toHaveTextContent(
       "The projects didn't load: content/projects/a.yaml has 1 problem(s).",
     );
@@ -38,23 +38,29 @@ describe("Projects", () => {
 
   it("says when there are none, rather than loading forever", () => {
     useContentStore.setState({ projects: [], loads: loads("ready") });
-    renderWithProviders(<Projects />);
+    renderWithProviders(<ProjectList limit={3} compact />);
     expect(screen.getByText("No projects yet.")).toBeInTheDocument();
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("shows the projects once they're in", () => {
-    const project = {
-      id: "a",
-      title: "A Project",
-      description: "d",
-      url: "https://a.example",
-      icon: "x",
-      category: "c",
-      technologies: [],
-    } as Project;
-    useContentStore.setState({ projects: [project], loads: loads("ready") });
-    renderWithProviders(<Projects />);
-    expect(screen.getByText("A Project")).toBeInTheDocument();
+  it("shows the featured project, the next three in order, and a link to them all", () => {
+    const project = (id: string, featured = false) =>
+      makeProject({ id, title: `Project ${id}`, url: `https://${id}.example`, featured });
+    useContentStore.setState({
+      projects: [project("a"), project("b"), project("star", true), project("c"), project("d")],
+      loads: loads("ready"),
+    });
+    renderWithProviders(<ProjectList limit={3} compact />);
+
+    expect(screen.getByRole("article", { name: /Project star/ })).toBeInTheDocument();
+    const cards = screen
+      .getAllByRole("link")
+      .filter((link) => link.classList.contains("project-card"))
+      .map((link) => link.getAttribute("href"));
+    expect(cards).toEqual(["/projects/a", "/projects/b", "/projects/c"]);
+    expect(screen.getByRole("link", { name: "All projects" })).toHaveAttribute(
+      "href",
+      "/projects",
+    );
   });
 });

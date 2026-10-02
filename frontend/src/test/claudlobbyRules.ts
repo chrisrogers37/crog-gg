@@ -1,6 +1,7 @@
 /**
- * The landing page's copy rules (#173, #179), shared by the copy's own test
- * (content/claudlobby.test.ts) and the share card's (site-check/landing.test.ts).
+ * Claudlobby's copy rules (#173, #179), shared by its page's copy test
+ * (content/claudlobby.test.ts) and the site check on its project file, which
+ * the card and the page's head show (site-check/projects.test.ts).
  */
 
 /** Every string in the value. */

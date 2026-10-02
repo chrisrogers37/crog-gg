@@ -16,16 +16,18 @@ The frontend and the API share one origin, so production needs no CORS. `vercel.
 
 ## Frontend
 
-- **Routes** (`frontend/src/router.tsx`), with `home: landing` in `site/site.yaml`:
-  - `/` is the Claudlobby landing page, in the main bundle.
-  - `/about`, `/projects` and `/projects/:slug` load as their own chunks.
-  - With `home: profile`, the personal page is `/` and there's no `/about`; the sitemap and the prerendered pages follow.
+- **Routes** (`frontend/src/router.tsx`):
+  - `/` is the owner's page, one column of sections (`frontend/src/pages/Home/`).
+  - `/projects` and `/projects/:slug` list the projects and show each one. A project whose id `frontend/src/content/ownPages.ts` lists has a page of its own (Claudlobby's), which `projectPages.ts` maps it to; the rest share the standard one. The ids sit apart from the pages so the site checks and the E2E specs can ask without loading React components. A page of its own shows no GitHub panels, so its repo may be any owner's.
+  - Each loads as its own chunk.
+  - `/about`, where the owner's page was from #173 until the redesign, redirects to `/`: `vercel.json` sends a visit there, and the router a link inside the app.
   - Anything else is the 404 page.
+- **The look:** one page layout for the whole site (`frontend/src/styles/page.css`): a hero, then sections, each an h2 and a lead (`PageSection`), with the global `.btn` and `.card`. Claudlobby's page set it.
 - **Prerendering:** the build (`frontend/scripts/vite-prerender.ts`) writes each landing page's `<head>` (title, description, social card) into its own HTML file. So `/projects/<id>` is served from `projects/<id>.html`, and a crawler sees the right tags without running JavaScript. An unknown path gets `404.html` with a real 404 status (#174). The sitemap is generated from the same page list, and robots.txt points to it.
 - **The owner's identity:** `site/site.yaml`, checked and baked in at build time. The `site()` plugin (`frontend/scripts/vite-site.ts`) serves it to the app as `virtual:site-config`, makes `site/public` the public folder, and defines `__SITE_COMMIT__` (the commit Vercel names) for the footer's source link and `__SITE_DIR__` (the folder, for tests that read its files). `site({ dir })` picks the folder, else `SITE_DIR` does, else it's `site/` (#191). The build's own code (the prerender) can't import the virtual module, because `vite.config.ts` loads before any plugin; it calls `siteConfig()` (`frontend/scripts/site-config.ts`), and `createSeo(site)` (`frontend/src/seo/site.ts`) builds the heads from either (#188).
-- **Content:** the portfolio's YAML (`site/public/content/`) is fetched once, at start-up, into a zustand store (`frontend/src/store/contentStore.ts`). The landing page's copy is a typed module (`frontend/src/content/claudlobby.ts`), bundled so the hero needs no request.
+- **Content:** the portfolio's YAML (`site/public/content/`) is fetched once, at start-up, into a zustand store (`frontend/src/store/contentStore.ts`). Claudlobby's page's copy is a typed module (`frontend/src/content/claudlobby.ts`), so a missing field fails the type check.
 - **State:** `contentStore` holds the content, the regeneration and the cooldown the server reported. `uiStore` holds the theme, persisted in localStorage when the browser allows it.
-- **Analytics:** Vercel Web Analytics, from the same origin (`/_vercel/insights`), cookieless. Links to the Claudlobby repo's front page, and the quickstart's link into its README, go through `RepoLink`, which counts each click and where it was. Its other links don't: the releases link counts as `updates_click`, and the getting-started guide, the feed, issues and the counts' source aren't counted. The events are listed in the README's [Web Analytics](../README.md#web-analytics).
+- **Analytics:** Vercel Web Analytics, from the same origin (`/_vercel/insights`), cookieless. On Claudlobby's page, the links to its repo's front page and the quickstart's link into its README go through `RepoLink`, which counts each click and where it was (the featured card's GitHub link, on `/` and `/projects`, isn't counted). The page's other links don't: the releases link counts as `updates_click`, and the getting-started guide, the feed, issues and the counts' source aren't counted. The events are listed in the README's [Web Analytics](../README.md#web-analytics).
 
 ## API
 

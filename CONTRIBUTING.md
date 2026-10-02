@@ -25,7 +25,7 @@ Run what CI runs. None of it needs a secret.
 ## Writing tests
 
 - **E2E tests check structure and behaviour, not copy.** See "E2E Test Philosophy" in [CLAUDE.md](CLAUDE.md).
-- **No test pins the owner's content (#191).** Unit tests read `site.example/`, a fictional site, through `virtual:site-config` and `@site/`. The rules the owner's own content must meet are `src/site-check/`'s, and they run against the active site. E2E reads the active site's tabs and home from `e2e/site.ts`. So a fork's edits to `site/` can't turn a test red unless they break something.
+- **No test pins the owner's content (#191).** Unit tests read `site.example/`, a fictional site, through `virtual:site-config` and `@site/`. The rules the owner's own content must meet are `src/site-check/`'s, and they run against the active site. E2E reads the active site's sections, bio and projects from `e2e/site.ts`. So a fork's edits to `site/` can't turn a test red unless they break something.
 - **Break the code a new test guards, and watch the test fail.** A test that passes either way checks nothing.
 
 ## Pressing SUMMON NEW LORE on a preview
@@ -57,7 +57,7 @@ Add a line to [CHANGELOG.md](CHANGELOG.md) for anything a visitor or a forker wo
 
 ## Copy
 
-Site copy follows CLAUDE.md's "Site copy style": plain on `/`, lowercase and casual on `/about`, and never an em dash.
+Site copy follows CLAUDE.md's "Site copy style": plain on Claudlobby's page, lowercase and casual everywhere else, and never an em dash.
 
 ## Security
 

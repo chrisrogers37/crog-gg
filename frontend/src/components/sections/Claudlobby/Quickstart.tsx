@@ -5,8 +5,8 @@ import {
   CLAUDLOBBY_README_QUICKSTART,
 } from "../../../content/links";
 import { RepoLink } from "../../common/RepoLink";
-import { InlineCode } from "./InlineCode";
-import { Section } from "./Section";
+import { InlineCode } from "../../common/InlineCode";
+import { PageSection } from "../../common/PageSection";
 
 /**
  * What setup needs, then the README's own steps. The hero's Quickstart button
@@ -16,20 +16,20 @@ import { Section } from "./Section";
 export function Quickstart() {
   const { quickstart } = claudlobby;
   return (
-    <Section
+    <PageSection
       id="quickstart"
       heading={quickstart.heading}
       intro={quickstart.intro}
     >
       <h3>{quickstart.prerequisitesHeading}</h3>
-      <ul className="cl-list">
+      <ul className="page-list">
         {quickstart.prerequisites.map((item) => (
           <li key={item}>
             <InlineCode text={item} />
           </li>
         ))}
       </ul>
-      <p className="cl-links">
+      <p className="page-links">
         <RepoLink location="quickstart" href={CLAUDLOBBY_README_QUICKSTART}>
           {quickstart.readmeLink}
         </RepoLink>
@@ -41,12 +41,12 @@ export function Quickstart() {
           {quickstart.docsLink}
         </a>
       </p>
-      <p className="cl-note">
+      <p className="page-note">
         {quickstart.alphaNote}{" "}
         <a href={CLAUDLOBBY_ISSUES} target="_blank" rel="noopener noreferrer">
           {quickstart.issuesLink}
         </a>
       </p>
-    </Section>
+    </PageSection>
   );
 }

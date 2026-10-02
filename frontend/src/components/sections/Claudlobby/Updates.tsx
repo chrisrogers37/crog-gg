@@ -4,7 +4,7 @@ import {
   CLAUDLOBBY_RELEASES_FEED,
 } from "../../../content/links";
 import { track } from "../../../services/analytics";
-import { Section } from "./Section";
+import { PageSection } from "../../common/PageSection";
 
 /**
  * For visitors not ready to try Claudlobby yet (#175): GitHub's release
@@ -14,8 +14,8 @@ import { Section } from "./Section";
 export function Updates() {
   const { updates } = claudlobby;
   return (
-    <Section id="updates" heading={updates.heading} intro={updates.intro}>
-      <p className="cl-links">
+    <PageSection id="updates" heading={updates.heading} intro={updates.intro}>
+      <p className="page-links">
         <a
           href={CLAUDLOBBY_RELEASES}
           target="_blank"
@@ -32,7 +32,7 @@ export function Updates() {
           {updates.feedLink}
         </a>
       </p>
-      <p className="cl-note">{updates.howTo}</p>
-    </Section>
+      <p className="page-note">{updates.howTo}</p>
+    </PageSection>
   );
 }

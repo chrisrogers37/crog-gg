@@ -12,8 +12,7 @@ tagline: |
 # One paragraph per line, blank line between. The renderer sets
 # `white-space: pre-line`, so a blank line here is a blank line on the page and a
 # wrapped line here would be a hard break mid-sentence -- keep each paragraph on
-# a single physical line however long it gets. After editing it, re-measure the
-# About preview's clamp (about.preview_height in site/site.yaml, #162).
+# a single physical line however long it gets.
 about_text: |
   a bit about me...
 

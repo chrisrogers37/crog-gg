@@ -1,24 +1,19 @@
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import site from "virtual:site-config";
-import { loadShowcase } from "../../../utils/showcaseLoader";
+import { useShowcase } from "../../../store";
 import type { ShowcaseImage } from "../../../types/Showcase";
 import { photoSrc, photoSrcSet } from "../../../utils/photos";
 import "./ImageShowcase.css";
 
 type ImageShowcaseProps = {
-  /** Override images instead of loading from YAML (useful for testing) */
+  /** Override the images showcase.yaml gives (useful for testing) */
   images?: ShowcaseImage[];
 };
 
 export function ImageShowcase({ images: propImages }: ImageShowcaseProps) {
-  const [images, setImages] = useState<ShowcaseImage[]>(propImages || []);
-
-  useEffect(() => {
-    if (!propImages) {
-      loadShowcase().then(setImages);
-    }
-  }, [propImages]);
+  // The store loads showcase.yaml with the rest of the content.
+  const loaded = useShowcase();
+  const images = propImages ?? loaded ?? [];
 
   // Don't render if no images or fewer than 3
   if (images.length < 3) return null;
@@ -53,7 +48,7 @@ export function ImageShowcase({ images: propImages }: ImageShowcaseProps) {
               key={`${image.src}-${index}`}
               aria-hidden={index >= images.length || undefined}
             >
-              {/* src last, as in AboutPage: set first, Safari fetches it eagerly. */}
+              {/* src last, as on the home page: set first, Safari fetches it eagerly. */}
               <img
                 alt={image.alt}
                 className="image-showcase-photo"

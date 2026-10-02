@@ -6,6 +6,7 @@ export {
   useLoad,
   useRegenerationError,
   useTimeline,
+  useShowcase,
 } from "./contentStore";
 export type { Load, LoadedContent } from "./contentStore";
 

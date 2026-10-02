@@ -1,45 +1,142 @@
+import { lazy, Suspense } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router";
 import { useProjects, useLoad, useContentStore } from "../../store";
+import type { Project } from "../../types";
 import { Breadcrumbs } from "../../components/common/Breadcrumbs";
+import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { LoadError } from "../../components/common/LoadError";
+import { PageSection } from "../../components/common/PageSection";
 import { SEO } from "../../components/SEO";
 import { projectBreadcrumbs, projectMeta } from "../../seo";
-import {
-  GitHubReadme,
-  RepoStats,
-  ProjectDemo,
-} from "../../components/features";
-import { ErrorBoundary } from "../../components/common/ErrorBoundary";
+import { ProjectDemo } from "../../components/features/ProjectDemo";
+import { RepoStats } from "../../components/features/RepoStats";
+import { hasOwnPage } from "../../content/ownPages";
+import { PROJECT_PAGES } from "../../content/projectPages";
 import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
-import { useGithubOn } from "../../hooks";
+import { useGithubOn, useScrollToHash } from "../../hooks";
 import "./ProjectDetailPage.css";
 
+const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
+
+// react-markdown and highlight.js, in a chunk of their own: fetched only for
+// a page that shows a README, not for Claudlobby's, which has none.
+const GitHubReadme = lazy(() =>
+  import("../../components/features/GitHubReadme").then((m) => ({
+    default: m.GitHubReadme,
+  })),
+);
+
+/** The README's card while its chunk loads. */
+function ReadmeFallback() {
+  return (
+    <div className="card readme-fallback" aria-hidden="true">
+      <div className="page-skeleton page-skeleton--short" />
+      <div className="page-skeleton" />
+      <div className="page-skeleton" />
+    </div>
+  );
+}
+
+/** The hero's boxes while the projects load (#196 M41). */
 function ProjectDetailSkeleton() {
   return (
     <div
-      className="project-detail-page project-detail-page--loading"
+      className="page project-page project-page--loading"
       role="status"
       aria-label="Loading project"
     >
-      <div className="project-header project-detail-skeleton" aria-hidden="true">
-        <div className="project-detail-skeleton__icon" />
-        <div className="project-header-content">
-          <div className="project-detail-skeleton__line project-detail-skeleton__line--title" />
-          <div className="project-detail-skeleton__line" />
-          <div className="project-detail-skeleton__line project-detail-skeleton__line--short" />
-        </div>
+      <div className="page-hero" aria-hidden="true">
+        <div className="page-skeleton page-skeleton--eyebrow" />
+        <div className="page-skeleton page-skeleton--headline" />
+        <div className="page-skeleton" />
+        <div className="page-skeleton page-skeleton--short" />
       </div>
     </div>
   );
 }
 
 /**
- * ProjectDetailPage (Enhanced with GitHub Integration)
- *
- * Displays detailed information about a single project including:
- * - GitHub README rendering
- * - Repository statistics
- * - Live demo embedding (if applicable)
+ * A project's page in the site's look (styles/page.css): what it is and where
+ * to go, then its repo's figures, what it's built with, its live demo and its
+ * README, each where it has one.
+ */
+function StandardProject({ project }: { project: Project }) {
+  const repo = githubRepo(project);
+  // Its stats and README show only where the API serves them (#189 M21).
+  const githubOn = useGithubOn(repo?.owner);
+  const liveDemo = hasLiveDemo(project);
+  const eyebrow = [project.category, project.status].filter(Boolean).join(" · ");
+
+  return (
+    <>
+      <header className="page-hero">
+        <p className="page-eyebrow">
+          <span aria-hidden="true">{project.icon}</span> {eyebrow}
+        </p>
+        <h1 className="page-headline">{project.title}</h1>
+        <p className="page-sub">{project.description}</p>
+        <div className="page-ctas">
+          {project.url !== "#" && (
+            <a href={project.url} className="btn btn-primary" {...EXTERNAL}>
+              {project.url.includes("github.com") ? "View on GitHub" : "Visit"}
+            </a>
+          )}
+          {liveDemo && (
+            <a href={project.demo} className="btn btn-ghost" {...EXTERNAL}>
+              Live demo
+            </a>
+          )}
+          {project.github && project.github !== project.url && (
+            <a href={project.github} className="btn btn-ghost" {...EXTERNAL}>
+              GitHub
+            </a>
+          )}
+        </div>
+      </header>
+
+      {repo && githubOn && (
+        <PageSection id="repository" heading="repository">
+          <ErrorBoundary compact>
+            <RepoStats owner={repo.owner} repoName={repo.name} />
+          </ErrorBoundary>
+        </PageSection>
+      )}
+
+      {project.technologies.length > 0 && (
+        <PageSection id="built-with" heading="built with">
+          <ul className="pills project-tech">
+            {project.technologies.map((tech) => (
+              <li key={tech}>{tech}</li>
+            ))}
+          </ul>
+        </PageSection>
+      )}
+
+      {liveDemo && (
+        <PageSection id="demo" heading="live demo">
+          <ErrorBoundary compact>
+            <ProjectDemo url={project.demo!} title={project.title} />
+          </ErrorBoundary>
+        </PageSection>
+      )}
+
+      {repo && githubOn && (
+        <PageSection id="readme" heading="readme">
+          <ErrorBoundary compact>
+            <Suspense fallback={<ReadmeFallback />}>
+              <GitHubReadme owner={repo.owner} repoName={repo.name} />
+            </Suspense>
+          </ErrorBoundary>
+        </PageSection>
+      )}
+    </>
+  );
+}
+
+/**
+ * ProjectDetailPage: /projects/:slug. A project with a page of its own
+ * (content/ownPages.ts) shows that; every other one the standard page.
+ * The breadcrumbs and the way back are the site's either way.
  */
 export function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -49,11 +146,10 @@ export function ProjectDetailPage() {
   const load = useLoad("projects");
   const reloadProjects = useContentStore((s) => s.reloadProjects);
 
-  // Find the project by slug (id)
   const project = projects.find((p) => p.id === slug);
-  const repo = project ? githubRepo(project) : null;
-  // Its stats and README show only where the API serves them (#189 M21).
-  const githubOn = useGithubOn(repo?.owner);
+  // A link to a section (/projects/claudlobby#quickstart) lands on it once
+  // the project is in.
+  useScrollToHash(project !== undefined);
 
   if (!project) {
     // A deep link renders before the content has loaded, and a failed load is
@@ -62,7 +158,7 @@ export function ProjectDetailPage() {
     if (load === "loading") return <ProjectDetailSkeleton />;
     if (typeof load === "object") {
       return (
-        <div className="project-detail-page">
+        <div className="page project-page">
           <LoadError
             message={`The projects didn't load: ${load.error}.`}
             onRetry={() => reloadProjects()}
@@ -71,128 +167,44 @@ export function ProjectDetailPage() {
       );
     }
     return (
-      <div className="project-not-found">
-        <h1>Project Not Found</h1>
-        <p>The project "{slug}" could not be found.</p>
-        <Link to="/projects" className="back-link">
-          Back to Projects
-        </Link>
+      <div className="page project-page">
+        <header className="page-hero">
+          <h1 className="page-headline">Project not found</h1>
+          <p className="page-sub">There's no project called "{slug}".</p>
+          <div className="page-ctas">
+            <Link to="/projects" className="btn btn-primary">
+              All projects
+            </Link>
+          </div>
+        </header>
       </div>
     );
   }
 
-  const liveDemo = hasLiveDemo(project);
+  const OwnPage = hasOwnPage(project.id) ? PROJECT_PAGES[project.id] : undefined;
 
   return (
     <>
       <SEO {...projectMeta(project)} />
       {/* Keyed, so another project's page starts fresh rather than reusing
           this one's state, fetched figures included (#196 M68). */}
-      <div className="project-detail-page" key={project.id}>
-        {/* Breadcrumbs */}
+      <div className="page project-page" key={project.id}>
         <Breadcrumbs items={projectBreadcrumbs(project)} />
+        {OwnPage ? <OwnPage project={project} /> : <StandardProject project={project} />}
 
-        {/* Project Header */}
-        <header className="project-header">
-          <div className="project-icon-large">{project.icon || "📁"}</div>
-          <div className="project-header-content">
-            <h1 className="project-title">{project.title}</h1>
-            <p className="project-description">{project.description}</p>
-
-            {/* Status Badge */}
-            {project.status && (
-              <span
-                className={`status-badge status-${project.status.toLowerCase()}`}
-              >
-                {project.status}
-              </span>
-            )}
-
-            {/* Links */}
-            <div className="project-links">
-              {project.url && (
-                <a
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-link primary"
-                >
-                  {project.url.includes("github.com")
-                    ? "View on GitHub"
-                    : "View Project"}
-                </a>
-              )}
-              {liveDemo && (
-                <a
-                  href={project.demo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-link secondary"
-                >
-                  Live Demo
-                </a>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* GitHub Stats */}
-        {repo && githubOn && (
-          <section className="project-section">
-            <h2 className="section-title">Repository Stats</h2>
-            <ErrorBoundary compact>
-              <RepoStats owner={repo.owner} repoName={repo.name} />
-            </ErrorBoundary>
-          </section>
-        )}
-
-        {/* Technologies */}
-        {project.technologies && project.technologies.length > 0 && (
-          <section className="project-section">
-            <h2 className="section-title">Technologies</h2>
-            <div className="technologies-list">
-              {project.technologies.map((tech) => (
-                <span key={tech} className="technology-badge">
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Live Demo */}
-        {liveDemo && (
-          <section className="project-section">
-            <ErrorBoundary compact>
-              <ProjectDemo url={project.demo!} title={project.title} />
-            </ErrorBoundary>
-          </section>
-        )}
-
-        {/* GitHub README */}
-        {repo && githubOn && (
-          <section className="project-section">
-            <h2 className="section-title">Documentation</h2>
-            <ErrorBoundary compact>
-              <GitHubReadme owner={repo.owner} repoName={repo.name} />
-            </ErrorBoundary>
-          </section>
-        )}
-
-        {/* Back Button */}
-        <div className="project-footer">
+        <div className="page-links project-footer">
           {/* Opened directly (a deep link, a new tab), there's no page of
               ours to go back to, and -1 would leave the site (#196 M67). */}
           <button
             onClick={() =>
               location.key === "default" ? navigate("/projects") : navigate(-1)
             }
-            className="back-button"
+            className="btn btn-ghost"
           >
-            Go Back
+            Go back
           </button>
-          <Link to="/projects" className="all-projects-link">
-            View All Projects
+          <Link to="/projects" className="btn btn-ghost">
+            All projects
           </Link>
         </div>
       </div>

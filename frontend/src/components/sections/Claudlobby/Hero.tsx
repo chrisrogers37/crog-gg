@@ -1,8 +1,8 @@
-import { Link } from "react-router";
 import { claudlobby } from "../../../content/claudlobby";
+import type { Project } from "../../../types";
 import { track } from "../../../services/analytics";
 import { RepoLink } from "../../common/RepoLink";
-import { InlineCode } from "./InlineCode";
+import { InlineCode } from "../../common/InlineCode";
 
 function StarIcon() {
   return (
@@ -16,24 +16,24 @@ function StarIcon() {
 }
 
 /**
- * Who built it, what it is, how mature it is, and the two next steps, all
- * above the fold on a phone (#173, #179, #181 G2/G9).
+ * What it is, how mature it is, and the two next steps, all above the fold on
+ * a phone (#173, #179, #181 G2/G9). Only Claudlobby's: who built it is the
+ * site around it.
  */
-export function Hero() {
+export function Hero({ project }: { project: Project }) {
   const { hero, maturity } = claudlobby;
   return (
-    <section className="cl-hero" aria-labelledby="cl-hero-heading">
-      <p className="cl-eyebrow">{hero.eyebrow}</p>
-      <h1 id="cl-hero-heading" className="cl-hero-headline">
+    <section className="page-hero" aria-labelledby="cl-hero-heading">
+      <p className="page-eyebrow">
+        {project.featured ? `${project.title} · Featured project` : project.title}
+      </p>
+      <h1 id="cl-hero-heading" className="page-headline">
         {hero.headline}
       </h1>
-      <p className="cl-hero-sub">
+      <p className="page-sub">
         <InlineCode text={hero.sub} />
       </p>
-      <p className="cl-hero-credibility">
-        {hero.credibility} <Link to="/about">{hero.aboutLink}</Link>
-      </p>
-      <div className="cl-hero-ctas">
+      <div className="page-ctas">
         <RepoLink location="hero" className="btn btn-primary">
           <StarIcon />
           {hero.ctaStar}
@@ -46,8 +46,8 @@ export function Hero() {
           {hero.ctaQuickstart}
         </a>
       </div>
-      <p className="cl-maturity cl-note">
-        <span className="cl-badge">{maturity.label}</span> {maturity.today}{" "}
+      <p className="cl-maturity page-note">
+        <span className="badge">{maturity.label}</span> {maturity.today}{" "}
         {maturity.planned}{" "}
         <a href="#roadmap">{maturity.link}</a>
         {" · "}

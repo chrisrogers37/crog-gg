@@ -1,8 +1,7 @@
 import { Link, useLocation } from "react-router";
 import site from "virtual:site-config";
+import { SITE_PAGES } from "../../../config/pages";
 import { ThemeToggle } from "../../common/ThemeToggle";
-import { GitHubMark } from "../../common/GitHubMark";
-import { RepoLink } from "../../common/RepoLink";
 import { useUIStore } from "../../../store";
 import "./Navigation.css";
 
@@ -16,17 +15,6 @@ export function Navigation() {
   const location = useLocation();
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
 
-  // With `home: profile`, the personal page is / (#188).
-  const landing = site.home === "landing";
-  const navItems = [
-    ...(landing
-      ? [
-          { path: "/", label: "Home" },
-          { path: "/about", label: "About" },
-        ]
-      : [{ path: "/", label: "Home" }]),
-    { path: "/projects", label: "Projects" },
-  ];
 
   return (
     <nav className="main-navigation" aria-label="Main navigation">
@@ -36,7 +24,7 @@ export function Navigation() {
 
       <div className="nav-right">
         <ul className="nav-links">
-          {navItems.map((item) => (
+          {SITE_PAGES.map((item) => (
             <li key={item.path}>
               <Link
                 to={item.path}
@@ -52,12 +40,6 @@ export function Navigation() {
             </li>
           ))}
         </ul>
-        {landing && (
-          <RepoLink location="header" className="btn btn-ghost btn-sm nav-repo">
-            <GitHubMark />
-            <span>Claudlobby</span>
-          </RepoLink>
-        )}
         <ThemeToggle />
 
         {/* Hamburger button - visible on mobile only */}

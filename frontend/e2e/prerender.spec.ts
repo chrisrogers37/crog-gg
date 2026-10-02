@@ -1,7 +1,6 @@
 import type { APIRequestContext } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { readProjects } from "../src/utils/projectLoader";
-import { site, TABS_PATH } from "./site";
+import { servedProjects, site } from "./site";
 
 /**
  * The crawler's view (#174): each page's raw HTML with no JavaScript run,
@@ -55,21 +54,22 @@ const expectLandingHead = async (
 };
 
 test.describe("Prerendered heads", () => {
-  test("home, the personal page and the projects ship their own heads", async ({
+  test("home and the projects ship their own heads, and /about none", async ({
     request,
   }) => {
-    // The personal page is /about beside the landing page, else / itself.
-    for (const path of new Set(["/", TABS_PATH, "/projects"])) {
+    for (const path of ["/", "/projects"]) {
       await expectLandingHead(request, path);
     }
+    // vercel.json sends /about home (router.test.tsx holds it to that), so
+    // the build writes no page for it, and the sitemap names none.
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect(sitemap).not.toMatch(/\/about</);
   });
 
   test("every indexed project ships a head naming that project", async ({
     request,
   }) => {
-    const projects = await readProjects(async (file) =>
-      (await request.get(`/content/projects/${file}`)).text(),
-    );
+    const projects = await servedProjects(request);
     expect(projects.length).toBeGreaterThan(0);
 
     for (const project of projects) {

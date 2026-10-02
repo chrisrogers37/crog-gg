@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RepoStats } from "../RepoStats";
 import {
@@ -72,6 +72,30 @@ describe("RepoStats when the repo changes (#196 M68)", () => {
     rerender(<RepoStats owner="owner" repoName="second" />);
     expect(screen.queryByText("111")).not.toBeInTheDocument();
     expect(container.querySelector(".repo-stats.loading")).toBeInTheDocument();
+  });
+});
+
+describe("RepoStats' topics", () => {
+  it("lists the repo's topics, as the site's pills", async () => {
+    vi.spyOn(githubService, "getRepository").mockResolvedValue({
+      ...repo("tagged", 1),
+      topics: ["agents", "tmux"],
+    });
+    render(<RepoStats owner="owner" repoName="tagged" />);
+
+    const topics = await screen.findByRole("list", { name: "Topics" });
+    expect(topics).toHaveClass("pills");
+    expect(within(topics).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+      "agents",
+      "tmux",
+    ]);
+  });
+
+  it("lists none when the repo has none", async () => {
+    vi.spyOn(githubService, "getRepository").mockResolvedValue(repo("bare", 5));
+    render(<RepoStats owner="owner" repoName="bare" />);
+    expect(await screen.findByText("5")).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Topics" })).toBeNull();
   });
 });
 

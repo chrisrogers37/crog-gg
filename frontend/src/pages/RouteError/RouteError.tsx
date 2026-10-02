@@ -10,28 +10,30 @@ import "../../components/common/ErrorBoundary/ErrorBoundary.css";
 export function RouteError() {
   const error = useRouteError();
   return (
-    <div className="error-boundary" role="alert">
-      <div className="error-boundary__icon">!</div>
-      <h2 className="error-boundary__title">Something went wrong</h2>
-      <p className="error-boundary__message">
-        This page failed to load. Reloading usually fixes it, or you can go{" "}
-        <Link to="/">home</Link>.
-      </p>
-      <div className="error-boundary__actions">
-        <button
-          className="error-boundary__retry-btn"
-          onClick={() => window.location.reload()}
-        >
-          Reload page
-        </button>
+    <div className="page">
+      <div className="error-boundary" role="alert">
+        <div className="error-boundary__icon">!</div>
+        <h2 className="error-boundary__title">Something went wrong</h2>
+        <p className="error-boundary__message">
+          This page failed to load. Reloading usually fixes it, or you can go{" "}
+          <Link to="/">home</Link>.
+        </p>
+        <div className="error-boundary__actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Reload page
+          </button>
+        </div>
+        {import.meta.env.DEV && error instanceof Error && (
+          <details className="error-boundary__details">
+            <summary>Error details</summary>
+            <pre>{error.message}</pre>
+            <pre>{error.stack}</pre>
+          </details>
+        )}
       </div>
-      {import.meta.env.DEV && error instanceof Error && (
-        <details className="error-boundary__details">
-          <summary>Error details</summary>
-          <pre>{error.message}</pre>
-          <pre>{error.stack}</pre>
-        </details>
-      )}
     </div>
   );
 }

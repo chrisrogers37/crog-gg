@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router";
 import site from "virtual:site-config";
 import { socialsIn } from "../../../../config/socials";
@@ -19,38 +19,36 @@ vi.mock("../../../../store", () => ({
 }));
 
 describe("MobileMenu", () => {
-  // These name the landing's links; "with home: profile" below covers the other.
-  const configuredHome = site.home;
-  beforeEach(() => {
-    site.home = "landing";
-  });
-  afterEach(() => {
-    site.home = configuredHome;
-  });
-
+  // As site.yaml may write them; the menu shows them lowercase.
   const sections = [
     { id: "about", label: "About" },
     { id: "journey", label: "Journey" },
   ];
 
-  it("renders menu when open", () => {
-    render(
-      <MemoryRouter>
-        <MobileMenu sections={sections} activeSection="about" />
-      </MemoryRouter>,
-    );
-    expect(screen.getByText("menu")).toBeInTheDocument();
-    expect(screen.getByText("about")).toBeInTheDocument();
-    expect(screen.getByText("journey")).toBeInTheDocument();
-  });
-
-  it("renders social links", () => {
+  it("renders menu when open, linking the page's sections by their ids", () => {
     render(
       <MemoryRouter>
         <MobileMenu sections={sections} />
       </MemoryRouter>,
     );
-    // Claudlobby, then exactly the menu socials, in site.yaml's order.
+    expect(screen.getByText("menu")).toBeInTheDocument();
+    // In a group its label names, apart from the page links of the same name.
+    const group = screen.getByRole("group", { name: "sections" });
+    const links = within(group)
+      .getAllByRole("link")
+      .map((link) => [link.textContent, link.getAttribute("href")]);
+    expect(links).toEqual([
+      ["about", "#about"],
+      ["journey", "#journey"],
+    ]);
+  });
+
+  it("renders social links: exactly the menu socials, in site.yaml's order", () => {
+    render(
+      <MemoryRouter>
+        <MobileMenu sections={sections} />
+      </MemoryRouter>,
+    );
     const menuSocials = socialsIn(site, "menu");
     expect(menuSocials).not.toHaveLength(0);
     const connect = screen.getByText("connect").parentElement!;
@@ -58,54 +56,21 @@ describe("MobileMenu", () => {
       link.textContent,
       link.getAttribute("href"),
     ]);
-    expect(links).toEqual([
-      ["claudlobby on github", CLAUDLOBBY_REPO],
-      ...menuSocials.map((social) => [social.label, social.url]),
-    ]);
+    expect(links).toEqual(menuSocials.map((social) => [social.label, social.url]));
+    expect(links.some(([, href]) => href?.startsWith(CLAUDLOBBY_REPO))).toBe(false);
   });
 
-  it("renders page links", () => {
+  it("renders page links: the owner's page is home", () => {
     render(
       <MemoryRouter>
         <MobileMenu />
       </MemoryRouter>,
     );
-    expect(screen.getByText("home")).toBeInTheDocument();
-    // "about me", so it can't be mistaken for /about's own About section.
-    expect(screen.getByRole("link", { name: "about me" })).toHaveAttribute(
+    const about = screen.getAllByRole("link", { name: "about" });
+    expect(about.map((link) => link.getAttribute("href"))).toEqual(["/"]);
+    expect(screen.getByRole("link", { name: "projects" })).toHaveAttribute(
       "href",
-      "/about",
+      "/projects",
     );
-    expect(screen.getByText("all projects")).toBeInTheDocument();
-  });
-
-  describe("with home: profile (#188)", () => {
-    const home = site.home;
-    afterEach(() => {
-      site.home = home;
-    });
-
-    it("links home and the projects, with no about me or Claudlobby link", () => {
-      site.home = "profile";
-      render(
-        <MemoryRouter>
-          <MobileMenu />
-        </MemoryRouter>,
-      );
-      expect(screen.getByRole("link", { name: "home" })).toHaveAttribute("href", "/");
-      expect(screen.getByText("all projects")).toBeInTheDocument();
-      expect(screen.queryByText("about me")).toBeNull();
-      expect(screen.queryByText("claudlobby on github")).toBeNull();
-    });
-  });
-
-  it("marks active section", () => {
-    render(
-      <MemoryRouter>
-        <MobileMenu sections={sections} activeSection="about" />
-      </MemoryRouter>,
-    );
-    const aboutBtn = screen.getByText("about");
-    expect(aboutBtn.className).toContain("active");
   });
 });

@@ -9,28 +9,11 @@ const REPO = "https://github.com/example/site";
 
 describe("Footer", () => {
   const configured = site.footer.source_repo_url;
-  const home = site.home;
   afterEach(() => {
     site.footer.source_repo_url = configured;
-    site.home = home;
   });
 
-  it("links Claudlobby and the personal page beside the landing page", () => {
-    site.home = "landing";
-    renderWithProviders(<Footer />);
-    expect(screen.getByRole("link", { name: "claudlobby" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "about" })).toHaveAttribute("href", "/about");
-  });
-
-  it("drops both with home: profile, where the personal page is home (#188)", () => {
-    site.home = "profile";
-    renderWithProviders(<Footer />);
-    expect(screen.queryByRole("link", { name: "claudlobby" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "about" })).toBeNull();
-  });
-
-  it("names the owner, then links Claudlobby, the personal page, exactly the footer socials in order, and the source", () => {
-    site.home = "landing";
+  it("names the owner, then links exactly the footer socials in order, and the source", () => {
     site.footer.source_repo_url = REPO;
     const { container } = renderWithProviders(<Footer />);
 
@@ -42,11 +25,11 @@ describe("Footer", () => {
       link.getAttribute("href"),
     ]);
     expect(links).toEqual([
-      ["claudlobby", CLAUDLOBBY_REPO],
-      ["about", "/about"],
       ...footerSocials.map((social) => [social.label, social.url]),
       ["view source", `${REPO}/tree/c0ffee`],
     ]);
+    // The owner's site: Claudlobby is one of its projects, not its footer's.
+    expect(links.some(([, href]) => href?.startsWith(CLAUDLOBBY_REPO))).toBe(false);
   });
 
   it("links the source repo last, in a new tab, when site.yaml names it (#188)", () => {

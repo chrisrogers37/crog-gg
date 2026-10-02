@@ -1,164 +1,146 @@
-/* Projects Section */
-.projects-section {
-  padding: 0;
-}
+/* Project cards: the site's .card (index.css), in a grid, and the featured
+   project's larger one. */
 
-/* Tile Grid */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
-/* Individual Tile */
-.project-tile {
-  display: flex;
-  flex-direction: column;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  text-decoration: none;
-  color: inherit;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+/* The featured card sits above the grid. */
+.project-featured + .projects-grid,
+.projects-skeleton .projects-grid {
+  margin-top: 1rem;
 }
 
-.project-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+.project-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.project-card:hover {
   border-color: var(--primary-color);
 }
 
-/* Tile Header (gradient + icon) */
-.project-tile-header {
-  height: 80px;
-  display: flex;
+/* A chip in the project's own colour (its file's gradient), else grey. */
+.project-card-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.project-tile-icon {
-  font-size: 1.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 8px;
+  background: var(--border-color);
+  font-size: 1.4rem;
   line-height: 1;
 }
 
-/* Tile Body */
-.project-tile-body {
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.project-tile-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-color);
+.project-card-title {
   margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
   line-height: 1.3;
 }
 
-.project-tile-description {
-  font-size: 0.8rem;
-  color: var(--text-color-secondary);
+.project-card-status {
+  align-self: flex-start;
+}
+
+/* Two lines: the full description is on the project's page. */
+.project-card-description {
   margin: 0;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-color-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Tech Pills */
-.project-tile-tech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
+/* The pills close the card, level across a row. */
+.project-card-tech {
   margin-top: auto;
   padding-top: 0.5rem;
 }
 
-.project-tile-tech-pill {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.4rem;
-  background: var(--border-color);
-  /* The secondary grey was under 4.5:1 on the pill's own grey, in both themes. */
-  color: var(--text-color);
-  border-radius: 4px;
-  white-space: nowrap;
+.project-featured {
+  padding: 1.75rem;
 }
 
-.project-tile-tech-more {
-  opacity: 0.7;
+.project-featured .page-eyebrow {
+  margin-bottom: 0.5rem;
 }
 
-/* Skeleton Loading */
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.project-featured-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.skeleton-tile {
-  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.project-featured-description {
+  max-width: 680px;
+  margin: 0.75rem 0 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-color-secondary);
+}
+
+.project-featured .page-ctas {
+  margin-top: 1.5rem;
+}
+
+/* Loading: the real cards' boxes, blank and pulsing. */
+.skeleton-card {
+  animation: pulse 2s infinite;
   pointer-events: none;
 }
 
-.skeleton-header {
-  background: var(--border-color);
-}
-
-.skeleton-tile .project-tile-title,
-.skeleton-tile .project-tile-description {
-  border-radius: 4px;
-  background: var(--border-color);
-}
-
-.skeleton-tile .project-tile-title {
+.skeleton-card .page-eyebrow,
+.skeleton-card .project-featured-title,
+.skeleton-card .project-featured-description,
+.skeleton-card .project-card-title,
+.skeleton-card .project-card-description {
   width: 60%;
+  border-radius: 8px;
+  background: var(--border-color);
 }
 
-.skeleton-tile .project-tile-tech-pill {
-  width: 40px;
+.skeleton-card .project-featured-description,
+.skeleton-card .project-card-description {
+  width: 90%;
 }
 
-/* Responsive */
+.skeleton-card .project-card-icon {
+  background: var(--border-color);
+}
+
+.skeleton-card .pills > li {
+  width: 3rem;
+}
+
+.skeleton-card .btn {
+  width: 8rem;
+}
+
 @media (max-width: 768px) {
   .projects-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 480px) {
   .projects-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .project-tile-header {
-    height: 60px;
-  }
-
-  .project-tile-body {
-    padding: 0.5rem;
-  }
-
-  .project-tile-title {
-    font-size: 0.85rem;
-  }
-
-  .project-tile-description {
-    font-size: 0.75rem;
-  }
-
-  .project-tile-tech-pill {
-    font-size: 0.6rem;
+  .project-featured {
+    padding: 1.25rem;
   }
 }

@@ -1,1 +1,1 @@
-export { ContactCTA } from "./ContactCTA";
+export { ContactCTA, CONTACT_ID } from "./ContactCTA";

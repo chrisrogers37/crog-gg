@@ -4,9 +4,11 @@ import site from "virtual:site-config";
 import { API_URL } from "../config/api";
 import { BioData, Employment, Education, Skill, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
+import type { ShowcaseImage } from "../types/Showcase";
 import { loadResume } from "../data/resume";
 import { loadBio } from "../utils/bioLoader";
 import { loadProjects } from "../utils/projectLoader";
+import { loadShowcase } from "../utils/showcaseLoader";
 import { loadTimeline } from "../utils/timelineLoader";
 
 // ===========================================
@@ -30,15 +32,18 @@ interface ContentState {
   skills: Skill[];
   projects: Project[];
   timeline: TimelineData | null;
+  // The photo strip's images, null until showcase.yaml settles. The strip is
+  // decoration, so its file never fails: one that won't load is no photos.
+  showcase: ShowcaseImage[] | null;
 
   // Original data for reset functionality
   originalBio: BioData | null;
   originalExperience: Employment[];
   originalEducation: Education[];
 
-  // Each file's load, apart (#190 M23): bio's failure is the About page's,
-  // timeline's the Journey tab's, and projects' the project pages' and the
-  // Projects tab's. One file can't take another's place down.
+  // Each file's load, apart (#190 M23): bio's failure is the home page's,
+  // timeline's the journey's, and projects' the projects section's and the
+  // project pages'. One file can't take another's place down.
   loads: Record<LoadedContent, Load>;
   isRegenerating: boolean;
   // Transient: the page still has content, one regeneration just did not land.
@@ -87,6 +92,7 @@ const initialState: ContentState = {
   skills: [],
   projects: [],
   timeline: null,
+  showcase: null,
   originalBio: null,
   originalExperience: [],
   originalEducation: [],
@@ -202,7 +208,7 @@ export const useContentStore = create<ContentStore>()(
        * Load all content from YAML files, each on its own (#190 M23): each
        * part shows as soon as its own file is in, and one that fails leaves
        * the others' sections up.
-       * Called once on app initialization, and by the About page's retry.
+       * Called once on app initialization, and by the home page's retry.
        */
       loadContent: async () => {
         // Nothing renders the résumé files (#159), so a failure there is
@@ -221,6 +227,9 @@ export const useContentStore = create<ContentStore>()(
           reload("bio", loadBio, (bio) => ({ bio, originalBio: bio })),
           reload("timeline", loadTimeline, (timeline) => ({ timeline })),
           reload("projects", loadProjects, (projects) => ({ projects })),
+          // With the rest, not once the home page is up: a link to the
+          // contact section below the strip waits for it (HomePage).
+          loadShowcase().then((showcase) => set({ showcase })),
           resume,
         ]);
       },
@@ -373,25 +382,6 @@ export const useContentStore = create<ContentStore>()(
               : null,
             ...cooldown,
           });
-
-          // Legacy components still listen for this instead of reading the
-          // store. Only announce a section that actually came back -- these
-          // listeners assign the payload straight into their own state, so
-          // announcing an absent section would blank the content the set()
-          // above just deliberately preserved. For the same reason they are
-          // handed the validated value: a shape the store refused would
-          // otherwise blank these listeners by the back door.
-          if (about) {
-            window.dispatchEvent(
-              new CustomEvent("contentRegenerated", {
-                detail: {
-                  section: "about",
-                  content: about,
-                  use_fantasy: useFantasy,
-                },
-              }),
-            );
-          }
         } catch (error) {
           const timedOut = controller.signal.aborted;
           if (!timedOut) console.error("Regeneration failed:", error);
@@ -462,31 +452,6 @@ export const useContentStore = create<ContentStore>()(
           hasModifiedContent: false,
           regenerationError: null,
         });
-
-        // Dispatch events for legacy components
-        window.dispatchEvent(
-          new CustomEvent("contentRegenerated", {
-            detail: {
-              section: "about",
-              content: data.bio,
-              is_full_regeneration: true,
-              use_fantasy: false,
-            },
-          }),
-        );
-        window.dispatchEvent(
-          new CustomEvent("contentRegenerated", {
-            detail: {
-              section: "portfolio",
-              content: {
-                experience: data.experience,
-                education: data.education,
-              },
-              is_full_regeneration: true,
-              use_fantasy: false,
-            },
-          }),
-        );
       },
     };
   }, { name: "content-store", enabled: import.meta.env.DEV }),
@@ -509,3 +474,5 @@ export const useLoad = (part: LoadedContent) =>
 export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
 export const useTimeline = () => useContentStore((state) => state.timeline);
+/** The photo strip's images: null while showcase.yaml loads. */
+export const useShowcase = () => useContentStore((state) => state.showcase);

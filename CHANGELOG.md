@@ -25,11 +25,20 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - SUMMON NEW LORE and the project pages' GitHub panels show only where the deployment can serve them (`GET /api/features`), and `features` in `site/site.yaml` can turn either off; a keyless fork no longer shows a button that fails (#243).
 - The content files the site renders are checked by the build, by `npm run site:check` and as they load, naming the file and the field; a file that fails takes only its own section down, and `projects/index.yaml` alone sets the projects' order. `order`, `featured`, `tags` and `image` are gone from project files, and links must be https (#244).
 - `npm run site:init` starts a fork from the fictional `site.example/`, and FORKING.md is the checklist from a copy of the repo to a deployed site (#245).
+- The owner's page is the home page (#247), in the look Claudlobby's page set, one column: a hero with a photo, then about (with SUMMON NEW LORE under it), the journey, the projects, music, the photo strip and the contact links. The tabs, the section navigator and the About preview's clamp are gone, the menu links each section, and `/about` redirects to `/`.
+- Claudlobby is the featured project (#247): first and larger on `/` and `/projects`, with its own page at `/projects/claudlobby`. That page is Claudlobby's alone: the site's tagline, the owner's résumé line and "More about me" are off it, and the header, menu and footer link nothing of Claudlobby's.
+- `/projects` (#247) is the featured card and a grid of cards, with no search or category filters; each project's page is in the same look, with its repo's figures, what it's built with and its README.
+- The share card is the owner's (#247): the tagline and a photo, where it was Claudlobby's.
+- `site.yaml` and the project index (#247): `home` and `about` (which held only `preview_height`) are gone, so a `site.yaml` that still has either fails, naming the key; `sections` is the home page's, in order; `featured` in `projects/index.yaml` names the project shown first. The About text renders from the store, so the store's events for the old About component and `react-transition-group` are gone (#198 PR 2).
+- The 404 and error pages, and a section that fails to load, are in the same look, with the site's one radius and its buttons; so is the photo strip (#247).
+- Only the standard project page loads the README renderer, so Claudlobby's page doesn't, and the music section loads Spotify's player once it's near the screen rather than with the page (#247).
 
 ### Fixed
 - A project page fits a phone: a README's wide table scrolls in a box of its own, and a long URL wraps. Pages take their width from the layout, not from their content, so `/projects` no longer widens as its projects arrive (#246).
 - Filled buttons and active tabs use the one filled-button colour in both themes, white on primary-600 as on the home page's button, so their text meets WCAG AA in the dark theme too. So do the tech pills and the skill bubbles, and a README's task-list checkboxes are named (#246).
 - The project stats and the `/projects` tiles keep their size when they load, and `/projects` shows its filters while it loads (#246).
+- A link followed while an in-page link's smooth scroll is still moving opens the next page at the top; in Chromium the scroll carried on down the new page (#247).
+- On a phone, the journey's skills follow the timeline. Above it, the cloud grew as entries scrolled in and pushed the one being read down (#247).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).

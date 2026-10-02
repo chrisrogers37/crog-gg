@@ -1,10 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { ReactElement } from "react";
 import { beforeAll, describe, it, expect } from "vitest";
-import { matchPath, matchRoutes, type RouteObject } from "react-router";
+import { matchPath, matchRoutes, Navigate, type RouteObject } from "react-router";
 import site from "virtual:site-config";
-import { aboutPath } from "./config/routes";
-import { HOMES } from "./config/schema";
-import { routesFor } from "./router";
+import { routes } from "./router";
 import { landingPages } from "./seo/prerender";
 import { createSeo } from "./seo/site";
 import { NotFoundPage } from "./pages/NotFound";
@@ -47,6 +47,10 @@ const routeEntries = (
 const isRouteError = (element: RouteObject["errorElement"]) =>
   (element as ReactElement | undefined)?.type === RouteError;
 
+/** A route that only sends the visitor on, which vercel.json redirects too. */
+const isRedirect = (route: RouteObject) =>
+  (route.element as ReactElement | undefined)?.type === Navigate;
+
 /**
  * Path patterns a visitor can land on, but "*". React Router's own rule: a
  * route matches a URL by itself if it has a path or is an index route.
@@ -56,27 +60,39 @@ const landablePatterns = (tree: RouteObject[]): string[] => [
     routeEntries(tree)
       .filter(
         ({ route }) =>
-          route.path !== "*" && (route.path !== undefined || route.index),
+          route.path !== "*" &&
+          !isRedirect(route) &&
+          (route.path !== undefined || route.index),
       )
       .map(({ pattern }) => pattern),
   ),
 ];
 
-// For each `home` site.yaml can name (#188), not just the shipped one.
-describe.each(HOMES)("routes and prerendered pages, with home: %s", (home) => {
-  const routes = routesFor(home);
-
+describe("routes and prerendered pages", () => {
   // Over the shipped projects, so a project id the router can't match (one
   // with a slash, say) fails here instead of shipping a 200 that shows a 404.
   let pages: ReturnType<typeof landingPages>;
   beforeAll(async () => {
-    pages = landingPages(createSeo({ ...site, home }), await shippedProjects());
+    pages = landingPages(createSeo(site), await shippedProjects());
   });
 
-  it("puts the personal page where site.yaml's home says", () => {
-    // AboutPage's route is the one that draws its own full-width card.
-    const matches = matchRoutes(routes, aboutPath({ home })) ?? [];
-    expect(matches.at(-1)?.route.handle).toEqual({ fullBleed: true });
+  it("sends /about, where the owner's page was, home, in the app and on Vercel", () => {
+    const matches = matchRoutes(routes, "/about") ?? [];
+    const element = matches.at(-1)?.route.element as ReactElement<{ to: string }>;
+    expect(element.type).toBe(Navigate);
+    expect(element.props.to).toBe("/");
+
+    // A visit straight to /about never reaches the app: no page is written
+    // for it, so Vercel has to send it on.
+    expect(pages.map((page) => page.path)).not.toContain("/about");
+    const vercel = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, "../../vercel.json"), "utf8"),
+    ) as { redirects?: { source: string; destination: string; permanent: boolean }[] };
+    expect(vercel.redirects).toContainEqual({
+      source: "/about",
+      destination: "/",
+      permanent: true,
+    });
   });
 
   it("prerenders a page for every route a visitor can land on", () => {
@@ -122,6 +138,7 @@ describe.each(HOMES)("routes and prerendered pages, with home: %s", (home) => {
       const isPage =
         ancestors.length > 0 &&
         route.path !== "*" &&
+        !isRedirect(route) &&
         (route.path !== undefined || route.index);
       if (isPage) {
         const caught = [route, ...ancestors.slice(1)].some((r) =>

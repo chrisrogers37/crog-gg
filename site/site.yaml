@@ -31,11 +31,6 @@ github:
   # Whose public repos the project pages' stats and READMEs come from.
   username: chrisrogers37
 
-# What / shows. landing: the Claudlobby landing page, with the personal page at
-# /about. profile: the personal page itself, and no landing page or Claudlobby
-# links.
-home: landing
-
 seo:
   # Appended to every page's title.
   site_name: Chris Rogers - i build things that build things
@@ -44,14 +39,14 @@ seo:
     path: /og-image.png
     width: 1200
     height: 630
-    alt: Build a dark factory. Claudlobby runs a fleet of always-on Claude Code agents on your own hardware, composed from one fleet.yaml.
+    alt: i build things that build things. data, agent fleets and music.
   about:
     description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
   projects:
     description: Explore my portfolio of software projects, side projects, and experiments. From web apps to mobile development.
 
 # In display order. show_in picks the places each one shows: footer, menu
-# (the mobile menu), contact (the contact card), music (the Music tab) and
+# (the mobile menu), contact (the contact section), music (the music section) and
 # schema (the Person schema's sameAs). The label is the visible text.
 socials:
   - id: github
@@ -95,18 +90,18 @@ footer:
   # Leave it empty for no link.
   source_repo_url: https://github.com/chrisrogers37/crog-gg
 
-# /about's tabs, in order. The ids are fixed (about, journey, projects, music),
-# and about is required, since the collapsed preview is About's; leave another
-# out to hide it.
+# The home page's sections, in order; each label is its heading. The ids are
+# fixed (about, journey, projects, music), and about is required, since it's
+# the text SUMMON rewrites; leave another out to hide it.
 sections:
   - id: about
-    label: About
+    label: about
   - id: journey
-    label: Journey
+    label: journey
   - id: projects
-    label: Projects
+    label: projects
   - id: music
-    label: Music
+    label: music
 
 hero:
   # Photos in site/public/profile-photos/, without the size suffix: one is
@@ -147,13 +142,6 @@ regenerate:
   # Asked of every rewrite, word for word (a request, not a check).
   style_rules:
     - "Never use an em dash (\u2014) or an en dash (\u2013), in any field. Where you would reach for one, use a comma, a colon, a full stop or an ellipsis. This holds in every register, including ones whose form would normally invite one."
-
-about:
-  # Where the collapsed About text fades, in px, tuned to today's text in
-  # content/bio.yaml. Re-measure both after editing it (#162).
-  preview_height:
-    narrow: 449
-    wide: 329
 
 contact:
   heading: connect w/ me

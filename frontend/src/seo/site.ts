@@ -1,8 +1,6 @@
-import { aboutPath } from "../config/routes";
 import type { SiteConfig } from "../config/schema";
 import { socialsIn } from "../config/socials";
 import type { Project } from "../types/Project";
-import { CLAUDLOBBY_REPO } from "../content/links";
 
 /**
  * What each page tells crawlers and link unfurlers about itself (#174).
@@ -31,8 +29,11 @@ export type PageMeta = {
    * indexed has none.
    */
   path?: string;
-  /** Page title; the site name is appended. */
-  title: string;
+  /**
+   * Page title; the site name is appended. The home page has none, so its
+   * title is the site name alone.
+   */
+  title?: string;
   description: string;
   type?: "website" | "profile";
   noIndex?: boolean;
@@ -84,7 +85,8 @@ export function createSeo(site: SiteConfig) {
 
   const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 
-  const pageTitle = (meta: PageMeta) => `${meta.title} | ${site.seo.site_name}`;
+  const pageTitle = (meta: PageMeta) =>
+    meta.title ? `${meta.title} | ${site.seo.site_name}` : site.seo.site_name;
 
   /**
    * The page's meta and link tags, in the order they are written. The title
@@ -125,34 +127,11 @@ export function createSeo(site: SiteConfig) {
     url: SITE_URL,
   } as const;
 
-  const HOME_DESCRIPTION = `Claudlobby composes a fleet of always-on Claude Code agents from one fleet.yaml, on hardware you own: an open-source dark factory for software. By ${site.owner.name}.`;
-
-  /** The front door for Claudlobby (#173). */
-  const HOME_META: LandingPage = {
-    path: "/",
-    title: "Claudlobby",
-    description: HOME_DESCRIPTION,
-    schemas: [
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareSourceCode",
-        name: "Claudlobby",
-        description: HOME_DESCRIPTION,
-        codeRepository: CLAUDLOBBY_REPO,
-        license: "https://www.apache.org/licenses/LICENSE-2.0",
-        programmingLanguage: "Python",
-        runtimePlatform: "Claude Code",
-        author: AUTHOR,
-      },
-    ],
-  };
-
   const { works_for: worksFor } = site.owner;
 
-  /** The personal page, which is who the Person schema describes. */
-  const ABOUT_META: LandingPage = {
-    path: aboutPath(site),
-    title: "About",
+  /** The home page: the owner's, so it's who the Person schema describes. */
+  const HOME_META: LandingPage = {
+    path: "/",
     description: site.seo.about.description,
     type: "profile",
     schemas: [
@@ -219,10 +198,7 @@ export function createSeo(site: SiteConfig) {
   }
 
   /** The site's own pages, before the projects, in sitemap order. */
-  const PAGES: LandingPage[] =
-    site.home === "landing"
-      ? [HOME_META, ABOUT_META, PROJECTS_META]
-      : [ABOUT_META, PROJECTS_META];
+  const PAGES: LandingPage[] = [HOME_META, PROJECTS_META];
 
   return {
     SITE_URL,
@@ -231,7 +207,6 @@ export function createSeo(site: SiteConfig) {
     pageTitle,
     headTags,
     HOME_META,
-    ABOUT_META,
     PROJECTS_META,
     NOT_FOUND_META,
     PAGES,

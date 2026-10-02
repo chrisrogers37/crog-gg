@@ -121,7 +121,8 @@ describe("Timeline", () => {
 
   it("sorts entries newest-first (present at top)", () => {
     render(<Timeline data={mockData} />);
-    const titles = screen.getAllByRole("heading", { level: 2 });
+    // h3s: the page's section heading ("journey") is the h2 above them.
+    const titles = screen.getAllByRole("heading", { level: 3 });
     // Artemis (present) should be first, then AI-Maxxing (Nov 2025),
     // then Citadel (Jul 2025), then Cornell (2014)
     expect(titles[0].textContent).toBe("Senior Data Scientist and Engineer");

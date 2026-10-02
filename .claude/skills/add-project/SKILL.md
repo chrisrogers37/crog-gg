@@ -80,7 +80,7 @@ status: active
 gradient: "linear-gradient(135deg, #color1 0%, #color2 100%)"
 ```
 
-The site checks every project file as it loads (#190): a field it doesn't know (`order`, `featured`, `tags` and `image` are gone) fails the build, naming the file and the key.
+The site checks every project file as it loads (#190): a field it doesn't know (`order`, `featured`, `tags` and `image` are gone) fails the build, naming the file and the key. Which project is featured is `index.yaml`'s call (below).
 
 Optional fields (add only if available):
 - `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the site's GitHub owner (`github.username` in `site/site.yaml`) or one of its `allowed_owners`; leave it out for anyone else's repo, since the API serves no one else's. The same goes for a `url` on github.com: without `github`, the page reads `url` as the repo, so point another owner's project at its site, not its repo.
@@ -88,6 +88,7 @@ Optional fields (add only if available):
 
 **Update `site/public/content/projects/index.yaml`**:
 - Insert the new filename at the chosen position: the list's order is the order the site shows them in, and nothing else sets it.
+- Leave `featured` alone unless the user asks to feature the new project: it names the one file shown first and larger on `/` and `/projects`, so featuring this one unfeatures the current one.
 
 ### 6. Verify
 
@@ -104,7 +105,7 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 | icon | Yes | One emoji, as a YAML escape (shown as plain text) |
 | category | Yes | web-app, ai-tools, native-app, data-science, open-source |
 | technologies | No | Top 3-4 (only 3 shown on card) |
-| gradient | No | CSS gradient for card header, defaults to gray |
+| gradient | No | CSS gradient behind the card's icon, defaults to gray |
 | status | No | active, archived, experimental |
 | github | No | A public repo of the configured GitHub owner (see step 5) |
 | demo | No | Only if it differs from `url`; needs a `frame-src` entry (see step 5) |
@@ -115,4 +116,4 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 - **Leaving it out of `index.yaml`**: a file the index doesn't list is shown nowhere.
 - **Corporate tone in description**: Keep it lowercase and casual. No em-dashes.
 - **Too many technologies**: Card only renders 3. Pick the most important ones first.
-- **Skipping the gradient**: A gray default card looks lazy. Always try to pull a color.
+- **Skipping the gradient**: A gray icon chip looks lazy. Always try to pull a color.

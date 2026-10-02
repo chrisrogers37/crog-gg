@@ -1,4 +1,4 @@
-import type { BioData, Education, Employment } from "../types";
+import type { BioData, Education, Employment, Project } from "../types";
 
 // Whole content records for tests (#198 M54). Each takes only the fields a
 // test is about and fills in the rest, so a fixture is always a complete
@@ -27,5 +27,17 @@ export const makeEducation = (
   school: "Somewhere Else",
   degree: "BSc",
   year: "2020",
+  ...overrides,
+});
+
+export const makeProject = (overrides: Partial<Project> = {}): Project => ({
+  id: "example",
+  title: "Example",
+  description: "An example project.",
+  url: "https://example.com",
+  icon: "\u{1F680}",
+  category: "web-app",
+  technologies: [],
+  featured: false,
   ...overrides,
 });

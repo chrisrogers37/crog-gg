@@ -1,73 +1,119 @@
+import { Link } from "react-router";
 import { useContentStore, useLoad, useProjects } from "../../../store";
+import type { Project } from "../../../types";
+import { splitFeatured } from "../../../utils/featured";
 import { LoadError } from "../../common/LoadError";
+import { FeaturedProject } from "./FeaturedProject";
 import { ProjectCard } from "./ProjectCard";
 import "./Projects.css";
 
-/**
- * Six blank tiles. Each line is a blank line of the real tile's own type, so a
- * tile keeps its height when the projects arrive: a title, a two-line
- * description, and three pills and a "+N", which wrap on a phone as the real
- * ones do.
- */
-export function ProjectSkeletonGrid() {
+type ProjectGridProps = {
+  projects: Project[];
+  headingLevel?: 2 | 3;
+};
+
+/** The projects as a grid of cards. */
+export function ProjectGrid({ projects, headingLevel }: ProjectGridProps) {
   return (
-    <div className="projects-grid" role="status" aria-label="Loading projects">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="project-tile skeleton-tile" aria-hidden="true">
-          <div className="project-tile-header skeleton-header" />
-          <div className="project-tile-body">
-            <div className="project-tile-title">&nbsp;</div>
-            <div className="project-tile-description">
-              &nbsp;
-              <br />
-              &nbsp;
-            </div>
-            <div className="project-tile-tech">
-              {Array.from({ length: 4 }).map((_, j) => (
-                <span key={j} className="project-tile-tech-pill">
-                  &nbsp;
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
+    <div className="projects-grid">
+      {projects.map((project) => (
+        <ProjectCard key={project.id} project={project} headingLevel={headingLevel} />
       ))}
     </div>
   );
 }
 
-export function Projects() {
+/**
+ * Blank cards in the real ones' boxes while the projects load, so nothing
+ * moves when they land (#246): each line is a blank line of the real card's
+ * own type, and the pills wrap as the real ones do. The featured card's box
+ * leads, since index.yaml usually names one.
+ */
+export function ProjectSkeleton({ count }: { count: number }) {
+  return (
+    <div className="projects-skeleton" role="status" aria-label="Loading projects">
+      <div className="card project-featured skeleton-card" aria-hidden="true">
+        <p className="page-eyebrow">&nbsp;</p>
+        <div className="project-featured-title">&nbsp;</div>
+        <p className="project-featured-description">
+          &nbsp;
+          <br />
+          &nbsp;
+        </p>
+        <ul className="pills">
+          {Array.from({ length: 6 }).map((_, j) => (
+            <li key={j}>&nbsp;</li>
+          ))}
+        </ul>
+        <div className="page-ctas">
+          <span className="btn btn-ghost">&nbsp;</span>
+        </div>
+      </div>
+      <div className="projects-grid" aria-hidden="true">
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className="card project-card skeleton-card">
+            <span className="project-card-icon">&nbsp;</span>
+            <div className="project-card-title">&nbsp;</div>
+            <p className="project-card-description">
+              &nbsp;
+              <br />
+              &nbsp;
+            </p>
+            <ul className="pills project-card-tech">
+              {Array.from({ length: 4 }).map((_, j) => (
+                <li key={j}>&nbsp;</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type ProjectListProps = {
+  /** How many beside the featured one, with a link to the rest; all if left out. */
+  limit?: number;
+  /** The titles' level: h2 under a page's h1, h3 under a section's h2. */
+  headingLevel?: 2 | 3;
+  /** A failure's message sized for a section rather than a page. */
+  compact?: boolean;
+};
+
+/**
+ * The projects index.yaml lists: the featured one first and larger, then the
+ * others as cards, in the index's order. A failure or an empty list says so
+ * in its place, and the rest of the page stays up (#190 M23).
+ */
+export function ProjectList({ limit, headingLevel = 3, compact = false }: ProjectListProps) {
   const projects = useProjects();
   const load = useLoad("projects");
   const reloadProjects = useContentStore((s) => s.reloadProjects);
 
-  // A skeleton only while the projects load; a failure or an empty list
-  // says so in this tab, and the rest of the page stays up (#190 M23).
-  if (load !== "ready" || projects.length === 0) {
+  if (projects.length > 0) {
+    const { featured, others } = splitFeatured(projects);
+    const shown = limit === undefined ? others : others.slice(0, limit);
     return (
-      <section className="projects-section">
-        {load === "loading" ? (
-          <ProjectSkeletonGrid />
-        ) : typeof load === "object" ? (
-          <LoadError
-            compact
-            message={`The projects didn't load: ${load.error}.`}
-            onRetry={() => reloadProjects()}
-          />
-        ) : (
-          <p>No projects yet.</p>
+      <>
+        {featured && <FeaturedProject project={featured} headingLevel={headingLevel} />}
+        {shown.length > 0 && <ProjectGrid projects={shown} headingLevel={headingLevel} />}
+        {limit !== undefined && (
+          <p className="page-links">
+            <Link to="/projects">All projects</Link>
+          </p>
         )}
-      </section>
+      </>
     );
   }
-
-  return (
-    <section className="projects-section">
-      <div className="projects-grid">
-        {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-      </div>
-    </section>
-  );
+  if (load === "loading") return <ProjectSkeleton count={limit ?? 6} />;
+  if (typeof load === "object") {
+    return (
+      <LoadError
+        compact={compact}
+        message={`The projects didn't load: ${load.error}.`}
+        onRetry={() => reloadProjects()}
+      />
+    );
+  }
+  return <p>No projects yet.</p>;
 }

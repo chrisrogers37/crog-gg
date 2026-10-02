@@ -14,16 +14,6 @@
   visibility: hidden;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 /* Stats grid */
 .stats-grid {
   display: grid;
@@ -83,25 +73,9 @@
   font-size: 0.875rem;
 }
 
-/* Topics */
+/* Topics, as the site's pills (page.css) */
 .repo-topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
   margin-top: 1rem;
-}
-
-.topic-tag {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  border-radius: 9999px;
-  background-color: #dbeafe;
-  color: #1d4ed8;
-}
-
-.dark .topic-tag {
-  background-color: rgba(59, 130, 246, 0.2);
-  color: #93c5fd;
 }
 
 /* Responsive */

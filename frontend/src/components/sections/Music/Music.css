@@ -1,69 +1,21 @@
-/* Music section intro text */
-.music-intro {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text-color-secondary);
-  margin: 0;
-  max-width: 480px;
-}
+/* The music section's content; the page draws the section (styles/page.css). */
 
 .music-artist-name {
-  color: var(--primary-color);
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-color);
 }
 
-/* Compact link row */
-.music-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+/* The player's box: its height before it mounts, so nothing moves when it
+   does. */
+.spotify-embed {
+  min-height: 352px;
+  margin-top: 2rem;
+  border-radius: 8px;
+  background: var(--border-color);
 }
 
-.music-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-color-secondary);
-  background: var(--background-color);
-  border: 1px solid var(--border-color);
-  border-radius: 2rem;
-  text-decoration: none;
-  transition:
-    color 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
-}
-
-.music-link:hover {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-  text-decoration: none;
-}
-
-.music-link-icon {
-  width: 1rem;
-  height: 1rem;
-  color: inherit;
-  flex-shrink: 0;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .music-intro {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .music-links {
-    flex-direction: column;
-  }
-
-  .music-link {
-    justify-content: center;
-  }
+.spotify-embed iframe {
+  display: block;
+  border: 0;
+  border-radius: 8px;
 }

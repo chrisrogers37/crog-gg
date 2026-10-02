@@ -1,265 +1,35 @@
-.project-detail-page {
-  max-width: 800px;
-  margin: 0 auto;
+/* A project's page: the site's page (styles/page.css), with the breadcrumbs
+   close above the hero. */
+
+/* .page spaces its sections apart; the trail belongs to the hero. */
+.project-page > .breadcrumbs {
+  margin-bottom: -3rem;
 }
 
-.project-not-found {
-  text-align: center;
-  padding: 4rem 2rem;
+.project-page .page-hero {
+  padding-top: 0;
 }
 
-.project-not-found h1 {
-  font-size: 2rem;
-  color: var(--text-color);
-  margin-bottom: 1rem;
+.project-tech > li {
+  font-size: 0.875rem;
 }
 
-.project-not-found p {
-  color: var(--text-color-secondary);
-  margin-bottom: 2rem;
+.project-footer {
+  margin-top: 0;
 }
 
-.back-link {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.back-link:hover {
-  text-decoration: underline;
+.readme-fallback {
+  padding: 1.5rem 2rem;
 }
 
 /* Holds the page's height while it loads, so the footer doesn't jump below the
    fold when the project lands (#196 M41). */
-.project-detail-page--loading {
+.project-page--loading {
   min-height: 100vh;
 }
 
-/* `pulse` is the keyframes RepoStats.css and GitHubReadme.css define; both load
-   with this page. The global reduced-motion rule stops it. */
-.project-detail-skeleton {
-  animation: pulse 2s infinite;
-}
-
-.project-detail-skeleton .project-header-content {
-  align-self: stretch;
-}
-
-.project-detail-skeleton__icon {
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-  border-radius: 8px;
-  background: var(--border-color);
-}
-
-.project-detail-skeleton__line {
-  height: 14px;
-  margin-bottom: 0.75rem;
-  border-radius: 8px;
-  background: var(--border-color);
-}
-
-.project-detail-skeleton__line--title {
-  width: 50%;
-  height: 28px;
-}
-
-.project-detail-skeleton__line--short {
-  width: 70%;
-}
-
-/* Header */
-.project-header {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
-  margin: 2rem 0;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.project-icon-large {
-  font-size: 4rem;
-  flex-shrink: 0;
-  color: var(--text-color-secondary);
-}
-
-.project-header-content {
-  flex: 1;
-}
-
-.project-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0 0 0.75rem;
-}
-
-.project-description {
-  font-size: 1.125rem;
-  color: var(--text-color-secondary);
-  margin: 0 0 1rem;
-  line-height: 1.6;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-}
-
-.status-active {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-archived {
-  background: var(--background-color);
-  color: var(--text-color-secondary);
-}
-
-.status-experimental {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.dark .status-active {
-  background: rgba(22, 101, 52, 0.3);
-  color: #86efac;
-}
-
-.dark .status-experimental {
-  background: rgba(146, 64, 14, 0.3);
-  color: #fcd34d;
-}
-
-.project-links {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.project-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.project-link.primary {
-  background: var(--text-color);
-  color: var(--card-background);
-}
-
-.project-link.primary:hover {
-  opacity: 0.85;
-}
-
-/* Sections */
-.project-section {
-  margin: 2rem 0;
-}
-
-.section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-color);
-  margin: 0 0 1rem;
-}
-
-/* Technologies */
-.technologies-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.technology-badge {
-  padding: 0.5rem 1rem;
-  background: var(--background-color);
-  color: var(--text-color-secondary);
-  border-radius: 6px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-}
-
-/* README Placeholder */
-.readme-section {
-  background: var(--background-color);
-  border-radius: 12px;
-  padding: 2rem;
-}
-
-.readme-placeholder {
-  text-align: center;
-  color: var(--text-color-secondary);
-}
-
-.readme-placeholder a {
-  color: var(--primary-color);
-}
-
-/* Footer */
-.project-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.back-button {
-  padding: 0.75rem 1.5rem;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--text-color);
-}
-
-.back-button:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-.all-projects-link {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.all-projects-link:hover {
-  text-decoration: underline;
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-  .project-detail-page {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .project-header {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .project-title {
-    font-size: 1.5rem;
-  }
-
-  .project-links {
-    justify-content: center;
+@media (max-width: 768px) {
+  .project-page > .breadcrumbs {
+    margin-bottom: -2rem;
   }
 }

@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Project } from "../types/Project";
+import { makeProject as project } from "../test/builders";
 import { githubRepo, hasLiveDemo } from "./projectLinks";
-
-const project = (fields: Partial<Project>): Project => ({
-  id: "p",
-  title: "P",
-  description: "d",
-  url: "https://example.com",
-  icon: "\u{1F680}",
-  category: "web-app",
-  technologies: [],
-  ...fields,
-});
 
 describe("githubRepo", () => {
   it.each([

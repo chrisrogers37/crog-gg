@@ -4,31 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import site from "virtual:site-config";
-import type { Home } from "../../../config/schema";
+import { SITE_PAGES } from "../../../config/pages";
 import { socialsIn } from "../../../config/socials";
-import { RepoLink } from "../../common/RepoLink";
 import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
 
-// "about me", so it can't be mistaken for /about's own About section. With
-// `home: profile`, the personal page is home (#188).
-const pageLinks = (home: Home) => [
-  { to: "/", label: "home" },
-  ...(home === "landing" ? [{ to: "/about", label: "about me" }] : []),
-  { to: "/projects", label: "all projects" },
-];
-
-// After the Claudlobby repo link, which is a RepoLink so its clicks count.
 const CONNECT_LINKS = socialsIn(site, "menu");
 
 /** The page's sections, when it has registered some (see sectionMenu.ts). */
 type MobileMenuProps = Partial<SectionMenu>;
 
-export function MobileMenu({
-  sections,
-  onSectionChange,
-  activeSection,
-}: MobileMenuProps) {
+export function MobileMenu({ sections }: MobileMenuProps) {
   const isOpen = useIsMobileMenuOpen();
   const closeMobileMenu = useUIStore((state) => state.closeMobileMenu);
 
@@ -54,11 +40,6 @@ export function MobileMenu({
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, closeMobileMenu]);
-
-  const handleSectionClick = (sectionId: string) => {
-    onSectionChange?.(sectionId);
-    closeMobileMenu();
-  };
 
   const handleLinkClick = () => {
     closeMobileMenu();
@@ -100,32 +81,38 @@ export function MobileMenu({
             <div className="mobile-menu-content">
               {/* Page links */}
               <div className="mobile-menu-section">
-                {pageLinks(site.home).map((page) => (
+                {SITE_PAGES.map((page) => (
                   <Link
-                    key={page.to}
-                    to={page.to}
+                    key={page.path}
+                    to={page.path}
                     className="mobile-menu-link"
                     onClick={handleLinkClick}
                   >
-                    {page.label}
+                    {page.label.toLowerCase()}
                   </Link>
                 ))}
               </div>
 
-              {/* Section links, from the page being viewed (see sectionMenu.ts) */}
+              {/* Section links, from the page being viewed (see sectionMenu.ts).
+                  A group its label names: "about" and "projects" are pages too. */}
               {sections && sections.length > 0 && (
-                <div className="mobile-menu-section">
-                  <span className="mobile-menu-section-label">sections</span>
+                <div
+                  className="mobile-menu-section"
+                  role="group"
+                  aria-labelledby="mobile-menu-sections"
+                >
+                  <span id="mobile-menu-sections" className="mobile-menu-section-label">
+                    sections
+                  </span>
                   {sections.map((section) => (
-                    <button
+                    <a
                       key={section.id}
-                      className={`mobile-menu-section-btn ${
-                        activeSection === section.id ? "active" : ""
-                      }`}
-                      onClick={() => handleSectionClick(section.id)}
+                      href={`#${section.id}`}
+                      className="mobile-menu-link"
+                      onClick={handleLinkClick}
                     >
                       {section.label.toLowerCase()}
-                    </button>
+                    </a>
                   ))}
                 </div>
               )}
@@ -133,15 +120,6 @@ export function MobileMenu({
               {/* Social links */}
               <div className="mobile-menu-section">
                 <span className="mobile-menu-section-label">connect</span>
-                {site.home === "landing" && (
-                  <RepoLink
-                    location="menu"
-                    className="mobile-menu-link"
-                    onClick={handleLinkClick}
-                  >
-                    claudlobby on github
-                  </RepoLink>
-                )}
                 {CONNECT_LINKS.map((link) => (
                   <a
                     key={link.id}

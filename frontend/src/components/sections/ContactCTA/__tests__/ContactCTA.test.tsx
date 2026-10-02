@@ -1,29 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { beforeAll, describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import site from "virtual:site-config";
 import { socialsIn } from "../../../../config/socials";
 import { ContactCTA } from "../ContactCTA";
 import { useContentStore } from "../../../../store";
 import { makeBio } from "../../../../test/builders";
-
-// framer-motion's whileInView requires IntersectionObserver to be a real class
-beforeAll(() => {
-  window.IntersectionObserver = class IntersectionObserver {
-    readonly root: Element | null = null;
-    readonly rootMargin: string = "";
-    readonly thresholds: ReadonlyArray<number> = [];
-    constructor(
-      _callback: IntersectionObserverCallback,
-      _options?: IntersectionObserverInit,
-    ) {}
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-    takeRecords(): IntersectionObserverEntry[] {
-      return [];
-    }
-  };
-});
 
 const mockBio = makeBio({ location: "New York" });
 
@@ -47,7 +28,7 @@ describe("ContactCTA", () => {
     const links = screen.getAllByRole("link");
     expect(
       links.map((link) => [
-        link.querySelector(".contact-brand-label")?.textContent,
+        link.querySelector(".link-row-label")?.textContent,
         link.getAttribute("href"),
       ]),
     ).toEqual([

@@ -6,6 +6,7 @@ import {
   screen,
   waitFor,
 } from "../../../test/utils";
+import { makeProject } from "../../../test/builders";
 import { ProjectsPage } from "../ProjectsPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -40,12 +41,29 @@ describe("ProjectsPage when the content failed to load", () => {
     expect(screen.queryByRole("status", { name: /loading projects/i })).toBeNull();
   });
 
-  it("keeps the filters above the skeleton while it loads, so the grid doesn't drop", () => {
+  it("holds the featured card's and the grid's places while it loads", () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "loading" } });
-    renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
+    const { container } = renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     expect(screen.getByRole("status", { name: /loading projects/i })).toBeInTheDocument();
-    expect(screen.getByRole("searchbox")).toBeDisabled();
-    expect(screen.getByRole("button", { name: /^all$/i })).toBeInTheDocument();
+    expect(container.querySelector(".skeleton-card.project-featured")).toBeInTheDocument();
+    expect(container.querySelectorAll(".projects-grid .skeleton-card").length).toBeGreaterThan(0);
+  });
+
+  it("shows the featured project first and larger, then every other one as a card", () => {
+    const project = (id: string, featured = false) =>
+      makeProject({ id, title: `Project ${id}`, url: `https://${id}.example`, icon: "x", featured });
+    useContentStore.setState({
+      projects: [project("a"), project("star", true), project("b"), project("c"), project("d")],
+      loads: { ...INITIAL.loads, projects: "ready" },
+    });
+    renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
+
+    // Under the page's h1, the projects are h2s.
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(["x Project star", "Project a", "Project b", "Project c", "Project d"]);
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
   });
 
   it("names the page in the tab while it loads, not only once it has", async () => {

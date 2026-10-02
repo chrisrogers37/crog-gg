@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
 import { createMemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
@@ -7,6 +7,8 @@ import site from "virtual:site-config";
 import { useContentStore, useUIStore } from "../../../store";
 import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
+import { makeProject } from "../../../test/builders";
+import { claudlobby } from "../../../content/claudlobby";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -25,11 +27,7 @@ const githubServed = () => useUIStore.setState({ features: { regenerate: false, 
 /** The tests' site's GitHub owner (site.example's github.username). */
 const OWNER = site.github.username;
 
-const BENZO = {
-  id: "benzo",
-  title: "Benzo",
-  description: "A project",
-} as Project;
+const BENZO = makeProject({ id: "benzo", title: "Benzo", url: "https://benzo.example" });
 
 const renderAt = (entries: string[]) => {
   const router = createMemoryRouter(
@@ -98,9 +96,42 @@ describe("ProjectDetailPage's Go Back", () => {
   });
 
   it("goes back when there's a page of ours to go back to", () => {
-    const router = renderAt(["/about", "/projects/benzo"]);
+    const router = renderAt(["/", "/projects/benzo"]);
     fireEvent.click(screen.getByRole("button", { name: /go back/i }));
-    expect(router.state.location.pathname).toBe("/about");
+    expect(router.state.location.pathname).toBe("/");
+  });
+});
+
+/**
+ * A project content/ownPages.ts lists gets its own page in place of the
+ * standard one. site:check lets its repo be any owner's because that page
+ * shows no GitHub panels, so this holds it to that.
+ */
+describe("A project with a page of its own", () => {
+  it("renders that page under the breadcrumbs, and asks GitHub for nothing", () => {
+    useContentStore.setState({
+      projects: [
+        makeProject({
+          id: "claudlobby",
+          title: "Claudlobby",
+          github: "https://github.com/Claudfather/Claudlobby",
+          featured: true,
+        }),
+      ],
+      loads: { ...INITIAL.loads, projects: "ready" },
+    });
+    githubServed();
+    const getRepository = vi
+      .spyOn(githubService, "getRepository")
+      .mockRejectedValue(new Error("offline"));
+    const getReadme = vi.spyOn(githubService, "getReadme").mockRejectedValue(new Error("offline"));
+    renderAt(["/projects/claudlobby"]);
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(claudlobby.hero.headline);
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^(repository|readme)$/i })).toBeNull();
+    expect(getRepository).not.toHaveBeenCalled();
+    expect(getReadme).not.toHaveBeenCalled();
   });
 });
 
@@ -110,13 +141,12 @@ describe("ProjectDetailPage's Go Back", () => {
  */
 describe("ProjectDetailPage across projects", () => {
   it("doesn't carry a crashed section over to the next project", async () => {
-    const project = (id: string): Project =>
-      ({
-        id,
-        title: id,
-        description: "A project",
-        url: `https://github.com/${OWNER}/${id}`,
-      }) as Project;
+    const project = (id: string): Project => ({
+      ...BENZO,
+      id,
+      title: id,
+      url: `https://github.com/${OWNER}/${id}`,
+    });
     useContentStore.setState({
       projects: [project("alpha"), project("beta")],
       loads: { ...INITIAL.loads, projects: "ready" },
@@ -147,7 +177,8 @@ describe("ProjectDetailPage across projects", () => {
     ).toBeInTheDocument();
     // By the owner in the project's own URL (#189).
     expect(githubService.getRepository).toHaveBeenCalledWith(OWNER, "alpha");
-    expect(githubService.getReadme).toHaveBeenCalledWith(OWNER, "alpha");
+    // The README's chunk loads on its own, so its fetch follows.
+    await waitFor(() => expect(githubService.getReadme).toHaveBeenCalledWith(OWNER, "alpha"));
 
     await act(() => router.navigate("/projects/beta"));
     expect(await screen.findByText("222")).toBeInTheDocument();
@@ -164,10 +195,10 @@ describe("ProjectDetailPage across projects", () => {
  * answer, and then only for an owner it serves.
  */
 describe("ProjectDetailPage's GitHub panels", () => {
-  const LINKED = { ...BENZO, github: `https://github.com/${OWNER.toUpperCase()}/benzo` } as Project;
+  const LINKED: Project = { ...BENZO, github: `https://github.com/${OWNER.toUpperCase()}/benzo` };
   const panels = () => [
-    screen.queryByRole("heading", { name: /repository stats/i }),
-    screen.queryByRole("heading", { name: /documentation/i }),
+    screen.queryByRole("heading", { name: /^repository$/i }),
+    screen.queryByRole("heading", { name: /^readme$/i }),
   ];
 
   beforeEach(() => {
@@ -207,7 +238,7 @@ describe("ProjectDetailPage's GitHub panels", () => {
   it("hides them for an owner the API doesn't serve", () => {
     githubServed();
     useContentStore.setState({
-      projects: [{ ...BENZO, github: "https://github.com/someone-else/benzo" } as Project],
+      projects: [{ ...BENZO, github: "https://github.com/someone-else/benzo" }],
     });
     renderAt(["/projects/benzo"]);
     for (const panel of panels()) expect(panel).not.toBeInTheDocument();

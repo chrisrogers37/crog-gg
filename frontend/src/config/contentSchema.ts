@@ -42,7 +42,7 @@ const period: Check<string> = (value, path, issues) => {
 /**
  * A skill category's colour: "#rrggbb" or "#rgb", as timeline.yaml's header
  * says, kept as #rrggbb. Anything else, or none, gets the default grey, as
- * skillColor gives it (#193), rather than failing the Journey tab.
+ * skillColor gives it (#193), rather than failing the journey.
  */
 const skillCategoryColor: Check<string> = (value) =>
   skillColor(typeof value === "string" ? value : undefined);
@@ -85,8 +85,12 @@ export const timelineShape = object({
   ),
 });
 
+const projectFile = matching(/^[a-z0-9]+(?:-[a-z0-9]+)*\.yaml$/, 'a file name, like "my-project.yaml"');
+
 export const projectIndexShape = object({
-  projects: list(matching(/^[a-z0-9]+(?:-[a-z0-9]+)*\.yaml$/, 'a file name, like "my-project.yaml"')),
+  projects: list(projectFile),
+  /** The one project shown first and largest; one of `projects`. */
+  featured: optional(projectFile),
 });
 
 export const PROJECT_STATUSES = ["active", "archived", "experimental"] as const;

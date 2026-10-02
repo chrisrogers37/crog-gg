@@ -1,7 +1,6 @@
 /**
- * Claudlobby's URLs, which the header, footer, mobile menu, hero, quickstart
- * and structured data link to (#173). The owner's own profiles are socials in
- * site/site.yaml (#188).
+ * Claudlobby's URLs, which its project page links to (#173). The owner's own
+ * profiles are socials in site/site.yaml (#188).
  */
 export const CLAUDLOBBY_REPO = "https://github.com/Claudfather/Claudlobby";
 

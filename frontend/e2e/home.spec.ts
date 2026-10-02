@@ -1,131 +1,159 @@
 import { test, expect } from "./fixtures";
-import { LANDING } from "./site";
+import { SECTIONS, SUMMON, bio, expectBelowHeader, named, site } from "./site";
 
 /**
- * Home Page E2E Tests: Claudlobby's front door (#173)
+ * Home page E2E tests: the owner's page, one column (the redesign).
  *
- * Philosophy: test structure and behavior, not copy. The one piece of text
- * checked is the product's name, because naming it above the fold is the
- * point of the page. Links are found by where they go.
+ * Philosophy: test structure and behavior, not copy. The specs read the
+ * site's own sections and bio, so they pass on any site and fail only on a
+ * broken one.
  */
 
-const REPO = "https://github.com/Claudfather/Claudlobby";
-
-// The whole file is the landing page's (#191).
-test.skip(!LANDING, "home: profile has no landing page");
-
-const VIEWPORTS = [
-  ["desktop", { width: 1366, height: 768 }],
-  ["phone", { width: 390, height: 844 }],
-] as const;
-
-for (const [label, viewport] of VIEWPORTS) {
-  test(`the first screen names Claudlobby, shows both CTAs and its maturity (${label})`, async ({
-    page,
-  }) => {
-    await page.setViewportSize(viewport);
-    await page.goto("/");
-
-    await expect(page.locator(".cl-hero h1")).toBeVisible();
-    await expect(page.locator(".cl-hero")).toContainText(/claudlobby/i);
-    // Wholly on screen, without scrolling: both CTAs, and the maturity note
-    // that qualifies them (#179).
-    for (const selector of [
-      `.cl-hero a[href="${REPO}"]`,
-      '.cl-hero a[href="#quickstart"]',
-      ".cl-hero .cl-maturity",
-    ]) {
-      await expect(page.locator(selector)).toBeInViewport({ ratio: 1 });
-    }
-  });
-}
-
-test.describe("Home Page", () => {
+test.describe("Home page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("links the Claudlobby repo from the hero, header and footer", async ({
-    page,
-  }) => {
-    for (const area of [".cl-hero", "header", "footer"]) {
-      const link = page.locator(`${area} a[href="${REPO}"]`).first();
-      await expect(link, area).toBeVisible();
-      expect(await link.getAttribute("rel"), area).toContain("noopener");
+  test("leads with one h1 and the owner's photo", async ({ page }) => {
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator(".home-photo")).toBeVisible();
+  });
+
+  test("types its welcome lines", async ({ page }) => {
+    // The text cycles, so only that it's there.
+    await expect(page.locator(".welcome-typewriter").first()).toBeVisible();
+  });
+
+  test("shows site.yaml's sections in its order, each headed by its label", async ({ page }) => {
+    for (const { id, label } of SECTIONS) {
+      await expect(page.locator(`#${id} h2`), id).toHaveText(named(label));
     }
+    const tops = await Promise.all(
+      SECTIONS.map(async ({ id }) => (await page.locator(`#${id}`).boundingBox())!.y),
+    );
+    expect(tops).toEqual([...tops].sort((a, b) => a - b));
   });
 
-  for (const [label, viewport] of VIEWPORTS) {
-    test(`the Quickstart button lands below the sticky header (${label})`, async ({
-      page,
-    }) => {
-      await page.setViewportSize(viewport);
-      // Instant scrolling, so the check below sees where the jump lands.
-      await page.emulateMedia({ reducedMotion: "reduce" });
-      await page.locator('.cl-hero a[href="#quickstart"]').click();
-      await expect(page).toHaveURL(/#quickstart$/);
-
-      const header = await page.locator("header").first().boundingBox();
-      const heading = await page.locator("#quickstart h2").boundingBox();
-      // The header stays on screen, and the heading sits below it.
-      expect(header?.y).toBe(0);
-      expect(heading!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
-      await expect(page.locator("#quickstart h2")).toBeInViewport();
-    });
-  }
-
-  test("a shared link to a section opens with its heading below the header", async ({
-    page,
-  }) => {
-    // Mid-page, so the browser can bring the section all the way up: only the
-    // sections' scroll margin keeps the heading out from under the header.
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/#dark-factory");
-    const heading = page.locator("#dark-factory h2");
-    await expect(heading).toBeInViewport();
-
-    const header = await page.locator("header").first().boundingBox();
-    const box = await heading.boundingBox();
-    expect(box!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
-  });
-
-  test("Get updates points at the repo's releases and their feed", async ({
-    page,
-  }) => {
+  test("its Connect button lands on the contact section, below the sticky header", async ({ page }) => {
     // Instant scrolling, so the check below sees where the jump lands.
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.locator('.cl-hero a[href="#updates"]').click();
-    await expect(page).toHaveURL(/#updates$/);
-    await expect(page.locator("#updates h2")).toBeInViewport();
-    for (const href of [`${REPO}/releases`, `${REPO}/releases.atom`]) {
-      const link = page.locator(`#updates a[href="${href}"]`);
-      await expect(link, href).toBeVisible();
-      expect(await link.getAttribute("rel"), href).toContain("noopener");
-    }
-    await expect(page.locator("#updates form")).toHaveCount(0);
+    await page.locator('.page-hero a[href="#contact"]').click();
+    await expect(page).toHaveURL(/#contact$/);
+
+    await expectBelowHeader(page, "#contact h2");
   });
 
-  test("the quickstart sends you to the README's own steps", async ({
-    page,
-  }) => {
-    const readme = page.locator(`#quickstart a[href="${REPO}#quick-start"]`);
-    await expect(readme).toBeVisible();
-    expect(await readme.getAttribute("rel")).toContain("noopener");
+  test("links the email address, and the socials in new tabs", async ({ page }) => {
+    await expect(page.locator('#contact a[href^="mailto:"]')).toBeVisible();
+    const social = page.locator('#contact a[target="_blank"]').first();
+    await expect(social).toBeVisible();
+    expect(await social.getAttribute("rel")).toContain("noopener");
   });
 
-  test("shows the library counts with their source", async ({ page }) => {
-    const counts = page.locator(".cl-counts dd");
-    await expect(counts.first()).toBeVisible();
-    for (const value of await counts.allTextContents()) {
-      expect(value).toMatch(/^\d+$/);
-    }
-    await expect(page.locator(`.cl-source a[href^="${REPO}/blob/"]`)).toBeVisible();
+  test("shows the location exactly when the bio has one", async ({ page }) => {
+    await expect(page.locator("#contact")).toBeVisible();
+    const location = page.locator("#contact > .page-note");
+    await expect(location).toHaveCount(bio.location ? 1 : 0);
   });
 
-  test("hands the reader on to the personal page", async ({ page }) => {
-    await page.locator('.cl-hero a[href="/about"]').click();
-    await expect(page).toHaveURL("/about");
-    await expect(page.locator(".profile-photo")).toBeVisible();
+  test("its project cards open their pages on the site (#196 M43)", async ({ page }) => {
+    test.skip(!SECTIONS.some(({ id }) => id === "projects"), "the site shows no projects section");
+    const card = page.locator("#projects a.project-card").first();
+    const href = await card.getAttribute("href");
+    expect(href).toMatch(/^\/projects\/[a-z0-9-]+$/);
+    await card.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+  });
+
+  test("offers SUMMON under the About text", async ({ page }) => {
+    test.skip(!SUMMON, "site.yaml turns SUMMON off");
+    await expect(page.locator("#about .generate-btn")).toBeVisible();
+  });
+
+  test("has the site's footer", async ({ page }) => {
+    await expect(page.locator("footer.footer")).toBeVisible();
+  });
+});
+
+test.describe("A shared link to a section", () => {
+  test("opens on it, with its heading below the header", async ({ page }) => {
+    const last = SECTIONS[SECTIONS.length - 1];
+    // Mid-page or further, so the browser can bring the section all the way
+    // up: only the sections' scroll margin keeps the heading out from under
+    // the header.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/#${last.id}`);
+    await expectBelowHeader(page, `#${last.id} h2`);
+  });
+
+  test("to the contact section waits for the photo strip above it", async ({ page }) => {
+    // showcase.yaml last of all, as on a slow network. And no scroll anchoring
+    // (Safari has none), so nothing but the wait keeps the section in place.
+    await page.route("**/content/showcase.yaml", async (route) => {
+      await new Promise((done) => setTimeout(done, 1500));
+      await route.continue();
+    });
+    await page.addInitScript(() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent = "* { overflow-anchor: none !important; }";
+        document.head.append(style);
+      });
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const stripIn = page.waitForResponse("**/content/showcase.yaml");
+    await page.goto("/#contact");
+    await stripIn;
+    await expectBelowHeader(page, "#contact h2");
+
+    // Where the jump put it, after the strip: at its scroll margin below the
+    // header, or as far up as the page's end lets it go.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const contact = document.getElementById("contact")!;
+          const offset =
+            contact.getBoundingClientRect().top - parseFloat(getComputedStyle(contact).scrollMarginTop);
+          const end = document.documentElement.scrollHeight - window.innerHeight;
+          return Math.abs(offset) <= 2 || window.scrollY >= end - 1;
+        }),
+      )
+      .toBe(true);
+  });
+});
+
+test.describe("/about, where the owner's page was", () => {
+  test("sends its old links home", async ({ page }) => {
+    await page.goto("/about");
+    await expect(page).toHaveURL((url) => url.pathname === "/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
+});
+
+test.describe("Where SUMMON isn't served (#189 M21)", () => {
+  // What a deployment with no OpenAI key or no Upstash answers.
+  test.use({ features: { regenerate: false, github: true } });
+
+  test("the page offers no regenerate button", async ({ page }) => {
+    test.skip(site.features?.regenerate === "on", "site.yaml shows it whatever the API says");
+    await page.goto("/");
+    await expect(page.locator("#about")).toBeVisible();
+    await expect(page.locator(".generate-btn")).toHaveCount(0);
+  });
+});
+
+test.describe("One file that won't load (#190 M23)", () => {
+  test("a timeline that won't load leaves the page up, and the journey names it", async ({ page }) => {
+    test.skip(!SECTIONS.some(({ id }) => id === "journey"), "the site shows no journey");
+    await page.route("**/content/timeline.yaml", (route) => route.fulfill({ status: 404 }));
+    await page.goto("/");
+
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    const journey = page.locator("#journey");
+    await expect(journey.getByRole("alert")).toContainText("content/timeline.yaml");
+    await expect(journey.getByRole("button", { name: /retry/i })).toBeVisible();
   });
 });

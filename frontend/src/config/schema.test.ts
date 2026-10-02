@@ -92,10 +92,13 @@ describe("parseSiteConfig", () => {
     expect(problems(raw)).toContain("owner.image: expected a path that starts with one");
   });
 
-  it("knows two homes", () => {
+  it("names the keys the redesign retired, so a site that kept them hears which", () => {
     const raw = shipped();
-    raw.home = "blog";
-    expect(problems(raw)).toContain("home: expected one of landing, profile");
+    raw.home = "landing";
+    raw.about = { preview_height: { narrow: 400, wide: 300 } };
+    const message = problems(raw);
+    expect(message).toContain("home: unknown key");
+    expect(message).toContain("about: unknown key");
   });
 
   it("holds the API's keys to what the API can use (#189)", () => {

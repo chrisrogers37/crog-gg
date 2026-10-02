@@ -58,10 +58,8 @@ export function Timeline({ data }: TimelineProps) {
   // Active skills are derived from the visible entries rather than stored
   // alongside them. Computing this in an effect meant the first painted frame
   // had an empty bubble row, which gained its first line one frame later and
-  // pushed everything below it down -- at narrow widths the bubbles sit above
-  // the timeline, so that is the whole section and the buttons beneath it. A
-  // value computed during render is present on the first paint, so there is no
-  // zero-height frame to grow out of.
+  // pushed everything below it down. A value computed during render is present
+  // on the first paint, so there is no zero-height frame to grow out of.
   const activeSkills = useMemo(() => {
     const skills = new Set<string>();
     sortedEntries.slice(0, visibleIndex + 1).forEach((entry) => {
@@ -70,7 +68,7 @@ export function Timeline({ data }: TimelineProps) {
     return Array.from(skills);
   }, [visibleIndex, sortedEntries]);
 
-  // The tab shows a failed load itself (AboutPage); here it's still on its
+  // The page shows a failed load itself (HomePage); here it's still on its
   // way, or it came with nothing in it.
   if (!data || !sortedEntries.length) {
     return (
@@ -139,10 +137,10 @@ export function Timeline({ data }: TimelineProps) {
                   }
                 />
               </div>
-              <div className="timeline-card">
+              <div className="card timeline-card">
                 <div className="timeline-card-header">
                   <span className="timeline-period">{formatPeriod(entry)}</span>
-                  <h2 className="timeline-title">{entry.title}</h2>
+                  <h3 className="timeline-title">{entry.title}</h3>
                   <span className="timeline-org">
                     <LogoImage
                       domain={entry.domain}
@@ -162,7 +160,7 @@ export function Timeline({ data }: TimelineProps) {
         {/* Skill bubbles sidebar */}
         <aside className="timeline-skills-sidebar">
           <div className="timeline-skills-sticky">
-            <h2 className="timeline-skills-heading">skills along the way</h2>
+            <h3 className="timeline-skills-heading">skills along the way</h3>
             <SkillBubbles
               activeSkills={activeSkills}
               skillCategories={data.skill_categories}
