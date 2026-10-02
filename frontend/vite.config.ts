@@ -25,7 +25,7 @@ export default defineConfig({
         // Manual chunk splitting for better caching and smaller initial bundle
         manualChunks: {
           // Core vendor libraries (React)
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-react": ["react", "react-dom", "react-router", "react-router/dom"],
           // Markdown rendering (heavy, only needed for project details)
           "vendor-markdown": [
             "react-markdown",

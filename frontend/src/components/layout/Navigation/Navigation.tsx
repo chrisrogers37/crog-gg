@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import { GitHubMark } from "../../common/GitHubMark";
 import { RepoLink } from "../../common/RepoLink";

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { HelmetProvider } from "react-helmet-async";
 
 /**

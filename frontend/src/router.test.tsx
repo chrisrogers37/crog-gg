@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { beforeAll, describe, it, expect } from "vitest";
-import { matchPath, matchRoutes, type RouteObject } from "react-router-dom";
+import { matchPath, matchRoutes, type RouteObject } from "react-router";
 import { routes } from "./router";
 import { landingPages } from "./seo/prerender";
 import { NotFoundPage } from "./pages/NotFound";
