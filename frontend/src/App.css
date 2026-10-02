@@ -188,26 +188,12 @@ a {
 
 a:hover {
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 @media (max-width: 768px) {
   h1 {
     word-break: break-word;
-  }
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--background-color);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 

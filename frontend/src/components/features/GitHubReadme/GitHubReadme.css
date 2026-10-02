@@ -41,16 +41,6 @@
   width: 66.67%;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 /* Empty state */
 .readme-empty-message {
   color: var(--text-color-secondary);

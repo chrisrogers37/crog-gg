@@ -1,4 +1,5 @@
 import { claudlobby } from "../../../content/claudlobby";
+import type { Project } from "../../../types";
 import { track } from "../../../services/analytics";
 import { RepoLink } from "../../common/RepoLink";
 import { InlineCode } from "../../common/InlineCode";
@@ -19,11 +20,13 @@ function StarIcon() {
  * a phone (#173, #179, #181 G2/G9). Only Claudlobby's: who built it is the
  * site around it.
  */
-export function Hero() {
+export function Hero({ project }: { project: Project }) {
   const { hero, maturity } = claudlobby;
   return (
     <section className="page-hero" aria-labelledby="cl-hero-heading">
-      <p className="page-eyebrow">{hero.eyebrow}</p>
+      <p className="page-eyebrow">
+        {project.featured ? `${project.title} · Featured project` : project.title}
+      </p>
       <h1 id="cl-hero-heading" className="page-headline">
         {hero.headline}
       </h1>

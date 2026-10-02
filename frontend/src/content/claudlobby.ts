@@ -2,9 +2,9 @@
  * Claudlobby's project page: the featured project's own sections (#173, and
  * since the redesign one project among the others).
  *
- * A typed module rather than fetched YAML: it is bundled, so the hero renders
- * without waiting on a request, and a missing or misspelled field fails the
- * build's type check instead of reaching visitors. Shared URLs live in
+ * A typed module rather than fetched YAML: a missing or misspelled field fails
+ * the build's type check instead of reaching visitors. The page's eyebrow
+ * comes from the project (projects/claudlobby.yaml and index.yaml). Shared URLs live in
  * links.ts. Wrap code terms in backticks; they render as <code>.
  *
  * Platform voice (#179): plain and specific, no jokes, and nothing of the
@@ -26,7 +26,6 @@ type Count = { value: number; label: string };
 
 export const claudlobby = {
   hero: {
-    eyebrow: "Claudlobby · Featured project",
     headline: "Build a dark factory.",
     sub: "Claudlobby is an open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
     ctaStar: "Star on GitHub",

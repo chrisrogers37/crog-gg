@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SECTIONS, SUMMON, bio, site } from "./site";
+import { SECTIONS, SUMMON, bio, expectBelowHeader, site } from "./site";
 
 /**
  * Home page E2E tests: the owner's page, one column (the redesign).
@@ -41,10 +41,7 @@ test.describe("Home page", () => {
     await page.locator('.page-hero a[href="#contact"]').click();
     await expect(page).toHaveURL(/#contact$/);
 
-    const header = await page.locator("header.compact-header").boundingBox();
-    const heading = page.locator("#contact h2");
-    await expect(heading).toBeInViewport();
-    expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
+    await expectBelowHeader(page, "#contact h2");
   });
 
   test("links the email address, and the socials in new tabs", async ({ page }) => {
@@ -88,11 +85,7 @@ test.describe("A shared link to a section", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`/#${last.id}`);
-    const heading = page.locator(`#${last.id} h2`);
-    await expect(heading).toBeInViewport();
-
-    const header = await page.locator("header.compact-header").boundingBox();
-    expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
+    await expectBelowHeader(page, `#${last.id} h2`);
   });
 });
 

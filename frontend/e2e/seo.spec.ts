@@ -67,12 +67,13 @@ test.describe("Page head", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await page.getByRole("button", { name: /menu/i }).click();
+    // The page, not the home page's section of the same name.
     await page
       .getByRole("navigation", { name: /mobile/i })
-      .getByRole("link", { name: /projects/i })
+      .locator('a[href="/projects"]')
       .click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator("a.project-card").first()).toBeVisible();
+    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
 
     await expect
       .poll(async () => (await headTags(page)).canonical)

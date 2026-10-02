@@ -85,13 +85,10 @@
 }
 
 /* Timeline Card */
-/* The site's card (index.css's .card): a border, no shadow. */
+/* On the site's .card (index.css). */
 .timeline-card {
   max-width: 100%;
   padding: 1rem 1.25rem;
-  background: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
   transition: border-color 0.2s;
   flex: 1;
 }

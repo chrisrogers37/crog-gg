@@ -5,20 +5,13 @@
   color: var(--text-color);
 }
 
-.music-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.music-link-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex-shrink: 0;
-}
-
+/* The player's box: its height before it mounts, so nothing moves when it
+   does. */
 .spotify-embed {
+  min-height: 352px;
   margin-top: 2rem;
+  border-radius: 8px;
+  background: var(--border-color);
 }
 
 .spotify-embed iframe {

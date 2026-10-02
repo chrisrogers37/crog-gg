@@ -18,35 +18,14 @@
   margin-top: 0;
 }
 
+.readme-fallback {
+  padding: 1.5rem 2rem;
+}
+
 /* Holds the page's height while it loads, so the footer doesn't jump below the
    fold when the project lands (#196 M41). */
 .project-page--loading {
   min-height: 100vh;
-}
-
-/* The hero's boxes while the projects load, pulsing (styles/page.css). */
-.project-skeleton {
-  width: 70%;
-  height: 1.25rem;
-  margin-top: 1rem;
-  border-radius: 8px;
-  background: var(--border-color);
-  animation: pulse 2s infinite;
-}
-
-.project-skeleton-eyebrow {
-  width: 25%;
-  height: 0.875rem;
-  margin-top: 0;
-}
-
-.project-skeleton-headline {
-  width: 50%;
-  height: clamp(2.25rem, 6vw, 3.75rem);
-}
-
-.project-skeleton-short {
-  width: 40%;
 }
 
 @media (max-width: 768px) {

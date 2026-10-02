@@ -32,7 +32,7 @@ This replaces `site/` with a copy of `site.example/`, a fictional site in the sa
 - **`site/public/`**'s images: one logo PNG per timeline domain in `logos/`, `manifest.json`, the favicons and the app icons.
 - **The photos.** The owner's originals are in `frontend/scripts/photos/originals/`, outside `site/`: delete them, put yours there, and run `python frontend/scripts/photos/make-variants.py`, which writes each one's 160, 320 and 480 px WebP variants into `site/public/profile-photos/` (and only then are they served). Point `hero.photos` in `site/site.yaml` and `showcase.yaml` at them, and replace `site/public/profile-photo.jpg`.
 - **The social card**, `site/public/og-image.png` (1200 x 630): replace it, and keep `seo.image.alt` in `site/site.yaml` in step with what it says. This site renders its own from an HTML page (`frontend/scripts/og-image/render.mjs`); the example has none to render.
-- **A project with a page of its own.** Every project gets the standard page, unless `frontend/src/content/projectPages.ts` gives its id one of its own, as this site does for Claudlobby. A site whose projects don't include `claudlobby` never shows that page, so you can leave it, or delete it with `frontend/src/content/claudlobby.ts` and `frontend/src/components/sections/Claudlobby/`.
+- **A project with a page of its own.** Every project gets the standard page, unless `frontend/src/content/ownPages.ts` lists its id and `projectPages.ts` beside it gives the page, as this site does for Claudlobby. A site whose projects don't include `claudlobby` never shows that page, so you can leave it, or delete it: its id and entry in those two files, `frontend/src/content/claudlobby.ts` and `frontend/src/components/sections/Claudlobby/`.
 
 Then check it:
 

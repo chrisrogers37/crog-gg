@@ -1,14 +1,9 @@
 import { Link, useLocation } from "react-router";
 import site from "virtual:site-config";
+import { SITE_PAGES } from "../../../config/pages";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import { useUIStore } from "../../../store";
 import "./Navigation.css";
-
-/** The site's pages: the owner's page is home. */
-const NAV_ITEMS = [
-  { path: "/", label: "About" },
-  { path: "/projects", label: "Projects" },
-];
 
 /**
  * Navigation Component
@@ -29,7 +24,7 @@ export function Navigation() {
 
       <div className="nav-right">
         <ul className="nav-links">
-          {NAV_ITEMS.map((item) => (
+          {SITE_PAGES.map((item) => (
             <li key={item.path}>
               <Link
                 to={item.path}

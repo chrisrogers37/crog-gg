@@ -36,9 +36,9 @@ interface ContentState {
   originalExperience: Employment[];
   originalEducation: Education[];
 
-  // Each file's load, apart (#190 M23): bio's failure is the About page's,
-  // timeline's the Journey tab's, and projects' the project pages' and the
-  // Projects tab's. One file can't take another's place down.
+  // Each file's load, apart (#190 M23): bio's failure is the home page's,
+  // timeline's the journey's, and projects' the projects section's and the
+  // project pages'. One file can't take another's place down.
   loads: Record<LoadedContent, Load>;
   isRegenerating: boolean;
   // Transient: the page still has content, one regeneration just did not land.
@@ -202,7 +202,7 @@ export const useContentStore = create<ContentStore>()(
        * Load all content from YAML files, each on its own (#190 M23): each
        * part shows as soon as its own file is in, and one that fails leaves
        * the others' sections up.
-       * Called once on app initialization, and by the About page's retry.
+       * Called once on app initialization, and by the home page's retry.
        */
       loadContent: async () => {
         // Nothing renders the résumé files (#159), so a failure there is

@@ -1,7 +1,6 @@
 import type { APIRequestContext } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { readProjects } from "../src/utils/projectLoader";
-import { site } from "./site";
+import { servedProjects, site } from "./site";
 
 /**
  * The crawler's view (#174): each page's raw HTML with no JavaScript run,
@@ -70,9 +69,7 @@ test.describe("Prerendered heads", () => {
   test("every indexed project ships a head naming that project", async ({
     request,
   }) => {
-    const projects = await readProjects(async (file) =>
-      (await request.get(`/content/projects/${file}`)).text(),
-    );
+    const projects = await servedProjects(request);
     expect(projects.length).toBeGreaterThan(0);
 
     for (const project of projects) {

@@ -58,13 +58,13 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 - **`url`** (optional): the main link, `https`. Without one, the card falls back to `demo`, then `github`.
 - **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The card prints it as text, and no icon font is loaded.
 - **`technologies`** (optional): the card shows the first three.
-- **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails. Without `github`, a `url` that is a GitHub repo is used instead.
+- **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails, unless the project has a page of its own (below), which shows neither. Without `github`, a `url` that is a GitHub repo is used instead.
 - **`demo`** (optional): when it differs from `url` and isn't on github.com, the page embeds it. Its exact origin must then be in `frame-src` in `vercel.json`, or the frame is blocked.
 - **`gradient`** (optional): the project's colour, behind its icon on its card. Without one, it's grey.
 - **`status`** (optional): `active`, `archived` or `experimental`, on the project's page; its card names it when it isn't `active`.
 - **`category`:** on the project's page, beside its status; the raw value is shown.
 - Nothing else: `order`, `featured`, `tags` and `image` were never shown and are gone (#190), so a file that still has one fails, naming it. (Which project is featured is `index.yaml`'s call.)
-- **A page of its own:** a project whose id `frontend/src/content/projectPages.ts` names shows that page instead of the standard one, as Claudlobby's does.
+- **A page of its own:** a project whose id `frontend/src/content/ownPages.ts` lists shows its own page (`projectPages.ts`) instead of the standard one, as Claudlobby's does.
 
 The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through adding a project.
 

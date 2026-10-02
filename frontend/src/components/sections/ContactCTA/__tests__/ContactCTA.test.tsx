@@ -47,7 +47,7 @@ describe("ContactCTA", () => {
     const links = screen.getAllByRole("link");
     expect(
       links.map((link) => [
-        link.querySelector(".contact-brand-label")?.textContent,
+        link.querySelector(".link-row-label")?.textContent,
         link.getAttribute("href"),
       ]),
     ).toEqual([

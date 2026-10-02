@@ -140,13 +140,11 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
 
       {/* Topics */}
       {shown.topics && shown.topics.length > 0 && (
-        <div className="repo-topics">
+        <ul className="pills repo-topics" aria-label="Topics">
           {shown.topics.map((topic) => (
-            <span key={topic} className="topic-tag">
-              {topic}
-            </span>
+            <li key={topic}>{topic}</li>
           ))}
-        </div>
+        </ul>
       )}
     </>
   );

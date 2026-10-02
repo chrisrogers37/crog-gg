@@ -6,6 +6,7 @@ import { createMemoryRouter, MemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { routes } from "../../../router";
 import { ClaudlobbyPage } from "../../sections/Claudlobby";
+import { makeProject } from "../../../test/builders";
 import { CLAUDLOBBY_REPO } from "../../../content/links";
 import { track } from "../../../services/analytics";
 
@@ -30,7 +31,7 @@ describe("RepoLink", () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <ClaudlobbyPage />
+        <ClaudlobbyPage project={makeProject({ id: "claudlobby", title: "Claudlobby" })} />
       </MemoryRouter>,
     );
 

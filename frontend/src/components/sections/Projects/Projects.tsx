@@ -7,9 +7,6 @@ import { FeaturedProject } from "./FeaturedProject";
 import { ProjectCard } from "./ProjectCard";
 import "./Projects.css";
 
-/** How many projects the home page shows beside the featured one. */
-const HOME_COUNT = 3;
-
 type ProjectGridProps = {
   projects: Project[];
   headingLevel?: 2 | 3;
@@ -29,30 +26,29 @@ export function ProjectGrid({ projects, headingLevel }: ProjectGridProps) {
 /**
  * Blank cards in the real ones' boxes while the projects load, so nothing
  * moves when they land (#246): each line is a blank line of the real card's
- * own type, and the pills wrap as the real ones do.
+ * own type, and the pills wrap as the real ones do. The featured card's box
+ * leads, since index.yaml usually names one.
  */
-export function ProjectSkeleton({ count, featured }: { count: number; featured: boolean }) {
+export function ProjectSkeleton({ count }: { count: number }) {
   return (
     <div className="projects-skeleton" role="status" aria-label="Loading projects">
-      {featured && (
-        <div className="card project-featured skeleton-card" aria-hidden="true">
-          <p className="page-eyebrow">&nbsp;</p>
-          <div className="project-featured-title">&nbsp;</div>
-          <p className="project-featured-description">
-            &nbsp;
-            <br />
-            &nbsp;
-          </p>
-          <ul className="pills">
-            {Array.from({ length: 6 }).map((_, j) => (
-              <li key={j}>&nbsp;</li>
-            ))}
-          </ul>
-          <div className="page-ctas">
-            <span className="btn btn-ghost">&nbsp;</span>
-          </div>
+      <div className="card project-featured skeleton-card" aria-hidden="true">
+        <p className="page-eyebrow">&nbsp;</p>
+        <div className="project-featured-title">&nbsp;</div>
+        <p className="project-featured-description">
+          &nbsp;
+          <br />
+          &nbsp;
+        </p>
+        <ul className="pills">
+          {Array.from({ length: 6 }).map((_, j) => (
+            <li key={j}>&nbsp;</li>
+          ))}
+        </ul>
+        <div className="page-ctas">
+          <span className="btn btn-ghost">&nbsp;</span>
         </div>
-      )}
+      </div>
       <div className="projects-grid" aria-hidden="true">
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className="card project-card skeleton-card">
@@ -75,36 +71,49 @@ export function ProjectSkeleton({ count, featured }: { count: number; featured: 
   );
 }
 
+type ProjectListProps = {
+  /** How many beside the featured one, with a link to the rest; all if left out. */
+  limit?: number;
+  /** The titles' level: h2 under a page's h1, h3 under a section's h2. */
+  headingLevel?: 2 | 3;
+  /** A failure's message sized for a section rather than a page. */
+  compact?: boolean;
+};
+
 /**
- * The home page's projects: the featured one, the next few, and a link to
- * them all. A failure or an empty list says so here, and the rest of the
- * page stays up (#190 M23).
+ * The projects index.yaml lists: the featured one first and larger, then the
+ * others as cards, in the index's order. A failure or an empty list says so
+ * in its place, and the rest of the page stays up (#190 M23).
  */
-export function Projects() {
+export function ProjectList({ limit, headingLevel = 3, compact = false }: ProjectListProps) {
   const projects = useProjects();
   const load = useLoad("projects");
   const reloadProjects = useContentStore((s) => s.reloadProjects);
 
-  if (load === "loading") return <ProjectSkeleton count={HOME_COUNT} featured />;
+  if (projects.length > 0) {
+    const { featured, others } = splitFeatured(projects);
+    const shown = limit === undefined ? others : others.slice(0, limit);
+    return (
+      <>
+        {featured && <FeaturedProject project={featured} headingLevel={headingLevel} />}
+        {shown.length > 0 && <ProjectGrid projects={shown} headingLevel={headingLevel} />}
+        {limit !== undefined && (
+          <p className="page-links">
+            <Link to="/projects">All projects</Link>
+          </p>
+        )}
+      </>
+    );
+  }
+  if (load === "loading") return <ProjectSkeleton count={limit ?? 6} />;
   if (typeof load === "object") {
     return (
       <LoadError
-        compact
+        compact={compact}
         message={`The projects didn't load: ${load.error}.`}
         onRetry={() => reloadProjects()}
       />
     );
   }
-  if (projects.length === 0) return <p>No projects yet.</p>;
-
-  const { featured, others } = splitFeatured(projects);
-  return (
-    <>
-      {featured && <FeaturedProject project={featured} />}
-      {others.length > 0 && <ProjectGrid projects={others.slice(0, HOME_COUNT)} />}
-      <p className="page-links">
-        <Link to="/projects">All projects</Link>
-      </p>
-    </>
-  );
+  return <p>No projects yet.</p>;
 }

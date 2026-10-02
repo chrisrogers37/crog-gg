@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router";
 import site from "virtual:site-config";
@@ -24,15 +24,22 @@ describe("MobileMenu", () => {
     { id: "journey", label: "journey" },
   ];
 
-  it("renders menu when open, with the page's sections", () => {
+  it("renders menu when open, linking the page's sections by their ids", () => {
     render(
       <MemoryRouter>
-        <MobileMenu sections={sections} activeSection="" />
+        <MobileMenu sections={sections} />
       </MemoryRouter>,
     );
     expect(screen.getByText("menu")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "about" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "journey" })).toBeInTheDocument();
+    // In a group its label names, apart from the page links of the same name.
+    const group = screen.getByRole("group", { name: "sections" });
+    const links = within(group)
+      .getAllByRole("link")
+      .map((link) => [link.textContent, link.getAttribute("href")]);
+    expect(links).toEqual([
+      ["about", "#about"],
+      ["journey", "#journey"],
+    ]);
   });
 
   it("renders social links: exactly the menu socials, in site.yaml's order", () => {
@@ -58,20 +65,11 @@ describe("MobileMenu", () => {
         <MobileMenu />
       </MemoryRouter>,
     );
-    expect(screen.getByRole("link", { name: "about" })).toHaveAttribute("href", "/");
+    const about = screen.getAllByRole("link", { name: "about" });
+    expect(about.map((link) => link.getAttribute("href"))).toEqual(["/"]);
     expect(screen.getByRole("link", { name: "projects" })).toHaveAttribute(
       "href",
       "/projects",
     );
-  });
-
-  it("marks active section", () => {
-    render(
-      <MemoryRouter>
-        <MobileMenu sections={sections} activeSection="journey" />
-      </MemoryRouter>,
-    );
-    expect(screen.getByRole("button", { name: "journey" }).className).toContain("active");
-    expect(screen.getByRole("button", { name: "about" }).className).not.toContain("active");
   });
 });

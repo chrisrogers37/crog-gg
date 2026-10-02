@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
 import { createMemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
@@ -7,6 +7,7 @@ import site from "virtual:site-config";
 import { useContentStore, useUIStore } from "../../../store";
 import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
+import { makeProject } from "../../../test/builders";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -25,17 +26,7 @@ const githubServed = () => useUIStore.setState({ features: { regenerate: false, 
 /** The tests' site's GitHub owner (site.example's github.username). */
 const OWNER = site.github.username;
 
-// Whole, as the loader hands them over: `url` and `technologies` always set.
-const BENZO: Project = {
-  id: "benzo",
-  title: "Benzo",
-  description: "A project",
-  url: "https://benzo.example",
-  icon: "\u{1F319}",
-  category: "native-app",
-  technologies: [],
-  featured: false,
-};
+const BENZO = makeProject({ id: "benzo", title: "Benzo", url: "https://benzo.example" });
 
 const renderAt = (entries: string[]) => {
   const router = createMemoryRouter(
@@ -152,7 +143,8 @@ describe("ProjectDetailPage across projects", () => {
     ).toBeInTheDocument();
     // By the owner in the project's own URL (#189).
     expect(githubService.getRepository).toHaveBeenCalledWith(OWNER, "alpha");
-    expect(githubService.getReadme).toHaveBeenCalledWith(OWNER, "alpha");
+    // The README's chunk loads on its own, so its fetch follows.
+    await waitFor(() => expect(githubService.getReadme).toHaveBeenCalledWith(OWNER, "alpha"));
 
     await act(() => router.navigate("/projects/beta"));
     expect(await screen.findByText("222")).toBeInTheDocument();

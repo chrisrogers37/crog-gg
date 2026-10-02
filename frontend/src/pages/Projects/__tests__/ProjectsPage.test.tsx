@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
 } from "../../../test/utils";
-import type { Project } from "../../../types";
+import { makeProject } from "../../../test/builders";
 import { ProjectsPage } from "../ProjectsPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -51,16 +51,7 @@ describe("ProjectsPage when the content failed to load", () => {
 
   it("shows the featured project first and larger, then every other one as a card", () => {
     const project = (id: string, featured = false) =>
-      ({
-        id,
-        title: `Project ${id}`,
-        description: "d",
-        url: `https://${id}.example`,
-        icon: "x",
-        category: "c",
-        technologies: [],
-        featured,
-      }) as Project;
+      makeProject({ id, title: `Project ${id}`, url: `https://${id}.example`, icon: "x", featured });
     useContentStore.setState({
       projects: [project("a"), project("star", true), project("b"), project("c"), project("d")],
       loads: { ...INITIAL.loads, projects: "ready" },

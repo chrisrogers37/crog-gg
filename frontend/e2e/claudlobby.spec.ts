@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { CLAUDLOBBY, site } from "./site";
+import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
 
 /**
  * Claudlobby's project page: its own sections (#173), since the redesign one
@@ -71,12 +71,9 @@ test.describe("Claudlobby's page", () => {
       await page.locator('.page-hero a[href="#quickstart"]').click();
       await expect(page).toHaveURL(/#quickstart$/);
 
-      const header = await page.locator("header.compact-header").boundingBox();
-      const heading = page.locator("#quickstart h2");
       // The header stays on screen, and the heading sits below it.
-      expect(header?.y).toBe(0);
-      await expect(heading).toBeInViewport();
-      expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
+      expect((await page.locator("header.compact-header").boundingBox())?.y).toBe(0);
+      await expectBelowHeader(page, "#quickstart h2");
     });
   }
 
@@ -118,10 +115,6 @@ test.describe("A shared link to one of its sections", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`${PAGE}#dark-factory`);
-    const heading = page.locator("#dark-factory h2");
-    await expect(heading).toBeInViewport();
-
-    const header = await page.locator("header.compact-header").boundingBox();
-    expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
+    await expectBelowHeader(page, "#dark-factory h2");
   });
 });

@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SECTIONS, named } from "./site";
+import { SECTIONS } from "./site";
 
 /**
  * Navigation E2E Tests
@@ -101,7 +101,27 @@ test.describe("Moving between pages", () => {
 
     await page.locator('header a[href="/projects"]').first().click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator("a.project-card").first()).toBeVisible();
+    // /projects' own cards: the home page has cards too, and stays up for a
+    // moment after the URL changes.
+    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
+  test("it opens at the top even while an in-page link's scroll is still moving", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("#contact")).toBeAttached();
+    // Connect scrolls smoothly down the long page; Projects is clicked before
+    // it lands. An instant jump to the top didn't stop that scroll, which
+    // carried on down the new page.
+    await page.locator('.page-hero a[href="#contact"]').click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    await page.locator('header a.nav-link[href="/projects"]').click();
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
+    // Observation window: past where the old page's scroll would have ended.
+    await page.waitForTimeout(1200);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 });
@@ -169,9 +189,9 @@ test.describe("Mobile Menu", () => {
     await page.goto("/");
     await expect(page.locator(`#${last.id} h2`)).toBeAttached();
 
-    // The menu prints the label in lowercase.
+    // The menu links each section by its id.
     await page.locator(".nav-hamburger").click();
-    await page.locator(".mobile-menu-section-btn", { hasText: named(last.label) }).click();
+    await page.locator(`.mobile-menu a[href="#${last.id}"]`).click();
 
     // The menu closes, and the page is at the section.
     await expect(page.locator(".mobile-menu")).not.toBeVisible();
@@ -184,14 +204,14 @@ test.describe("Mobile Menu", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
     await page.locator(".nav-hamburger").click();
-    await expect(page.locator(".mobile-menu-section-btn").first()).toBeVisible();
+    await expect(page.locator('.mobile-menu a[href^="#"]').first()).toBeVisible();
 
-    // To /projects, which every site has.
-    await page.locator(".mobile-menu-link", { hasText: "projects" }).click();
+    // To /projects, which every site has: the page, not the section.
+    await page.locator('.mobile-menu a[href="/projects"]').click();
     await expect(page).toHaveURL(/\/projects$/);
     await page.locator(".nav-hamburger").click();
     await expect(page.locator(".mobile-menu")).toBeVisible();
-    await expect(page.locator(".mobile-menu-section-btn")).toHaveCount(0);
+    await expect(page.locator('.mobile-menu a[href^="#"]')).toHaveCount(0);
   });
 
   test("the header's logo stays on one line on a small phone", async ({

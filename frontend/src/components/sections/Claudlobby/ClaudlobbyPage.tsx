@@ -1,3 +1,4 @@
+import type { Project } from "../../../types";
 import { DarkFactory } from "./DarkFactory";
 import { Hero } from "./Hero";
 import { Quickstart } from "./Quickstart";
@@ -8,13 +9,14 @@ import "./Claudlobby.css";
 
 /**
  * Claudlobby's page under /projects: its own sections in place of the
- * standard project page's. The copy is bundled (content/claudlobby.ts), so the
- * hero renders without waiting on a fetch.
+ * standard project page's. The copy is a typed module (content/claudlobby.ts),
+ * so a missing or misspelled field fails the type check; what index.yaml says
+ * of the project (whether it's featured) comes from `project`.
  */
-export function ClaudlobbyPage() {
+export function ClaudlobbyPage({ project }: { project: Project }) {
   return (
     <>
-      <Hero />
+      <Hero project={project} />
       <DarkFactory />
       <WhyClaudlobby />
       <Quickstart />

@@ -12,7 +12,7 @@ import { makeBio, makeEmployment } from "../../test/builders";
  * discarded -- including the section that had worked.
  *
  * These tests pin what came out of that: one click is one request, and a
- * failure never lands in `error`, which drives AboutPage's full-page fatal
+ * failure never lands in `error`, which drives the home page's full-page fatal
  * screen and unmounts a page that still has content to show.
  */
 
@@ -168,7 +168,7 @@ describe("regenerateContent", () => {
   });
 
   it("does not set the fatal error on a failed regeneration", async () => {
-    // The white-screen regression: a failed bio load drives AboutPage's
+    // The white-screen regression: a failed bio load drives the home page's
     // full-page error screen, so putting a transient failure there unmounted
     // a working page.
     respondWith({ success: false, error: "nope" });

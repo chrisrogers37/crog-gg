@@ -43,32 +43,12 @@
 
 .regeneration-notice {
   margin-top: 0.75rem;
-  font-size: 0.9rem;
-  color: var(--text-color-secondary);
 }
 
-/* The hero's boxes while the bio loads. */
-.home-skeleton {
+/* The photo's circle while the bio loads; the lines are page.css's. */
+.home-photo--loading {
   background: var(--border-color);
   animation: pulse 2s infinite;
-}
-
-.home-skeleton-line {
-  width: 60%;
-  height: 1.25rem;
-  margin-top: 1rem;
-  border-radius: 8px;
-}
-
-.home-skeleton-eyebrow {
-  width: 30%;
-  height: 0.875rem;
-  margin-top: 0;
-}
-
-.home-skeleton-headline {
-  width: 90%;
-  height: clamp(2.25rem, 6vw, 3.75rem);
 }
 
 @media (max-width: 768px) {

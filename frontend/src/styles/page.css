@@ -19,13 +19,6 @@
   font-size: 0.9em;
 }
 
-/* Links in running text. A link with a class (a button, a card) styles
-   itself. */
-.page a:not([class]) {
-  color: var(--primary-color);
-  text-underline-offset: 2px;
-}
-
 /* Hero */
 .page-hero {
   max-width: 780px;
@@ -85,14 +78,16 @@
   scroll-margin-top: 5rem;
 }
 
-.page-section h2 {
+/* The section's own heading: a README rendered in a section has h2s too. */
+.page-section > h2 {
   margin: 0 0 0.75rem;
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-.page-section h3 {
+/* Zero specificity: a heading's own class (a card's title) wins. */
+:where(.page-section) h3 {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 600;
@@ -132,6 +127,31 @@
   margin: 1rem 0 0;
 }
 
+/* A row of links with their marks: the music and contact sections'. */
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.link-row-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* A brand with no mark shows its name instead. */
+.link-row-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* The location, under the contact links. */
+.link-row + .page-note {
+  margin: 1.25rem 0 0;
+}
+
 /* Small labels in a row: a project's technologies, a role's skills. */
 .pills {
   display: flex;
@@ -161,6 +181,31 @@
   50% {
     opacity: 0.5;
   }
+}
+
+/* A hero's lines while its content loads: the real lines' heights. */
+.page-skeleton {
+  width: 70%;
+  height: 1.25rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  background: var(--border-color);
+  animation: pulse 2s infinite;
+}
+
+.page-skeleton--eyebrow {
+  width: 25%;
+  height: 0.875rem;
+  margin-top: 0;
+}
+
+.page-skeleton--headline {
+  width: 90%;
+  height: clamp(2.25rem, 6vw, 3.75rem);
+}
+
+.page-skeleton--short {
+  width: 40%;
 }
 
 @media (max-width: 768px) {

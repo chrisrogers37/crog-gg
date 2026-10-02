@@ -139,7 +139,7 @@ export function Timeline({ data }: TimelineProps) {
                   }
                 />
               </div>
-              <div className="timeline-card">
+              <div className="card timeline-card">
                 <div className="timeline-card-header">
                   <span className="timeline-period">{formatPeriod(entry)}</span>
                   <h3 className="timeline-title">{entry.title}</h3>

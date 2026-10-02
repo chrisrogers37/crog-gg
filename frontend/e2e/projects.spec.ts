@@ -1,8 +1,8 @@
 import { test, expect } from "./fixtures";
-import { readProjects } from "../src/utils/projectLoader";
+import { hasOwnPage } from "../src/content/ownPages";
 import { githubRepo, isServedOwner } from "../src/utils/projectLinks";
 import type { ReadmeResponse, Repository } from "../src/services/githubService";
-import { FEATURED, site } from "./site";
+import { FEATURED, servedProjects, site } from "./site";
 
 /**
  * Projects Page E2E Tests
@@ -52,9 +52,7 @@ test.describe("Projects page", () => {
     page,
     request,
   }) => {
-    const projects = await readProjects(async (file) =>
-      (await request.get(`/content/projects/${file}`)).text(),
-    );
+    const projects = await servedProjects(request);
     await expect(page.locator("a.project-card").first()).toBeVisible();
     const cards = await page.locator("a.project-card").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href")),
@@ -97,9 +95,7 @@ test.describe("Project Detail Page", () => {
     request,
   }) => {
     // The first listed project, from the content that ships with the repo.
-    const [project] = await readProjects(async (file) =>
-      (await request.get(`/content/projects/${file}`)).text(),
-    );
+    const [project] = await servedProjects(request);
     expect(project, "index.yaml lists a project").toBeDefined();
 
     // Content arrives late, as on a slow network: "Project Not Found" must
@@ -139,23 +135,14 @@ test.describe("Project Detail Page", () => {
 });
 
 /**
- * The first project that links a repo in the owner's own GitHub account, or
- * none. The owner's own, because an allowed org's project (Claudlobby's) has
- * a page of its own, without the standard page's GitHub panels.
+ * The first project on the standard page that links a repo the API serves,
+ * or none. A page of its own (Claudlobby's) has no GitHub panels.
  */
-const linkedProject = async (request: import("@playwright/test").APIRequestContext) => {
-  const projects = await readProjects(async (file) =>
-    (await request.get(`/content/projects/${file}`)).text(),
-  );
-  return projects.find((project) => {
+const linkedProject = async (request: import("@playwright/test").APIRequestContext) =>
+  (await servedProjects(request)).find((project) => {
     const repo = githubRepo(project);
-    return (
-      repo &&
-      isServedOwner(site, repo.owner) &&
-      repo.owner.toLowerCase() === site.github.username.toLowerCase()
-    );
+    return repo && isServedOwner(site, repo.owner) && !hasOwnPage(project.id);
   });
-};
 
 /** GitHub's answer for a README, as the API passes it through. */
 const readmeAnswer = (text: string): ReadmeResponse => ({
@@ -292,21 +279,17 @@ test.describe("/projects while the projects load (final UI review)", () => {
     const skeleton = page.getByRole("status", { name: /loading projects/i });
     await expect(skeleton).toBeVisible();
     const before = (await skeleton.boundingBox())!;
-    const gridBefore = (await skeleton.locator(".projects-grid").boundingBox())!;
     release();
     await expect(page.locator("a.project-card").first()).toBeVisible();
     const after = (await page.getByRole("region", { name: "Projects" }).boundingBox())!;
 
     // The projects start where the skeleton stood, at its width: the page's
-    // width doesn't follow its content.
+    // width doesn't follow its content. (Not the grid's top: the featured
+    // card's description wraps to as many lines as the fonts make it, which
+    // the skeleton can't know.)
     expect(after.y).toBeCloseTo(before.y, 0);
     expect(after.x).toBeCloseTo(before.x, 0);
     expect(after.width).toBeCloseTo(before.width, 0);
-    // And the cards where the skeleton's were, the featured card's height held.
-    if (FEATURED) {
-      const gridAfter = (await page.locator(".projects-grid").boundingBox())!;
-      expect(gridAfter.y).toBeCloseTo(gridBefore.y, 0);
-    }
   });
 });
 

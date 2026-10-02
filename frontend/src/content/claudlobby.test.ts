@@ -1,31 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { claudlobby } from "./claudlobby";
-import { HOME_META, pageTitle } from "../seo";
 import { PLANNED, strings } from "../test/claudlobbyRules";
 
 /**
- * The homepage copy's rules (content/claudlobby.ts). Its shape is the type
- * checker's job; these are the rules a type can't express.
+ * The rules for Claudlobby's page copy (content/claudlobby.ts). Its shape is
+ * the type checker's job; these are the rules a type can't express. What
+ * says it off the page, its card and its page's head, is the site's project
+ * file, so site:check holds that to them (site-check/projects.test.ts).
  */
 
 const copy = strings(claudlobby);
 
-/**
- * What `/` says about Claudlobby off the page: the tab and share title, the
- * search snippet and the JSON-LD. The share card and its alt text are the
- * site's (site.yaml), so site:check holds them to these rules
- * (site-check/landing.test.ts).
- */
-const homeHead = [
-  pageTitle(HOME_META),
-  HOME_META.description,
-  ...strings(HOME_META.schemas),
-];
-
-/** Every rule about what `/` says covers both. */
-const homeText = [...copy, ...homeHead];
-
-describe("homepage copy", () => {
+describe("Claudlobby's page copy", () => {
   it("has no empty strings", () => {
     for (const text of copy) expect(text).toMatch(/\S/);
   });
@@ -52,7 +38,7 @@ describe("homepage copy", () => {
   });
 
   it("uses no em-dashes (CLAUDE.md tone rule)", () => {
-    for (const text of homeText) expect(text, text).not.toContain("—");
+    for (const text of copy) expect(text, text).not.toContain("—");
   });
 
   it("keeps the employer out of the hero (Chris, 2026-09-30)", () => {
@@ -68,12 +54,7 @@ describe("tone split and maturity (#179)", () => {
     const { maturity, roadmap, ...rest } = claudlobby;
     const { planned, ...maturityRest } = maturity;
     const { next, ...roadmapRest } = roadmap;
-    for (const text of [
-      ...strings(rest),
-      ...strings(maturityRest),
-      ...strings(roadmapRest),
-      ...homeHead,
-    ]) {
+    for (const text of [...strings(rest), ...strings(maturityRest), ...strings(roadmapRest)]) {
       expect(text, text).not.toMatch(PLANNED);
     }
     // And the two places that may name them still do, so PLANNED still

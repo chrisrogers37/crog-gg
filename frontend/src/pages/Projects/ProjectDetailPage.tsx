@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router";
 import { useProjects, useLoad, useContentStore } from "../../store";
 import type { Project } from "../../types";
@@ -7,17 +8,34 @@ import { LoadError } from "../../components/common/LoadError";
 import { PageSection } from "../../components/common/PageSection";
 import { SEO } from "../../components/SEO";
 import { projectBreadcrumbs, projectMeta } from "../../seo";
-import {
-  GitHubReadme,
-  RepoStats,
-  ProjectDemo,
-} from "../../components/features";
+import { ProjectDemo } from "../../components/features/ProjectDemo";
+import { RepoStats } from "../../components/features/RepoStats";
+import { hasOwnPage } from "../../content/ownPages";
 import { PROJECT_PAGES } from "../../content/projectPages";
 import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
 import { useGithubOn, useScrollToHash } from "../../hooks";
 import "./ProjectDetailPage.css";
 
 const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
+
+// react-markdown and highlight.js, in a chunk of their own: fetched only for
+// a page that shows a README, not for Claudlobby's, which has none.
+const GitHubReadme = lazy(() =>
+  import("../../components/features/GitHubReadme").then((m) => ({
+    default: m.GitHubReadme,
+  })),
+);
+
+/** The README's card while its chunk loads. */
+function ReadmeFallback() {
+  return (
+    <div className="card readme-fallback" aria-hidden="true">
+      <div className="page-skeleton page-skeleton--short" />
+      <div className="page-skeleton" />
+      <div className="page-skeleton" />
+    </div>
+  );
+}
 
 /** The hero's boxes while the projects load (#196 M41). */
 function ProjectDetailSkeleton() {
@@ -28,10 +46,10 @@ function ProjectDetailSkeleton() {
       aria-label="Loading project"
     >
       <div className="page-hero" aria-hidden="true">
-        <div className="project-skeleton project-skeleton-eyebrow" />
-        <div className="project-skeleton project-skeleton-headline" />
-        <div className="project-skeleton" />
-        <div className="project-skeleton project-skeleton-short" />
+        <div className="page-skeleton page-skeleton--eyebrow" />
+        <div className="page-skeleton page-skeleton--headline" />
+        <div className="page-skeleton" />
+        <div className="page-skeleton page-skeleton--short" />
       </div>
     </div>
   );
@@ -105,7 +123,9 @@ function StandardProject({ project }: { project: Project }) {
       {repo && githubOn && (
         <PageSection id="readme" heading="readme">
           <ErrorBoundary compact>
-            <GitHubReadme owner={repo.owner} repoName={repo.name} />
+            <Suspense fallback={<ReadmeFallback />}>
+              <GitHubReadme owner={repo.owner} repoName={repo.name} />
+            </Suspense>
           </ErrorBoundary>
         </PageSection>
       )}
@@ -115,7 +135,7 @@ function StandardProject({ project }: { project: Project }) {
 
 /**
  * ProjectDetailPage: /projects/:slug. A project with a page of its own
- * (content/projectPages.ts) shows that; every other one the standard page.
+ * (content/ownPages.ts) shows that; every other one the standard page.
  * The breadcrumbs and the way back are the site's either way.
  */
 export function ProjectDetailPage() {
@@ -161,7 +181,7 @@ export function ProjectDetailPage() {
     );
   }
 
-  const OwnPage = PROJECT_PAGES[project.id];
+  const OwnPage = hasOwnPage(project.id) ? PROJECT_PAGES[project.id] : undefined;
 
   return (
     <>
@@ -170,7 +190,7 @@ export function ProjectDetailPage() {
           this one's state, fetched figures included (#196 M68). */}
       <div className="page project-page" key={project.id}>
         <Breadcrumbs items={projectBreadcrumbs(project)} />
-        {OwnPage ? <OwnPage /> : <StandardProject project={project} />}
+        {OwnPage ? <OwnPage project={project} /> : <StandardProject project={project} />}
 
         <div className="page-links project-footer">
           {/* Opened directly (a deep link, a new tab), there's no page of

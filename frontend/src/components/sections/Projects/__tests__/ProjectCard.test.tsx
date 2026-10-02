@@ -2,20 +2,17 @@ import { describe, it, expect } from "vitest";
 import { renderWithProviders, screen, within } from "../../../../test/utils";
 import { FeaturedProject } from "../FeaturedProject";
 import { ProjectCard } from "../ProjectCard";
-import { Project } from "../../../../types";
+import type { Project } from "../../../../types";
+import { makeProject } from "../../../../test/builders";
 
-const mockProject: Project = {
+const mockProject = makeProject({
   id: "test",
   title: "Test Project",
   description: "A test project description",
-  url: "https://example.com",
   github: "https://github.com/someone/test",
-  icon: "\u{1F680}",
-  category: "web-app",
   technologies: ["React", "TypeScript"],
   status: "active",
-  featured: false,
-};
+});
 
 // The card is a router link, so it renders inside the app's providers.
 const renderCard = (project: Project, headingLevel?: 2 | 3) =>

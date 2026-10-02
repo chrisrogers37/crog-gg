@@ -17,16 +17,30 @@ import "./Layout.css";
  * Instant, not smooth: index.css makes scrolling smooth for in-page links, and
  * a smooth scroll to the top stopped short when the new page's content moved
  * under it. React Router's ScrollRestoration can't be told otherwise, and it
- * also restored the first load's position on a plain `#quickstart` link.
+ * also restored the first load's position on a plain `#contact` link.
  * Back and forward ("POP") keep the browser's own restoration, and a hash link
  * keeps its smooth scroll to the target.
+ *
+ * An in-page link's smooth scroll can still be moving when the visitor
+ * leaves, and in Chromium one instant scrollTo doesn't stop it: it carried
+ * on down the new page. So smooth scrolling is off for the jump, the jump
+ * says it's instant (one that names no behavior can land after layout, once
+ * smooth scrolling is back on), and it's made again on the next frame, after
+ * the old animation's last step.
  */
 function useScrollToTopOnNavigate() {
   const { pathname, hash } = useLocation();
   const navigationType = useNavigationType();
   useLayoutEffect(() => {
     if (navigationType === "POP" || hash) return;
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const root = document.documentElement;
+    const toTop = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    root.style.scrollBehavior = "auto";
+    toTop();
+    requestAnimationFrame(() => {
+      toTop();
+      root.style.scrollBehavior = "";
+    });
   }, [pathname, hash, navigationType]);
 }
 

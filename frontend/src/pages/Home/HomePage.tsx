@@ -24,20 +24,51 @@ import {
   ContactCTA,
   CONTACT_ID,
   Music,
-  Projects,
+  ProjectList,
   Timeline,
 } from "../../components/sections";
 import { photoSrc, photoSrcSet } from "../../utils/photos";
 import "./HomePage.css";
 
-/** What the mobile menu jumps to: site.yaml's sections, then contact. */
+/** What the mobile menu links to: site.yaml's sections, then contact. */
 const MENU_SECTIONS = [
   ...site.sections,
   { id: CONTACT_ID, label: site.contact.heading },
 ];
 
-const scrollToSection = (id: string) =>
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+/** How many projects the home page shows beside the featured one. */
+const HOME_PROJECTS = 3;
+
+/**
+ * The About text, and SUMMON NEW LORE under it where the deployment serves it
+ * (#189 M21). Its own component, so a press re-renders this section alone.
+ */
+function AboutSection({ text }: { text: string }) {
+  const regenerateOn = useRegenerateOn();
+  const regenerationError = useRegenerationError();
+  const { regenerate, reset, isRegenerating, hasModifiedContent } =
+    useRegeneration();
+  return (
+    <>
+      <AboutText text={text} />
+      {regenerateOn && (
+        <>
+          <ActionButtons
+            onRegenerate={() => regenerate(true)}
+            onReset={reset}
+            isRegenerating={isRegenerating}
+            hasModifiedContent={hasModifiedContent}
+          />
+          {regenerationError && (
+            <div className="page-note regeneration-notice" role="status">
+              {regenerationError}
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+}
 
 /**
  * HomePage: the owner's page, one column in the site's look (styles/page.css):
@@ -66,21 +97,20 @@ function HomeContent() {
   // says so in its own section when it fails (#190 M23).
   const bioLoad = useLoad("bio");
   const timelineLoad = useLoad("timeline");
+  const projectsLoad = useLoad("projects");
   const bio = useBio();
   const timeline = useTimeline();
-  const regenerationError = useRegenerationError();
   const loadContent = useContentStore((s) => s.loadContent);
   const reloadTimeline = useContentStore((s) => s.reloadTimeline);
-  // SUMMON shows only where the deployment can serve it (#189 M21).
-  const regenerateOn = useRegenerateOn();
-  const { regenerate, reset, isRegenerating, hasModifiedContent } =
-    useRegeneration();
 
   // Before the early returns, so the menu lists the sections while loading.
-  useSectionMenu(MENU_SECTIONS, "", scrollToSection);
+  useSectionMenu(MENU_SECTIONS);
 
-  // A link to a section (/#journey) lands on it once the sections exist.
-  useScrollToHash(bioLoad === "ready");
+  // A link to a section (/#music) lands on it once every file above it is in:
+  // until then, the sections it sits under are still growing.
+  useScrollToHash(
+    bioLoad === "ready" && timelineLoad !== "loading" && projectsLoad !== "loading",
+  );
 
   if (bioLoad === "loading" || !bio) {
     // A failed bio.yaml is fatal: there's no page without it.
@@ -103,26 +133,7 @@ function HomeContent() {
   // One renderer per section id site.yaml can name, so an id with no
   // component fails the type check rather than rendering nothing.
   const sectionContent: Record<SectionId, () => ReactNode> = {
-    about: () => (
-      <>
-        <AboutText text={bio.about_text} />
-        {regenerateOn && (
-          <>
-            <ActionButtons
-              onRegenerate={() => regenerate(true)}
-              onReset={reset}
-              isRegenerating={isRegenerating}
-              hasModifiedContent={hasModifiedContent}
-            />
-            {regenerationError && (
-              <div className="regeneration-notice" role="status">
-                {regenerationError}
-              </div>
-            )}
-          </>
-        )}
-      </>
-    ),
+    about: () => <AboutSection text={bio.about_text} />,
     journey: () =>
       typeof timelineLoad === "object" ? (
         <LoadError
@@ -133,7 +144,7 @@ function HomeContent() {
       ) : (
         <Timeline data={timeline} />
       ),
-    projects: () => <Projects />,
+    projects: () => <ProjectList limit={HOME_PROJECTS} compact />,
     music: () => <Music />,
   };
 
@@ -167,7 +178,7 @@ function HomeContent() {
               {bio.display_name}
             </h1>
           )}
-          <p className="page-note home-typewriter">
+          <div className="page-note home-typewriter">
             <TypewriterLoop
               messages={site.hero.typewriter}
               typeSpeed={25}
@@ -176,7 +187,7 @@ function HomeContent() {
               initialDelay={1000}
               className="welcome-typewriter"
             />
-          </p>
+          </div>
           <div className="page-ctas">
             <Link to="/projects" className="btn btn-primary">
               Projects
@@ -203,13 +214,13 @@ function HomeContent() {
 /** The hero's boxes while bio.yaml loads, so nothing moves when it lands. */
 function HomeSkeleton() {
   return (
-    <div className="page home-page" role="status" aria-label="Loading">
+    <div className="page home-page home-skeleton" role="status" aria-label="Loading">
       <div className="page-hero home-hero" aria-hidden="true">
-        <div className="home-photo home-skeleton" />
+        <div className="home-photo home-photo--loading" />
         <div>
-          <div className="home-skeleton home-skeleton-line home-skeleton-eyebrow" />
-          <div className="home-skeleton home-skeleton-line home-skeleton-headline" />
-          <div className="home-skeleton home-skeleton-line" />
+          <div className="page-skeleton page-skeleton--eyebrow" />
+          <div className="page-skeleton page-skeleton--headline" />
+          <div className="page-skeleton" />
         </div>
       </div>
     </div>

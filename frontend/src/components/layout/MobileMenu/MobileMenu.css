@@ -83,30 +83,6 @@
 
 /* Links and buttons */
 .mobile-menu-link,
-.mobile-menu-section-btn {
-  display: block;
-  padding: 0.6rem 0;
-  font-size: 1rem;
-  color: var(--text-color);
-  text-decoration: none;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  width: 100%;
-  transition: color 0.2s;
-}
-
-.mobile-menu-link:hover,
-.mobile-menu-section-btn:hover {
-  color: var(--primary-color);
-}
-
-.mobile-menu-section-btn.active {
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
 /* Theme section */
 .mobile-menu-theme {
   flex-direction: row;
