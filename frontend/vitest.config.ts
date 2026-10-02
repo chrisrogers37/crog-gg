@@ -1,14 +1,15 @@
 import { defineConfig } from "vitest/config";
-import { defaultClientConditions } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    // react-router's Node exports give ESM only under "module-sync". Without
-    // it, a test loads "react-router" as CommonJS while "react-router/dom"
-    // requires the ESM copy, and the two copies don't share a router context.
-    conditions: [...defaultClientConditions, "module-sync"],
+    // Node's own resolution includes "module-sync"; vitest's doesn't, and
+    // react-router's Node exports give ESM only under it. Without it, a test
+    // loads "react-router" as CommonJS while "react-router/dom" requires the
+    // ESM copy, and the two copies don't share a router context. vitest adds
+    // its own "node" and "development|production" to these.
+    conditions: ["module-sync"],
   },
   test: {
     environment: "jsdom",
