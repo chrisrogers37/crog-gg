@@ -3,6 +3,7 @@ import {
   ABOUT,
   OTHER_TABS,
   SECTIONS,
+  SUMMON,
   TABS_PATH,
   bio,
   named,
@@ -135,10 +136,11 @@ test.describe("Section Navigation", () => {
 
     await about.click();
 
-    // Expanded: the preview's "see more" is gone, and the action buttons that
-    // mount with the expanded content are there.
+    // Expanded: the preview's "see more" is gone, the expanded panel is in,
+    // and so are the action buttons that mount with it, where SUMMON shows.
     await expect(page.getByRole("button", { name: /see more/i })).toHaveCount(0);
-    await expect(page.locator(".action-buttons")).toBeVisible();
+    await expect(page.locator(".content-section")).toBeVisible();
+    if (SUMMON) await expect(page.locator(".action-buttons")).toBeVisible();
     await expect(about).toHaveAttribute("aria-selected", "true");
   });
 
@@ -231,6 +233,7 @@ test.describe("Section Flow Navigation", () => {
 
 test.describe("Action Buttons", () => {
   test("action buttons appear when section is active", async ({ page }) => {
+    test.skip(!SUMMON, "site.yaml turns SUMMON off");
     test.skip(!SECOND, "needs a tab other than About");
     // Not About (auto-selected, so in preview mode)
     await page.locator(`button[data-section="${SECOND.id}"]`).click();

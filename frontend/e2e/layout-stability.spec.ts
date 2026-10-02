@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SECTIONS, TABS_PATH, named, withLongAbout } from "./site";
+import { SECTIONS, SUMMON, TABS_PATH, named, withLongAbout } from "./site";
 
 /**
  * Interaction-shift gates for the action buttons.
@@ -111,6 +111,7 @@ const travel = (values: (number | null)[]) => {
 };
 
 test.describe("action button layout stability", () => {
+  test.skip(!SUMMON, "site.yaml turns SUMMON off, so there are no action buttons");
   test("expanding About does not displace the regenerate button", async ({
     page,
   }) => {
@@ -180,6 +181,7 @@ test.describe("journey section post-mount stability", () => {
   // It guards Timeline's growth, so it needs the site's Journey tab.
   const journey = SECTIONS.find(({ id }) => id === "journey");
   test.skip(!journey, "the site has no journey section");
+  test.skip(!SUMMON, "site.yaml turns SUMMON off, so there's no button to displace");
 
   const openJourney = async (page: Page) => {
     await openAbout(page);
@@ -224,6 +226,7 @@ test.describe("journey section post-mount stability", () => {
  * whole page was torn down and rebuilt to restore values held in memory.
  */
 test.describe("undoing a regeneration", () => {
+  test.skip(!SUMMON, "site.yaml turns SUMMON off, so there are no action buttons");
   test("does not tear the page down to a loading skeleton", async ({
     page,
   }) => {
@@ -407,6 +410,7 @@ const READ_COLLAPSE = () => {
 };
 
 test.describe("collapsing a section moves the page once (#149)", () => {
+  test.skip(!SUMMON, "site.yaml turns SUMMON off, so there are no action buttons");
   test("the button card unmounts in the same frame the content moves", async ({
     page,
   }) => {
