@@ -291,6 +291,7 @@ function AboutContent() {
       {/* Navigation */}
       <SectionNav
         activeSection={activeSection}
+        expanded={!previewMode}
         onSectionChange={handleSectionChange}
       />
 

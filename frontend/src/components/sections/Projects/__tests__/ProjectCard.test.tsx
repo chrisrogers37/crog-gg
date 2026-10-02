@@ -18,15 +18,23 @@ const mockProject: Project = {
   gradient: "linear-gradient(135deg, #000 0%, #333 100%)",
 };
 
+// The card is a router link, so it renders inside a router.
+const renderCard = (project: Project) =>
+  render(
+    <MemoryRouter>
+      <ProjectCard project={project} />
+    </MemoryRouter>,
+  );
+
 describe("ProjectCard", () => {
   it("renders project title and description", () => {
-    render(<ProjectCard project={mockProject} />);
+    renderCard(mockProject);
     expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("A test project description")).toBeInTheDocument();
   });
 
   it("renders technology pills", () => {
-    render(<ProjectCard project={mockProject} />);
+    renderCard(mockProject);
     expect(screen.getByText("React")).toBeInTheDocument();
     expect(screen.getByText("TypeScript")).toBeInTheDocument();
   });
@@ -36,7 +44,7 @@ describe("ProjectCard", () => {
       ...mockProject,
       technologies: ["React", "TypeScript", "Node", "Python", "Go"],
     };
-    render(<ProjectCard project={manyTech} />);
+    renderCard(manyTech);
     expect(screen.getByText("React")).toBeInTheDocument();
     expect(screen.getByText("TypeScript")).toBeInTheDocument();
     expect(screen.getByText("Node")).toBeInTheDocument();
@@ -46,25 +54,14 @@ describe("ProjectCard", () => {
 
   it("does not render tech pills when technologies is empty", () => {
     const projectNoTech = { ...mockProject, technologies: [] };
-    const { container } = render(<ProjectCard project={projectNoTech} />);
+    const { container } = renderCard(projectNoTech);
     expect(
       container.querySelector(".project-tile-tech"),
     ).not.toBeInTheDocument();
   });
 
-  it("renders as external link by default", () => {
-    render(<ProjectCard project={mockProject} />);
-    const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "https://example.com");
-    expect(link).toHaveAttribute("target", "_blank");
-  });
-
-  it("renders as internal link when linkTo is provided", () => {
-    render(
-      <MemoryRouter>
-        <ProjectCard project={mockProject} linkTo="/projects/test" />
-      </MemoryRouter>,
-    );
+  it("opens the project's page on the site", () => {
+    renderCard(mockProject);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "/projects/test");
     expect(link).not.toHaveAttribute("target");
@@ -72,7 +69,7 @@ describe("ProjectCard", () => {
 
   it("uses fallback gradient when gradient is undefined", () => {
     const projectNoGradient = { ...mockProject, gradient: undefined };
-    const { container } = render(<ProjectCard project={projectNoGradient} />);
+    const { container } = renderCard(projectNoGradient);
     const headerDiv = container.querySelector(".project-tile-header");
     expect(headerDiv).toHaveStyle({
       background: "linear-gradient(135deg, #6B7280 0%, #374151 100%)",
@@ -80,7 +77,7 @@ describe("ProjectCard", () => {
   });
 
   it("renders tile with correct class structure", () => {
-    const { container } = render(<ProjectCard project={mockProject} />);
+    const { container } = renderCard(mockProject);
     expect(container.firstChild).toHaveClass("project-tile");
     expect(container.querySelector(".project-tile-header")).toBeInTheDocument();
     expect(container.querySelector(".project-tile-body")).toBeInTheDocument();

@@ -113,6 +113,22 @@ test.describe("Section Navigation", () => {
     await expect(journeyButton).not.toHaveClass(/active/);
   });
 
+  test("the highlighted About tab expands on the first click (#196 M66)", async ({
+    page,
+  }) => {
+    const about = page.getByRole("tab", { name: /^about$/i });
+    await expect(about).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("button", { name: /see more/i })).toBeVisible();
+
+    await about.click();
+
+    // Expanded: the preview's "see more" is gone, and the action buttons that
+    // mount with the expanded content are there.
+    await expect(page.getByRole("button", { name: /see more/i })).toHaveCount(0);
+    await expect(page.locator(".action-buttons")).toBeVisible();
+    await expect(about).toHaveAttribute("aria-selected", "true");
+  });
+
   test("section buttons show active state when clicked", async ({ page }) => {
     const journeyButton = page.locator('button[data-section="journey"]');
 
@@ -138,6 +154,27 @@ test.describe("Section Navigation", () => {
     // Journey should no longer be active
     await expect(journeyButton).not.toHaveClass(/active/);
     await expect(projectsButton).toHaveClass(/active/);
+  });
+});
+
+test.describe("Projects tab", () => {
+  test("its cards open their pages, and all projects opens the list (#196 M43)", async ({
+    page,
+  }) => {
+    await page.getByRole("tab", { name: /^projects$/i }).click();
+    const card = page.locator(".projects-section a.project-tile").first();
+    const href = await card.getAttribute("href");
+    expect(href).toMatch(/^\/projects\/[a-z0-9-]+$/);
+    await card.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+
+    await page.goBack();
+    await page.getByRole("tab", { name: /^projects$/i }).click();
+    await page
+      .locator(".projects-section")
+      .getByRole("link", { name: "all projects" })
+      .click();
+    await expect(page).toHaveURL(/\/projects$/);
   });
 });
 

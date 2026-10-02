@@ -3,11 +3,14 @@ import { SECTIONS, SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
 
 interface SectionNavProps {
   activeSection: string;
+  /** Whether the active section is open. On arrival About is only previewed. */
+  expanded: boolean;
   onSectionChange: (section: string) => void;
 }
 
 export default function SectionNav({
   activeSection,
+  expanded,
   onSectionChange,
 }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
@@ -32,12 +35,11 @@ export default function SectionNav({
     });
   }, [activeSection]);
 
+  // A second click on the open tab collapses it (an empty id). The highlighted
+  // tab of a preview opens instead: on arrival About is highlighted but only
+  // previewed, and clicking it has to expand it (#196 M66).
   const handleClick = (sectionId: string) => {
-    if (activeSection === sectionId) {
-      onSectionChange("");
-    } else {
-      onSectionChange(sectionId);
-    }
+    onSectionChange(activeSection === sectionId && expanded ? "" : sectionId);
   };
 
   const handleKeyDown = useCallback(

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useProjects } from "../../../store";
 import { ProjectCard } from "./ProjectCard";
 import "./Projects.css";
@@ -42,6 +43,9 @@ export function Projects() {
           <ProjectCard key={project.id} project={project} />
         ))}
       </div>
+      <p className="projects-all">
+        <Link to="/projects">all projects</Link>
+      </p>
     </section>
   );
 }

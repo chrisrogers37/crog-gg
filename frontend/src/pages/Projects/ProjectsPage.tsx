@@ -123,11 +123,7 @@ export function ProjectsPage() {
         {filteredProjects.length > 0 ? (
           <div className="projects-grid">
             {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                linkTo={`/projects/${project.id}`}
-              />
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         ) : (
