@@ -80,10 +80,10 @@ describe("regenerateContent", () => {
     vi.restoreAllMocks();
   });
 
-  it("sends exactly one request carrying every section", async () => {
+  it("sends exactly one request, carrying only the section the page shows (#190 M07)", async () => {
     const fetchMock = respondWith({
       success: true,
-      content: { about: { about_text: "rewritten" }, portfolio: {} },
+      content: { about: { about_text: "rewritten" } },
       failed_sections: [],
     });
 
@@ -91,10 +91,10 @@ describe("regenerateContent", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(Object.keys(body.sections).sort()).toEqual(["about", "portfolio"]);
+    expect(Object.keys(body.sections)).toEqual(["about"]);
   });
 
-  it("applies the sections that succeeded when one fails", async () => {
+  it("ignores a failure named for a section it never sent", async () => {
     respondWith({
       success: true,
       content: { about: { about_text: "rewritten" } },
@@ -105,13 +105,17 @@ describe("regenerateContent", () => {
 
     const state = useContentStore.getState();
     expect(state.bio?.about_text).toBe("rewritten");
-    expect(state.regenerationError).toBeTruthy();
+    expect(state.regenerationError).toBeNull();
   });
 
-  it("leaves content untouched for a section the server could not rewrite", async () => {
+  it("changes nothing for a reply that only carries a portfolio", async () => {
+    useContentStore.setState({
+      experience: [{ title: "Engineer" }],
+      hasModifiedContent: false,
+    });
     respondWith({
       success: true,
-      content: { portfolio: { experience: [{ title: "Engineer" }] } },
+      content: { portfolio: { experience: [{ title: "Rewritten" }] } },
       failed_sections: ["about"],
     });
 
@@ -120,16 +124,31 @@ describe("regenerateContent", () => {
     const state = useContentStore.getState();
     expect(state.bio).toEqual(BIO);
     expect(state.experience).toEqual([{ title: "Engineer" }]);
+    expect(state.hasModifiedContent).toBe(false);
+    expect(state.regenerationError).toBeTruthy();
   });
 
   it("does not announce a section that failed", async () => {
     // Legacy listeners assign event.detail.content straight into their own
     // state, so announcing an absent section blanks the content the store just
     // preserved -- the same collapse, one layer down.
+    respondWith({ success: true, content: {}, failed_sections: ["about"] });
+
+    const seen = await captureEvents(() =>
+      useContentStore.getState().regenerateContent(true),
+    );
+
+    expect(seen).toEqual([]);
+  });
+
+  it("announces the rewritten about, and only that", async () => {
     respondWith({
       success: true,
-      content: { about: { about_text: "rewritten" } },
-      failed_sections: ["portfolio"],
+      content: {
+        about: { about_text: "rewritten" },
+        portfolio: { experience: [{ title: "Rewritten" }] },
+      },
+      failed_sections: [],
     });
 
     const seen = await captureEvents(() =>
@@ -137,7 +156,7 @@ describe("regenerateContent", () => {
     );
 
     expect(seen.map((e) => e.section)).toEqual(["about"]);
-    expect(seen.every((e) => e.content !== undefined)).toBe(true);
+    expect(seen[0].content).toEqual({ ...BIO, about_text: "rewritten" });
   });
 
   it("does not set the fatal error on a failed regeneration", async () => {
@@ -336,24 +355,6 @@ describe("regenerateContent", () => {
         await useContentStore.getState().regenerateContent(true);
 
         expect(useContentStore.getState().bio).toEqual(BIO);
-      },
-    );
-
-    it(
-      "keeps the prior experience when the list comes back empty",
-      async () => {
-        useContentStore.setState({ experience: [{ title: "Engineer" }] });
-        respondWith({
-          success: true,
-          content: { portfolio: { experience: [] } },
-          failed_sections: [],
-        });
-
-        await useContentStore.getState().regenerateContent(true);
-
-        expect(useContentStore.getState().experience).toEqual([
-          { title: "Engineer" },
-        ]);
       },
     );
 
@@ -650,7 +651,7 @@ describe("the cooldown follows the server", () => {
       {
         success: false,
         error: "Content generation failed",
-        failed_sections: ["about", "portfolio"],
+        failed_sections: ["about"],
         cooldown_total: 30,
       },
       500,
