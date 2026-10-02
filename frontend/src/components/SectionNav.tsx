@@ -2,17 +2,13 @@ import { useRef, useCallback, useEffect } from "react";
 import { SECTIONS, SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
 
 interface SectionNavProps {
+  /** The highlighted tab: the open section, or About while it's previewed. */
   activeSection: string;
-  /** Whether the active section is open. On arrival About is only previewed. */
-  expanded: boolean;
-  onSectionChange: (section: string) => void;
+  /** A tab was clicked. The page decides what that opens or closes. */
+  onSelect: (section: string) => void;
 }
 
-export default function SectionNav({
-  activeSection,
-  expanded,
-  onSectionChange,
-}: SectionNavProps) {
+export default function SectionNav({ activeSection, onSelect }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
   const isFirstRender = useRef(true);
 
@@ -23,7 +19,7 @@ export default function SectionNav({
       return;
     }
 
-    if (!activeSection || !navRef.current) return;
+    if (!navRef.current) return;
 
     const activeButton = navRef.current.querySelector<HTMLButtonElement>(
       `[data-section="${activeSection}"]`,
@@ -34,13 +30,6 @@ export default function SectionNav({
       block: "nearest",
     });
   }, [activeSection]);
-
-  // A second click on the open tab collapses it (an empty id). The highlighted
-  // tab of a preview opens instead: on arrival About is highlighted but only
-  // previewed, and clicking it has to expand it (#196 M66).
-  const handleClick = (sectionId: string) => {
-    onSectionChange(activeSection === sectionId && expanded ? "" : sectionId);
-  };
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -83,14 +72,9 @@ export default function SectionNav({
             aria-controls={SECTION_PANEL_ID}
             aria-selected={activeSection === section.id}
             data-section={section.id}
-            tabIndex={
-              activeSection === section.id ||
-              (!activeSection && section.id === SECTIONS[0].id)
-                ? 0
-                : -1
-            }
+            tabIndex={activeSection === section.id ? 0 : -1}
             className={`section-nav-button ${activeSection === section.id ? "active" : ""}`}
-            onClick={() => handleClick(section.id)}
+            onClick={() => onSelect(section.id)}
           >
             {section.label}
           </button>

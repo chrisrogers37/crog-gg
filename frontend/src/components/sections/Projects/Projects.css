@@ -3,12 +3,6 @@
   padding: 0;
 }
 
-/* /about's Projects tab, on to the full list with its search and filters. */
-.projects-all {
-  margin: 1rem 0 0;
-  text-align: center;
-}
-
 /* Tile Grid */
 .projects-grid {
   display: grid;

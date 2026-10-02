@@ -1,6 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect } from "vitest";
+import { renderWithProviders, screen } from "../../../../test/utils";
 import { ProjectCard } from "../ProjectCard";
 import { Project } from "../../../../types";
 
@@ -18,13 +17,9 @@ const mockProject: Project = {
   gradient: "linear-gradient(135deg, #000 0%, #333 100%)",
 };
 
-// The card is a router link, so it renders inside a router.
+// The card is a router link, so it renders inside the app's providers.
 const renderCard = (project: Project) =>
-  render(
-    <MemoryRouter>
-      <ProjectCard project={project} />
-    </MemoryRouter>,
-  );
+  renderWithProviders(<ProjectCard project={project} />);
 
 describe("ProjectCard", () => {
   it("renders project title and description", () => {

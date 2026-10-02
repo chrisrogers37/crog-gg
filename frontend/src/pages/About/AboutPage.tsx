@@ -98,15 +98,13 @@ function AboutContent() {
   const timeline = useTimeline();
   const loadContent = useContentStore((s) => s.loadContent);
 
-  // The open tab is this page's own, so every visit lands on About's preview.
-  const [activeSection, setActiveSection] = useState("about");
-
-  // Preview mode: starts true so About shows as a preview on load
+  // The open section, or null while About shows as a preview. It's the page's
+  // own, so every visit lands on About's preview.
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const isNarrowViewport = useMediaQuery(NARROW_VIEWPORT);
-  const [previewMode, setPreviewMode] = useState(true);
 
   // Whether the expanded section is actually in the DOM, as opposed to merely
-  // asked for. Leaving preview mode satisfies `!previewMode` on the same tick,
+  // asked for. Opening a section sets `openSection` on the same tick,
   // but AnimatePresence holds the collapsed preview for the length of its exit
   // transition, so the expanded content arrives a few hundred milliseconds
   // later and grows the page under whatever already mounted. Anything that sits
@@ -132,41 +130,24 @@ function AboutContent() {
     hasModifiedContent,
   } = useRegeneration();
 
-  // Handle section change from nav buttons.
-  //
-  // SectionNav signals "deselect" by passing an EMPTY id, not by echoing the
-  // active one back, so an empty string is what a collapse looks like here.
-  // Matching on `section === activeSection` therefore never fired, and the
-  // collapse fell through to the branch below -- which clears activeSection
-  // and sets previewMode false. "see more" only sets previewMode false, so
-  // from that state it had nothing left to change and went permanently inert
-  // while still rendering as a live control (#165).
-  //
-  // Collapsing returns to the landing state, which is what the reader started
-  // in: about selected, preview mode on.
-  const handleSectionChange = (section: string) => {
-    if (!section) {
-      setActiveSection("about");
-      setPreviewMode(true);
-    } else {
-      setActiveSection(section);
-      setPreviewMode(false);
-    }
+  // A tab opens its section, and a second click on the open tab goes back to
+  // About's preview, where the reader started. Everything else only opens: the
+  // mobile menu, the next-section link and "see more". (A tab used to signal a
+  // collapse with an empty id, the shape behind "see more" going inert, #165,
+  // and the previewed About tab doing nothing, #196 M66.)
+  const handleTabClick = (section: string) => {
+    setOpenSection(openSection === section ? null : section);
   };
 
   // Before the early returns below, so the menu lists these while loading too.
-  useSectionMenu(SECTIONS, activeSection, handleSectionChange);
+  useSectionMenu(SECTIONS, openSection ?? "about", setOpenSection);
 
-  // "see more" expands About: the preview is always About's.
-  const handlePreviewExpand = () => {
-    setActiveSection("about");
-    setPreviewMode(false);
-  };
+  // "see more" opens About: the preview is always About's.
+  const handlePreviewExpand = () => setOpenSection("about");
 
-  // Render section based on active selection
-  const renderActiveSection = () => {
+  const renderOpenSection = (section: string) => {
     let content: React.ReactNode;
-    switch (activeSection) {
+    switch (section) {
       case "about":
         content = (
           <section className="section-content about-section">
@@ -190,15 +171,15 @@ function AboutContent() {
     }
 
     const nextSection =
-      SECTIONS[SECTIONS.findIndex(({ id }) => id === activeSection) + 1]?.id ??
+      SECTIONS[SECTIONS.findIndex(({ id }) => id === section) + 1]?.id ??
       null;
 
     return (
-      <ErrorBoundary key={activeSection} compact>
+      <ErrorBoundary key={section} compact>
         {content}
         <SectionNavigator
           nextSection={nextSection}
-          onNavigate={handleSectionChange}
+          onNavigate={setOpenSection}
         />
       </ErrorBoundary>
     );
@@ -290,21 +271,20 @@ function AboutContent() {
 
       {/* Navigation */}
       <SectionNav
-        activeSection={activeSection}
-        expanded={!previewMode}
-        onSectionChange={handleSectionChange}
+        activeSection={openSection ?? "about"}
+        onSelect={handleTabClick}
       />
 
       {/* Main Content (inside the Layout's <main>, so not a landmark of its own) */}
       <div className="about-main">
         <AnimatePresence mode="wait">
-          {activeSection && !previewMode ? (
+          {openSection ? (
             <motion.div
-              key={activeSection}
+              key={openSection}
               className="content-section"
               role="tabpanel"
               id={SECTION_PANEL_ID}
-              aria-labelledby={sectionTabId(activeSection)}
+              aria-labelledby={sectionTabId(openSection)}
               // Attach is the first moment the expanded content occupies
               // layout; detach is the moment it stops, which under
               // AnimatePresence is when its exit animation has finished
@@ -316,7 +296,7 @@ function AboutContent() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             >
-              {renderActiveSection()}
+              {renderOpenSection(openSection)}
             </motion.div>
           ) : (
             <motion.div
@@ -355,7 +335,7 @@ function AboutContent() {
       </div>
 
       {/* Action Buttons — gated on the content being present, not requested.
-          previewMode is deliberately not consulted: it is the request, and
+          openSection is deliberately not consulted: it is the request, and
           reading it here is what unmounted these ahead of the content. */}
       {contentMounted && (
         <>

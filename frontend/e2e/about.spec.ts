@@ -158,23 +158,13 @@ test.describe("Section Navigation", () => {
 });
 
 test.describe("Projects tab", () => {
-  test("its cards open their pages, and all projects opens the list (#196 M43)", async ({
-    page,
-  }) => {
+  test("its cards open their pages on the site (#196 M43)", async ({ page }) => {
     await page.getByRole("tab", { name: /^projects$/i }).click();
     const card = page.locator(".projects-section a.project-tile").first();
     const href = await card.getAttribute("href");
     expect(href).toMatch(/^\/projects\/[a-z0-9-]+$/);
     await card.click();
     await expect(page).toHaveURL(new RegExp(`${href}$`));
-
-    await page.goBack();
-    await page.getByRole("tab", { name: /^projects$/i }).click();
-    await page
-      .locator(".projects-section")
-      .getByRole("link", { name: "all projects" })
-      .click();
-    await expect(page).toHaveURL(/\/projects$/);
   });
 });
 
