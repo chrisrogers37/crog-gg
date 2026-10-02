@@ -1,7 +1,7 @@
 import { Variants } from "framer-motion";
 
 /**
- * Framer Motion variants shared by the sections that stagger their children.
+ * Framer Motion variants for Music's staggered list, the only section that uses them.
  */
 
 // Stagger children animation
