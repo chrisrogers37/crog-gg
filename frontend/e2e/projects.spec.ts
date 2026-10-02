@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import yaml from "js-yaml";
 
 /**
  * Projects Page E2E Tests
@@ -141,22 +142,52 @@ test.describe("Project Detail Page", () => {
     await expect(backNav.first()).toBeVisible();
   });
 
-  test("non-existent project shows error or redirects", async ({ page }) => {
+  test("non-existent project says so, once the content has loaded", async ({
+    page,
+  }) => {
     await page.goto("/projects/this-project-does-not-exist-12345");
+    // Only a loaded, unknown slug says Not Found (#196 M41).
+    await expect(
+      page.getByRole("heading", { name: /project not found/i }),
+    ).toBeVisible();
+  });
 
-    // Should either show 404/not found OR redirect to projects list
-    const notFound = page.locator(
-      '.not-found, .project-not-found, [class*="not-found"], [class*="error"]',
-    );
-    const projectsHeading = page.locator("h1");
+  test("deep link to a real project renders its title", async ({
+    page,
+    request,
+  }) => {
+    // The first listed project, from the content that ships with the repo.
+    const index = yaml.load(
+      await (await request.get("/content/projects/index.yaml")).text(),
+    ) as { projects: string[] };
+    const project = yaml.load(
+      await (await request.get(`/content/projects/${index.projects[0]}`)).text(),
+    ) as { id: string; title: string };
 
-    await page.waitForTimeout(1000);
+    // Content arrives late, as on a slow network: "Project Not Found" must
+    // never show while it loads (#196 M41).
+    await page.addInitScript(() => {
+      const w = window as unknown as { __sawNotFound: boolean };
+      w.__sawNotFound = false;
+      new MutationObserver(() => {
+        if (/project not found/i.test(document.body?.innerText ?? "")) {
+          w.__sawNotFound = true;
+        }
+      }).observe(document, { subtree: true, childList: true, characterData: true });
+    });
+    await page.route("**/content/**", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
 
-    const showsError = await notFound.isVisible().catch(() => false);
-    const currentUrl = page.url();
-    const redirected =
-      currentUrl.endsWith("/projects") || currentUrl.endsWith("/projects/");
-
-    expect(showsError || redirected).toBe(true);
+    await page.goto(`/projects/${project.id}`);
+    await expect(
+      page.getByRole("heading", { level: 1, name: project.title }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __sawNotFound: boolean }).__sawNotFound,
+      ),
+    ).toBe(false);
   });
 });

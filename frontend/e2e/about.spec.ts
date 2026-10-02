@@ -101,15 +101,12 @@ test.describe("Section Navigation", () => {
   test("clicking same section twice toggles it off", async ({ page }) => {
     const journeyButton = page.locator('button[data-section="journey"]');
 
-    // Click journey to activate it
+    // Click journey to activate it (toHaveClass waits for the change)
     await journeyButton.click();
-    await page.waitForTimeout(500);
     await expect(journeyButton).toHaveClass(/active/);
 
     // Click journey again - should deactivate it
     await journeyButton.click();
-    await page.waitForTimeout(500);
-
     await expect(journeyButton).not.toHaveClass(/active/);
   });
 
@@ -185,8 +182,8 @@ test.describe("Section Flow Navigation", () => {
     // Click Music tab (last section)
     await page.locator('button[data-section="music"]').click();
 
-    // Wait for section content to render
-    await page.waitForTimeout(1000);
+    // Wait for the section's content to render
+    await expect(page.locator(".music-section")).toBeVisible();
 
     // Navigator should not be visible
     const navigator = page.locator(".section-navigator");

@@ -15,8 +15,10 @@ export default defineConfig({
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
 
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  // One retry on CI, and a test that only passes on its retry fails the run:
+  // a flaky test is reported, not hidden (#198 M72).
+  retries: process.env.CI ? 1 : 0,
+  failOnFlakyTests: !!process.env.CI,
 
   // Parallel workers
   workers: process.env.CI ? 1 : undefined,
