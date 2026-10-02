@@ -68,4 +68,4 @@ export const claudfather = {
   cream: "#faedd4", // the face: 13:1 on charcoal
 } as const;
 
-export const palette = { primary, accent, slate, claudfather } as const;
+export const palette = { primary, accent, slate } as const;

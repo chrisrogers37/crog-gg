@@ -3,7 +3,6 @@ import path from "node:path";
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 import yaml from "js-yaml";
 import { projectIndexShape, projectShape } from "../src/config/contentSchema";
-import { CLAUDLOBBY_CARD } from "../src/content/claudlobbyBrand";
 import type { BioData } from "../src/types/Bio";
 import { parseYaml } from "../src/utils/contentFile";
 import { readProjects } from "../src/utils/projectLoader";
@@ -28,17 +27,18 @@ export const bio = yaml.load(
 const projectsFile = (file: string) =>
   fs.readFileSync(path.join(siteDir(), "public/content/projects", file), "utf8");
 const projectIndex = parseYaml(projectIndexShape, projectsFile("index.yaml"), "index.yaml");
-const projectId = (file: string) => parseYaml(projectShape, projectsFile(file), file).id;
+const project = (file: string) => parseYaml(projectShape, projectsFile(file), file);
+const projects = projectIndex.projects.map(project);
 
 /** Whether the site lists Claudlobby, whose page is its own (content/ownPages.ts). */
-export const CLAUDLOBBY = projectIndex.projects.map(projectId).includes("claudlobby");
+export const CLAUDLOBBY = projects.some(({ id }) => id === "claudlobby");
 
-/** The card a page's link preview shows: Claudlobby's page has its own. */
+/** The link-preview card a page shows: a project's own where its file names one, else the site's. */
 export const cardOf = (path: string) =>
-  path === "/projects/claudlobby" ? CLAUDLOBBY_CARD : site.seo.image;
+  projects.find(({ id }) => path === `/projects/${id}`)?.card ?? site.seo.image;
 
 /** The featured project's id, if index.yaml features one. */
-export const FEATURED = projectIndex.featured && projectId(projectIndex.featured);
+export const FEATURED = projectIndex.featured && project(projectIndex.featured).id;
 
 /** The projects as the running site serves them, through the app's own loader. */
 export const servedProjects = (request: APIRequestContext) =>

@@ -44,6 +44,14 @@ function ReadmeFallback() {
  */
 function ProjectDetailSkeleton({ slug }: { slug?: string }) {
   const OwnHero = slug !== undefined && hasOwnPage(slug) ? PROJECT_PAGE_LOADING[slug] : undefined;
+  const lines = (
+    <>
+      <div className="page-skeleton page-skeleton--eyebrow" />
+      <div className="page-skeleton page-skeleton--headline" />
+      <div className="page-skeleton" />
+      <div className="page-skeleton page-skeleton--short" />
+    </>
+  );
   return (
     <div
       className="page project-page project-page--loading"
@@ -56,13 +64,10 @@ function ProjectDetailSkeleton({ slug }: { slug?: string }) {
         </ol>
       </div>
       {OwnHero ? (
-        <OwnHero />
+        <OwnHero>{lines}</OwnHero>
       ) : (
         <div className="page-hero" aria-hidden="true">
-          <div className="page-skeleton page-skeleton--eyebrow" />
-          <div className="page-skeleton page-skeleton--headline" />
-          <div className="page-skeleton" />
-          <div className="page-skeleton page-skeleton--short" />
+          {lines}
         </div>
       )}
     </div>

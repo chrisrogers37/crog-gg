@@ -53,26 +53,24 @@ describe("ProjectDetailPage before its project is found", () => {
   it("shows a skeleton while the content loads, not 'Project Not Found'", () => {
     // The store's own starting state: nothing loaded yet, a load pending.
     renderAt(["/projects/benzo"]);
-    expect(screen.getByRole("status", { name: /loading project/i })).toBeInTheDocument();
+    const loading = screen.getByRole("status", { name: /loading project/i });
     expect(screen.queryByText(/project not found/i)).not.toBeInTheDocument();
-  });
-
-  it("holds the breadcrumbs' row, and stands a page of its own's hero in its own look", () => {
-    // Claudlobby's: its charcoal panel already, so a direct visit doesn't
-    // flash from the light bars to it.
-    const own = renderAt(["/projects/claudlobby"]);
-    const loading = screen.getByRole("status", { name: /loading project/i });
+    // The breadcrumbs' row held, so the hero lands where its stand-in stood,
+    // and the standard hero's lines.
     expect(loading.querySelector(":scope > .breadcrumbs")).not.toBeNull();
-    expect(loading.querySelector(".cl-hero--loading")).not.toBeNull();
-    own.dispose();
-  });
-
-  it("stands the standard hero's bars in for any other project", () => {
-    renderAt(["/projects/benzo"]);
-    const loading = screen.getByRole("status", { name: /loading project/i });
-    expect(loading.querySelector(":scope > .breadcrumbs")).not.toBeNull();
-    expect(loading.querySelector(".cl-hero--loading")).toBeNull();
     expect(loading.querySelector(".page-skeleton--headline")).not.toBeNull();
+    expect(loading.querySelector(".cl-hero--loading")).toBeNull();
+  });
+
+  it("stands a page of its own's hero in its own look while it loads", () => {
+    // Claudlobby's: its charcoal panel and mark already, around the same
+    // lines, so a direct visit doesn't flash from the light bars to it.
+    renderAt(["/projects/claudlobby"]);
+    const loading = screen.getByRole("status", { name: /loading project/i });
+    const hero = loading.querySelector(".cl-hero--loading");
+    expect(hero).not.toBeNull();
+    expect(hero!.querySelector(".page-skeleton--headline")).not.toBeNull();
+    expect(hero!.querySelector("img.cl-mark")).not.toBeNull();
   });
 
   it("offers a retry when the projects failed to load, naming the file (#190 M23)", () => {

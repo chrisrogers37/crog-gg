@@ -1,8 +1,7 @@
 import { test, expect } from "./fixtures";
 import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
-import { CLAUDLOBBY_CARD } from "../src/content/claudlobbyBrand";
 import { claudfather } from "../src/styles/palette";
-import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
+import { CLAUDLOBBY, cardOf, expectBelowHeader, site } from "./site";
 
 /**
  * Claudlobby's project page: its own sections (#173), since the redesign one
@@ -21,17 +20,16 @@ test.skip(!CLAUDLOBBY, "the site doesn't list Claudlobby");
 const VIEWPORTS = [
   ["desktop", { width: 1366, height: 768 }],
   ["phone", { width: 390, height: 844 }],
-  // An iPhone SE's screen. CI's fonts wrap wider than a phone's, so there
-  // the maturity note is only held to begin on it (with a phone's fonts it
-  // ends at 570 px).
-  ["small phone", { width: 375, height: 667 }],
 ] as const;
 
 /** A palette hex as getComputedStyle reports it. */
 const rgb = (hex: string) =>
   `rgb(${[1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16)).join(", ")})`;
 
-for (const [label, viewport] of VIEWPORTS) {
+// And an iPhone SE's screen, for the first screen alone.
+const SMALL_PHONE = { width: 375, height: 667 };
+
+for (const [label, viewport] of [...VIEWPORTS, ["small phone", SMALL_PHONE] as const]) {
   test(`the first screen names Claudlobby, shows both CTAs and its maturity (${label})`, async ({
     page,
   }) => {
@@ -41,22 +39,27 @@ for (const [label, viewport] of VIEWPORTS) {
     const hero = page.locator(".page-hero");
     await expect(hero.locator("h1")).toBeVisible();
     await expect(hero).toContainText(/claudlobby/i);
-    // Wholly on screen, without scrolling: both CTAs and Claudfather's mark,
-    // and the maturity note that qualifies them (#179), begun at least on a
-    // small phone.
+    // Wholly on screen, without scrolling: both CTAs and Claudfather's mark.
     for (const selector of [`a[href="${REPO}"]`, 'a[href="#quickstart"]', ".cl-mark"]) {
       await expect(hero.locator(selector)).toBeInViewport({ ratio: 1 });
     }
-    await expect(hero.locator(".cl-maturity")).toBeInViewport(
-      label === "small phone" ? {} : { ratio: 1 },
-    );
-    if (label === "small phone") {
-      // Edge to edge there, the page's gutters given to the words: what keeps
-      // the note on a phone's first screen, whatever the fonts.
+    const maturity = hero.locator(".cl-maturity");
+    if (viewport === SMALL_PHONE) {
+      // The panel runs edge to edge there, its gutters given to the words:
+      // that keeps the maturity note on a phone's first screen (it ends at
+      // 570 px). CI's fonts wrap wider than a phone's, so here the note is
+      // held to begin on it.
       const panel = (await hero.boundingBox())!;
       expect(panel.x).toBe(0);
       expect(panel.width).toBe(viewport.width);
+      await expect(maturity).toBeInViewport();
+    } else {
+      // The maturity note that qualifies them (#179), wholly.
+      await expect(maturity).toBeInViewport({ ratio: 1 });
     }
+    // A panel padded all round: the project page's rule for the hero under
+    // its breadcrumbs (no top padding) isn't this one's.
+    await expect(hero).not.toHaveCSS("padding-top", "0px");
   });
 }
 
@@ -87,27 +90,22 @@ test.describe("Claudlobby's page", () => {
     // In the app's head as in the prerendered one (prerender.spec.ts).
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
-      `${site.site.url}${CLAUDLOBBY_CARD.path}`,
+      `${site.site.url}${cardOf(PAGE).path}`,
     );
   });
 
   test("keeps its hero Claudfather's night in both themes; its links take each theme's orange", async ({
     page,
   }) => {
-    const hero = () =>
-      page.locator(".page-hero.cl-hero").evaluate((el) => getComputedStyle(el).backgroundColor);
-    const link = () =>
-      page.locator("#quickstart a").first().evaluate((el) => getComputedStyle(el).color);
-    expect(await hero()).toBe(rgb(claudfather.charcoal));
-    expect(await link()).toBe(rgb(claudfather.orangeDeep));
+    const hero = page.locator(".page-hero.cl-hero");
+    const link = page.locator("#quickstart a").first();
+    await expect(hero).toHaveCSS("background-color", rgb(claudfather.charcoal));
+    await expect(link).toHaveCSS("color", rgb(claudfather.orangeDeep));
 
-    // Light, then dark.
+    // Light, then dark: the links turn, the hero doesn't.
     await page.getByRole("button", { name: /current theme/i }).first().click();
-    await expect
-      .poll(() => page.evaluate(() => document.documentElement.classList.contains("dark")))
-      .toBe(true);
-    expect(await hero()).toBe(rgb(claudfather.charcoal));
-    expect(await link()).toBe(rgb(claudfather.orange));
+    await expect(link).toHaveCSS("color", rgb(claudfather.orange));
+    await expect(hero).toHaveCSS("background-color", rgb(claudfather.charcoal));
   });
 
   test("says nothing of the owner's: the site around it does", async ({ page }) => {

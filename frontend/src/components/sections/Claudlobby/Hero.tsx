@@ -1,5 +1,4 @@
 import { claudlobby } from "../../../content/claudlobby";
-import { CLAUDLOBBY_MARK } from "../../../content/claudlobbyBrand";
 import type { Project } from "../../../types";
 import { track } from "../../../services/analytics";
 import { photoSrc, photoSrcSet } from "../../../utils/photos";
@@ -17,13 +16,16 @@ function StarIcon() {
   );
 }
 
+/** The mark's widths, as Claudlobby.css draws it at each breakpoint. */
+export const MARK_SIZES = "(max-width: 480px) 44px, (max-width: 768px) 56px, 220px";
+
 /**
  * What it is, how mature it is, and the two next steps, all above the fold on
  * a phone (#173, #179, #181 G2/G9). Only Claudlobby's: who built it is the
  * site around it. In Claudfather's colours, with its avatar as the mark.
  */
 export function Hero({ project }: { project: Project }) {
-  const { hero, maturity } = claudlobby;
+  const { hero, maturity, mark } = claudlobby;
   return (
     <section className="page-hero cl-hero" aria-labelledby="cl-hero-heading">
       <p className="page-eyebrow">
@@ -62,13 +64,13 @@ export function Hero({ project }: { project: Project }) {
           fetches src the moment it's set, before srcset can choose. */}
       <img
         className="cl-mark"
-        alt={CLAUDLOBBY_MARK.alt}
+        alt={mark.alt}
         width={220}
         height={220}
         loading="eager"
-        sizes="(max-width: 768px) 56px, 220px"
-        srcSet={photoSrcSet(CLAUDLOBBY_MARK.photo)}
-        src={photoSrc(CLAUDLOBBY_MARK.photo)}
+        sizes={MARK_SIZES}
+        srcSet={photoSrcSet(mark.photo)}
+        src={photoSrc(mark.photo)}
       />
     </section>
   );

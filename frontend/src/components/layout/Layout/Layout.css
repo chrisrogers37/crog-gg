@@ -13,7 +13,9 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  /* The page's gutter: an edge-to-edge band inside takes it back. */
+  --page-gutter: 2rem;
+  padding: var(--page-gutter);
 }
 
 .compact-header {
@@ -27,7 +29,7 @@
 
 @media (max-width: 768px) {
   .layout-main {
-    padding: 1rem;
+    --page-gutter: 1rem;
   }
 
   .compact-header {

@@ -1,6 +1,5 @@
 import type { SiteConfig } from "../config/schema";
 import { socialsIn } from "../config/socials";
-import { CLAUDLOBBY_CARD } from "../content/claudlobbyBrand";
 import { CLAUDLOBBY_REPO } from "../content/links";
 import { hasOwnPage, type OwnPageId } from "../content/ownPages";
 import type { Project } from "../types/Project";
@@ -72,7 +71,7 @@ const property = (property: string, content: string): HeadTag => ({
 export const jsonLd = (schema: object) =>
   JSON.stringify(schema).replace(/</g, "\\u003c");
 
-export type ProjectSummary = Pick<Project, "id" | "title" | "description" | "url">;
+export type ProjectSummary = Pick<Project, "id" | "title" | "description" | "url" | "card">;
 
 /** The trail ProjectDetailPage shows, and the BreadcrumbList describing it. */
 export const projectBreadcrumbs = (project: ProjectSummary) => [
@@ -176,50 +175,49 @@ export function createSeo(site: SiteConfig) {
 
   /**
    * A page of its own says what it is in its own terms: Claudlobby's is
-   * source code, with its own share card in Claudfather's colours. Every own
-   * page has an entry, or the type check fails.
+   * source code. Every own page has an entry, or the type check fails.
    */
-  const OWN_PAGE_HEADS: Record<
+  const OWN_PAGE_SCHEMAS: Record<
     OwnPageId,
-    (project: ProjectSummary, description: string) => { image: ShareImage; schema: object }
+    (project: ProjectSummary, description: string, url: string) => object
   > = {
-    claudlobby: (project, description) => ({
-      image: CLAUDLOBBY_CARD,
-      schema: {
-        "@context": "https://schema.org",
-        "@type": "SoftwareSourceCode",
-        name: project.title,
-        description,
-        url: absoluteUrl(`/projects/${project.id}`),
-        codeRepository: CLAUDLOBBY_REPO,
-        license: "https://www.apache.org/licenses/LICENSE-2.0",
-        programmingLanguage: "Python",
-        runtimePlatform: "Claude Code",
-        author: AUTHOR,
-      },
+    claudlobby: (project, description, url) => ({
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      name: project.title,
+      description,
+      url,
+      codeRepository: CLAUDLOBBY_REPO,
+      license: "https://www.apache.org/licenses/LICENSE-2.0",
+      programmingLanguage: "Python",
+      runtimePlatform: "Claude Code",
+      author: AUTHOR,
     }),
   };
 
   function projectMeta(project: ProjectSummary): LandingPage {
     // YAML block scalars keep their line breaks; a description reads as one line.
     const description = project.description.replace(/\s+/g, " ").trim();
-    const own = hasOwnPage(project.id) ? OWN_PAGE_HEADS[project.id](project, description) : undefined;
+    const path = `/projects/${project.id}`;
     return {
-      path: `/projects/${project.id}`,
+      path,
       title: project.title,
       description,
-      ...(own && { image: own.image }),
+      // A project's own link preview, where its file names one.
+      ...(project.card && { image: project.card }),
       schemas: [
-        own?.schema ?? {
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          name: project.title,
-          description,
-          url: project.url,
-          applicationCategory: "WebApplication",
-          operatingSystem: "Any",
-          author: AUTHOR,
-        },
+        hasOwnPage(project.id)
+          ? OWN_PAGE_SCHEMAS[project.id](project, description, absoluteUrl(path))
+          : {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: project.title,
+              description,
+              url: project.url,
+              applicationCategory: "WebApplication",
+              operatingSystem: "Any",
+              author: AUTHOR,
+            },
         {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",

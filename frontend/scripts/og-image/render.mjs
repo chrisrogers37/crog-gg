@@ -1,7 +1,6 @@
-// Renders the site's link-preview cards at 1200x630 (#188), each from its
-// HTML source in site/ to its PNG in site/public/: the site's card
-// (og-image), and Claudlobby's page's own (claudlobby-card) where the site
-// keeps one.
+// Renders the site's link-preview cards at 1200x630 (#188): every
+// site/<name>.html to site/public/<name>.png. The site's card (og-image), and
+// a project's own (`card` in its file), such as claudlobby-card.
 //
 // Run from frontend/ after changing a card's text or colours:
 //   node scripts/og-image/render.mjs
@@ -14,12 +13,11 @@ import { chromium } from "@playwright/test";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const site = path.resolve(here, "../../../site");
-const cards = ["og-image", "claudlobby-card"].filter((card) =>
-  fs.existsSync(path.join(site, `${card}.html`)),
-);
-if (cards.length === 0) {
-  throw new Error(`no card source (og-image.html, claudlobby-card.html) in ${site}`);
-}
+const cards = fs
+  .readdirSync(site)
+  .filter((file) => file.endsWith(".html"))
+  .map((file) => file.slice(0, -".html".length));
+if (cards.length === 0) throw new Error(`no card source (<name>.html) in ${site}`);
 
 const browser = await chromium.launch();
 try {

@@ -18,7 +18,7 @@ The frontend and the API share one origin, so production needs no CORS. `vercel.
 
 - **Routes** (`frontend/src/router.tsx`):
   - `/` is the owner's page, one column of sections (`frontend/src/pages/Home/`).
-  - `/projects` and `/projects/:slug` list the projects and show each one. A project whose id `frontend/src/content/ownPages.ts` lists has a page of its own (Claudlobby's), which `projectPages.ts` maps it to; the rest share the standard one. The ids sit apart from the pages so the site checks and the E2E specs can ask without loading React components. A page of its own shows no GitHub panels, so its repo may be any owner's. It also sets its own head (`OWN_PAGE_HEADS` in `seo/site.ts`): Claudlobby's names its own share card and describes itself as source code.
+  - `/projects` and `/projects/:slug` list the projects and show each one. A project whose id `frontend/src/content/ownPages.ts` lists has a page of its own (Claudlobby's), which `projectPages.ts` maps it to; the rest share the standard one. The ids sit apart from the pages so the site checks and the E2E specs can ask without loading React components. A page of its own shows no GitHub panels, so its repo may be any owner's. It also describes itself in its own terms (`OWN_PAGE_SCHEMAS` in `seo/site.ts`): Claudlobby's as source code. Any project's link preview is its file's `card` where it names one, else the site's.
   - Each loads as its own chunk.
   - `/about`, where the owner's page was from #173 until the redesign, redirects to `/`: `vercel.json` sends a visit there, and the router a link inside the app.
   - Anything else is the 404 page.

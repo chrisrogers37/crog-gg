@@ -146,3 +146,15 @@ export const record =
 /** "source has N problem(s):", then one line per problem. */
 export const describeProblems = (source: string, issues: string[]) =>
   `${source} has ${issues.length} problem(s):\n${issues.map((issue) => `  - ${issue}`).join("\n")}`;
+
+/**
+ * A link-preview card (#174): a PNG in the site's public folder, its size,
+ * and its words as the alt. The site's (seo.image in site.yaml), and a
+ * project's own (`card` in its file).
+ */
+export const shareImage = object({
+  path: sitePath,
+  width: positiveInteger,
+  height: positiveInteger,
+  alt: text,
+});

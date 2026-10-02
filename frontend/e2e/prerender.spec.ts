@@ -1,7 +1,6 @@
 import type { APIRequestContext } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { CLAUDLOBBY_CARD } from "../src/content/claudlobbyBrand";
-import { CLAUDLOBBY, cardOf, servedProjects, site } from "./site";
+import { cardOf, servedProjects, site } from "./site";
 
 /**
  * The crawler's view (#174): each page's raw HTML with no JavaScript run,
@@ -116,8 +115,10 @@ test.describe("Prerendered heads", () => {
       [site.owner.image, "image/"],
       ["/apple-touch-icon.png", "image/png"],
       ["/manifest.json", "application/json"],
-      // Claudlobby's page's own card, where the site lists it.
-      ...(CLAUDLOBBY ? [[CLAUDLOBBY_CARD.path, "image/png"]] : []),
+      // Each project's own card.
+      ...(await servedProjects(request)).flatMap(({ card }) =>
+        card ? [[card.path, "image/png"]] : [],
+      ),
     ]) {
       const response = await request.get(path);
       expect(response.status(), path).toBe(200);
