@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prepare": "husky",
-    "site:init": "node --experimental-strip-types frontend/scripts/site-init.ts"
+    "site:init": "node --experimental-strip-types --disable-warning=ExperimentalWarning frontend/scripts/site-init.ts"
   },
   "lint-staged": {
     "frontend/src/**/*.{ts,tsx}": [

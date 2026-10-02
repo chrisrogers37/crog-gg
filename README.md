@@ -10,11 +10,7 @@ For how it's built, and what each content file does, see the [documentation inde
 
 ## Make it yours
 
-**Use this template** (GitHub's green button) for a repo of your own, then run `npm run site:init`: it swaps this site's content for a fictional one to start from. [FORKING.md](FORKING.md) is the checklist, to a deployed site.
-
-Or make the copy and deploy it in one go. It needs no settings: with none, SUMMON NEW LORE and the GitHub panels are hidden. It deploys this site's content until you run `npm run site:init` and push, so do that first.
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchrisrogers37%2Fcrog-gg&project-name=my-site&repository-name=my-site)
+**Use this template** (GitHub's green button) for a repo of your own, then run `npm run site:init` at its root: it swaps this site's content, which isn't yours to publish ([CONTENT-TERMS.md](CONTENT-TERMS.md)), for a fictional one to start from. [FORKING.md](FORKING.md) is the checklist, to a deployed site. A deploy needs no settings: with none, SUMMON NEW LORE is hidden, and the GitHub panels call GitHub without a token.
 
 ## Features
 
