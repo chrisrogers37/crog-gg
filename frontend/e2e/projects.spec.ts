@@ -199,15 +199,44 @@ test.describe("Project Detail Page", () => {
   });
 });
 
+/** The first project that links a repo the API serves, or none. */
+const linkedProject = async (request: import("@playwright/test").APIRequestContext) => {
+  const projects = await readProjects(async (file) =>
+    (await request.get(`/content/projects/${file}`)).text(),
+  );
+  return projects.find((project) => {
+    const repo = githubRepo(project);
+    return repo && isServedOwner(site, repo.owner);
+  });
+};
+
+/** GitHub's answer for a README, as the API passes it through. */
+const readmeAnswer = (text: string) => ({
+  content: Buffer.from(text).toString("base64"),
+  encoding: "base64",
+  sha: "0",
+  html_url: "https://github.com/someone/example/blob/main/README.md",
+  download_url: "https://raw.githubusercontent.com/someone/example/main/README.md",
+});
+
+/** A README with everything that can't wrap: a wide table, a long URL, long code. */
+const WIDE_README = [
+  "# A README",
+  "",
+  `| ${Array.from({ length: 10 }, (_, i) => `column ${i}`).join(" | ")} |`,
+  `|${" --- |".repeat(10)}`,
+  `| ${Array.from({ length: 10 }, (_, i) => `value ${i}`).join(" | ")} |`,
+  "",
+  `See https://example.com/${"averylongpathsegment".repeat(10)} for more.`,
+  "",
+  "```",
+  `const x = ${"call(".repeat(20)}${")".repeat(20)};`,
+  "```",
+].join("\n");
+
 test.describe("A deep-linked project page while /api/features answers (#189 M21)", () => {
   test("doesn't shift when the answer lands", async ({ page, request }) => {
-    const projects = await readProjects(async (file) =>
-      (await request.get(`/content/projects/${file}`)).text(),
-    );
-    const linked = projects.find((project) => {
-      const repo = githubRepo(project);
-      return repo && isServedOwner(site, repo.owner);
-    });
+    const linked = await linkedProject(request);
     test.skip(!linked, "no project links a repo the API serves");
     test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
 
@@ -239,6 +268,92 @@ test.describe("A deep-linked project page while /api/features answers (#189 M21)
         }),
     );
     expect(new Set(tops).size, `the footer's offsets: ${[...new Set(tops)].join(", ")}`).toBe(1);
+  });
+});
+
+test.describe("A project page on a phone (final UI review)", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("keeps a wide README on the screen, and the stats where they loaded", async ({
+    page,
+    request,
+  }) => {
+    const linked = await linkedProject(request);
+    test.skip(!linked, "no project links a repo the API serves");
+    test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
+
+    let answerRepo!: () => void;
+    const repoAsked = new Promise<void>((resolve) => (answerRepo = resolve));
+    await page.route("**/api/v1/github/repo/**", async (route) => {
+      await repoAsked;
+      await route.fulfill({
+        json: {
+          stargazers_count: 12,
+          forks_count: 3,
+          watchers_count: 12,
+          open_issues_count: 1,
+          language: "Python",
+          license: { name: "MIT License", spdx_id: "MIT" },
+          pushed_at: "2026-09-30T12:00:00Z",
+          topics: [],
+        },
+      });
+    });
+    await page.route("**/api/v1/github/readme/**", (route) =>
+      route.fulfill({ json: readmeAnswer(WIDE_README) }),
+    );
+    await page.goto(`/projects/${linked!.id}`);
+
+    // The stats take the room they'll fill before they arrive, so nothing
+    // below them moves when they do.
+    const loading = page.getByRole("status", { name: "Loading repository stats" });
+    await expect(loading).toBeVisible();
+    const before = (await loading.boundingBox())!.height;
+    answerRepo();
+    await expect(loading).toBeHidden();
+    const after = (await page.locator(".repo-stats").boundingBox())!.height;
+    expect(Math.abs(after - before), `${before}px loading, ${after}px loaded`).toBeLessThanOrEqual(1);
+
+    // The page never scrolls sideways, and the README hides none of itself
+    // past its card's edge: the table scrolls in a box of its own, and the
+    // URL wraps.
+    const table = page.getByRole("table");
+    await expect(table).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    expect(
+      await table.evaluate((el) => {
+        const box = el.parentElement!;
+        return getComputedStyle(box).overflowX === "auto" && box.scrollWidth > box.clientWidth;
+      }),
+    ).toBe(true);
+    const card = (await page.getByRole("article").boundingBox())!;
+    const url = (await page.getByRole("link", { name: /example\.com/ }).boundingBox())!;
+    expect(url.x + url.width).toBeLessThanOrEqual(card.x + card.width);
+  });
+});
+
+test.describe("/projects while the projects load (final UI review)", () => {
+  test("the grid stays where the skeleton stood", async ({ page }) => {
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/content/projects/index.yaml", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/projects");
+
+    const skeleton = page.getByRole("status", { name: /loading projects/i });
+    await expect(skeleton).toBeVisible();
+    const before = (await skeleton.boundingBox())!;
+    release();
+    await expect(page.locator("a.project-tile").first()).toBeVisible();
+    const after = (await page.locator(".projects-grid").boundingBox())!;
+
+    // Same place and width: the filters stood above the skeleton too, and the
+    // page's width doesn't follow its content.
+    expect(after.y).toBeCloseTo(before.y, 0);
+    expect(after.x).toBeCloseTo(before.x, 0);
+    expect(after.width).toBeCloseTo(before.width, 0);
   });
 });
 

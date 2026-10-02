@@ -26,6 +26,11 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The content files the site renders are checked by the build, by `npm run site:check` and as they load, naming the file and the field; a file that fails takes only its own section down, and `projects/index.yaml` alone sets the projects' order. `order`, `featured`, `tags` and `image` are gone from project files, and links must be https (#244).
 - `npm run site:init` starts a fork from the fictional `site.example/`, and FORKING.md is the checklist from a copy of the repo to a deployed site (#245).
 
+### Fixed
+- A project page fits a phone: a README's wide table scrolls in a box of its own, and a long URL wraps. Pages take their width from the layout, not from their content, so `/projects` no longer widens as its projects arrive (#246).
+- Text on the primary and hover colours, the tech pills and the skill bubbles meets WCAG AA contrast in both themes, and a README's task-list checkboxes are named (#246).
+- The project stats and the `/projects` tiles keep their size when they load, and `/projects` shows its filters while it loads (#246).
+
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).
 

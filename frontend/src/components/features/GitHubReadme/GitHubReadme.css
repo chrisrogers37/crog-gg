@@ -68,6 +68,8 @@
 /* Content styling */
 .readme-content {
   padding: 1.5rem 2rem;
+  /* A long URL or word wraps rather than pushing past the card. */
+  overflow-wrap: anywhere;
 }
 
 .readme-content h1 {
@@ -146,11 +148,16 @@
   color: var(--text-color);
 }
 
-/* Tables */
+/* Tables scroll sideways in their own box, so a wide one can't widen the page. */
+.readme-table {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
 .readme-content table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 1rem;
+  overflow-wrap: normal;
 }
 
 .readme-content th,

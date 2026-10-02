@@ -30,11 +30,11 @@ export function SkillBubbles({
             <motion.span
               key={skill}
               className="skill-bubble"
-              // 20 and 40 are alpha pairs: a light tint, and a stronger border.
+              // 20 and 80 are alpha pairs: a light tint, and a border strong
+              // enough to carry the category's colour; the text is the theme's.
               style={{
                 backgroundColor: `${color}20`,
-                color,
-                borderColor: `${color}40`,
+                borderColor: `${color}80`,
               }}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}

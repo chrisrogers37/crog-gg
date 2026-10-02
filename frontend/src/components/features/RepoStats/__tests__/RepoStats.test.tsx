@@ -74,3 +74,19 @@ describe("RepoStats when the repo changes (#196 M68)", () => {
     expect(container.querySelector(".repo-stats.loading")).toBeInTheDocument();
   });
 });
+
+describe("RepoStats while it loads", () => {
+  it("lays out a whole panel, hidden, so the figures arriving don't move the page", () => {
+    vi.spyOn(githubService, "getRepository").mockReturnValue(new Promise(() => {}));
+
+    const { container } = render(<RepoStats owner="owner" repoName="repo" />);
+
+    const loading = screen.getByRole("status", { name: "Loading repository stats" });
+    // The loaded panel's own parts, so its height is the loaded one's...
+    expect(loading.querySelector(".stats-grid .stat-item")).toBeInTheDocument();
+    expect(loading.querySelector(".repo-meta")).toBeInTheDocument();
+    // ...with nothing of the stand-in figures read out.
+    expect(loading.firstElementChild).toHaveAttribute("aria-hidden", "true");
+    expect(container.querySelectorAll(".repo-stats")).toHaveLength(1);
+  });
+});

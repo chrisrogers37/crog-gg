@@ -48,7 +48,7 @@
 
 .section-fade-btn:hover {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--on-primary-color);
 }
 
 @media (max-width: 768px) {

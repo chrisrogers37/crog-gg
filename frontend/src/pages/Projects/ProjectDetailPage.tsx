@@ -17,7 +17,7 @@ import "./ProjectDetailPage.css";
 function ProjectDetailSkeleton() {
   return (
     <div
-      className="project-detail-page project-detail-page--placeholder project-detail-page--loading"
+      className="project-detail-page project-detail-page--loading"
       role="status"
       aria-label="Loading project"
     >
@@ -62,7 +62,7 @@ export function ProjectDetailPage() {
     if (load === "loading") return <ProjectDetailSkeleton />;
     if (typeof load === "object") {
       return (
-        <div className="project-detail-page project-detail-page--placeholder">
+        <div className="project-detail-page">
           <LoadError
             message={`The projects didn't load: ${load.error}.`}
             onRetry={() => reloadProjects()}

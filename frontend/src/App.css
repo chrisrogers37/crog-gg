@@ -13,8 +13,10 @@
   --text-color: #1e293b; /* slate.800 */
   --text-color-secondary: #64748b; /* slate.500 */
   --card-background: #ffffff; /* white */
-  --hover-color: #3b82f6; /* primary.500 */
+  --hover-color: #1d4ed8; /* primary.700 */
   --border-color: #e2e8f0; /* slate.200 */
+  /* Text on --primary-color and --hover-color: 5.2:1 and 6.7:1 (WCAG AA). */
+  --on-primary-color: #ffffff; /* white */
 }
 
 /* Dark mode overrides */
@@ -28,6 +30,9 @@
   --hover-color: #93c5fd; /* primary.300 */
   --border-color: #334155; /* slate.700 */
   --logo-chip: #f1f5f9; /* slate.100 */
+  /* The dark theme's primary is light, so its text is dark: white on it was
+     2.5:1, slate.900 is 7.0:1 (9.9:1 on the hover). */
+  --on-primary-color: #0f172a; /* slate.900 */
 }
 
 body {
@@ -172,7 +177,7 @@ h1 {
 
 .generate-btn {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--on-primary-color);
 }
 
 .generate-btn:hover {
@@ -535,7 +540,7 @@ a:hover {
 
 .section-nav-button.active {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--on-primary-color);
   border-color: var(--primary-color);
   transform: translateY(-1px);
 }
@@ -560,13 +565,14 @@ a:hover {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: currentColor;
+  opacity: 0.6;
   transition: all 0.3s ease-in-out;
 }
 
 .section-nav-button.active:hover::after {
   transform: translateX(-50%) scale(1.5);
-  background-color: rgba(255, 255, 255, 0.8);
+  opacity: 0.8;
 }
 
 /* Content Sections */
@@ -586,8 +592,9 @@ a:hover {
   margin-bottom: 0;
 }
 
-/* Adjust main content layout */
-main,
+/* Adjust main content layout. Not the Layout's <main>: as a column flexbox it
+   sized each page to its content, so a README's widest line made a project
+   page wider than a phone, and the projects arriving widened /projects. */
 .about-main {
   display: flex;
   flex-direction: column;

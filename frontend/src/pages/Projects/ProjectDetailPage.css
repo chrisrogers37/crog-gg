@@ -28,13 +28,6 @@
   text-decoration: underline;
 }
 
-/* The loading and error states (#196 M41) have no text to size the page by,
-   so they take the width the page would have. On a phone the header is also a
-   column, which would shrink the skeleton's empty bars to nothing. */
-.project-detail-page--placeholder {
-  width: 100%;
-}
-
 /* Holds the page's height while it loads, so the footer doesn't jump below the
    fold when the project lands (#196 M41). */
 .project-detail-page--loading {

@@ -141,6 +141,19 @@ export function GitHubReadme({
                 className="readme-image"
               />
             ),
+            // A wide table scrolls in a box a keyboard can focus, like code.
+            table: ({ children }) => (
+              <div className="readme-table" tabIndex={0}>
+                <table>{children}</table>
+              </div>
+            ),
+            // A task list's checkboxes say what they show to a screen reader.
+            input: ({ node: _node, ...props }) =>
+              props.type === "checkbox" ? (
+                <input {...props} aria-label={props.checked ? "done" : "to do"} />
+              ) : (
+                <input {...props} />
+              ),
             // highlight.js makes the <code> inside the element that scrolls
             // sideways, so that is what a keyboard must be able to focus.
             pre: ({ children }) => (

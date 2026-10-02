@@ -183,6 +183,9 @@
   font-weight: 500;
   border: 1px solid;
   white-space: nowrap;
+  /* The theme's text, not the category's colour: a category colour on its
+     own tint was 2.8:1 to 3.9:1. The tint and the border carry the colour. */
+  color: var(--text-color);
 }
 
 /* Mobile: Single column, skills above timeline */

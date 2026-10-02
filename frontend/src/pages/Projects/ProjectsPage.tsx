@@ -46,7 +46,9 @@ export function ProjectsPage() {
 
   // The page's shell, heading and head tags are the same in every state; only
   // the body switches: a skeleton while loading, an error naming the file if
-  // that failed, and a line when there's nothing to show (#190 M23).
+  // that failed, and a line when there's nothing to show (#190 M23). The
+  // filters stand above the skeleton too, so the grid doesn't drop when the
+  // projects arrive.
   const status =
     projects.length > 0
       ? null
@@ -67,7 +69,6 @@ export function ProjectsPage() {
           </p>
         </header>
 
-        {status === "loading" && <ProjectSkeletonGrid />}
         {typeof load === "object" && status === "error" && (
           <LoadError
             message={`The projects didn't load: ${load.error}.`}
@@ -79,7 +80,7 @@ export function ProjectsPage() {
             <p>No projects yet.</p>
           </div>
         )}
-        {status === null && (
+        {(status === null || status === "loading") && (
           <>
             {/* Filters */}
             <div className="projects-filters">
@@ -88,6 +89,7 @@ export function ProjectsPage() {
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                disabled={status === "loading"}
                 className="search-input"
               />
 
@@ -107,7 +109,9 @@ export function ProjectsPage() {
             </div>
 
             {/* Projects Grid */}
-            {filteredProjects.length > 0 ? (
+            {status === "loading" ? (
+              <ProjectSkeletonGrid />
+            ) : filteredProjects.length > 0 ? (
               <div className="projects-grid">
                 {filteredProjects.map((project) => (
                   <ProjectCard key={project.id} project={project} />
