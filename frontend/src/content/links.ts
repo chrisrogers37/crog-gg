@@ -1,3 +1,5 @@
+import { parseUrl } from "../config/check";
+
 /**
  * Claudlobby's URLs, which its project page links to (#173). The owner's own
  * profiles are socials in site/site.yaml (#188).
@@ -6,13 +8,17 @@ export const CLAUDLOBBY_REPO = "https://github.com/Claudfather/Claudlobby";
 
 /**
  * Whether a link goes to the Claudlobby repo's front page, where the Star
- * button is: with or without an anchor, a trailing slash or a query like
- * `?tab=readme-ov-file`, which GitHub serves as the same page. The clicks
- * RepoLink counts (#177).
+ * button is: with or without an anchor, a trailing slash, a query like
+ * `?tab=readme-ov-file` or another letter case, which GitHub serves as the
+ * same page. The clicks RepoLink counts (#177). A link that isn't an absolute
+ * URL goes nowhere near it.
  */
 export const isClaudlobbyFrontPage = (href: string) => {
-  const url = new URL(href);
-  return `${url.origin}${url.pathname.replace(/\/$/, "")}` === CLAUDLOBBY_REPO;
+  const url = parseUrl(href);
+  return (
+    url !== null &&
+    `${url.origin}${url.pathname.replace(/\/$/, "")}`.toLowerCase() === CLAUDLOBBY_REPO.toLowerCase()
+  );
 };
 
 export const CLAUDLOBBY_ISSUES = `${CLAUDLOBBY_REPO}/issues`;

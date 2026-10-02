@@ -59,7 +59,11 @@ describe("RepoLink", () => {
         else
       </RepoLink>,
     );
-    await user.click(screen.getByRole("link", { name: "else" }));
+    const link = screen.getByRole("link", { name: "else" });
+    expect(link).toHaveAttribute("href", "https://github.com/someone/else");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    await user.click(link);
     expect(track).not.toHaveBeenCalled();
   });
 

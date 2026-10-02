@@ -63,8 +63,9 @@ test("reports each CTA click once, with where it was", async ({ page }) => {
 
 test("reports the featured card's link into the repo, with where it was", async ({ page }) => {
   test.skip(FEATURED !== "claudlobby", "the site doesn't feature Claudlobby");
-  await page.goto("/");
-  await page.locator(`#projects article.project-featured a[href="${REPO}"]`).click();
+  // /projects always shows the featured card; / only where site.yaml lists the section.
+  await page.goto("/projects");
+  await page.locator(`article.project-featured a[href="${REPO}"]`).click();
 
   const events = await queuedEvents(page);
   expect(events).toEqual([["event", { name: "repo_click", data: { location: "featured" } }]]);
