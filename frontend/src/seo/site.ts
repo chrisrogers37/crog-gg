@@ -20,7 +20,7 @@ import { CLAUDLOBBY_REPO } from "../content/links";
  *
  * Everything that names the owner or the site comes from site/site.yaml
  * (#188): the app gets it through seo/index.ts, the build through
- * readSiteConfig() in scripts/vite-site.ts. This file must not import
+ * siteConfig() in scripts/site-config.ts. This file must not import
  * `virtual:site-config` itself, because vite.config.ts imports it.
  */
 

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import site from "virtual:site-config";
+import type { SectionId } from "../../config/schema";
 
 // Hooks
 import { useMediaQuery, useRegeneration } from "../../hooks";
@@ -149,30 +150,28 @@ function AboutContent() {
   // "see more" opens About: the preview is always About's.
   const handlePreviewExpand = () => setOpenSection("about");
 
+  // One renderer per section id site.yaml can name, so an id with no
+  // component fails the type check rather than rendering nothing.
+  const sectionContent: Record<SectionId, () => React.ReactNode> = {
+    about: () => (
+      <section className="section-content about-section">
+        <div className="about-content">
+          <About onRegenerate={() => {}} content={bio ?? undefined} />
+        </div>
+      </section>
+    ),
+    journey: () => <Timeline data={timeline} />,
+    projects: () => <Projects />,
+    music: () => <Music />,
+  };
+
   const renderOpenSection = (section: string) => {
-    let content: React.ReactNode;
-    switch (section) {
-      case "about":
-        content = (
-          <section className="section-content about-section">
-            <div className="about-content">
-              <About onRegenerate={() => {}} content={bio ?? undefined} />
-            </div>
-          </section>
-        );
-        break;
-      case "journey":
-        content = <Timeline data={timeline} />;
-        break;
-      case "projects":
-        content = <Projects />;
-        break;
-      case "music":
-        content = <Music />;
-        break;
-      default:
-        return null;
-    }
+    // The menu and the tabs hand over a plain string.
+    const render = (sectionContent as Partial<Record<string, () => React.ReactNode>>)[
+      section
+    ];
+    if (!render) return null;
+    const content = render();
 
     const nextSection =
       SECTIONS[SECTIONS.findIndex(({ id }) => id === section) + 1]?.id ??

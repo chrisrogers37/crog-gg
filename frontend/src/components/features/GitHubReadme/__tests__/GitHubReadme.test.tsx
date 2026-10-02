@@ -17,9 +17,14 @@ describe("GitHubReadme", () => {
         "https://raw.githubusercontent.com/chrisrogers37/example/main/README.md",
     });
 
-    render(<GitHubReadme repoName="example" />);
+    render(<GitHubReadme owner="someone" repoName="example" />);
 
     expect(await screen.findByText(/no readme available/i)).toBeInTheDocument();
     expect(screen.queryByRole("article")).not.toBeInTheDocument();
+    // The project's own owner, not one the component knows.
+    expect(screen.getByRole("link", { name: /github/i })).toHaveAttribute(
+      "href",
+      "https://github.com/someone/example",
+    );
   });
 });

@@ -12,7 +12,7 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 
 | File | Shows on |
 |---|---|
-| `site/site.yaml` | every page: the name in the header and footer, the head (titles, descriptions, social card), the socials in the footer, the mobile menu, the contact card and the Music tab, `/about`'s tabs, header photo and typewriter, and the contact and music copy |
+| `site/site.yaml` | every page: who the site is ([below](#sitesiteyaml)) |
 | `bio.yaml` | `/about`: the name and tagline at the top, the About text, and the location on the contact card |
 | `timeline.yaml` | `/about`, Journey tab |
 | `projects/index.yaml` and `projects/*.yaml` | `/projects`, each `/projects/<id>`, and `/about`'s Projects tab |
@@ -88,17 +88,17 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`seo`:** `site_name` (appended to every title), `image` (the social card: `path`, `width`, `height`, and `alt`, which must match the card's text in `site/og-image.html`), and the `description` of `about` and `projects`.
 - **`socials`:** each has an `id`, a `label` (the link's text and its name to a screen reader), an `icon` (`github`, `linkedin`, `telegram`, `instagram`, `spotify`, `hoobe` or `link`), an `https` `url`, and `show_in`: any of `footer`, `menu`, `contact`, `music` and `schema` (the Person schema's `sameAs`). They show in the order listed.
 - **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source".
-- **`sections`:** `/about`'s tabs, in order: `about`, `journey`, `projects` and `music`, each with a `label`. Leave one out to hide it.
+- **`sections`:** `/about`'s tabs, in order: `about`, `journey`, `projects` and `music`, each with a `label`. `about` is required, since the collapsed preview is About's; leave another out to hide it.
 - **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the header types out).
 - **`about.preview_height`:** `narrow` and `wide`, in px: where the collapsed About text fades, tuned to `bio.yaml`'s `about_text` (#162).
 - **`contact`:** the card's `heading` and `text`.
-- **`music`:** the tab's `intro`, with `{artist}` where the `artist` name goes, and `embed` (optional), the player's URL, whose origin must be in `frame-src` in `vercel.json`.
+- **`music`:** the tab's `intro`, with `{artist}` where the `artist` name goes; `embed` (optional), the player's URL, whose origin must be in `frame-src` in `vercel.json`; and `embed_title` (optional), the player's name to a screen reader, "music player" if left out.
 
 The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules, and a fork replaces it ([FORKING.md](../FORKING.md)).
 
 ## What catches a mistake
 
 - **`npm run build`** checks `site/site.yaml`, and parses every project file `index.yaml` lists, so a mistake in either fails the build.
-- **`npm run site:check`** (in `frontend/`) checks what the shape can't: the files `site.yaml` and `index.html` name exist, the music player's origin is in the CSP, and no value from `site.yaml` is typed into the code.
+- **`npm run site:check`** (in `frontend/`) checks what the shape can't: the files `site.yaml` and `index.html` name exist (the header photos at every size too), the music player's origin is in the CSP, and none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code.
 - **The unit tests** read the shipped content with the site's own loaders. `shippedContent.test.ts` holds each project to the rules above (one emoji icon, repos of the site's owner, a `frame-src` entry for an embedded demo), `photos.test.ts` checks every photo's variants exist, and a project id the router can't serve fails `router.test.tsx`.
 - **The e2e tests** run against the shipped content, and fail rather than skip when it's missing (#120).

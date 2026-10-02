@@ -20,6 +20,9 @@ import {
 /** Where index.html asks for the page head to be written. */
 export const HEAD_MARKER = "<!--seo-head-->";
 
+/** What the build writes beside the pages, so the public folder mustn't. */
+export const GENERATED_FILES = ["404.html", "sitemap.xml", "robots.txt"];
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")

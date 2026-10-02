@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import site from "virtual:site-config";
 import { socialsIn } from "../../../../config/socials";
+import { CLAUDLOBBY_REPO } from "../../../../content/links";
 import { renderWithProviders, screen } from "../../../../test/utils";
 import { Footer } from "../Footer";
 
@@ -12,18 +13,23 @@ describe("Footer", () => {
     site.footer.source_repo_url = configured;
   });
 
-  it("names the owner, and links each footer social from site.yaml", () => {
-    renderWithProviders(<Footer />);
+  it("names the owner, then links Claudlobby, the personal page, exactly the footer socials in order, and the source", () => {
+    site.footer.source_repo_url = REPO;
+    const { container } = renderWithProviders(<Footer />);
 
     expect(screen.getByRole("contentinfo")).toHaveTextContent(site.owner.name);
     const footerSocials = socialsIn(site, "footer");
     expect(footerSocials).not.toHaveLength(0);
-    for (const social of footerSocials) {
-      expect(screen.getByRole("link", { name: social.label })).toHaveAttribute(
-        "href",
-        social.url,
-      );
-    }
+    const links = [...container.querySelectorAll(".footer-links a")].map((link) => [
+      link.textContent,
+      link.getAttribute("href"),
+    ]);
+    expect(links).toEqual([
+      ["claudlobby", CLAUDLOBBY_REPO],
+      ["about", "/about"],
+      ...footerSocials.map((social) => [social.label, social.url]),
+      ["view source", REPO],
+    ]);
   });
 
   it("links the source repo last, in a new tab, when site.yaml names it (#188)", () => {

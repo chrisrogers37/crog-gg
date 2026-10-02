@@ -49,7 +49,7 @@ describe("Music", () => {
 
   it("embeds the player site.yaml names", () => {
     render(<Music />);
-    expect(screen.getByTitle("Spotify Player")).toHaveAttribute(
+    expect(screen.getByTitle(site.music.embed_title ?? "music player")).toHaveAttribute(
       "src",
       site.music.embed,
     );
@@ -58,6 +58,6 @@ describe("Music", () => {
   it("shows no player when site.yaml leaves it empty", () => {
     site.music.embed = undefined;
     render(<Music />);
-    expect(screen.queryByTitle("Spotify Player")).toBeNull();
+    expect(screen.queryByTitle(site.music.embed_title ?? "music player")).toBeNull();
   });
 });

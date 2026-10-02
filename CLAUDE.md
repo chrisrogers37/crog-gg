@@ -32,7 +32,7 @@ Give Claude verification loops for 2-3x quality improvement:
 Husky pre-commit and pre-push hooks enforce quality locally, once installed: run `npm install` at the root of each checkout or worktree (husky's `prepare` sets git's `core.hooksPath` to `.husky/_`, which isn't committed, so a new worktree has none). Without that, git runs neither hook, and CI is the only gate.
 
 - **Pre-commit**: `lint-staged` runs ESLint on staged `.ts`/`.tsx` files
-- **Pre-push**: Runs `npm run lint`, `npm run typecheck`, `npm run build` and `npm run test:run` when `frontend/` changed, as CI's lint, unit-test and build jobs do, and CI's API Lint and API Tests commands when the Python side changed (exact paths and commands in `.husky/pre-push`)
+- **Pre-push**: Runs `npm run lint`, `npm run typecheck`, `npm run build` and `npm run test:run` when `frontend/` or `site/` changed, as CI's lint, unit-test and build jobs do, and CI's API Lint and API Tests commands when the Python side changed (exact paths and commands in `.husky/pre-push`)
 - A missing Python tool fails the push: `pip install -r requirements-dev.txt`, or `SKIP_PY_CHECKS=1 git push` to skip just that half (CI still runs it)
 - Bypass with `--no-verify` when needed (e.g., WIP commits)
 
@@ -159,7 +159,7 @@ await expect(welcomeArea).toBeVisible();
 
 ### Content Files
 
-- The owner's identity (name, email, URLs, SEO copy, socials, photos, typewriter lines, sections, contact and music copy) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188). Don't type an owner value into the code: `npm run site:check` fails on it. Code that `vite.config.ts` imports can't import the virtual module; it calls `readSiteConfig()` (`frontend/scripts/vite-site.ts`)
+- Who the site is (the owner, the URLs, the socials, the copy around the content) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188; fields: documentation/CONTENT.md). Don't type an owner value into the code: `npm run site:check` fails on its distinctive ones (the name, email, host, descriptions and URLs). Code that `vite.config.ts` imports can't import the virtual module; it calls `siteConfig()` (`frontend/scripts/site-config.ts`)
 - Content lives in `site/public/content/` as YAML files
 - Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules, on the copy and on `/`'s title, meta description, share card and JSON-LD: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML

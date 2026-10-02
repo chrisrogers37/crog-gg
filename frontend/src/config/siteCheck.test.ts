@@ -1,9 +1,10 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import site from "virtual:site-config";
-import { SITE_DIR } from "../../scripts/vite-site";
+import { SITE_DIR } from "../../scripts/site-config";
 import { frameSrc } from "../test/csp";
+import { PHOTO_WIDTHS, photoVariant } from "../utils/photos";
 
 /**
  * `npm run site:check` (#188): what the schema can't see, checked against the
@@ -22,14 +23,16 @@ describe("site/", () => {
     const linked = [...indexHtml.matchAll(/href="(\/[^"]+)"/g)].map(([, path]) => path);
     expect(linked, "index.html's links").not.toHaveLength(0);
 
-    for (const path of [site.owner.image, site.seo.image.path, ...linked]) {
+    const heroPhotos = site.hero.photos.flatMap((base) =>
+      PHOTO_WIDTHS.map((width) => photoVariant(base, width)),
+    );
+    for (const path of [site.owner.image, site.seo.image.path, ...heroPhotos, ...linked]) {
       expect(existsSync(join(PUBLIC, path)), `site/public${path}`).toBe(true);
     }
   });
 
-  it("only embeds a player the CSP lets the page frame", () => {
-    if (!site.music.embed) return;
-    expect(frameSrc()).toContain(new URL(site.music.embed).origin);
+  it.skipIf(!site.music.embed)("only embeds a player the CSP lets the page frame", () => {
+    expect(frameSrc()).toContain(new URL(site.music.embed!).origin);
   });
 });
 
@@ -50,24 +53,17 @@ const bare = (url: string) =>
   url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
 
 describe("the owner's values", () => {
-  // Until #189 gives the API the owner too, GitHubReadme links the owner's
-  // repos itself.
-  const EXCEPTIONS = new Map([
-    ["src/components/features/GitHubReadme/GitHubReadme.tsx", "github.com/"],
-  ]);
-
-  const host = new URL(site.site.url).host;
-  const values = [
+  // A set: the host without "www." also finds it with.
+  const values = new Set([
     site.owner.name,
     site.owner.email,
-    host,
-    host.replace(/^www\./, ""),
+    bare(site.site.url),
     site.seo.site_name,
     site.seo.about.description,
     site.seo.projects.description,
     ...site.socials.map((social) => bare(social.url)),
     ...(site.music.embed ? [bare(site.music.embed)] : []),
-  ];
+  ]);
 
   it("are read from site.yaml, not typed into the code", () => {
     expect(SOURCES.length).toBeGreaterThan(50);
@@ -75,10 +71,7 @@ describe("the owner's values", () => {
     for (const file of SOURCES) {
       const text = readFileSync(join(FRONTEND, file), "utf8");
       for (const value of values) {
-        if (!text.includes(value)) continue;
-        const allowed = EXCEPTIONS.get(file.split("\\").join("/"));
-        if (allowed && value.startsWith(allowed)) continue;
-        found.push(`${relative(FRONTEND, join(FRONTEND, file))}: "${value}"`);
+        if (text.includes(value)) found.push(`${file}: "${value}"`);
       }
     }
     expect(found).toEqual([]);

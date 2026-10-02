@@ -53,8 +53,8 @@ const origin: Check<string> = (value, path, issues) =>
     ? value
     : fail(issues, path, value, "an https origin with no path or trailing slash");
 
-/** A path the site serves, from site/public: "/og-image.png". */
-const sitePath = matching(/^\/\S+$/, 'a path that starts with "/"');
+/** A path the site serves, from site/public: "/og-image.png". Not "//host/x". */
+const sitePath = matching(/^\/(?!\/)\S+$/, 'a path that starts with one "/"');
 
 const email = matching(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "an email address");
 
@@ -101,7 +101,10 @@ const object =
     }
     const record = value as Record<string, unknown>;
     for (const key of Object.keys(record)) {
-      if (!(key in shape)) issues.push(`${at(path, key)}: unknown key`);
+      // Own keys only, so "constructor" or "toString" isn't taken as known.
+      if (!Object.prototype.hasOwnProperty.call(shape, key)) {
+        issues.push(`${at(path, key)}: unknown key`);
+      }
     }
     const parsed: Record<string, unknown> = {};
     for (const [key, check] of Object.entries(shape)) {
@@ -177,6 +180,8 @@ const siteShape = object({
     intro: text,
     artist: text,
     embed: optional(httpsUrl),
+    /** The player's name to a screen reader. */
+    embed_title: optional(text),
   }),
 });
 
@@ -194,6 +199,10 @@ function crossCheck(config: SiteConfig, issues: string[]) {
   }
   for (const id of duplicates(config.sections.map((section) => section.id))) {
     issues.push(`sections: "${id}" is listed twice`);
+  }
+  // The collapsed preview and the default tab are About's.
+  if (!config.sections.some((section) => section.id === "about")) {
+    issues.push('sections: "about" is required');
   }
   if (config.music.intro.split("{artist}").length !== 2) {
     issues.push('music.intro: expected "{artist}" exactly once');

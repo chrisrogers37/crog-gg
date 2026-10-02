@@ -56,6 +56,19 @@ describe("ContactCTA", () => {
     ]);
   });
 
+  it("leaves off a social site.yaml doesn't show in contact", () => {
+    const [first] = site.socials;
+    const showIn = first.show_in;
+    first.show_in = showIn.filter((place) => place !== "contact");
+    try {
+      useContentStore.setState({ bio: mockBio });
+      render(<ContactCTA />);
+      expect(screen.queryByRole("link", { name: first.label })).toBeNull();
+    } finally {
+      first.show_in = showIn;
+    }
+  });
+
   it("opens the socials in a new tab, and the email address in place", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);

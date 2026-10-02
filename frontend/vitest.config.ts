@@ -1,20 +1,10 @@
-import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { site } from "./scripts/vite-site";
 
 export default defineConfig({
+  // site() also lets tests read the site's files as @site/... (#188).
   plugins: [react(), site()],
-  server: {
-    // Tests read the owner's files in site/ (#188), outside this package;
-    // Vite refuses to load a file outside the allowed folders.
-    fs: {
-      allow: [
-        fileURLToPath(new URL(".", import.meta.url)),
-        fileURLToPath(new URL("../site", import.meta.url)),
-      ],
-    },
-  },
   resolve: {
     // Node's own resolution includes "module-sync"; vitest's doesn't, and
     // react-router's Node exports give ESM only under it. Without it, a test

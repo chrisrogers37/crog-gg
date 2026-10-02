@@ -4,9 +4,10 @@ import yaml from "js-yaml";
 import { LogoImage } from "../LogoImage";
 import { logoUrl } from "../../../utils/logos";
 import type { TimelineData } from "../../../types/Timeline";
-import timelineYaml from "../../../../../site/public/content/timeline.yaml?raw";
+import timelineYaml from "@site/public/content/timeline.yaml?raw";
+import { inSite } from "../../../test/site";
 
-const logoFiles = import.meta.glob("../../../../../site/public/logos/*.png", {
+const logoFiles = import.meta.glob("@site/public/logos/*.png", {
   query: "?url",
   eager: true,
 });
@@ -41,7 +42,7 @@ describe("LogoImage", () => {
     expect(domains.size).toBeGreaterThan(0);
     for (const domain of domains) {
       expect(
-        logoFiles[`../../../../../site/public${logoUrl(domain)}`],
+        inSite(logoFiles, `/public${logoUrl(domain)}`),
         `public${logoUrl(domain)}`,
       ).toBeDefined();
     }

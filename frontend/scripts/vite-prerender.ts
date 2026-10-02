@@ -11,16 +11,14 @@ import {
 } from "../src/seo/prerender";
 import { createSeo } from "../src/seo/site";
 import { readProjects } from "../src/utils/projectLoader";
-import { readSiteConfig } from "./vite-site";
+import { siteConfig } from "./site-config";
 
 /**
  * Writes each route's <head> into its HTML (#174); see src/seo/prerender.ts.
  * The body stays the client-rendered shell.
  */
 export function prerender(): Plugin[] {
-  // Read when each build or dev request needs it, so an edit to site.yaml
-  // shows up without restarting the dev server.
-  const loadSeo = () => createSeo(readSiteConfig());
+  const loadSeo = () => createSeo(siteConfig());
   let projectsDir = "";
   const projects = () =>
     readProjects((file) => fs.readFile(path.join(projectsDir, file), "utf8"));

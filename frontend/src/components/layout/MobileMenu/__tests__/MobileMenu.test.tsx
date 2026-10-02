@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router";
+import site from "virtual:site-config";
+import { socialsIn } from "../../../../config/socials";
 import { MobileMenu } from "../MobileMenu";
 import { CLAUDLOBBY_REPO } from "../../../../content/links";
 
@@ -39,11 +41,18 @@ describe("MobileMenu", () => {
         <MobileMenu sections={sections} />
       </MemoryRouter>,
     );
-    expect(screen.getByText("github")).toBeInTheDocument();
-    expect(screen.getByText("linkedin")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "claudlobby on github" }),
-    ).toHaveAttribute("href", CLAUDLOBBY_REPO);
+    // Claudlobby, then exactly the menu socials, in site.yaml's order.
+    const menuSocials = socialsIn(site, "menu");
+    expect(menuSocials).not.toHaveLength(0);
+    const connect = screen.getByText("connect").parentElement!;
+    const links = [...connect.querySelectorAll("a")].map((link) => [
+      link.textContent,
+      link.getAttribute("href"),
+    ]);
+    expect(links).toEqual([
+      ["claudlobby on github", CLAUDLOBBY_REPO],
+      ...menuSocials.map((social) => [social.label, social.url]),
+    ]);
   });
 
   it("renders page links", () => {

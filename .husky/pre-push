@@ -32,7 +32,8 @@ if [ -n "$MERGE_BASE" ]; then
   # non-ASCII paths unquoted, so the patterns below match them.
   CHANGED_FILES=$(git -c core.quotePath=false diff --name-only --no-renames "$MERGE_BASE")
 
-  if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
+  # site/ is the frontend's too: the build reads and checks site.yaml (#188).
+  if echo "$CHANGED_FILES" | grep -qE "^(frontend|site)/"; then
     FRONTEND_CHANGED=true
   fi
 

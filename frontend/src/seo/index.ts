@@ -1,11 +1,7 @@
 import site from "virtual:site-config";
 import { createSeo } from "./site";
 
-/**
- * The app's head builders and page metadata, from site/site.yaml (#188).
- * Build-time code can't import `virtual:site-config` (see seo/site.ts), so it
- * calls createSeo(readSiteConfig()) instead.
- */
+/** The app's head builders and page metadata, from site/site.yaml (#188). */
 export const seo = createSeo(site);
 
 export const {

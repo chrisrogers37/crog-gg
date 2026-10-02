@@ -9,7 +9,7 @@ This is the interim guide. Most of the owner's identity lives in one folder, `si
 
 ## What to replace
 
-**`site/site.yaml`**: who the site is. The name, email, site URL, page descriptions, the socials and where each shows, the footer's source link, the /about sections, the header photos and typewriter lines, and the contact and music copy. The build checks it, and `npm run site:check` (in `frontend/`) checks the files it names; both name the key that's wrong. [documentation/CONTENT.md](documentation/CONTENT.md#sitesiteyaml) describes every field.
+**`site/site.yaml`**: who the site is. The build checks it and names any key that's wrong; [documentation/CONTENT.md](documentation/CONTENT.md#sitesiteyaml) describes every field.
 
 **`site/public/`**, served as the site's root (see CONTENT.md for every field):
 - `content/`: the bio, the timeline, the projects and the showcase;
@@ -22,7 +22,7 @@ This is the interim guide. Most of the owner's identity lives in one folder, `si
 
 **Still in the code:**
 - `frontend/src/content/claudlobby.ts`, and the sections in `frontend/src/components/sections/Claudlobby/`: the homepage is the Claudlobby landing page, so replace it with your own, along with the Claudlobby links in the header, footer and mobile menu;
-- `frontend/src/components/features/GitHubReadme/GitHubReadme.tsx`: the GitHub owner in its links (#189).
+- `frontend/src/seo/site.ts`: the landing page's head (`HOME_META`: Claudlobby's title, description and JSON-LD).
 
 **The API:**
 - `GITHUB_USERNAME` in `api/_lib/request_utils.py`: whose public repos the proxy serves;

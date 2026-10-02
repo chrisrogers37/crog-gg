@@ -41,7 +41,6 @@ export default defineConfig({
       },
     },
   },
-  // site() serves site/site.yaml and makes site/public the public folder.
   plugins: [react(), site(), prerender(), insightsPreview],
   server: {
     proxy: {

@@ -83,8 +83,9 @@ footer:
   # Leave it empty for no link.
   source_repo_url: https://github.com/chrisrogers37/crog-gg
 
-# /about's tabs, in order. The ids are fixed (about, journey, projects, music);
-# leave one out to hide it.
+# /about's tabs, in order. The ids are fixed (about, journey, projects, music),
+# and about is required, since the collapsed preview is About's; leave another
+# out to hide it.
 sections:
   - id: about
     label: About
@@ -135,3 +136,5 @@ music:
   # The player. Its origin must be in vercel.json's frame-src. Leave it empty
   # for no player.
   embed: https://open.spotify.com/embed/artist/0UotSScPTiSFPmbmjam2jn?utm_source=generator
+  # The player's name to a screen reader ("music player" if left out).
+  embed_title: Spotify Player

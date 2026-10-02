@@ -8,9 +8,10 @@ import {
   photoVariant,
 } from "./photos";
 import type { ShowcaseImage } from "../types/Showcase";
-import showcaseYaml from "../../../site/public/content/showcase.yaml?raw";
+import showcaseYaml from "@site/public/content/showcase.yaml?raw";
+import { inSite } from "../test/site";
 
-const variants = import.meta.glob("../../../site/public/profile-photos/*.webp", {
+const variants = import.meta.glob("@site/public/profile-photos/*.webp", {
   query: "?url",
   eager: true,
 });
@@ -25,7 +26,7 @@ describe("photos", () => {
     (base) => {
       for (const width of PHOTO_WIDTHS) {
         const file = photoVariant(base, width);
-        expect(variants[`../../../site/public${file}`], `public${file}`).toBeDefined();
+        expect(inSite(variants, `/public${file}`), `public${file}`).toBeDefined();
       }
     },
   );

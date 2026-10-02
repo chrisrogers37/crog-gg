@@ -1,15 +1,11 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import yaml from "js-yaml";
-import { SITE_DIR } from "../../scripts/vite-site";
+import { readSiteYaml } from "../../scripts/site-config";
 import { parseSiteConfig } from "./schema";
 
 type Data = Record<string, unknown>;
 
-/** The shipped site.yaml as plain data, fresh for each test to break. */
-const shipped = () =>
-  yaml.load(readFileSync(join(SITE_DIR, "site.yaml"), "utf8")) as Data;
+/** The active site.yaml as plain data, fresh for each test to break. */
+const shipped = () => readSiteYaml() as Data;
 
 /** The mapping (or list) at a dotted path: "socials.0". */
 const at = (data: Data, path: string) =>
@@ -58,18 +54,20 @@ describe("parseSiteConfig", () => {
 
   it("only knows the sections it has components for, each once", () => {
     const raw = shipped();
-    listAt(raw, "sections").push({ id: "blog", label: "Blog" });
-    expect(problems(raw)).toContain("sections.4.id: expected one of about, journey, projects, music");
+    const added = listAt(raw, "sections").push({ id: "blog", label: "Blog" }) - 1;
+    expect(problems(raw)).toContain(
+      `sections.${added}.id: expected one of about, journey, projects, music`,
+    );
 
     const twice = shipped();
     listAt(twice, "sections").push({ ...at(twice, "sections.0") });
-    expect(problems(twice)).toContain('sections: "about" is listed twice');
+    expect(problems(twice)).toContain(`sections: "${at(twice, "sections.0").id}" is listed twice`);
   });
 
   it("keeps social ids unique, and their places and icons to the known ones", () => {
     const raw = shipped();
     listAt(raw, "socials").push({ ...at(raw, "socials.0") });
-    expect(problems(raw)).toContain('socials: the id "github" is used twice');
+    expect(problems(raw)).toContain(`socials: the id "${at(raw, "socials.0").id}" is used twice`);
 
     const unknown = shipped();
     at(unknown, "socials.0").show_in = ["sidebar"];
@@ -77,6 +75,21 @@ describe("parseSiteConfig", () => {
     const message = problems(unknown);
     expect(message).toContain("socials.0.show_in.0: expected one of footer");
     expect(message).toContain("socials.0.icon: expected one of github");
+  });
+
+  it("needs About among the sections, since the preview is About's", () => {
+    const raw = shipped();
+    listAt(raw, "sections").splice(
+      listAt(raw, "sections").findIndex((section) => (section as Data).id === "about"),
+      1,
+    );
+    expect(problems(raw)).toContain('sections: "about" is required');
+  });
+
+  it("refuses a path that leaves the site, like //host/x", () => {
+    const raw = shipped();
+    at(raw, "owner").image = "//evil.example/p.jpg";
+    expect(problems(raw)).toContain("owner.image: expected a path that starts with one");
   });
 
   it("needs {artist} in the music intro, once", () => {

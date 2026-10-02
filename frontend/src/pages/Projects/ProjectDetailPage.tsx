@@ -83,7 +83,7 @@ export function ProjectDetailPage() {
     );
   }
 
-  const githubRepoName = githubRepo(project)?.name ?? null;
+  const repo = githubRepo(project);
   const liveDemo = hasLiveDemo(project);
 
   return (
@@ -140,11 +140,11 @@ export function ProjectDetailPage() {
         </header>
 
         {/* GitHub Stats */}
-        {githubRepoName && (
+        {repo && (
           <section className="project-section">
             <h2 className="section-title">Repository Stats</h2>
             <ErrorBoundary compact>
-              <RepoStats repoName={githubRepoName} />
+              <RepoStats repoName={repo.name} />
             </ErrorBoundary>
           </section>
         )}
@@ -173,11 +173,11 @@ export function ProjectDetailPage() {
         )}
 
         {/* GitHub README */}
-        {githubRepoName && (
+        {repo && (
           <section className="project-section">
             <h2 className="section-title">Documentation</h2>
             <ErrorBoundary compact>
-              <GitHubReadme repoName={githubRepoName} />
+              <GitHubReadme owner={repo.owner} repoName={repo.name} />
             </ErrorBoundary>
           </section>
         )}

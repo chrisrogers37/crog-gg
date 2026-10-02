@@ -5,7 +5,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ## 2026-10-02
 
 ### Added
-- A "view source" link in the footer when the build names the repo (`VITE_SOURCE_REPO_URL`), and no rights claim beside it (#236).
+- A "view source" link in the footer, and no rights claim beside it (#236).
 - Docs: how the site works, what each content file does, contributing, forking, this changelog, and PR and issue templates (#237).
 - The owner's identity lives in one folder, `site/`: `site/site.yaml`, checked at build time, and `site/public/`. The footer's source link comes from it (#239).
 

@@ -27,7 +27,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### Under the hood
 
 - **One origin:** the static frontend and the Flask API (`/api/*`) are served from the same Vercel domain, so there's no CORS in production.
-- **One folder for the owner:** `site/site.yaml` holds who the site is (name, URLs, SEO copy, socials, photos), checked at build time, and `site/public/` holds the content and images ([CONTENT.md](documentation/CONTENT.md)).
+- **One folder for the owner:** `site/site.yaml` holds who the site is, checked at build time, and `site/public/` holds the content and images ([CONTENT.md](documentation/CONTENT.md#sitesiteyaml)).
 - **Prerendered heads:** each landing page ships its own title, description and social card, and the build generates the sitemap from the same page list (robots.txt points to it).
 - **Light and dark themes:** light by default; the toggle cycles light, dark and system, which follows the OS.
 - **Quality gates:** lint, type checks and tests on both halves, run by Husky locally and by [CI](#cicd) on every PR.
