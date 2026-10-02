@@ -19,12 +19,3 @@ export const photoSrcSet = (base: string) =>
 /** The largest variant, for anything that ignores srcset. */
 export const photoSrc = (base: string) =>
   photoVariant(base, PHOTO_WIDTHS[PHOTO_WIDTHS.length - 1]);
-
-/** The header photo is picked from these at random on each visit. */
-export const PROFILE_PHOTOS = [
-  "/profile-photos/photo-1",
-  "/profile-photos/photo-2",
-  "/profile-photos/photo-3",
-  "/profile-photos/photo-4",
-  "/profile-photos/photo-5",
-];

@@ -12,7 +12,7 @@ import {
   pageTitle,
   projectMeta,
   type PageMeta,
-} from "./site";
+} from ".";
 import type { TimelineData } from "../types";
 import ogImageHtml from "../../../site/og-image.html?raw";
 import timelineYaml from "../../../site/public/content/timeline.yaml?raw";

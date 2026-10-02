@@ -112,7 +112,7 @@ export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
           rehypePlugins={[rehypeHighlight]}
           components={{
             // Relative links and images resolve against the README on GitHub,
-            // not against crog.gg (utils/readmeLinks.ts).
+            // not against this site (utils/readmeLinks.ts).
             a: ({ href, children }) => {
               if (isLocalDevUrl(href)) return <span>{children}</span>;
               const target = readmeHref(href, readme);

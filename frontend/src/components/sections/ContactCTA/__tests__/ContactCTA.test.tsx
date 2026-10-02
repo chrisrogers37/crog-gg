@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { beforeAll, describe, it, expect, beforeEach } from "vitest";
+import site from "virtual:site-config";
+import { socialsIn } from "../../../../config/socials";
 import { ContactCTA } from "../ContactCTA";
 import { useContentStore } from "../../../../store";
 import { makeBio } from "../../../../test/builders";
@@ -23,19 +25,7 @@ beforeAll(() => {
   };
 });
 
-const mockBio = makeBio({
-  email: "test@example.com",
-  location: "New York",
-  social_links: {
-    github: "https://github.com/testuser",
-    linkedin: "https://linkedin.com/in/testuser",
-    spotify: "https://open.spotify.com/artist/test",
-    hoobe: "https://hoo.be/test",
-    telegram: "https://t.me/testuser",
-    instagram_personal: "https://instagram.com/testuser",
-    instagram_music: "https://instagram.com/testmusic",
-  },
-});
+const mockBio = makeBio({ location: "New York" });
 
 describe("ContactCTA", () => {
   beforeEach(() => {
@@ -47,50 +37,54 @@ describe("ContactCTA", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("renders branded links for email and LinkedIn", () => {
+  it("links the email address, then each contact social from site.yaml, in order", () => {
     useContentStore.setState({ bio: mockBio });
     render(<ContactCTA />);
 
-    const emailLink = screen.getByRole("link", { name: "Email" });
-    expect(emailLink).toBeInTheDocument();
-    expect(emailLink).toHaveAttribute("href", "mailto:test@example.com");
-
-    const linkedinLink = screen.getByRole("link", { name: "LinkedIn" });
-    expect(linkedinLink).toBeInTheDocument();
-    expect(linkedinLink).toHaveAttribute(
-      "href",
-      "https://linkedin.com/in/testuser",
-    );
-    expect(linkedinLink).toHaveAttribute("target", "_blank");
-  });
-
-  it("renders branded social links from bio data", () => {
-    useContentStore.setState({ bio: mockBio });
-    render(<ContactCTA />);
-
-    const spotifyLink = screen.getByRole("link", { name: "Spotify" });
-    expect(spotifyLink).toBeInTheDocument();
-    expect(spotifyLink).toHaveAttribute(
-      "href",
-      "https://open.spotify.com/artist/test",
-    );
-
-    const hoobeLink = screen.getByRole("link", { name: "hoobe" });
-    expect(hoobeLink).toBeInTheDocument();
-    expect(hoobeLink).toHaveAttribute("href", "https://hoo.be/test");
-
-    const githubLink = screen.getByRole("link", { name: "GitHub" });
-    expect(githubLink).toBeInTheDocument();
-    expect(githubLink).toHaveAttribute("href", "https://github.com/testuser");
-  });
-
-  it("renders the heading and description text", () => {
-    useContentStore.setState({ bio: mockBio });
-    render(<ContactCTA />);
-
-    expect(screen.getByText("connect w/ me")).toBeInTheDocument();
+    const contactSocials = socialsIn(site, "contact");
+    expect(contactSocials).not.toHaveLength(0);
+    // The label, not the whole text: hoobe's icon is a word of its own.
+    const links = screen.getAllByRole("link");
     expect(
-      screen.getByText(/have a question, or just want to say hey/),
+      links.map((link) => [
+        link.querySelector(".contact-brand-label")?.textContent,
+        link.getAttribute("href"),
+      ]),
+    ).toEqual([
+      ["email", `mailto:${site.owner.email}`],
+      ...contactSocials.map((social) => [social.label, social.url]),
+    ]);
+  });
+
+  it("opens the socials in a new tab, and the email address in place", () => {
+    useContentStore.setState({ bio: mockBio });
+    render(<ContactCTA />);
+
+    const [email, ...socials] = screen.getAllByRole("link");
+    expect(email).not.toHaveAttribute("target");
+    for (const link of socials) {
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    }
+  });
+
+  it("names each link by its label alone, not its icon", () => {
+    useContentStore.setState({ bio: mockBio });
+    render(<ContactCTA />);
+
+    for (const social of socialsIn(site, "contact")) {
+      expect(screen.getByRole("link", { name: social.label })).toBeInTheDocument();
+    }
+  });
+
+  it("renders site.yaml's heading and text, and the bio's location", () => {
+    useContentStore.setState({ bio: mockBio });
+    render(<ContactCTA />);
+
+    expect(
+      screen.getByRole("heading", { name: site.contact.heading }),
     ).toBeInTheDocument();
+    expect(screen.getByText(site.contact.text)).toBeInTheDocument();
+    expect(screen.getByText("New York")).toBeInTheDocument();
   });
 });

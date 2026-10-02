@@ -3,7 +3,8 @@ import { Link } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
-import { PROFILE_URLS } from "../../../content/links";
+import site from "virtual:site-config";
+import { socialsIn } from "../../../config/socials";
 import { RepoLink } from "../../common/RepoLink";
 import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
@@ -16,11 +17,7 @@ const PAGE_LINKS = [
 ];
 
 // After the Claudlobby repo link, which is a RepoLink so its clicks count.
-const CONNECT_LINKS = [
-  { href: PROFILE_URLS.github, label: "github" },
-  { href: PROFILE_URLS.linkedin, label: "linkedin" },
-  { href: PROFILE_URLS.spotify, label: "spotify" },
-];
+const CONNECT_LINKS = socialsIn(site, "menu");
 
 /** The page's sections, when it has registered some (see sectionMenu.ts). */
 type MobileMenuProps = Partial<SectionMenu>;
@@ -143,8 +140,8 @@ export function MobileMenu({
                 </RepoLink>
                 {CONNECT_LINKS.map((link) => (
                   <a
-                    key={link.href}
-                    href={link.href}
+                    key={link.id}
+                    href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mobile-menu-link"

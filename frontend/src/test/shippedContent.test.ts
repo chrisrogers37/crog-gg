@@ -1,10 +1,9 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { PROFILE_URLS } from "../content/links";
+import site from "virtual:site-config";
 import type { Project } from "../types/Project";
 import { githubRepo, hasLiveDemo } from "../utils/projectLinks";
 import { shippedProjects } from "./content";
+import { frameSrc } from "./csp";
 
 /**
  * The add-project skill's rules (#197 M17), held by the test suite rather than
@@ -32,9 +31,11 @@ describe("the shipped projects", () => {
 
   it("only link GitHub repos of the site's owner", () => {
     // The API looks a repo's name up under this owner, so another owner's repo
-    // would show the owner's same-named repo, or no README. PROFILE_URLS.github
-    // stands in for the API's GITHUB_USERNAME; #189 moves both into config.
-    const owner = new URL(PROFILE_URLS.github).pathname.split("/")[1];
+    // would show the owner's same-named repo, or no README. site.yaml's github
+    // social stands in for the API's GITHUB_USERNAME until #189 reads it too.
+    const github = site.socials.find((social) => social.icon === "github");
+    expect(github, "a github social in site.yaml").toBeDefined();
+    const owner = new URL(github!.url).pathname.split("/")[1];
     for (const project of projects) {
       const repo = githubRepo(project);
       if (repo) expect(repo.owner, project.id).toBe(owner);
@@ -42,32 +43,10 @@ describe("the shipped projects", () => {
   });
 
   it("only embed demos from hosts the CSP lets the page frame", () => {
-    // The deployed CSP. Vite won't serve a file from outside frontend/, so
-    // this one is read from disk.
-    const vercelJson = readFileSync(
-      resolve(__dirname, "../../../vercel.json"),
-      "utf8",
-    );
-    const policy = (
-      JSON.parse(vercelJson) as {
-        headers: { headers: { key: string; value: string }[] }[];
-      }
-    ).headers
-      .flatMap((rule) => rule.headers)
-      .find((header) => header.key === "Content-Security-Policy")?.value;
-    const frameSrc =
-      policy
-        ?.split(";")
-        .map((directive) => directive.trim().split(/\s+/))
-        .find(([name]) => name === "frame-src")
-        ?.slice(1) ?? [];
-    // The parse itself, so a reshaped vercel.json can't make this pass empty.
-    expect(policy, "no CSP in vercel.json").toBeDefined();
-    expect(frameSrc, "no frame-src in the CSP").not.toHaveLength(0);
-
+    const frame = frameSrc();
     for (const project of projects) {
       if (hasLiveDemo(project)) {
-        expect(frameSrc, project.id).toContain(new URL(project.demo!).origin);
+        expect(frame, project.id).toContain(new URL(project.demo!).origin);
       }
     }
   });

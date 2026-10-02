@@ -1,5 +1,5 @@
 /**
- * Homepage copy: Claudlobby, the front door of crog.gg (#173).
+ * Homepage copy: Claudlobby, the site's front door (#173).
  *
  * A typed module rather than fetched YAML: it is bundled, so the hero renders
  * without waiting on a request, and a missing or misspelled field fails the
@@ -17,6 +17,7 @@
  * - every number keeps its source and as-of date, and matches that source
  */
 
+import site from "virtual:site-config";
 import { CLAUDLOBBY_REPO } from "./links";
 
 type Step = { title: string; code: string; body: string };
@@ -25,7 +26,7 @@ type Count = { value: number; label: string };
 
 export const claudlobby = {
   hero: {
-    eyebrow: "Claudlobby · by Chris Rogers",
+    eyebrow: `Claudlobby · by ${site.owner.name}`,
     headline: "i build things that build things.",
     sub: "Claudlobby is my open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
     credibility:

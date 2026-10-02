@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import yaml from "js-yaml";
+import site from "virtual:site-config";
 import {
   PHOTO_WIDTHS,
-  PROFILE_PHOTOS,
   photoSrc,
   photoSrcSet,
   photoVariant,
@@ -20,7 +20,7 @@ const showcase = (
 ).images.map((image) => image.src);
 
 describe("photos", () => {
-  it.each([...new Set([...PROFILE_PHOTOS, ...showcase])])(
+  it.each([...new Set([...site.hero.photos, ...showcase])])(
     "%s ships every width it is served at",
     (base) => {
       for (const width of PHOTO_WIDTHS) {

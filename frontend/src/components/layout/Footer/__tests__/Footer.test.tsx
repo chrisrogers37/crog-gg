@@ -1,16 +1,33 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import site from "virtual:site-config";
+import { socialsIn } from "../../../../config/socials";
 import { renderWithProviders, screen } from "../../../../test/utils";
 import { Footer } from "../Footer";
 
 const REPO = "https://github.com/example/site";
 
 describe("Footer", () => {
+  const configured = site.footer.source_repo_url;
   afterEach(() => {
-    vi.unstubAllEnvs();
+    site.footer.source_repo_url = configured;
   });
 
-  it("links the source repo last, in a new tab, when the build names it (#188)", () => {
-    vi.stubEnv("VITE_SOURCE_REPO_URL", ` ${REPO} `);
+  it("names the owner, and links each footer social from site.yaml", () => {
+    renderWithProviders(<Footer />);
+
+    expect(screen.getByRole("contentinfo")).toHaveTextContent(site.owner.name);
+    const footerSocials = socialsIn(site, "footer");
+    expect(footerSocials).not.toHaveLength(0);
+    for (const social of footerSocials) {
+      expect(screen.getByRole("link", { name: social.label })).toHaveAttribute(
+        "href",
+        social.url,
+      );
+    }
+  });
+
+  it("links the source repo last, in a new tab, when site.yaml names it (#188)", () => {
+    site.footer.source_repo_url = REPO;
     const { container } = renderWithProviders(<Footer />);
 
     const link = screen.getByRole("link", { name: "view source" });
@@ -20,21 +37,16 @@ describe("Footer", () => {
     expect(container.querySelector(".footer-links a:last-child")).toBe(link);
   });
 
-  // Unset is every fork's default; stubbing undefined deletes the variable.
-  it.each([undefined, "", "   "])(
-    "shows no source link when the repo is %j",
-    (value) => {
-      vi.stubEnv("VITE_SOURCE_REPO_URL", value);
-      renderWithProviders(<Footer />);
+  // site.yaml's empty value arrives as undefined (config/schema.ts).
+  it("shows no source link when site.yaml leaves it empty", () => {
+    site.footer.source_repo_url = undefined;
+    renderWithProviders(<Footer />);
 
-      // By text, not role: Testing Library doesn't count an <a href=""> as a
-      // link, but a browser shows its words all the same.
-      expect(screen.queryByText(/view source/i)).toBeNull();
-    },
-  );
+    expect(screen.queryByText(/view source/i)).toBeNull();
+  });
 
   it("claims no rights over the code beside the source link", () => {
-    vi.stubEnv("VITE_SOURCE_REPO_URL", REPO);
+    site.footer.source_repo_url = REPO;
     renderWithProviders(<Footer />);
 
     expect(screen.getByRole("contentinfo")).not.toHaveTextContent(

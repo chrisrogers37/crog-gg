@@ -1,6 +1,7 @@
 /**
- * The site's shared URLs: Claudlobby's, which the header, footer, mobile menu,
- * hero, quickstart and structured data link to (#173), and Chris's profiles.
+ * Claudlobby's URLs, which the header, footer, mobile menu, hero, quickstart
+ * and structured data link to (#173). The owner's own profiles are socials in
+ * site/site.yaml (#188).
  */
 export const CLAUDLOBBY_REPO = "https://github.com/Claudfather/Claudlobby";
 
@@ -14,10 +15,3 @@ export const CLAUDLOBBY_GETTING_STARTED = `${CLAUDLOBBY_REPO}/blob/main/document
 export const CLAUDLOBBY_RELEASES = `${CLAUDLOBBY_REPO}/releases`;
 
 export const CLAUDLOBBY_RELEASES_FEED = `${CLAUDLOBBY_REPO}/releases.atom`;
-
-/** Chris's profiles: the footer, the mobile menu and the Person schema. */
-export const PROFILE_URLS = {
-  github: "https://github.com/chrisrogers37",
-  linkedin: "https://www.linkedin.com/in/chrisrogers37/",
-  spotify: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
-};

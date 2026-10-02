@@ -1,7 +1,7 @@
-import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { prerender } from "./scripts/vite-prerender";
+import { site } from "./scripts/vite-site";
 
 /**
  * `vite preview` stands in for a Vercel deployment with Web Analytics enabled
@@ -18,15 +18,8 @@ const insightsPreview: Plugin = {
   },
 };
 
-/**
- * The owner's files live in site/ at the repo root (#188), so a fork replaces
- * one folder. Its public/ is served as is, at the site's root.
- */
-const SITE_PUBLIC = fileURLToPath(new URL("../site/public", import.meta.url));
-
 // https://vitejs.dev/config/
 export default defineConfig({
-  publicDir: SITE_PUBLIC,
   build: {
     rollupOptions: {
       output: {
@@ -48,7 +41,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), prerender(), insightsPreview],
+  // site() serves site/site.yaml and makes site/public the public folder.
+  plugins: [react(), site(), prerender(), insightsPreview],
   server: {
     proxy: {
       "/api": {

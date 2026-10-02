@@ -1,0 +1,137 @@
+# Who this site belongs to (#188). The build reads this file, checks it and
+# bakes it in: a mistake fails `npm run build` (and `npm run site:check`),
+# naming the key. A fork edits this file and site/public/.
+# Every field is described in documentation/CONTENT.md.
+
+owner:
+  name: Chris Rogers
+  email: christophertrogers37@gmail.com
+  job_title: Data Platform Lead
+  works_for:
+    name: Artemis
+    url: https://artemis.ai
+  # A path in site/public/, for the Person schema.
+  image: /profile-photo.jpg
+  knows_about:
+    - Software Development
+    - Web Development
+    - Data Engineering
+    - Python
+    - TypeScript
+    - React
+
+site:
+  # The canonical origin: every absolute link to the site is built from it.
+  url: https://www.crog.gg
+
+seo:
+  # Appended to every page's title.
+  site_name: Chris Rogers - i build things that build things
+  # The link-preview card, rendered from site/og-image.html.
+  image:
+    path: /og-image.png
+    width: 1200
+    height: 630
+    alt: Build a dark factory. Claudlobby runs a fleet of always-on Claude Code agents on your own hardware, composed from one fleet.yaml.
+  about:
+    description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
+  projects:
+    description: Explore my portfolio of software projects, side projects, and experiments. From web apps to mobile development.
+
+# In display order. show_in picks the places each one shows: footer, menu
+# (the mobile menu), contact (the contact card), music (the Music tab) and
+# schema (the Person schema's sameAs). The label is the visible text.
+socials:
+  - id: github
+    label: github
+    icon: github
+    url: https://github.com/chrisrogers37
+    show_in: [footer, menu, contact, schema]
+  - id: linkedin
+    label: linkedin
+    icon: linkedin
+    url: https://www.linkedin.com/in/chrisrogers37/
+    show_in: [footer, menu, contact, schema]
+  - id: telegram
+    label: telegram
+    icon: telegram
+    url: https://t.me/crogcrogcrog
+    show_in: [contact]
+  - id: instagram
+    label: "@cr0g"
+    icon: instagram
+    url: https://instagram.com/cr0g
+    show_in: [contact]
+  - id: spotify
+    label: spotify
+    icon: spotify
+    url: https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn
+    show_in: [menu, contact, music, schema]
+  - id: instagram-music
+    label: "@crogmusic"
+    icon: instagram
+    url: https://instagram.com/crogmusic
+    show_in: [contact, music]
+  - id: hoobe
+    label: all links
+    icon: hoobe
+    url: https://hoo.be/crog
+    show_in: [contact, music]
+
+footer:
+  # The repo this site is built from: the footer links to it as "view source".
+  # Leave it empty for no link.
+  source_repo_url: https://github.com/chrisrogers37/crog-gg
+
+# /about's tabs, in order. The ids are fixed (about, journey, projects, music);
+# leave one out to hide it.
+sections:
+  - id: about
+    label: About
+  - id: journey
+    label: Journey
+  - id: projects
+    label: Projects
+  - id: music
+    label: Music
+
+hero:
+  # Photos in site/public/profile-photos/, without the size suffix: one is
+  # picked at random on each visit. frontend/scripts/photos/make-variants.py
+  # makes the sizes.
+  photos:
+    - /profile-photos/photo-1
+    - /profile-photos/photo-2
+    - /profile-photos/photo-3
+    - /profile-photos/photo-4
+    - /profile-photos/photo-5
+  # The lines the header types out, in turn.
+  typewriter:
+    - "hey there!"
+    - "welcome to my website"
+    - "i use this as a bit of a portfolio / digital resume / hobby page"
+    - "it's crazy, you can just make #$%@ in 2026!!!"
+    - "anyways, take a look around at what ive been up to"
+    - "i try to keep this relatively up to date..."
+    - "there are some easter eggs if you go exploring"
+    - "hope you enjoy!"
+    - "have a nice day =)"
+
+about:
+  # Where the collapsed About text fades, in px, tuned to today's text in
+  # content/bio.yaml. Re-measure both after editing it (#162).
+  preview_height:
+    narrow: 449
+    wide: 329
+
+contact:
+  heading: connect w/ me
+  text: have a question, or just want to say hey? i'd love to hear from you.
+
+music:
+  # {artist} marks where the artist's name goes.
+  intro: "i make electronic music under the name {artist}. here's some of what i've been working on."
+  artist: crog
+  # The player. Its origin must be in vercel.json's frame-src. Leave it empty
+  # for no player.
+  embed: https://open.spotify.com/embed/artist/0UotSScPTiSFPmbmjam2jn?utm_source=generator

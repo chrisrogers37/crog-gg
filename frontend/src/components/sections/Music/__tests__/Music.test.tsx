@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { beforeAll, describe, it, expect, beforeEach } from "vitest";
+import { afterEach, beforeAll, describe, it, expect } from "vitest";
+import site from "virtual:site-config";
+import { socialsIn } from "../../../../config/socials";
 import { Music } from "../Music";
-import { useContentStore } from "../../../../store";
-import { makeBio } from "../../../../test/builders";
 
 beforeAll(() => {
   window.IntersectionObserver = class IntersectionObserver {
@@ -19,65 +19,45 @@ beforeAll(() => {
   };
 });
 
-const mockBio = makeBio({
-  social_links: {
-    github: "https://github.com/testuser",
-    linkedin: "https://linkedin.com/in/testuser",
-    spotify: "https://open.spotify.com/artist/testid",
-    hoobe: "https://hoo.be/test",
-    instagram_music: "https://instagram.com/crogmusic",
-  },
-});
-
 describe("Music", () => {
-  beforeEach(() => {
-    useContentStore.setState({ bio: null });
+  const embed = site.music.embed;
+  afterEach(() => {
+    site.music.embed = embed;
   });
 
-  it("renders intro text with artist name", () => {
-    useContentStore.setState({ bio: mockBio });
-    render(<Music />);
-    expect(screen.getByText(/electronic music/i)).toBeInTheDocument();
-    expect(screen.getByText("crog")).toBeInTheDocument();
-  });
-
-  it("renders Spotify link with correct URL", () => {
-    useContentStore.setState({ bio: mockBio });
-    render(<Music />);
-    const link = screen.getByRole("link", { name: "Spotify" });
-    expect(link).toHaveAttribute(
-      "href",
-      "https://open.spotify.com/artist/testid",
+  it("introduces the artist by name, as site.yaml words it", () => {
+    const { container } = render(<Music />);
+    expect(screen.getByText(site.music.artist)).toHaveClass("music-artist-name");
+    expect(container.querySelector(".music-intro")).toHaveTextContent(
+      site.music.intro.replace("{artist}", site.music.artist),
     );
-    expect(link).toHaveAttribute("target", "_blank");
   });
 
-  it("renders Instagram music link", () => {
-    useContentStore.setState({ bio: mockBio });
+  it("links each music social from site.yaml, in order, in a new tab", () => {
     render(<Music />);
-    const link = screen.getByRole("link", { name: "@crogmusic" });
-    expect(link).toHaveAttribute("href", "https://instagram.com/crogmusic");
+
+    const musicSocials = socialsIn(site, "music");
+    expect(musicSocials).not.toHaveLength(0);
+    const links = screen.getAllByRole("link");
+    expect(
+      links.map((link) => [link.textContent, link.getAttribute("href")]),
+    ).toEqual(musicSocials.map((social) => [social.label, social.url]));
+    for (const link of links) {
+      expect(link).toHaveAttribute("target", "_blank");
+    }
   });
 
-  it("renders Hoobe link", () => {
-    useContentStore.setState({ bio: mockBio });
+  it("embeds the player site.yaml names", () => {
     render(<Music />);
-    const link = screen.getByRole("link", { name: "all links" });
-    expect(link).toHaveAttribute("href", "https://hoo.be/test");
-  });
-
-  it("renders Spotify embed", () => {
-    useContentStore.setState({ bio: mockBio });
-    render(<Music />);
-    expect(screen.getByTitle("Spotify Player")).toBeInTheDocument();
-  });
-
-  it("uses fallback URLs when bio is null", () => {
-    render(<Music />);
-    const link = screen.getByRole("link", { name: "Spotify" });
-    expect(link).toHaveAttribute(
-      "href",
-      "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
+    expect(screen.getByTitle("Spotify Player")).toHaveAttribute(
+      "src",
+      site.music.embed,
     );
+  });
+
+  it("shows no player when site.yaml leaves it empty", () => {
+    site.music.embed = undefined;
+    render(<Music />);
+    expect(screen.queryByTitle("Spotify Player")).toBeNull();
   });
 });

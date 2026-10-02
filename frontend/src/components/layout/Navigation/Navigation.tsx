@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router";
+import site from "virtual:site-config";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import { GitHubMark } from "../../common/GitHubMark";
 import { RepoLink } from "../../common/RepoLink";
@@ -24,7 +25,7 @@ export function Navigation() {
   return (
     <nav className="main-navigation" aria-label="Main navigation">
       <Link to="/" className="nav-logo">
-        Chris Rogers
+        {site.owner.name}
       </Link>
 
       <div className="nav-right">

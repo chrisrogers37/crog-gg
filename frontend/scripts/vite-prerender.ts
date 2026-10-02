@@ -9,14 +9,18 @@ import {
   renderRobots,
   renderSitemap,
 } from "../src/seo/prerender";
-import { NOT_FOUND_META } from "../src/seo/site";
+import { createSeo } from "../src/seo/site";
 import { readProjects } from "../src/utils/projectLoader";
+import { readSiteConfig } from "./vite-site";
 
 /**
  * Writes each route's <head> into its HTML (#174); see src/seo/prerender.ts.
  * The body stays the client-rendered shell.
  */
 export function prerender(): Plugin[] {
+  // Read when each build or dev request needs it, so an edit to site.yaml
+  // shows up without restarting the dev server.
+  const loadSeo = () => createSeo(readSiteConfig());
   let projectsDir = "";
   const projects = () =>
     readProjects((file) => fs.readFile(path.join(projectsDir, file), "utf8"));
@@ -34,7 +38,8 @@ export function prerender(): Plugin[] {
       async transformIndexHtml(html, ctx) {
         const url = new URL(ctx.originalUrl ?? ctx.path, "http://dev");
         const pathname = url.pathname.replace(/(.)\/$/, "$1");
-        return renderPage(html, pageFor(pathname, await projects()));
+        const seo = loadSeo();
+        return renderPage(seo, html, pageFor(seo, pathname, await projects()));
       },
     },
     {
@@ -50,23 +55,24 @@ export function prerender(): Plugin[] {
         }
         const template = index.source;
 
-        const pages = landingPages(await projects());
+        const seo = loadSeo();
+        const pages = landingPages(seo, await projects());
         for (const page of pages) {
-          const source = renderPage(template, page);
+          const source = renderPage(seo, template, page);
           if (page.path === "/") index.source = source;
           else this.emitFile({ type: "asset", fileName: fileFor(page.path), source });
         }
         this.emitFile({
           type: "asset",
           fileName: "404.html",
-          source: renderPage(template, NOT_FOUND_META),
+          source: renderPage(seo, template, seo.NOT_FOUND_META),
         });
         this.emitFile({
           type: "asset",
           fileName: "sitemap.xml",
-          source: renderSitemap(pages, new Date().toISOString().slice(0, 10)),
+          source: renderSitemap(seo, pages, new Date().toISOString().slice(0, 10)),
         });
-        this.emitFile({ type: "asset", fileName: "robots.txt", source: renderRobots() });
+        this.emitFile({ type: "asset", fileName: "robots.txt", source: renderRobots(seo) });
       },
     },
   ];

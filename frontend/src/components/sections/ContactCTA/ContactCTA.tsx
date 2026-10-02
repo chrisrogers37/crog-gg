@@ -1,4 +1,8 @@
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
+import site from "virtual:site-config";
+import type { SocialIcon } from "../../../config/schema";
+import { socialsIn } from "../../../config/socials";
 import { useBio } from "../../../store";
 import { GitHubMark } from "../../common/GitHubMark";
 import "./ContactCTA.css";
@@ -55,6 +59,24 @@ function HoobeLogo() {
   );
 }
 
+function LinkIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="contact-brand-icon"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
 function EmailIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="contact-brand-icon">
@@ -66,75 +88,38 @@ function EmailIcon() {
   );
 }
 
+const ICONS: Record<SocialIcon, ReactNode> = {
+  github: <GitHubMark className="contact-brand-icon" />,
+  linkedin: <LinkedInLogo />,
+  telegram: <TelegramLogo />,
+  instagram: <InstagramLogo />,
+  spotify: <SpotifyLogo />,
+  hoobe: <HoobeLogo />,
+  link: <LinkIcon />,
+};
+
+/** The email address, then site.yaml's contact socials (#188). */
+const LINKS = [
+  {
+    key: "email",
+    href: `mailto:${site.owner.email}`,
+    icon: <EmailIcon />,
+    label: "email",
+    external: false,
+  },
+  ...socialsIn(site, "contact").map((social) => ({
+    key: social.id,
+    href: social.url,
+    icon: ICONS[social.icon],
+    label: social.label,
+    external: true,
+  })),
+];
+
 export function ContactCTA() {
   const bio = useBio();
 
   if (!bio) return null;
-
-  const socialLinks = [
-    {
-      key: "email",
-      href: `mailto:${bio.email}`,
-      icon: <EmailIcon />,
-      label: "Email",
-      external: false,
-    },
-    bio.social_links?.linkedin && {
-      key: "linkedin",
-      href: bio.social_links.linkedin,
-      icon: <LinkedInLogo />,
-      label: "LinkedIn",
-      external: true,
-    },
-    bio.social_links?.github && {
-      key: "github",
-      href: bio.social_links.github,
-      icon: <GitHubMark className="contact-brand-icon" />,
-      label: "GitHub",
-      external: true,
-    },
-    bio.social_links?.telegram && {
-      key: "telegram",
-      href: bio.social_links.telegram,
-      icon: <TelegramLogo />,
-      label: "Telegram",
-      external: true,
-    },
-    bio.social_links?.instagram_personal && {
-      key: "instagram",
-      href: bio.social_links.instagram_personal,
-      icon: <InstagramLogo />,
-      label: "@cr0g",
-      external: true,
-    },
-    bio.social_links?.instagram_music && {
-      key: "instagram-music",
-      href: bio.social_links.instagram_music,
-      icon: <InstagramLogo />,
-      label: "@crogmusic",
-      external: true,
-    },
-    bio.social_links?.spotify && {
-      key: "spotify",
-      href: bio.social_links.spotify,
-      icon: <SpotifyLogo />,
-      label: "Spotify",
-      external: true,
-    },
-    bio.social_links?.hoobe && {
-      key: "hoobe",
-      href: bio.social_links.hoobe,
-      icon: <HoobeLogo />,
-      label: "hoobe",
-      external: true,
-    },
-  ].filter(Boolean) as {
-    key: string;
-    href: string;
-    icon: React.ReactNode;
-    label: string;
-    external: boolean;
-  }[];
 
   return (
     <motion.section
@@ -144,12 +129,10 @@ export function ContactCTA() {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="contact-cta-heading">connect w/ me</h2>
-      <p className="contact-cta-text">
-        have a question, or just want to say hey? i'd love to hear from you.
-      </p>
+      <h2 className="contact-cta-heading">{site.contact.heading}</h2>
+      <p className="contact-cta-text">{site.contact.text}</p>
       <div className="contact-brand-links">
-        {socialLinks.map((link) => (
+        {LINKS.map((link) => (
           <a
             key={link.key}
             href={link.href}

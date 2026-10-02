@@ -1,9 +1,10 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { site } from "./scripts/vite-site";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), site()],
   server: {
     // Tests read the owner's files in site/ (#188), outside this package;
     // Vite refuses to load a file outside the allowed folders.

@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { headTags, jsonLd, pageTitle, type PageMeta } from "../../seo/site";
+import { headTags, jsonLd, pageTitle, type PageMeta } from "../../seo";
 
 /**
  * SEO Component

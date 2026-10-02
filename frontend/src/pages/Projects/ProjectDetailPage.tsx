@@ -8,7 +8,7 @@ import {
 import { Breadcrumbs } from "../../components/common/Breadcrumbs";
 import { LoadError } from "../../components/common/LoadError";
 import { SEO } from "../../components/SEO";
-import { projectBreadcrumbs, projectMeta } from "../../seo/site";
+import { projectBreadcrumbs, projectMeta } from "../../seo";
 import {
   GitHubReadme,
   RepoStats,

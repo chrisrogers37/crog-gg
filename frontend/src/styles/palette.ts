@@ -1,5 +1,5 @@
 /**
- * Palette: the canonical color source of truth for crog.gg.
+ * Palette: the canonical color source of truth for the site.
  *
  * These raw ramps are the ONE place a brand color value lives. Both
  * `tailwind.config.js` and `src/styles/tokens.ts` import from here, so a

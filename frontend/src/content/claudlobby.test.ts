@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { claudlobby } from "./claudlobby";
-import { HOME_META, OG_IMAGE, pageTitle } from "../seo/site";
+import { HOME_META, OG_IMAGE, pageTitle } from "../seo";
 import ogImageHtml from "../../../site/og-image.html?raw";
 
 /**

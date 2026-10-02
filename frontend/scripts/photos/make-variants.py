@@ -6,7 +6,7 @@ For every JPEG in originals/, this writes <name>-<width>.webp for each width
 into site/public/profile-photos/, which is where src/utils/photos.ts looks.
 
 To add a photo: put the original in originals/, run this, then reference
-/profile-photos/<name> in content/showcase.yaml or PROFILE_PHOTOS.
+/profile-photos/<name> in content/showcase.yaml or hero.photos in site/site.yaml.
 
 Usage, from the repo root (needs Pillow: pip install pillow):
     python frontend/scripts/photos/make-variants.py

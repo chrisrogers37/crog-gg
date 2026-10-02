@@ -7,6 +7,10 @@ interface ViteTypeOptions {
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
-  /** The repo this site is built from; the footer links to it when set. */
-  readonly VITE_SOURCE_REPO_URL?: string;
+}
+
+/** site/site.yaml, checked at build time (scripts/vite-site.ts, #188). */
+declare module "virtual:site-config" {
+  const config: import("./config/schema").SiteConfig;
+  export default config;
 }

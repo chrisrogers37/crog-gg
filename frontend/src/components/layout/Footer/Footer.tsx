@@ -1,39 +1,34 @@
 import { Link } from "react-router";
-import { PROFILE_URLS } from "../../../content/links";
+import site from "virtual:site-config";
+import { socialsIn } from "../../../config/socials";
 import { RepoLink } from "../../common/RepoLink";
 import "./Footer.css";
-
-// Lowercase, like the mobile menu's.
-const PROFILE_LINKS = [
-  { href: PROFILE_URLS.github, label: "github" },
-  { href: PROFILE_URLS.linkedin, label: "linkedin" },
-];
 
 /**
  * Footer Component
  *
  * Copyright and links. The copyright line claims no rights over the code:
  * CONTENT-TERMS.md says what's reserved, and the code is MIT. "view source"
- * shows only when the build names the repo (VITE_SOURCE_REPO_URL, #188), so a
- * fork that leaves it unset shows no link.
+ * shows only when site.yaml names the repo (footer.source_repo_url, #188), so
+ * a fork that leaves it empty shows no link.
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  const sourceRepoUrl = import.meta.env.VITE_SOURCE_REPO_URL?.trim();
+  const sourceRepoUrl = site.footer.source_repo_url;
 
   return (
     <footer className="footer">
       <div className="footer-content">
         <p className="footer-copyright">
-          &copy; {currentYear} Chris Rogers
+          &copy; {currentYear} {site.owner.name}
         </p>
         <div className="footer-links">
           <RepoLink location="footer">claudlobby</RepoLink>
           <Link to="/about">about</Link>
-          {PROFILE_LINKS.map((link) => (
+          {socialsIn(site, "footer").map((link) => (
             <a
-              key={link.href}
-              href={link.href}
+              key={link.id}
+              href={link.url}
               target="_blank"
               rel="noopener noreferrer"
             >
