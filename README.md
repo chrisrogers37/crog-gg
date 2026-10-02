@@ -6,6 +6,8 @@ crog.gg is two sites in one:
 - **`/` is the front door for [Claudlobby](https://github.com/Claudfather/Claudlobby)**, Chris Rogers's agent-fleet compositor for software "dark factories": what it is, a quickstart, the roadmap, and how to follow releases.
 - **`/about` is Choose Your Own Chris**, the personal portfolio. Its About text can be rewritten on demand by an AI model, as lore in a different register each time.
 
+For how it's built, and what each content file does, see the [documentation index](documentation/README.md).
+
 ## Features
 
 ### The Claudlobby landing page (`/`)
