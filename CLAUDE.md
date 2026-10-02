@@ -26,7 +26,8 @@ Give Claude verification loops for 2-3x quality improvement:
 Husky pre-commit and pre-push hooks enforce quality locally:
 
 - **Pre-commit**: `lint-staged` runs ESLint on staged `.ts`/`.tsx` files
-- **Pre-push**: Runs `npm run build`, `npm run test:run`, and Python linting on `api/` (flake8, black, isort) when `api/` files changed
+- **Pre-push**: Runs `npm run build` and `npm run test:run` when `frontend/` changed, and CI's Python checks (flake8, black and isort on `api/`, then `pytest -q`) when `api/`, `tests/`, `conftest.py`, the requirements files or `.python-version` changed. A new branch is compared against `origin/main`.
+- A missing Python tool fails the push: install them with `pip install -r requirements-dev.txt`, or set `SKIP_PY_CHECKS=1` to push without the Python half (CI still runs it)
 - Bypass with `--no-verify` when needed (e.g., WIP commits)
 
 ## Commands Reference

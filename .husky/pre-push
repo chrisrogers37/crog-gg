@@ -1,54 +1,46 @@
 #!/usr/bin/env sh
 
-# pre-push hook: runs frontend build/tests and backend linting
-# based on which files changed. Bypass with: git push --no-verify
+# pre-push hook: runs the frontend build and tests, and CI's Python checks,
+# for whichever side changed. Bypass with: git push --no-verify, or skip only
+# the Python half with SKIP_PY_CHECKS=1 (CI still runs it).
 
 set -e
 
 echo "Running pre-push checks..."
 
 # --- Determine changed files ---
-# Compare against upstream tracking branch, or main for new branches
+# Compare against the upstream tracking branch or, for a new branch, the
+# remote's main (a local main can be far behind it), then the local main.
 UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "")
-if [ -n "$UPSTREAM" ]; then
-  MERGE_BASE=$(git merge-base HEAD "$UPSTREAM" 2>/dev/null || echo "")
+MERGE_BASE=""
+for BASE in $UPSTREAM origin/main main; do
+  MERGE_BASE=$(git merge-base HEAD "$BASE" 2>/dev/null || echo "")
   if [ -n "$MERGE_BASE" ]; then
-    CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"..HEAD 2>/dev/null || echo "")
-  else
-    CHANGED_FILES=""
+    break
+  fi
+done
+
+FRONTEND_CHANGED=false
+PYTHON_CHANGED=false
+
+if [ -n "$MERGE_BASE" ]; then
+  # Diffing the merge base against the working tree covers both what's
+  # committed and what isn't yet.
+  CHANGED_FILES=$(git diff --name-only "$MERGE_BASE")
+
+  if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
+    FRONTEND_CHANGED=true
+  fi
+
+  # The Python lives in api/, tests/ and conftest.py; its dependencies and
+  # version are in the requirements files and .python-version.
+  if echo "$CHANGED_FILES" | grep -qE "^(api/|tests/|conftest\.py$|requirements|\.python-version$)"; then
+    PYTHON_CHANGED=true
   fi
 else
-  # New branch with no upstream - compare against main
-  MERGE_BASE=$(git merge-base HEAD main 2>/dev/null || echo "")
-  if [ -n "$MERGE_BASE" ]; then
-    CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"..HEAD 2>/dev/null || echo "")
-  else
-    CHANGED_FILES=""
-  fi
-fi
-
-# Also include unstaged/staged changes not yet committed
-UNCOMMITTED=$(git diff --name-only HEAD 2>/dev/null || echo "")
-CHANGED_FILES="$CHANGED_FILES
-$UNCOMMITTED"
-
-# Detect which areas changed
-FRONTEND_CHANGED=false
-BACKEND_CHANGED=false
-
-if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
+  echo "Could not find a merge base to compare against - running all checks"
   FRONTEND_CHANGED=true
-fi
-
-if echo "$CHANGED_FILES" | grep -q "^backend/"; then
-  BACKEND_CHANGED=true
-fi
-
-# If we couldn't detect changes, run everything
-if [ -z "$CHANGED_FILES" ]; then
-  echo "Could not detect changed files - running all checks"
-  FRONTEND_CHANGED=true
-  BACKEND_CHANGED=true
+  PYTHON_CHANGED=true
 fi
 
 FAILED=0
@@ -78,30 +70,30 @@ else
   echo "=== Frontend: no changes detected, skipping ==="
 fi
 
-# --- Backend checks ---
-if [ "$BACKEND_CHANGED" = true ]; then
+# --- Python checks: the same commands as CI's API Lint and API Tests ---
+if [ "$PYTHON_CHANGED" = true ] && [ "${SKIP_PY_CHECKS:-}" = 1 ]; then
   echo ""
-  echo "=== Backend checks ==="
+  echo "=== Python: SKIP_PY_CHECKS=1, skipping (CI still runs these) ==="
+elif [ "$PYTHON_CHANGED" = true ]; then
+  echo ""
+  echo "=== Python checks ==="
 
-  # Check if Python tools are available
-  BACKEND_TOOLS_MISSING=""
+  # A missing tool fails the push rather than skipping silently.
+  PYTHON_TOOLS_MISSING=""
+  for tool in flake8 black isort pytest; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+      PYTHON_TOOLS_MISSING="$PYTHON_TOOLS_MISSING $tool"
+    fi
+  done
 
-  if ! command -v flake8 >/dev/null 2>&1; then
-    BACKEND_TOOLS_MISSING="$BACKEND_TOOLS_MISSING flake8"
-  fi
-  if ! command -v black >/dev/null 2>&1; then
-    BACKEND_TOOLS_MISSING="$BACKEND_TOOLS_MISSING black"
-  fi
-  if ! command -v isort >/dev/null 2>&1; then
-    BACKEND_TOOLS_MISSING="$BACKEND_TOOLS_MISSING isort"
-  fi
-
-  if [ -n "$BACKEND_TOOLS_MISSING" ]; then
-    echo "   Skipping backend checks - missing tools:$BACKEND_TOOLS_MISSING"
-    echo "   Install with: pip install flake8 black isort"
+  if [ -n "$PYTHON_TOOLS_MISSING" ]; then
+    echo "   Missing:$PYTHON_TOOLS_MISSING"
+    echo "   Install with: pip install -r requirements-dev.txt"
+    echo "   Or push without the Python checks: SKIP_PY_CHECKS=1 git push"
+    FAILED=1
   else
     echo "-> Running flake8..."
-    if (cd backend && flake8 --max-line-length 120 --exclude venv .); then
+    if flake8 api --max-line-length=120 --ignore=E501,W503; then
       echo "   flake8 passed"
     else
       echo "   flake8 FAILED"
@@ -109,7 +101,7 @@ if [ "$BACKEND_CHANGED" = true ]; then
     fi
 
     echo "-> Running black --check..."
-    if (cd backend && black --check --exclude venv .); then
+    if black --check --line-length=120 api; then
       echo "   black passed"
     else
       echo "   black FAILED"
@@ -117,16 +109,24 @@ if [ "$BACKEND_CHANGED" = true ]; then
     fi
 
     echo "-> Running isort --check..."
-    if (cd backend && isort --check-only --skip venv .); then
+    if isort --check-only --profile black api; then
       echo "   isort passed"
     else
       echo "   isort FAILED"
       FAILED=1
     fi
+
+    echo "-> Running pytest..."
+    if pytest -q; then
+      echo "   pytest passed"
+    else
+      echo "   pytest FAILED"
+      FAILED=1
+    fi
   fi
 else
   echo ""
-  echo "=== Backend: no changes detected, skipping ==="
+  echo "=== Python: no changes detected, skipping ==="
 fi
 
 # --- Summary ---
