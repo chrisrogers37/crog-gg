@@ -600,8 +600,20 @@ def regenerate_content():
         if len(_prompt_json(section_content)) > MAX_SECTION_CHARS:
             return jsonify({"success": False, "error": f"content for {name} is too long"}), 413
 
-    if openai_client is None:
-        return jsonify({"success": False, "error": "OpenAI API key not configured"}), 500
+    # Nothing to meter or spend when this deployment can't rewrite: no key, or
+    # site.yaml turns it off (#189 M21). Before the cooldown, so it reads no
+    # Redis; the page says the button isn't set up here.
+    if openai_client is None or CONFIG.regenerate_mode == "off":
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "code": "regeneration_disabled",
+                    "error": "Regeneration isn't set up on this site",
+                }
+            ),
+            503,
+        )
 
     # After validation, so a rejected request costs nothing (#107), and before
     # the daily caps, so a press refused here doesn't spend a daily slot.
@@ -721,6 +733,24 @@ def regenerate_content():
             "cooldown_total": COOLDOWN_SECONDS,
         }
     )
+
+
+@app.route("/api/features", methods=["GET"])
+def get_features():
+    """What this deployment can serve, so the page hides what it can't (#189
+    M21): SUMMON needs an OpenAI key and Upstash, and neither is off in
+    site.yaml. Free to call: no Redis or GitHub request, so a fork with
+    neither still gets an answer."""
+    resp = jsonify(
+        {
+            "regenerate": CONFIG.regenerate_mode != "off"
+            and openai_client is not None
+            and redis_client.is_configured(),
+            "github": CONFIG.github_mode != "off",
+        }
+    )
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
 
 
 @app.route("/api/limits", methods=["GET"])
@@ -900,6 +930,8 @@ def get_repo_languages(repo_name):
 def get_all_languages_v1():
     if (resp := _gh_rate_limit_or_429("languages_all")) is not None:
         return resp
+    if CONFIG.github_mode == "off":
+        return jsonify({"error": "Not found"}), 404
 
     # A cache that can't be read is a refusal, not a miss: a miss fans out to
     # GitHub (1 + N calls), and during an Upstash outage every request would,
@@ -948,6 +980,8 @@ def get_all_languages_v1():
 def get_contributions():
     if (resp := _gh_rate_limit_or_429("contributions")) is not None:
         return resp
+    if CONFIG.github_mode == "off":
+        return jsonify({"error": "Not found"}), 404
 
     github_token = os.environ.get("GITHUB_TOKEN")
     if not github_token:

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import {
   ABOUT,
   OTHER_TABS,
@@ -6,6 +6,7 @@ import {
   TABS_PATH,
   bio,
   named,
+  site,
   tabAfter,
   withLongAbout,
 } from "./site";
@@ -266,5 +267,20 @@ test.describe("Contact CTA", () => {
   test("about page has footer", async ({ page }) => {
     const footer = page.locator("footer.footer");
     await expect(footer).toBeVisible({ timeout: 5000 });
+  });
+});
+
+test.describe("Where SUMMON isn't served (#189 M21)", () => {
+  // What a deployment with no OpenAI key or no Upstash answers.
+  test.use({ features: { regenerate: false, github: false } });
+
+  test("the page offers no regenerate button", async ({ page }) => {
+    test.skip(site.features?.regenerate === "on", "site.yaml shows it whatever the API says");
+    test.skip(!SECOND, "needs a tab other than About");
+    // The panel is the node whose mount brings the buttons, so once it's in,
+    // they would be too.
+    await page.locator(`button[data-section="${SECOND.id}"]`).click();
+    await expect(page.getByRole("tabpanel", { name: named(SECOND.label) })).toBeVisible();
+    await expect(page.locator(".generate-btn")).toHaveCount(0);
   });
 });

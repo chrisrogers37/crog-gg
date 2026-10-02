@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import site from "virtual:site-config";
 import { useContentStore } from "../contentStore";
 import { makeBio, makeEmployment } from "../../test/builders";
 
@@ -621,6 +622,25 @@ describe("the cooldown follows the server", () => {
     expect(s.cooldownEndsAt).toBe(NOW + 12_000);
     expect(s.cooldownTotal).toBe(30);
     expect(s.dailyCapReached).toBe(false);
+  });
+
+  it("names the button when this deployment can't rewrite (#189 M21)", async () => {
+    // No OpenAI key, or features.regenerate: off: the server's message says
+    // how it's set up, which a visitor can't act on.
+    respondWith(
+      {
+        success: false,
+        code: "regeneration_disabled",
+        error: "Regeneration isn't set up on this site",
+      },
+      503,
+    );
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().regenerationError).toBe(
+      `${site.regenerate.labels.button} isn't set up on this site.`,
+    );
   });
 
   it("keeps the button off after the daily cap", async () => {

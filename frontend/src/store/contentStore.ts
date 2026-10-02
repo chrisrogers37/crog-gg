@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import site from "virtual:site-config";
+import { API_URL } from "../config/api";
 import { devtools } from "zustand/middleware";
 import { BioData, Employment, Education, Skill, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
@@ -90,7 +92,6 @@ const initialState: ContentState = {
 // API HELPERS
 // ===========================================
 
-const API_URL = import.meta.env.VITE_API_URL || "";
 
 // Just above the 60 s the API function is allowed (#195 M37), so the server
 // always gets to answer first.
@@ -300,9 +301,13 @@ export const useContentStore = create<ContentStore>()(
             const dailyCap = result.limit === "daily";
             set({
               regenerationError:
-                typeof result.error === "string" && result.error
-                  ? result.error
-                  : "Failed to regenerate content. Please try again.",
+                // A deployment with no key, or with it off in site.yaml
+                // (#189 M21): say which button, not how the server is set up.
+                result.code === "regeneration_disabled"
+                  ? `${site.regenerate.labels.button} isn't set up on this site.`
+                  : typeof result.error === "string" && result.error
+                    ? result.error
+                    : "Failed to regenerate content. Please try again.",
               isRegenerating: false,
               ...cooldown,
               ...(dailyCap && { dailyCapReached: true }),

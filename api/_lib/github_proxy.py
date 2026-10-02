@@ -56,11 +56,12 @@ def _guard_repo_request(owner: str, repo_name: str, endpoint: str):
     short-circuit on, or None to proceed.
 
     Another owner gets the same generic 404 as a missing repo, before any
-    GitHub call, so the proxy can't be pointed at the rest of GitHub (#189).
+    GitHub call, so the proxy can't be pointed at the rest of GitHub (#189);
+    so does every owner when site.yaml's features.github is off.
     """
     if (resp := _gh_rate_limit_or_429(endpoint)) is not None:
         return resp
-    if not CONFIG.allows(owner):
+    if CONFIG.github_mode == "off" or not CONFIG.allows(owner):
         return jsonify({"error": "Repository not found"}), 404
     is_valid, error_msg = validate_repo_name(repo_name)
     if not is_valid:

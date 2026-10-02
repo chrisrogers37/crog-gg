@@ -40,7 +40,7 @@ git grep -n -i -E "chris|crog|cr0g"
 ## Deploying
 
 1. Import the repo into Vercel. `vercel.json` already sets the build, the output folder, the API rewrite and the headers.
-2. Add Upstash Redis, as the README's [Provisioning Upstash Redis](README.md#provisioning-upstash-redis) describes. Without it, SUMMON NEW LORE answers 503: the paid endpoint refuses to run unmetered (#113).
+2. Add Upstash Redis, as the README's [Provisioning Upstash Redis](README.md#provisioning-upstash-redis) describes. Without it, or without `OPENAI_API_KEY`, SUMMON NEW LORE doesn't show: the paid endpoint refuses to run unmetered (#113), and the page asks `GET /api/features` before it offers the button. To retire the button for good, set `features.regenerate: off` in `site/site.yaml`.
 3. Set the variables in the README's [table](README.md#environment-variables); Upstash injects its own (step 2).
 4. **Set a monthly budget in the OpenAI billing dashboard** ([why](README.md#bounding-openai-spend)).
 

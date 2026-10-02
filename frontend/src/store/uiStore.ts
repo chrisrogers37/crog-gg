@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, devtools, createJSONStorage } from "zustand/middleware";
 import { applyTheme, type Theme } from "./theme";
+import { NO_FEATURES, type Features } from "../config/features";
 
 // ===========================================
 // TYPES
@@ -12,6 +13,10 @@ interface UIState {
 
   // Mobile
   isMobileMenuOpen: boolean;
+
+  // What this deployment serves (GET /api/features). Not persisted: each
+  // visit asks again.
+  features: Features;
 }
 
 interface UIActions {
@@ -21,6 +26,8 @@ interface UIActions {
   // Mobile
   toggleMobileMenu: () => void;
   closeMobileMenu: () => void;
+
+  setFeatures: (features: Features) => void;
 }
 
 type UIStore = UIState & UIActions;
@@ -32,6 +39,7 @@ type UIStore = UIState & UIActions;
 const initialState: UIState = {
   theme: "light", // Default to light as per user preference
   isMobileMenuOpen: false,
+  features: NO_FEATURES,
 };
 
 // ===========================================
@@ -75,6 +83,10 @@ export const useUIStore = create<UIStore>()(
          */
         closeMobileMenu: () => {
           set({ isMobileMenuOpen: false });
+        },
+
+        setFeatures: (features: Features) => {
+          set({ features });
         },
       }),
       {

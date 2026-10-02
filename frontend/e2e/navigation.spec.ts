@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { ABOUT, OTHER_TABS, TABS_PATH, named, withLongAbout } from "./site";
 
 /**

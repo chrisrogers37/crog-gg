@@ -12,7 +12,7 @@ import {
   SectionMenuContext,
   type SectionMenu,
 } from "../MobileMenu/sectionMenu";
-import { useContentLoader } from "../../../hooks";
+import { useContentLoader, useFeatures } from "../../../hooks";
 import "./Layout.css";
 
 /**
@@ -58,6 +58,7 @@ export function Layout() {
   // Load content here rather than in a page component: Layout wraps every
   // route, so content is fetched no matter which route the user enters on.
   useContentLoader();
+  useFeatures();
 
   return (
     <SectionMenuContext.Provider value={setSectionMenu}>
