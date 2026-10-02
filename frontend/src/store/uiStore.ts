@@ -1,11 +1,10 @@
 import { create } from "zustand";
-import { persist, devtools } from "zustand/middleware";
+import { persist, devtools, createJSONStorage } from "zustand/middleware";
+import { applyTheme, type Theme } from "./theme";
 
 // ===========================================
 // TYPES
 // ===========================================
-
-type Theme = "light" | "dark" | "system";
 
 interface UIState {
   // Theme
@@ -54,21 +53,10 @@ export const useUIStore = create<UIStore>()(
          * Set the theme preference.
          */
         setTheme: (theme: Theme) => {
+          // Applied before it's stored: a storage write that throws (a full
+          // quota, say) mustn't leave the page and the toggle disagreeing.
+          applyTheme(theme);
           set({ theme });
-
-          // Apply theme to document
-          const root = document.documentElement;
-          if (theme === "dark") {
-            root.classList.add("dark");
-          } else if (theme === "light") {
-            root.classList.remove("dark");
-          } else {
-            // System preference
-            const prefersDark = window.matchMedia(
-              "(prefers-color-scheme: dark)",
-            ).matches;
-            root.classList.toggle("dark", prefersDark);
-          }
         },
 
         // ===========================================
@@ -91,6 +79,14 @@ export const useUIStore = create<UIStore>()(
       }),
       {
         name: "ui-storage",
+        // A null localStorage (Firefox with storage turned off) counts as
+        // unavailable, like one that throws, so the store runs in memory. Then
+        // useUIStore.persist is undefined: nothing may call rehydrate() at
+        // startup.
+        storage: createJSONStorage(() => {
+          if (!window.localStorage) throw new Error("localStorage is unavailable");
+          return window.localStorage;
+        }),
         // Only persist theme preference
         partialize: (state) => ({ theme: state.theme }),
       },

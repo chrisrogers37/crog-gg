@@ -99,7 +99,9 @@ export function ProjectDetailPage() {
   return (
     <>
       <SEO {...projectMeta(project)} />
-      <div className="project-detail-page">
+      {/* Keyed, so another project's page starts fresh rather than reusing
+          this one's state, fetched figures included (#196 M68). */}
+      <div className="project-detail-page" key={project.id}>
         {/* Breadcrumbs */}
         <Breadcrumbs items={projectBreadcrumbs(project)} />
 

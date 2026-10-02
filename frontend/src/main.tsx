@@ -4,40 +4,17 @@ import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
 import App from "./App.tsx";
 import { startAnalytics } from "./services/analytics";
+import { useUIStore } from "./store/uiStore";
+import { applyTheme, DARK_QUERY } from "./store/theme";
 
-/**
- * Initialize theme from localStorage or system preference.
- * This runs before React renders to prevent flash of wrong theme.
- */
-function initializeTheme() {
-  const stored = localStorage.getItem("ui-storage");
-  let theme = "light";
-
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      theme = parsed.state?.theme || "light";
-    } catch {
-      // Invalid JSON, use default
-    }
-  }
-
-  const root = document.documentElement;
-
-  if (theme === "dark") {
-    root.classList.add("dark");
-  } else if (theme === "system") {
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    root.classList.toggle("dark", prefersDark);
-  } else {
-    root.classList.remove("dark");
-  }
-}
-
-// Initialize theme before render
-initializeTheme();
+// The store has already loaded the saved theme, or kept the default when site
+// data is blocked (#196 M70). It goes on <html> before React renders, so
+// React's first paint is in it, and again whenever the OS theme switches, which
+// shows under "system". (The HTML shell can still paint light before the
+// scripts run; an inline script would need a CSP hash.)
+const applyCurrentTheme = () => applyTheme(useUIStore.getState().theme);
+applyCurrentTheme();
+window.matchMedia(DARK_QUERY).addEventListener("change", applyCurrentTheme);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

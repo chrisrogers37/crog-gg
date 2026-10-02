@@ -1,4 +1,5 @@
 import { useUIStore, useTheme } from "../../../store/uiStore";
+import { THEMES } from "../../../store/theme";
 import "./ThemeToggle.css";
 
 /**
@@ -12,14 +13,7 @@ export function ThemeToggle() {
   const setTheme = useUIStore((state) => state.setTheme);
 
   const cycleTheme = () => {
-    const themes: Array<"light" | "dark" | "system"> = [
-      "light",
-      "dark",
-      "system",
-    ];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
+    setTheme(THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]);
   };
 
   const getIcon = () => {

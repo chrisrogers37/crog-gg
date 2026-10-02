@@ -302,3 +302,66 @@ test.describe("see more survives a collapse (#165)", () => {
     await expect(page.locator(".section-content")).toBeVisible();
   });
 });
+
+test.describe("With site data blocked (#196 M70)", () => {
+  // A browser that blocks site data throws on any localStorage access; Firefox
+  // with storage turned off returns null instead.
+  for (const blocked of ["throws", "is null"] as const) {
+  test(`the pages still render, and the theme still switches (localStorage ${blocked})`, async ({
+    page,
+  }) => {
+    await page.addInitScript((mode) => {
+      Object.defineProperty(window, "localStorage", {
+        get() {
+          if (mode === "is null") return null;
+          throw new DOMException("The operation is insecure.", "SecurityError");
+        },
+      });
+    }, blocked);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+
+    await page.goto("/");
+    await expect(page.locator(".cl-hero h1")).toBeVisible();
+
+    // The toggle still cycles the theme, kept in memory for the visit.
+    const toggle = page.getByRole("button", { name: /current theme/i }).first();
+    const before = await page.evaluate(() =>
+      document.documentElement.classList.contains("dark"),
+    );
+    await toggle.click();
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.classList.contains("dark")),
+      )
+      .not.toBe(before);
+
+    await page.goto("/about");
+    await expect(page.locator(".about-page h1")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+  }
+});
+
+test.describe("The system theme (#196 M70)", () => {
+  test("follows an OS theme switch while the page is open", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto("/");
+
+    // Light, then dark, then system.
+    const toggle = page.getByRole("button", { name: /current theme/i }).first();
+    await toggle.click();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-label", /system preference/i);
+
+    const isDark = () =>
+      page.evaluate(() => document.documentElement.classList.contains("dark"));
+    await expect.poll(isDark).toBe(false);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect.poll(isDark).toBe(true);
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect.poll(isDark).toBe(false);
+  });
+});

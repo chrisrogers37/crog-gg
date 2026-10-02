@@ -21,18 +21,35 @@ export function RepoStats({ repoName }: RepoStatsProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let ignore = false;
+
     async function fetchRepo() {
+      // Another repo starts from nothing, and a late answer for the last one
+      // is ignored, so its figures never show on this one's page (#196 M68).
+      // The detail page also keys this by project. For a caller that doesn't,
+      // this still clears the last repo's figures, a frame after the change.
+      setRepo(null);
+      setIsLoading(true);
       try {
         const data = await githubService.getRepository(repoName);
-        setRepo(data);
+        if (!ignore) {
+          setRepo(data);
+        }
       } catch (err) {
-        console.error("Failed to fetch repo:", err);
+        if (!ignore) {
+          console.error("Failed to fetch repo:", err);
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     }
 
     fetchRepo();
+    return () => {
+      ignore = true;
+    };
   }, [repoName]);
 
   if (isLoading) {

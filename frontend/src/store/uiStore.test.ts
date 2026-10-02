@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useUIStore } from "./uiStore";
 
 describe("uiStore", () => {
@@ -21,6 +21,22 @@ describe("uiStore", () => {
       setTheme("dark");
 
       expect(useUIStore.getState().theme).toBe("dark");
+    });
+
+    it("applies the theme even when storing it throws", () => {
+      // From a light page: earlier tests leave the dark class behind.
+      document.documentElement.classList.remove("dark");
+      vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+        throw new DOMException("The quota has been exceeded.", "QuotaExceededError");
+      });
+      try {
+        useUIStore.getState().setTheme("dark");
+      } catch {
+        // The failed write may surface here; the page must be dark regardless.
+      }
+      expect(document.documentElement).toHaveClass("dark");
+      vi.restoreAllMocks();
+      document.documentElement.classList.remove("dark");
     });
 
     it("setTheme can set to system preference", () => {

@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { HelmetProvider } from "react-helmet-async";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useContentStore } from "../../../store";
+import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
@@ -87,5 +88,56 @@ describe("ProjectDetailPage's Go Back", () => {
     const router = renderAt(["/about", "/projects/benzo"]);
     fireEvent.click(screen.getByRole("button", { name: /go back/i }));
     expect(router.state.location.pathname).toBe("/about");
+  });
+});
+
+/**
+ * Each project's page starts fresh: the page is keyed by project, so a crashed
+ * section (or another project's figures) doesn't carry over (#196 M68).
+ */
+describe("ProjectDetailPage across projects", () => {
+  it("doesn't carry a crashed section over to the next project", async () => {
+    const project = (id: string): Project =>
+      ({
+        id,
+        title: id,
+        description: "A project",
+        url: `https://github.com/owner/${id}`,
+      }) as Project;
+    useContentStore.setState({
+      projects: [project("alpha"), project("beta")],
+      isLoading: false,
+      error: null,
+    });
+    // alpha's stats can't render (no figures in the answer), so its section
+    // crashes; beta's answer is whole.
+    vi.spyOn(githubService, "getRepository").mockImplementation(async (name) =>
+      name === "alpha"
+        ? ({} as Repository)
+        : ({
+            name,
+            stargazers_count: 222,
+            forks_count: 1,
+            watchers_count: 1,
+            open_issues_count: 0,
+            pushed_at: "2026-09-01T00:00:00Z",
+            language: null,
+            license: null,
+          } as Repository),
+    );
+    vi.spyOn(githubService, "getReadme").mockRejectedValue(new Error("offline"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const router = renderAt(["/projects/alpha"]);
+    expect(
+      await screen.findByText(/something went wrong loading this section/i),
+    ).toBeInTheDocument();
+
+    await act(() => router.navigate("/projects/beta"));
+    expect(await screen.findByText("222")).toBeInTheDocument();
+    expect(
+      screen.queryByText(/something went wrong loading this section/i),
+    ).not.toBeInTheDocument();
+    vi.restoreAllMocks();
   });
 });
