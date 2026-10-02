@@ -37,8 +37,8 @@ describe("GitHubReadme", () => {
 
     render(<GitHubReadme owner="someone" repoName="example" />);
 
-    expect(await screen.findByRole("checkbox", { name: "done" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "to do" })).not.toBeChecked();
+    expect(await screen.findByRole("checkbox", { name: /done/i })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: /to do/i })).not.toBeChecked();
     const table = screen.getByRole("table");
     // A box a keyboard can reach, since it may need scrolling sideways.
     expect(table.parentElement).toHaveClass("readme-table");

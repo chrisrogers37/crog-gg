@@ -27,7 +27,7 @@ test.describe("Projects Page Structure", () => {
   });
 
   test("displays search input", async ({ page }) => {
-    // Search/filter UI only renders after projects load successfully
+    // The search box shows while the projects load, and once they have
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="earch"]',
     );
@@ -307,7 +307,7 @@ test.describe("A project page on a phone (final UI review)", () => {
 
     // The stats take the room they'll fill before they arrive, so nothing
     // below them moves when they do.
-    const loading = page.getByRole("status", { name: "Loading repository stats" });
+    const loading = page.getByRole("status", { name: /loading repository stats/i });
     await expect(loading).toBeVisible();
     const before = (await loading.boundingBox())!.height;
     answerRepo();
@@ -315,19 +315,19 @@ test.describe("A project page on a phone (final UI review)", () => {
     const after = (await page.locator(".repo-stats").boundingBox())!.height;
     expect(Math.abs(after - before), `${before}px loading, ${after}px loaded`).toBeLessThanOrEqual(1);
 
-    // The page never scrolls sideways, and the README hides none of itself
-    // past its card's edge: the table scrolls in a box of its own, and the
-    // URL wraps.
+    // The README stays on the screen, and hides none of itself past its own
+    // edge: the table scrolls in a box of its own, and the URL wraps. (The
+    // layout clips sideways overflow, so the page's scroll width can't tell.)
     const table = page.getByRole("table");
     await expect(table).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    const card = (await page.getByRole("article").boundingBox())!;
+    expect(card.x + card.width).toBeLessThanOrEqual(375);
     expect(
       await table.evaluate((el) => {
         const box = el.parentElement!;
         return getComputedStyle(box).overflowX === "auto" && box.scrollWidth > box.clientWidth;
       }),
     ).toBe(true);
-    const card = (await page.getByRole("article").boundingBox())!;
     const url = (await page.getByRole("link", { name: /example\.com/ }).boundingBox())!;
     expect(url.x + url.width).toBeLessThanOrEqual(card.x + card.width);
   });

@@ -94,7 +94,7 @@
 }
 
 .clear-filters:hover {
-  background: var(--secondary-color);
+  background: var(--hover-color);
 }
 
 /* Responsive */

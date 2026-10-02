@@ -81,7 +81,7 @@ describe("RepoStats while it loads", () => {
 
     const { container } = render(<RepoStats owner="owner" repoName="repo" />);
 
-    const loading = screen.getByRole("status", { name: "Loading repository stats" });
+    const loading = screen.getByRole("status", { name: /loading repository stats/i });
     // The loaded panel's own parts, so its height is the loaded one's...
     expect(loading.querySelector(".stats-grid .stat-item")).toBeInTheDocument();
     expect(loading.querySelector(".repo-meta")).toBeInTheDocument();

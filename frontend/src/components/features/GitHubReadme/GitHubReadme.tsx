@@ -24,11 +24,27 @@ import "./GitHubReadme.css";
 import "highlight.js/styles/github.css";
 
 /** A wide table scrolls in a box a keyboard can focus, like code. */
-function ReadmeTable({ children }: ComponentProps<"table">) {
+function ReadmeTable({ node: _node, ...props }: ComponentProps<"table"> & ExtraProps) {
   return (
     <div className="readme-table" tabIndex={0}>
-      <table>{children}</table>
+      <table {...props} />
     </div>
+  );
+}
+
+/**
+ * highlight.js makes the <code> inside the element that scrolls sideways, so
+ * that is what a keyboard must be able to focus.
+ */
+function ReadmeCodeBlock({ children }: ComponentProps<"pre">) {
+  return (
+    <pre className="readme-code-block">
+      {Children.map(children, (child) =>
+        isValidElement<{ tabIndex?: number }>(child)
+          ? cloneElement(child, { tabIndex: 0 })
+          : child,
+      )}
+    </pre>
   );
 }
 
@@ -161,17 +177,7 @@ export function GitHubReadme({
             ),
             table: ReadmeTable,
             input: TaskCheckbox,
-            // highlight.js makes the <code> inside the element that scrolls
-            // sideways, so that is what a keyboard must be able to focus.
-            pre: ({ children }) => (
-              <pre className="readme-code-block">
-                {Children.map(children, (child) =>
-                  isValidElement<{ tabIndex?: number }>(child)
-                    ? cloneElement(child, { tabIndex: 0 })
-                    : child,
-                )}
-              </pre>
-            ),
+            pre: ReadmeCodeBlock,
           }}
         >
           {readme.text}

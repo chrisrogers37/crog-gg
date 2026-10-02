@@ -48,7 +48,8 @@ export function ProjectsPage() {
   // the body switches: a skeleton while loading, an error naming the file if
   // that failed, and a line when there's nothing to show (#190 M23). The
   // filters stand above the skeleton too, so the grid doesn't drop when the
-  // projects arrive.
+  // projects arrive. Only "All" is known until then, so on a phone, where the
+  // categories wrap, it still drops by their extra rows.
   const status =
     projects.length > 0
       ? null
