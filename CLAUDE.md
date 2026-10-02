@@ -131,6 +131,7 @@ git diff                # Review changes before commit
 - Unit tests co-located with components in `__tests__` directories
 - E2E tests in `frontend/e2e/`
 - Mock external APIs in tests
+- Unit tests read the fictional `site.example/` (#191), through `virtual:site-config` and `@site/...`; never import the owner's `site/` by path, and say which `home` a test needs instead of assuming it. The owner's content rules live in `src/site-check/` (`npm run site:check`, the active site)
 
 ### E2E Test Philosophy (IMPORTANT)
 
@@ -140,6 +141,7 @@ Tests should verify **structure and behavior**, not specific content:
 - **DO**: Test that interactions work (clicking toggles state, forms accept input)
 - **DO**: Use flexible selectors that match patterns, not exact classes
 - **DO**: Skip tests gracefully when genuinely optional data (external APIs, live GitHub stats) isn't available
+- **DO**: Take tabs, routes and the card from `e2e/site.ts` (the active site), and skip with a structural reason when a site lacks what a test needs (a landing page, a second tab)
 - **DON'T**: Test for exact text content that changes frequently
 - **DON'T**: Hard-code copy like "hey there!" or "Welcome to my site"
 - **DON'T**: Skip or vacuously pass when repo-shipped content is missing - YAML under `site/public/content/` ships with the repo, so a page rendering without it is a bug to fail on, not an environment to tolerate (see #120, where skip-gates hid a live production bug)

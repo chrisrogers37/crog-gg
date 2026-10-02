@@ -16,15 +16,16 @@ Run what CI runs. None of it needs a secret.
 |---|---|---|
 | Lint | `npm run lint` | `frontend/` |
 | Type check (the app, the unit tests and e2e) | `npm run typecheck` | `frontend/` |
-| Unit tests | `npm run test:run` | `frontend/` |
-| E2E tests | `npm run test:e2e` | `frontend/` |
-| Build, with the prerendered heads | `npm run build` | `frontend/` |
+| Unit tests (on `site.example`), and the site's own checks (on `site/`) | `npm run test:run` | `frontend/` |
+| E2E tests, on both sites | `npm run test:e2e`, then `SITE_DIR=site.example npm run test:e2e` | `frontend/` |
+| Build, with the prerendered heads, and the fixture's check and build | `npm run build`, then `SITE_DIR=site.example npm run site:check && SITE_DIR=site.example npm run build` | `frontend/` |
 | API lint | `flake8 api --max-line-length=120 --ignore=E501,W503`, `black --check --line-length=120 api`, `isort --check-only --profile black api` | the repo root |
 | API tests | `python3 -m pytest -q` | the repo root |
 
 ## Writing tests
 
 - **E2E tests check structure and behaviour, not copy.** See "E2E Test Philosophy" in [CLAUDE.md](CLAUDE.md).
+- **No test pins the owner's content (#191).** Unit tests read `site.example/`, a fictional site, through `virtual:site-config` and `@site/`. The rules the owner's own content must meet are `src/site-check/`'s, and they run against the active site. E2E reads the active site's tabs and home from `e2e/site.ts`. So a fork's edits to `site/` can't turn a test red unless they break something.
 - **Break the code a new test guards, and watch the test fail.** A test that passes either way checks nothing.
 
 ## Pressing SUMMON NEW LORE on a preview

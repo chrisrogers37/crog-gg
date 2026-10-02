@@ -15,3 +15,5 @@ Third-party assets keep their own licenses. See [THIRD_PARTY_NOTICES.md](THIRD_P
 ## Forking
 
 You're welcome to fork this repository and build your own site from the code. Before you publish a fork, replace everything listed above with your own content, photos and links.
+
+The fictional site in `site.example/` is not personal content: it's dedicated to the public domain ([CC0](site.example/LICENSE)), so a fork can start from it.
