@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures";
 import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
-import { CLAUDLOBBY } from "./site";
+import { CLAUDLOBBY, FEATURED } from "./site";
 
 /**
  * Analytics in the production build (#177). Vercel serves the real script
@@ -56,4 +56,15 @@ test("reports each CTA click once, with where it was", async ({ page }) => {
     ["event", { name: "repo_click", data: { location: "quickstart" } }],
   ]);
   expect(await page.context().cookies()).toEqual([]);
+});
+
+test("reports the featured card's link into the repo, with where it was", async ({ page }) => {
+  test.skip(FEATURED !== "claudlobby", "the site doesn't feature Claudlobby");
+  await page.goto("/");
+  await page.locator(`#projects article.project-featured a[href="${REPO}"]`).click();
+
+  const events = await page.evaluate(() =>
+    (window.vaq ?? []).filter(([type]) => type === "event"),
+  );
+  expect(events).toEqual([["event", { name: "repo_click", data: { location: "featured" } }]]);
 });

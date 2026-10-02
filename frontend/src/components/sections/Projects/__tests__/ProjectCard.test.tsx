@@ -1,5 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { renderWithProviders, screen, within } from "../../../../test/utils";
+import { describe, it, expect, vi } from "vitest";
+import { fireEvent, renderWithProviders, screen, within } from "../../../../test/utils";
+import { CLAUDLOBBY_REPO } from "../../../../content/links";
+import { track } from "../../../../services/analytics";
 import { FeaturedProject } from "../FeaturedProject";
 import { ProjectCard } from "../ProjectCard";
 import type { Project } from "../../../../types";
@@ -13,6 +15,8 @@ const mockProject = makeProject({
   technologies: ["React", "TypeScript"],
   status: "active",
 });
+
+vi.mock("../../../../services/analytics", () => ({ track: vi.fn() }));
 
 // The card is a router link, so it renders inside the app's providers.
 const renderCard = (project: Project, headingLevel?: 2 | 3) =>
@@ -128,5 +132,20 @@ describe("FeaturedProject", () => {
   it("has no repo link when the project names no repo", () => {
     renderWithProviders(<FeaturedProject project={{ ...featured, github: undefined }} />);
     expect(screen.queryByRole("link", { name: "GitHub" })).not.toBeInTheDocument();
+  });
+
+  it("counts a click into Claudlobby's repo, from the featured card (#177)", () => {
+    renderWithProviders(<FeaturedProject project={{ ...featured, github: CLAUDLOBBY_REPO }} />);
+    const repo = screen.getByRole("link", { name: "GitHub" });
+    expect(repo).toHaveAttribute("href", CLAUDLOBBY_REPO);
+    expect(repo).toHaveAttribute("rel", "noopener noreferrer");
+    fireEvent.click(repo);
+    expect(vi.mocked(track).mock.calls).toEqual([[{ name: "repo_click", location: "featured" }]]);
+  });
+
+  it("counts no other repo: the events are Claudlobby's", () => {
+    renderWithProviders(<FeaturedProject project={featured} />);
+    fireEvent.click(screen.getByRole("link", { name: "GitHub" }));
+    expect(track).not.toHaveBeenCalled();
   });
 });
