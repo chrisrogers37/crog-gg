@@ -28,7 +28,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Fixed
 - A project page fits a phone: a README's wide table scrolls in a box of its own, and a long URL wraps. Pages take their width from the layout, not from their content, so `/projects` no longer widens as its projects arrive (#246).
-- Text on the primary and hover colours, the tech pills and the skill bubbles meets WCAG AA contrast in both themes, and a README's task-list checkboxes are named (#246).
+- Filled buttons and active tabs use the one filled-button colour in both themes, white on primary-600 as on the home page's button, so their text meets WCAG AA in the dark theme too. So do the tech pills and the skill bubbles, and a README's task-list checkboxes are named (#246).
 - The project stats and the `/projects` tiles keep their size when they load, and `/projects` shows its filters while it loads (#246).
 
 ### Removed

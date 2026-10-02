@@ -69,7 +69,7 @@
 .readme-content {
   padding: 1.5rem 2rem;
   /* A long URL or word wraps rather than pushing past the card. */
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .readme-content h1 {
@@ -157,7 +157,6 @@
 .readme-content table {
   width: 100%;
   border-collapse: collapse;
-  overflow-wrap: normal;
 }
 
 .readme-content th,

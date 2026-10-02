@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures";
 import { readProjects } from "../src/utils/projectLoader";
 import { githubRepo, isServedOwner } from "../src/utils/projectLinks";
+import type { ReadmeResponse, Repository } from "../src/services/githubService";
 import { site } from "./site";
 
 /**
@@ -211,7 +212,7 @@ const linkedProject = async (request: import("@playwright/test").APIRequestConte
 };
 
 /** GitHub's answer for a README, as the API passes it through. */
-const readmeAnswer = (text: string) => ({
+const readmeAnswer = (text: string): ReadmeResponse => ({
   content: Buffer.from(text).toString("base64"),
   encoding: "base64",
   sha: "0",
@@ -296,7 +297,7 @@ test.describe("A project page on a phone (final UI review)", () => {
           license: { name: "MIT License", spdx_id: "MIT" },
           pushed_at: "2026-09-30T12:00:00Z",
           topics: [],
-        },
+        } satisfies Partial<Repository>,
       });
     });
     await page.route("**/api/v1/github/readme/**", (route) =>

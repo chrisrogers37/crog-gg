@@ -4,8 +4,9 @@ import {
   isValidElement,
   useEffect,
   useState,
+  type ComponentProps,
 } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import {
@@ -21,6 +22,23 @@ import "./GitHubReadme.css";
 
 // Import highlight.js theme
 import "highlight.js/styles/github.css";
+
+/** A wide table scrolls in a box a keyboard can focus, like code. */
+function ReadmeTable({ children }: ComponentProps<"table">) {
+  return (
+    <div className="readme-table" tabIndex={0}>
+      <table>{children}</table>
+    </div>
+  );
+}
+
+/**
+ * A task list's checkbox says what it shows to a screen reader. With no raw
+ * HTML rendered, a task list is the only place a README has an input.
+ */
+function TaskCheckbox({ node: _node, ...props }: ComponentProps<"input"> & ExtraProps) {
+  return <input {...props} aria-label={props.checked ? "done" : "to do"} />;
+}
 
 interface GitHubReadmeProps {
   /** The repo's owner, from the project's own GitHub URL. */
@@ -141,19 +159,8 @@ export function GitHubReadme({
                 className="readme-image"
               />
             ),
-            // A wide table scrolls in a box a keyboard can focus, like code.
-            table: ({ children }) => (
-              <div className="readme-table" tabIndex={0}>
-                <table>{children}</table>
-              </div>
-            ),
-            // A task list's checkboxes say what they show to a screen reader.
-            input: ({ node: _node, ...props }) =>
-              props.type === "checkbox" ? (
-                <input {...props} aria-label={props.checked ? "done" : "to do"} />
-              ) : (
-                <input {...props} />
-              ),
+            table: ReadmeTable,
+            input: TaskCheckbox,
             // highlight.js makes the <code> inside the element that scrolls
             // sideways, so that is what a keyboard must be able to focus.
             pre: ({ children }) => (

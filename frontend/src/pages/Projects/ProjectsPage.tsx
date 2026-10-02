@@ -69,6 +69,34 @@ export function ProjectsPage() {
           </p>
         </header>
 
+        {(status === null || status === "loading") && (
+          <div className="projects-filters">
+            <input
+              type="search"
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={status === "loading"}
+              className="search-input"
+            />
+
+            <div className="category-filters">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`category-button ${
+                    selectedCategory === category ? "active" : ""
+                  }`}
+                >
+                  {category === "all" ? "All" : category}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {status === "loading" && <ProjectSkeletonGrid />}
         {typeof load === "object" && status === "error" && (
           <LoadError
             message={`The projects didn't load: ${load.error}.`}
@@ -80,59 +108,27 @@ export function ProjectsPage() {
             <p>No projects yet.</p>
           </div>
         )}
-        {(status === null || status === "loading") && (
-          <>
-            {/* Filters */}
-            <div className="projects-filters">
-              <input
-                type="search"
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={status === "loading"}
-                className="search-input"
-              />
-
-              <div className="category-filters">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`category-button ${
-                      selectedCategory === category ? "active" : ""
-                    }`}
-                  >
-                    {category === "all" ? "All" : category}
-                  </button>
-                ))}
-              </div>
+        {status === null &&
+          (filteredProjects.length > 0 ? (
+            <div className="projects-grid">
+              {filteredProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
             </div>
-
-            {/* Projects Grid */}
-            {status === "loading" ? (
-              <ProjectSkeletonGrid />
-            ) : filteredProjects.length > 0 ? (
-              <div className="projects-grid">
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-              </div>
-            ) : (
-              <div className="no-results">
-                <p>No projects match your search criteria.</p>
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("all");
-                  }}
-                  className="clear-filters"
-                >
-                  Clear filters
-                </button>
-              </div>
-            )}
-          </>
-        )}
+          ) : (
+            <div className="no-results">
+              <p>No projects match your search criteria.</p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                }}
+                className="clear-filters"
+              >
+                Clear filters
+              </button>
+            </div>
+          ))}
       </div>
     </>
   );

@@ -16,17 +16,18 @@ export function ProjectSkeletonGrid() {
         <div key={i} className="project-tile skeleton-tile" aria-hidden="true">
           <div className="project-tile-header skeleton-header" />
           <div className="project-tile-body">
-            <div className="project-tile-title skeleton-line skeleton-title-line">&nbsp;</div>
-            <div className="project-tile-description skeleton-line">
+            <div className="project-tile-title">&nbsp;</div>
+            <div className="project-tile-description">
               &nbsp;
               <br />
               &nbsp;
             </div>
             <div className="project-tile-tech">
-              <span className="project-tile-tech-pill skeleton-pill">&nbsp;</span>
-              <span className="project-tile-tech-pill skeleton-pill">&nbsp;</span>
-              <span className="project-tile-tech-pill skeleton-pill">&nbsp;</span>
-              <span className="project-tile-tech-pill skeleton-pill">&nbsp;</span>
+              {Array.from({ length: 4 }).map((_, j) => (
+                <span key={j} className="project-tile-tech-pill">
+                  &nbsp;
+                </span>
+              ))}
             </div>
           </div>
         </div>

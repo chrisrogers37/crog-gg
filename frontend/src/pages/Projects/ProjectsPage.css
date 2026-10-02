@@ -71,9 +71,9 @@
 }
 
 .category-button.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: var(--on-primary-color);
+  background: var(--button-color);
+  border-color: var(--button-color);
+  color: white;
 }
 
 /* No Results */
@@ -86,8 +86,8 @@
 .clear-filters {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: var(--on-primary-color);
+  background: var(--button-color);
+  color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;

@@ -115,16 +115,17 @@
   background: var(--border-color);
 }
 
-.skeleton-line {
+.skeleton-tile .project-tile-title,
+.skeleton-tile .project-tile-description {
   border-radius: 4px;
   background: var(--border-color);
 }
 
-.skeleton-title-line {
+.skeleton-tile .project-tile-title {
   width: 60%;
 }
 
-.skeleton-pill {
+.skeleton-tile .project-tile-tech-pill {
   width: 40px;
 }
 
