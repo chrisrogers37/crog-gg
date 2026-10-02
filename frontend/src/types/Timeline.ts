@@ -1,22 +1,7 @@
-export type TimelineEntryType = "role" | "education" | "milestone";
+import type { timelineShape } from "../config/contentSchema";
 
-export type TimelineEntry = {
-  type: TimelineEntryType;
-  title: string;
-  organization: string;
-  domain?: string;
-  start_date: string;
-  end_date: string;
-  one_liner: string;
-  skills: string[];
-};
-
-export type SkillCategory = {
-  color: string;
-  skills: string[];
-};
-
-export type TimelineData = {
-  entries: TimelineEntry[];
-  skill_categories: Record<string, SkillCategory>;
-};
+/** timeline.yaml, as checked (config/contentSchema.ts). */
+export type TimelineData = ReturnType<typeof timelineShape>;
+export type TimelineEntry = TimelineData["entries"][number];
+export type TimelineEntryType = TimelineEntry["type"];
+export type SkillCategory = TimelineData["skill_categories"][string];

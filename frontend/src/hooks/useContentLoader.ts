@@ -2,25 +2,13 @@ import { useEffect } from "react";
 import { useContentStore } from "../store";
 
 /**
- * Hook to load content on component mount.
- *
- * This hook should be called once at the app root level
- * to initialize the content store from YAML files.
- *
- * @example
- * function App() {
- *   useContentLoader();
- *   // ... rest of app
- * }
+ * Loads the content once, at the app root (Layout). Each part's load is in
+ * the store (`useLoad`), since each section shows its own (#190 M23).
  */
 export function useContentLoader() {
   const loadContent = useContentStore((state) => state.loadContent);
-  const isLoading = useContentStore((state) => state.isLoading);
-  const error = useContentStore((state) => state.error);
 
   useEffect(() => {
     loadContent();
   }, [loadContent]);
-
-  return { isLoading, error };
 }

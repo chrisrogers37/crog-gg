@@ -36,7 +36,7 @@ const seed = () =>
     experience: [],
     education: [],
     isRegenerating: false,
-    error: null,
+    loads: { bio: "ready", timeline: "ready", projects: "ready" },
     regenerationError: null,
     cooldownEndsAt: null,
     cooldownTotal: 0,
@@ -188,14 +188,15 @@ describe("regenerateContent", () => {
   });
 
   it("does not set the fatal error on a failed regeneration", async () => {
-    // The white-screen regression: `error` drives AboutPage's full-page error
-    // screen, so putting a transient failure there unmounted a working page.
+    // The white-screen regression: a failed bio load drives AboutPage's
+    // full-page error screen, so putting a transient failure there unmounted
+    // a working page.
     respondWith({ success: false, error: "nope" });
 
     await useContentStore.getState().regenerateContent(true);
 
     const state = useContentStore.getState();
-    expect(state.error).toBeNull();
+    expect(state.loads.bio).toBe("ready");
     expect(state.regenerationError).toBeTruthy();
     expect(state.bio).toEqual(BIO);
   });
@@ -207,7 +208,7 @@ describe("regenerateContent", () => {
 
     await useContentStore.getState().regenerateContent(true);
 
-    expect(useContentStore.getState().error).toBeNull();
+    expect(useContentStore.getState().loads.bio).toBe("ready");
     expect(useContentStore.getState().regenerationError).toBeTruthy();
   });
 
@@ -291,9 +292,9 @@ describe("regenerateContent", () => {
     const message = useContentStore.getState().regenerationError;
     expect(message).toBeTruthy();
     expect(message).toMatch(/loading/i);
-    // Transient, not fatal: `error` unmounts the page for a full-screen retry
-    // screen, and there is nothing wrong with the page.
-    expect(useContentStore.getState().error).toBeNull();
+    // Transient, not fatal: a failed bio load unmounts the page for a
+    // full-screen retry screen, and there is nothing wrong with the page.
+    expect(useContentStore.getState().loads.bio).toBe("ready");
   });
 
   /**
@@ -329,7 +330,7 @@ describe("regenerateContent", () => {
 
       const state = useContentStore.getState();
       expect(state.bio).toEqual(BIO);
-      expect(state.error).toBeNull();
+      expect(state.loads.bio).toBe("ready");
       expect(state.regenerationError).toBeTruthy();
     });
 
@@ -517,7 +518,6 @@ describe("a rewritten bio is merged, not swapped in", () => {
     tagline: "i build things that build things",
     location: "Brooklyn",
     about_text: "original",
-    email: "hello@example.com",
   });
 
   beforeEach(() => {

@@ -6,10 +6,8 @@ import type { BioData, Education, Employment } from "../types";
 
 export const makeBio = (overrides: Partial<BioData> = {}): BioData => ({
   display_name: "Test User",
-  email: "test@example.com",
   location: "Somewhere",
   about_text: "About me.",
-  social_links: { github: "", hoobe: "", spotify: "", linkedin: "" },
   ...overrides,
 });
 

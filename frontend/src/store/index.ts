@@ -3,11 +3,11 @@ export {
   useContentStore,
   useBio,
   useProjects,
-  useIsLoading,
-  useContentError,
+  useLoad,
   useRegenerationError,
   useTimeline,
 } from "./contentStore";
+export type { Load, LoadedContent } from "./contentStore";
 
 export {
   useUIStore,

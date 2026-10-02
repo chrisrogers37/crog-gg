@@ -13,13 +13,5 @@ technologies:
   - SwiftUI
   - React
   - Vite
-featured: true
-order: 2
 status: active
 gradient: "linear-gradient(135deg, #d4749c 0%, #1a1a2e 100%)"
-tags:
-  - macos
-  - menubar
-  - power-management
-  - swift
-  - open-source

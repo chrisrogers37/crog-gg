@@ -12,12 +12,4 @@ technologies:
   - LLM
   - RAG
   - Streamlit
-featured: true
-order: 4
 status: active
-tags:
-  - ai
-  - llm
-  - email
-  - automation
-  - rag

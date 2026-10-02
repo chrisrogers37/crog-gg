@@ -1,48 +1,24 @@
 /**
  * The shape of site/site.yaml, the owner's identity (#188), and the check that
- * holds a file to it.
- *
- * Each field is a small check that records "path: problem" and carries on, so
- * one run reports every mistake rather than the first. A key the shape doesn't
- * name is a mistake too, so a misspelt key fails instead of being ignored.
- * The SiteConfig type is inferred from the same shape.
+ * holds a file to it, built from the checks in check.ts. The SiteConfig type
+ * is inferred from the same shape.
  */
 
-type Check<T> = (value: unknown, path: string, issues: string[]) => T;
-
-const at = (path: string, key: string | number) =>
-  path ? `${path}.${key}` : String(key);
-
-/** Records a problem and returns a placeholder, which no caller keeps. */
-function fail<T>(
-  issues: string[],
-  path: string,
-  value: unknown,
-  expected: string,
-): T {
-  const where = path || "the file";
-  issues.push(`${where}: ${value === undefined ? "missing" : `expected ${expected}`}`);
-  return undefined as T;
-}
-
-const text: Check<string> = (value, path, issues) =>
-  typeof value === "string" && value.trim() !== ""
-    ? value
-    : fail(issues, path, value, "text");
-
-const matching =
-  (pattern: RegExp, expected: string): Check<string> =>
-  (value, path, issues) =>
-    typeof value === "string" && pattern.test(value)
-      ? value
-      : fail(issues, path, value, expected);
-
-const httpsUrl: Check<string> = (value, path, issues) => {
-  if (typeof value === "string" && URL.canParse(value)) {
-    if (new URL(value).protocol === "https:") return value;
-  }
-  return fail(issues, path, value, "an https URL");
-};
+import {
+  type Check,
+  describeProblems,
+  fail,
+  httpsUrl,
+  list,
+  matching,
+  object,
+  oneOf,
+  optional,
+  positiveInteger,
+  sitePath,
+  slug,
+  text,
+} from "./check";
 
 /** An https origin with no path, so `${url}/about` is a URL. */
 const origin: Check<string> = (value, path, issues) =>
@@ -53,68 +29,10 @@ const origin: Check<string> = (value, path, issues) =>
     ? value
     : fail(issues, path, value, "an https origin with no path or trailing slash");
 
-/** A path the site serves, from site/public: "/og-image.png". Not "//host/x". */
-const sitePath = matching(/^\/(?!\/)\S+$/, 'a path that starts with one "/"');
-
 const email = matching(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "an email address");
-
-const slug = matching(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "a lowercase id (a-z, 0-9, -)");
 
 /** What GitHub accepts as a username or organisation. */
 const githubName = matching(/^[A-Za-z0-9-]{1,39}$/, "a GitHub username");
-
-const positiveInteger: Check<number> = (value, path, issues) =>
-  Number.isInteger(value) && (value as number) > 0
-    ? (value as number)
-    : fail(issues, path, value, "a positive whole number");
-
-const oneOf =
-  <const T extends string>(allowed: readonly T[]): Check<T> =>
-  (value, path, issues) =>
-    allowed.includes(value as T)
-      ? (value as T)
-      : fail(issues, path, value, `one of ${allowed.join(", ")}`);
-
-/** Absent, null and "" all mean "not set". */
-const optional =
-  <T>(check: Check<T>): Check<T | undefined> =>
-  (value, path, issues) =>
-    value === undefined || value === null || value === ""
-      ? undefined
-      : check(value, path, issues);
-
-const list =
-  <T>(item: Check<T>, { min = 0 } = {}): Check<T[]> =>
-  (value, path, issues) => {
-    if (!Array.isArray(value)) return fail(issues, path, value, "a list");
-    if (value.length < min) {
-      issues.push(`${path}: expected at least ${min}`);
-    }
-    return value.map((entry, index) => item(entry, at(path, index), issues));
-  };
-
-type Shape = Record<string, Check<unknown>>;
-type Parsed<S extends Shape> = { [K in keyof S]: ReturnType<S[K]> };
-
-const object =
-  <S extends Shape>(shape: S): Check<Parsed<S>> =>
-  (value, path, issues) => {
-    if (typeof value !== "object" || value === null || Array.isArray(value)) {
-      return fail(issues, path, value, "a mapping");
-    }
-    const record = value as Record<string, unknown>;
-    for (const key of Object.keys(record)) {
-      // Own keys only, so "constructor" or "toString" isn't taken as known.
-      if (!Object.prototype.hasOwnProperty.call(shape, key)) {
-        issues.push(`${at(path, key)}: unknown key`);
-      }
-    }
-    const parsed: Record<string, unknown> = {};
-    for (const [key, check] of Object.entries(shape)) {
-      parsed[key] = check(record[key], at(path, key), issues);
-    }
-    return parsed as Parsed<S>;
-  };
 
 /** The places a social link can show, and the icons the surfaces draw. */
 export const SOCIAL_PLACES = ["footer", "menu", "contact", "music", "schema"] as const;
@@ -261,7 +179,7 @@ function crossCheck(config: SiteConfig, issues: string[]) {
 
 export class SiteConfigError extends Error {
   constructor(source: string, issues: string[]) {
-    super(`${source} has ${issues.length} problem(s):\n${issues.map((issue) => `  - ${issue}`).join("\n")}`);
+    super(describeProblems(source, issues));
     this.name = "SiteConfigError";
   }
 }

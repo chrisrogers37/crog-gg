@@ -11,8 +11,6 @@ const mockProject: Project = {
   icon: "\u{1F680}",
   category: "web-app",
   technologies: ["React", "TypeScript"],
-  featured: false,
-  order: 1,
   status: "active",
   gradient: "linear-gradient(135deg, #000 0%, #333 100%)",
 };

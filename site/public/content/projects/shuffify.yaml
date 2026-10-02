@@ -12,12 +12,5 @@ technologies:
   - TypeScript
   - Spotify API
   - Node.js
-featured: true
-order: 3
 status: active
 gradient: "linear-gradient(135deg, #1DB954 0%, #191414 100%)"
-tags:
-  - music
-  - spotify
-  - playlist-management
-  - web-app

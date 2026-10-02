@@ -1,17 +1,7 @@
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  icon: string;
-  category: string;
-  technologies: string[];
-  featured: boolean;
-  order: number;
-  image?: string;
-  gradient?: string;
-  github?: string;
-  demo?: string;
-  status?: "active" | "archived" | "experimental";
-  tags?: string[];
-}
+import type { RawProject } from "../config/contentSchema";
+
+/**
+ * A project as the site shows it: its file's fields (config/contentSchema.ts),
+ * with `url` always set.
+ */
+export type Project = Omit<RawProject, "url"> & { url: string };

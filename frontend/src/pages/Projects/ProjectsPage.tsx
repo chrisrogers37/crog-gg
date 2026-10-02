@@ -1,10 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  useProjects,
-  useIsLoading,
-  useContentError,
-  useContentStore,
-} from "../../store";
+import { useProjects, useLoad, useContentStore } from "../../store";
 import { LoadError } from "../../components/common/LoadError";
 import { ProjectCard } from "../../components/sections/Projects/ProjectCard";
 import { ProjectSkeletonGrid } from "../../components/sections/Projects/Projects";
@@ -20,9 +15,8 @@ import "./ProjectsPage.css";
  */
 export function ProjectsPage() {
   const projects = useProjects();
-  const isLoading = useIsLoading();
-  const error = useContentError();
-  const loadContent = useContentStore((s) => s.loadContent);
+  const load = useLoad("projects");
+  const reloadProjects = useContentStore((s) => s.reloadProjects);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -51,9 +45,16 @@ export function ProjectsPage() {
   }, [projects, searchQuery, selectedCategory]);
 
   // The page's shell, heading and head tags are the same in every state; only
-  // the body switches: a skeleton while loading, an error if that failed.
+  // the body switches: a skeleton while loading, an error naming the file if
+  // that failed, and a line when there's nothing to show (#190 M23).
   const status =
-    projects.length > 0 ? null : isLoading ? "loading" : error ? "error" : null;
+    projects.length > 0
+      ? null
+      : load === "loading"
+        ? "loading"
+        : typeof load === "object"
+          ? "error"
+          : "empty";
 
   return (
     <>
@@ -67,11 +68,16 @@ export function ProjectsPage() {
         </header>
 
         {status === "loading" && <ProjectSkeletonGrid />}
-        {status === "error" && (
+        {status === "error" && typeof load === "object" && (
           <LoadError
-            message="Failed to load projects. Please try again."
-            onRetry={() => loadContent()}
+            message={`The projects didn't load: ${load.error}.`}
+            onRetry={() => reloadProjects()}
           />
+        )}
+        {status === "empty" && (
+          <div className="no-results">
+            <p>No projects yet.</p>
+          </div>
         )}
         {status === null && (
           <>

@@ -1,6 +1,5 @@
 # A fictional bio (site.example, #191). See documentation/CONTENT.md.
 display_name: Ada Example
-email: ada@example.com
 location: Exampleton
 
 tagline: |
@@ -15,8 +14,3 @@ about_text: |
 
   if you're forking this site, copy this folder, rename it site, and make it yours. then press ASK AGAIN to see what the model makes of you.
 
-social_links:
-  github: https://example.com/ada/code
-  hoobe: https://example.com/ada/links
-  spotify: https://example.com/ada/music
-  linkedin: https://example.com/ada/work

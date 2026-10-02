@@ -167,7 +167,7 @@ await expect(welcomeArea).toBeVisible();
 - Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules, on the copy and on `/`'s title, meta description, share card and JSON-LD: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `site/public/content/projects/` directory
-- Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime
+- Loading chain: `contentStore.loadContent` → `utils/*Loader.ts` → YAML files at runtime, each held to its shape in `config/contentSchema.ts` (#190); a file that fails takes down only its own section
 - Each file's fields, where it shows and its gotchas: [documentation/CONTENT.md](documentation/CONTENT.md)
 
 ## Design System
