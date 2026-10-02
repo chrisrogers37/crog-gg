@@ -11,7 +11,6 @@ export const {
   pageTitle,
   headTags,
   HOME_META,
-  ABOUT_META,
   PROJECTS_META,
   NOT_FOUND_META,
   projectMeta,

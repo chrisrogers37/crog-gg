@@ -25,11 +25,17 @@ const githubServed = () => useUIStore.setState({ features: { regenerate: false, 
 /** The tests' site's GitHub owner (site.example's github.username). */
 const OWNER = site.github.username;
 
-const BENZO = {
+// Whole, as the loader hands them over: `url` and `technologies` always set.
+const BENZO: Project = {
   id: "benzo",
   title: "Benzo",
   description: "A project",
-} as Project;
+  url: "https://benzo.example",
+  icon: "\u{1F319}",
+  category: "native-app",
+  technologies: [],
+  featured: false,
+};
 
 const renderAt = (entries: string[]) => {
   const router = createMemoryRouter(
@@ -110,13 +116,12 @@ describe("ProjectDetailPage's Go Back", () => {
  */
 describe("ProjectDetailPage across projects", () => {
   it("doesn't carry a crashed section over to the next project", async () => {
-    const project = (id: string): Project =>
-      ({
-        id,
-        title: id,
-        description: "A project",
-        url: `https://github.com/${OWNER}/${id}`,
-      }) as Project;
+    const project = (id: string): Project => ({
+      ...BENZO,
+      id,
+      title: id,
+      url: `https://github.com/${OWNER}/${id}`,
+    });
     useContentStore.setState({
       projects: [project("alpha"), project("beta")],
       loads: { ...INITIAL.loads, projects: "ready" },
@@ -164,10 +169,10 @@ describe("ProjectDetailPage across projects", () => {
  * answer, and then only for an owner it serves.
  */
 describe("ProjectDetailPage's GitHub panels", () => {
-  const LINKED = { ...BENZO, github: `https://github.com/${OWNER.toUpperCase()}/benzo` } as Project;
+  const LINKED: Project = { ...BENZO, github: `https://github.com/${OWNER.toUpperCase()}/benzo` };
   const panels = () => [
-    screen.queryByRole("heading", { name: /repository stats/i }),
-    screen.queryByRole("heading", { name: /documentation/i }),
+    screen.queryByRole("heading", { name: /^repository$/i }),
+    screen.queryByRole("heading", { name: /^readme$/i }),
   ];
 
   beforeEach(() => {
@@ -207,7 +212,7 @@ describe("ProjectDetailPage's GitHub panels", () => {
   it("hides them for an owner the API doesn't serve", () => {
     githubServed();
     useContentStore.setState({
-      projects: [{ ...BENZO, github: "https://github.com/someone-else/benzo" } as Project],
+      projects: [{ ...BENZO, github: "https://github.com/someone-else/benzo" }],
     });
     renderAt(["/projects/benzo"]);
     for (const panel of panels()) expect(panel).not.toBeInTheDocument();

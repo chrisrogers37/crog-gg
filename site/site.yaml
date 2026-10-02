@@ -30,11 +30,9 @@ site:
 github:
   # Whose public repos the project pages' stats and READMEs come from.
   username: chrisrogers37
-
-# What / shows. landing: the Claudlobby landing page, with the personal page at
-# /about. profile: the personal page itself, and no landing page or Claudlobby
-# links.
-home: landing
+  # Other owners whose public repos a project may link: Claudlobby's org.
+  allowed_owners:
+    - Claudfather
 
 seo:
   # Appended to every page's title.
@@ -44,7 +42,7 @@ seo:
     path: /og-image.png
     width: 1200
     height: 630
-    alt: Build a dark factory. Claudlobby runs a fleet of always-on Claude Code agents on your own hardware, composed from one fleet.yaml.
+    alt: i build things that build things. data, agent fleets and music.
   about:
     description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
   projects:
@@ -95,18 +93,18 @@ footer:
   # Leave it empty for no link.
   source_repo_url: https://github.com/chrisrogers37/crog-gg
 
-# /about's tabs, in order. The ids are fixed (about, journey, projects, music),
-# and about is required, since the collapsed preview is About's; leave another
-# out to hide it.
+# The home page's sections, in order; each label is its heading. The ids are
+# fixed (about, journey, projects, music), and about is required, since it's
+# the text SUMMON rewrites; leave another out to hide it.
 sections:
   - id: about
-    label: About
+    label: about
   - id: journey
-    label: Journey
+    label: journey
   - id: projects
-    label: Projects
+    label: projects
   - id: music
-    label: Music
+    label: music
 
 hero:
   # Photos in site/public/profile-photos/, without the size suffix: one is
@@ -147,13 +145,6 @@ regenerate:
   # Asked of every rewrite, word for word (a request, not a check).
   style_rules:
     - "Never use an em dash (\u2014) or an en dash (\u2013), in any field. Where you would reach for one, use a comma, a colon, a full stop or an ellipsis. This holds in every register, including ones whose form would normally invite one."
-
-about:
-  # Where the collapsed About text fades, in px, tuned to today's text in
-  # content/bio.yaml. Re-measure both after editing it (#162).
-  preview_height:
-    narrow: 449
-    wide: 329
 
 contact:
   heading: connect w/ me

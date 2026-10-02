@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { LANDING } from "./site";
+import { CLAUDLOBBY } from "./site";
 
 /**
  * Analytics in the production build (#177). Vercel serves the real script
@@ -27,12 +27,12 @@ test("loads the analytics script from the site's own origin", async ({
 });
 
 test("reports each CTA click once, with where it was", async ({ page }) => {
-  test.skip(!LANDING, "the calls to action are the landing page's");
-  await page.goto("/");
+  test.skip(!CLAUDLOBBY, "the calls to action are Claudlobby's page's");
+  await page.goto("/projects/claudlobby");
 
-  await page.locator(`.cl-hero a[href="${REPO}"]`).click();
-  await page.locator('.cl-hero a[href="#quickstart"]').click();
-  await page.locator(`footer a[href="${REPO}"]`).click();
+  await page.locator(`.page-hero a[href="${REPO}"]`).click();
+  await page.locator('.page-hero a[href="#quickstart"]').click();
+  await page.locator(`#quickstart a[href="${REPO}#quick-start"]`).click();
 
   // The filter the real script is handed keeps utm_* tags and drops every
   // other query parameter and the fragment...
@@ -53,7 +53,7 @@ test("reports each CTA click once, with where it was", async ({ page }) => {
   expect(events).toEqual([
     ["event", { name: "repo_click", data: { location: "hero" } }],
     ["event", { name: "quickstart_click", data: {} }],
-    ["event", { name: "repo_click", data: { location: "footer" } }],
+    ["event", { name: "repo_click", data: { location: "quickstart" } }],
   ]);
   expect(await page.context().cookies()).toEqual([]);
 });

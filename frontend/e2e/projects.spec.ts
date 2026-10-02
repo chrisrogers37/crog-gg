@@ -2,7 +2,7 @@ import { test, expect } from "./fixtures";
 import { readProjects } from "../src/utils/projectLoader";
 import { githubRepo, isServedOwner } from "../src/utils/projectLinks";
 import type { ReadmeResponse, Repository } from "../src/services/githubService";
-import { site } from "./site";
+import { FEATURED, site } from "./site";
 
 /**
  * Projects Page E2E Tests
@@ -14,117 +14,54 @@ import { site } from "./site";
  * skip around (#120 - the skip idiom hid a live production bug).
  */
 
-test.describe("Projects Page Structure", () => {
+test.describe("Projects page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/projects");
     await page.waitForLoadState("networkidle");
   });
 
   test("displays page header", async ({ page }) => {
-    // Page should have a main heading
-    const heading = page.locator("h1");
-    await expect(heading).toBeVisible();
+    await expect(page.locator("h1")).toBeVisible();
   });
 
-  test("displays search input", async ({ page }) => {
-    // The search box shows while the projects load, and once they have
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="earch"]',
-    );
-    await expect(searchInput).toBeVisible();
-  });
-
-  test("displays filter buttons", async ({ page }) => {
-    const filterButtons = page.locator(
-      ".category-button, .category-filters button",
-    );
-    await expect(filterButtons.first()).toBeVisible();
-  });
-
-  test("search input accepts text", async ({ page }) => {
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="earch"]',
-    );
-    await expect(searchInput).toBeVisible();
-
-    await searchInput.fill("test query");
-    await expect(searchInput).toHaveValue("test query");
-  });
-});
-
-test.describe("Projects Page with Data", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/projects");
-    await page.waitForLoadState("networkidle");
+  test("shows the featured project first, larger, with a way to its page", async ({ page }) => {
+    test.skip(!FEATURED, "index.yaml features no project");
+    const featured = page.locator("article.project-featured");
+    await expect(featured).toBeVisible();
+    await expect(featured.locator(`a[href="/projects/${FEATURED}"]`)).toBeVisible();
+    // Above every other card.
+    const featuredBox = await featured.boundingBox();
+    const firstCard = await page.locator("a.project-card").first().boundingBox();
+    expect(featuredBox!.y).toBeLessThan(firstCard!.y);
   });
 
   test("project cards link to detail pages", async ({ page }) => {
-    const projectCards = page.locator("a.project-tile");
+    const projectCards = page.locator("a.project-card");
     await expect(projectCards.first()).toBeVisible();
-    await expect(projectCards.first()).toHaveAttribute(
-      "href",
-      /\/projects\/.+/,
-    );
+    await expect(projectCards.first()).toHaveAttribute("href", /\/projects\/.+/);
   });
 
   test("clicking project card navigates to detail", async ({ page }) => {
-    const projectCards = page.locator("a.project-tile");
+    const projectCards = page.locator("a.project-card");
     await expect(projectCards.first()).toBeVisible();
     await projectCards.first().click();
-    // Should navigate to a project detail URL
     await expect(page).toHaveURL(/\/projects\/.+/);
   });
-});
 
-test.describe("Projects Filtering Behavior", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/projects");
-    await page.waitForLoadState("networkidle");
-  });
-
-  test("filter buttons toggle active state", async ({ page }) => {
-    const filterButtons = page.locator(
-      ".category-button, .category-filters button",
+  test("lists every project once: the featured one, and a card for each other", async ({
+    page,
+    request,
+  }) => {
+    const projects = await readProjects(async (file) =>
+      (await request.get(`/content/projects/${file}`)).text(),
     );
-    // "All" plus at least one real category; a lone button means the
-    // category data vanished, which is a failure, not a variant to tolerate
-    const secondButton = filterButtons.nth(1);
-    await expect(secondButton).toBeVisible();
-
-    await secondButton.click();
-    await expect(secondButton).toHaveClass(/\bactive\b/);
-  });
-
-  test("search clears properly", async ({ page }) => {
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="earch"]',
+    await expect(page.locator("a.project-card").first()).toBeVisible();
+    const cards = await page.locator("a.project-card").evaluateAll((links) =>
+      links.map((link) => link.getAttribute("href")),
     );
-    await expect(searchInput).toBeVisible();
-
-    // Type something
-    await searchInput.fill("test");
-    await expect(searchInput).toHaveValue("test");
-
-    // Clear it
-    await searchInput.fill("");
-    await expect(searchInput).toHaveValue("");
-  });
-
-  test("no results state shows message or empty grid", async ({ page }) => {
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="earch"]',
+    expect(cards).toEqual(
+      projects.filter((project) => !project.featured).map((project) => `/projects/${project.id}`),
     );
-    await expect(searchInput).toBeVisible();
-
-    // Search for something that won't match
-    await searchInput.fill("xyznonexistent123456789");
-
-    // Zero matches renders the no-results affordance in place of the grid
-    const noResults = page.locator(
-      '.no-results, [class*="no-results"], [class*="empty"]',
-    );
-    await expect(noResults.first()).toBeVisible();
-    await expect(page.locator("a.project-tile")).toHaveCount(0);
   });
 });
 
@@ -133,7 +70,7 @@ test.describe("Project Detail Page", () => {
     await page.goto("/projects");
     await page.waitForLoadState("networkidle");
 
-    const projectCards = page.locator("a.project-tile");
+    const projectCards = page.locator("a.project-card");
     await expect(projectCards.first()).toBeVisible();
     await projectCards.first().click();
     await expect(page).toHaveURL(/\/projects\/.+/);
@@ -189,9 +126,10 @@ test.describe("Project Detail Page", () => {
     await expect(
       page.getByRole("status", { name: "Loading project" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { level: 1, name: project.title }),
-    ).toBeVisible({ timeout: 10_000 });
+    // Its own head names it, whatever its page's headline says (a project
+    // with a page of its own heads it with its own line).
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 10_000 });
+    await expect(page).toHaveTitle(new RegExp(`^${project.title} \\|`));
     expect(
       await page.evaluate(
         () => (window as unknown as { __sawNotFound: boolean }).__sawNotFound,
@@ -200,14 +138,22 @@ test.describe("Project Detail Page", () => {
   });
 });
 
-/** The first project that links a repo the API serves, or none. */
+/**
+ * The first project that links a repo in the owner's own GitHub account, or
+ * none. The owner's own, because an allowed org's project (Claudlobby's) has
+ * a page of its own, without the standard page's GitHub panels.
+ */
 const linkedProject = async (request: import("@playwright/test").APIRequestContext) => {
   const projects = await readProjects(async (file) =>
     (await request.get(`/content/projects/${file}`)).text(),
   );
   return projects.find((project) => {
     const repo = githubRepo(project);
-    return repo && isServedOwner(site, repo.owner);
+    return (
+      repo &&
+      isServedOwner(site, repo.owner) &&
+      repo.owner.toLowerCase() === site.github.username.toLowerCase()
+    );
   });
 };
 
@@ -346,15 +292,21 @@ test.describe("/projects while the projects load (final UI review)", () => {
     const skeleton = page.getByRole("status", { name: /loading projects/i });
     await expect(skeleton).toBeVisible();
     const before = (await skeleton.boundingBox())!;
+    const gridBefore = (await skeleton.locator(".projects-grid").boundingBox())!;
     release();
-    await expect(page.locator("a.project-tile").first()).toBeVisible();
-    const after = (await page.locator(".projects-grid").boundingBox())!;
+    await expect(page.locator("a.project-card").first()).toBeVisible();
+    const after = (await page.getByRole("region", { name: "Projects" }).boundingBox())!;
 
-    // Same place and width: the filters stood above the skeleton too, and the
-    // page's width doesn't follow its content.
+    // The projects start where the skeleton stood, at its width: the page's
+    // width doesn't follow its content.
     expect(after.y).toBeCloseTo(before.y, 0);
     expect(after.x).toBeCloseTo(before.x, 0);
     expect(after.width).toBeCloseTo(before.width, 0);
+    // And the cards where the skeleton's were, the featured card's height held.
+    if (FEATURED) {
+      const gridAfter = (await page.locator(".projects-grid").boundingBox())!;
+      expect(gridAfter.y).toBeCloseTo(gridBefore.y, 0);
+    }
   });
 });
 

@@ -27,12 +27,12 @@ This replaces `site/` with a copy of `site.example/`, a fictional site in the sa
 
 ## 3. Make it yours
 
-- **`site/site.yaml`**: who the site is: your name, URL, socials, the copy around the content, which tabs show, and SUMMON NEW LORE's words and persona. The build checks it and names any key that's wrong; [CONTENT.md](documentation/CONTENT.md#sitesiteyaml) describes every field.
-- **`site/public/content/`**: the bio, the timeline, the projects (`projects/index.yaml` lists them, in order) and the photo strip. Each file is checked as it loads, and names what's wrong ([CONTENT.md](documentation/CONTENT.md)).
+- **`site/site.yaml`**: who the site is: your name, URL, socials, the copy around the content, which sections the home page shows, and SUMMON NEW LORE's words and persona. The build checks it and names any key that's wrong; [CONTENT.md](documentation/CONTENT.md#sitesiteyaml) describes every field.
+- **`site/public/content/`**: the bio, the timeline, the projects (`projects/index.yaml` lists them, in order, and `featured` names the one shown first and largest) and the photo strip. Each file is checked as it loads, and names what's wrong ([CONTENT.md](documentation/CONTENT.md)).
 - **`site/public/`**'s images: one logo PNG per timeline domain in `logos/`, `manifest.json`, the favicons and the app icons.
 - **The photos.** The owner's originals are in `frontend/scripts/photos/originals/`, outside `site/`: delete them, put yours there, and run `python frontend/scripts/photos/make-variants.py`, which writes each one's 160, 320 and 480 px WebP variants into `site/public/profile-photos/` (and only then are they served). Point `hero.photos` in `site/site.yaml` and `showcase.yaml` at them, and replace `site/public/profile-photo.jpg`.
 - **The social card**, `site/public/og-image.png` (1200 x 630): replace it, and keep `seo.image.alt` in `site/site.yaml` in step with what it says. This site renders its own from an HTML page (`frontend/scripts/og-image/render.mjs`); the example has none to render.
-- **`/`**: `home: profile` (the example's) makes your personal page the home page. `home: landing` is this site's Claudlobby landing page: to keep a landing page of your own, replace `frontend/src/content/claudlobby.ts`, the sections in `frontend/src/components/sections/Claudlobby/`, and the landing page's head (`HOME_META` in `frontend/src/seo/site.ts`).
+- **A project with a page of its own.** Every project gets the standard page, unless `frontend/src/content/projectPages.ts` gives its id one of its own, as this site does for Claudlobby. A site whose projects don't include `claudlobby` never shows that page, so you can leave it, or delete it with `frontend/src/content/claudlobby.ts` and `frontend/src/components/sections/Claudlobby/`.
 
 Then check it:
 

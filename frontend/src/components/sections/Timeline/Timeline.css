@@ -1,6 +1,6 @@
 /* Timeline Container */
 .timeline-container {
-  padding: 1rem 0;
+  padding: 0;
 }
 
 .timeline-layout {
@@ -85,23 +85,19 @@
 }
 
 /* Timeline Card */
+/* The site's card (index.css's .card): a border, no shadow. */
 .timeline-card {
   max-width: 100%;
   padding: 1rem 1.25rem;
   background: var(--card-background);
   border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  border-radius: 8px;
+  transition: border-color 0.2s;
   flex: 1;
 }
 
 .timeline-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-color: var(--primary-color);
-  transform: translateY(-1px);
 }
 
 .timeline-card-header {
@@ -155,9 +151,10 @@
   position: relative;
 }
 
+/* Below the sticky header. */
 .timeline-skills-sticky {
   position: sticky;
-  top: 2rem;
+  top: 5rem;
 }
 
 .timeline-skills-heading {

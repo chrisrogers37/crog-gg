@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  ABOUT_META,
   HOME_META,
   NOT_FOUND_META,
   PROJECTS_META,
@@ -43,10 +42,10 @@ describe("headTags", () => {
     expect(tagValue(HOME_META, "og:image:height")).toBe(String(site.seo.image.height));
   });
 
-  it("names the page first, then the site", () => {
-    // The front door is Claudlobby's, so its tab and share titles say so.
-    expect(pageTitle(HOME_META)).toMatch(/^Claudlobby \| /);
+  it("names the page first, then the site; home is the site's name alone", () => {
     expect(pageTitle(PROJECTS_META)).toMatch(/^Projects \| /);
+    // The owner's page is the home page, and the site name already says who.
+    expect(pageTitle(HOME_META)).toBe(site.seo.site_name);
   });
 
   it("keeps canonical and og:url off a page that must not be indexed", () => {
@@ -108,7 +107,7 @@ describe("the Person schema's role", () => {
       ...site,
       owner: { ...site.owner, works_for: { name: "Example Co", url: "https://example.com" } },
     });
-    expect(employed.ABOUT_META.schemas?.[0]).toMatchObject({
+    expect(employed.HOME_META.schemas?.[0]).toMatchObject({
       jobTitle: site.owner.job_title,
       worksFor: { "@type": "Organization", name: "Example Co", url: "https://example.com" },
     });
@@ -117,7 +116,7 @@ describe("the Person schema's role", () => {
 
 describe("the Person schema's sameAs", () => {
   it("lists exactly the schema socials, in order", () => {
-    const person = ABOUT_META.schemas?.[0] as { sameAs: string[] };
+    const person = HOME_META.schemas?.[0] as { sameAs: string[] };
     expect(person.sameAs).toEqual(
       site.socials
         .filter((social) => social.show_in.includes("schema"))
@@ -144,7 +143,7 @@ describe("createSeo, on a made-up site", () => {
   });
 
   it("leaves worksFor out, and the footer-only social out of sameAs", () => {
-    const person = madeUp.ABOUT_META.schemas?.[0] as Record<string, unknown>;
+    const person = madeUp.HOME_META.schemas?.[0] as Record<string, unknown>;
     expect(person).not.toHaveProperty("worksFor");
     expect(person.sameAs).toEqual(["https://a.example"]);
     expect(person.name).toBe("Ada Example");
@@ -155,20 +154,14 @@ describe("createSeo, on a made-up site", () => {
   });
 });
 
-describe("home: profile (#188)", () => {
-  const profile = createSeo({ ...site, home: "profile" });
-
-  it("puts the personal page, and its Person schema, at /", () => {
-    expect(profile.ABOUT_META.path).toBe("/");
-    expect(profile.ABOUT_META.schemas?.[0]).toMatchObject({ "@type": "Person" });
+describe("the home page (the redesign)", () => {
+  it("is the owner's page, with their Person schema, at /", () => {
+    expect(HOME_META.path).toBe("/");
+    expect(HOME_META.type).toBe("profile");
+    expect(HOME_META.schemas?.[0]).toMatchObject({ "@type": "Person", name: site.owner.name });
   });
 
-  it("drops the landing page from the pages the build writes", () => {
-    expect(profile.PAGES.map((page) => page.path)).toEqual(["/", "/projects"]);
-  });
-
-  it("keeps the landing page first when home is landing", () => {
-    const landing = createSeo({ ...site, home: "landing" });
-    expect(landing.PAGES.map((page) => page.path)).toEqual(["/", "/about", "/projects"]);
+  it("writes the home page and /projects, and no /about", () => {
+    expect(createSeo(site).PAGES.map((page) => page.path)).toEqual(["/", "/projects"]);
   });
 });

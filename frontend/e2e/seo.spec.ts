@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { TABS_PATH, site } from "./site";
+import { site } from "./site";
 
 /**
  * Page head E2E tests (#174)
@@ -43,18 +43,18 @@ test.describe("Page head", () => {
     expect(tags.ogImage).toBe(`${site.site.url}${site.seo.image.path}`);
   });
 
-  test("the about page, reached in the app, replaces the entry page's tags", async ({
+  test("the home page, reached in the app, replaces the entry page's tags", async ({
     page,
   }) => {
-    // Entered at /projects, which every site has, whatever its home.
+    // Entered at /projects, which carries its own tags in its HTML.
     await page.goto("/projects");
-    await page.locator(`header a[href="${TABS_PATH}"]`).first().click();
-    await expect(page).toHaveURL((url) => url.pathname === TABS_PATH);
-    await expect(page.locator(".profile-photo")).toBeVisible();
+    await page.locator('header a.nav-link[href="/"]').click();
+    await expect(page).toHaveURL((url) => url.pathname === "/");
+    await expect(page.locator(".home-photo")).toBeVisible();
 
     await expect
       .poll(async () => (await headTags(page)).canonical)
-      .toEqual([TABS_PATH]);
+      .toEqual(["/"]);
     expect((await headTags(page)).ogTitle).toBe(1);
   });
 
@@ -72,7 +72,7 @@ test.describe("Page head", () => {
       .getByRole("link", { name: /projects/i })
       .click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator("a.project-tile").first()).toBeVisible();
+    await expect(page.locator("a.project-card").first()).toBeVisible();
 
     await expect
       .poll(async () => (await headTags(page)).canonical)
@@ -84,7 +84,7 @@ test.describe("Page head", () => {
 
   test("a project page's canonical names that project", async ({ page }) => {
     await page.goto("/projects");
-    const firstCard = page.locator("a.project-tile").first();
+    const firstCard = page.locator("a.project-card").first();
     await expect(firstCard).toBeVisible();
     await firstCard.click();
     await expect(page).toHaveURL(/\/projects\/.+/);

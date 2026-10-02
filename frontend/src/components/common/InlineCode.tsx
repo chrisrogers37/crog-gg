@@ -1,6 +1,6 @@
 /**
- * Renders copy from content/claudlobby.ts, where code terms are wrapped in
- * backticks (`fleet.yaml`), with those terms as <code>.
+ * Renders copy where code terms are wrapped in backticks (`fleet.yaml`), with
+ * those terms as <code>.
  */
 export function InlineCode({ text }: { text: string }) {
   return (

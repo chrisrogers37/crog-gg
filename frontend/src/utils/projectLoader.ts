@@ -18,9 +18,10 @@ import { fetchContent, parseYaml } from "./contentFile";
  */
 
 /** A project as the page shows it: `url` falls back to the demo, then the repo. */
-const toProject = ({ url, ...project }: RawProject): Project => ({
+const toProject = ({ url, ...project }: RawProject, featured: boolean): Project => ({
   ...project,
   url: url ?? project.demo ?? project.github ?? "#",
+  featured,
 });
 
 /**
@@ -53,9 +54,17 @@ export const readProjects = async (
   const index = parseYaml(projectIndexShape, await read("index.yaml"), "content/projects/index.yaml");
   const twice = index.projects.find((file, i) => index.projects.indexOf(file) !== i);
   if (twice) throw new Error(`content/projects/index.yaml lists ${twice} twice`);
+  if (index.featured && !index.projects.includes(index.featured)) {
+    throw new Error(
+      `content/projects/index.yaml features ${index.featured}, which it doesn't list`,
+    );
+  }
   return Promise.all(
     index.projects.map(async (file) =>
-      toProject(parseYaml(projectShape, await read(file), `content/projects/${file}`)),
+      toProject(
+        parseYaml(projectShape, await read(file), `content/projects/${file}`),
+        file === index.featured,
+      ),
     ),
   );
 };

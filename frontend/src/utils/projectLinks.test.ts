@@ -10,6 +10,7 @@ const project = (fields: Partial<Project>): Project => ({
   icon: "\u{1F680}",
   category: "web-app",
   technologies: [],
+  featured: false,
   ...fields,
 });
 

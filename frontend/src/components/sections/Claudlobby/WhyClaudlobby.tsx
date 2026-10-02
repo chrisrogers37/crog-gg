@@ -1,6 +1,6 @@
 import { claudlobby } from "../../../content/claudlobby";
-import { InlineCode } from "./InlineCode";
-import { Section } from "./Section";
+import { InlineCode } from "../../common/InlineCode";
+import { PageSection } from "../../common/PageSection";
 
 const { why } = claudlobby;
 const { library } = why;
@@ -17,7 +17,7 @@ const AS_OF = new Date(`${library.asOf}T00:00:00Z`).toLocaleDateString(
  */
 export function WhyClaudlobby() {
   return (
-    <Section id="why" heading={why.heading}>
+    <PageSection id="why" heading={why.heading}>
       <div className="cl-points">
         {why.points.map((point) => (
           <div key={point.title}>
@@ -46,6 +46,6 @@ export function WhyClaudlobby() {
           , as of {AS_OF}.
         </p>
       </div>
-    </Section>
+    </PageSection>
   );
 }

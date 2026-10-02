@@ -4,21 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import site from "virtual:site-config";
-import type { Home } from "../../../config/schema";
 import { socialsIn } from "../../../config/socials";
-import { RepoLink } from "../../common/RepoLink";
 import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
 
-// "about me", so it can't be mistaken for /about's own About section. With
-// `home: profile`, the personal page is home (#188).
-const pageLinks = (home: Home) => [
-  { to: "/", label: "home" },
-  ...(home === "landing" ? [{ to: "/about", label: "about me" }] : []),
-  { to: "/projects", label: "all projects" },
+const PAGE_LINKS = [
+  { to: "/", label: "about" },
+  { to: "/projects", label: "projects" },
 ];
 
-// After the Claudlobby repo link, which is a RepoLink so its clicks count.
 const CONNECT_LINKS = socialsIn(site, "menu");
 
 /** The page's sections, when it has registered some (see sectionMenu.ts). */
@@ -100,7 +94,7 @@ export function MobileMenu({
             <div className="mobile-menu-content">
               {/* Page links */}
               <div className="mobile-menu-section">
-                {pageLinks(site.home).map((page) => (
+                {PAGE_LINKS.map((page) => (
                   <Link
                     key={page.to}
                     to={page.to}
@@ -133,15 +127,6 @@ export function MobileMenu({
               {/* Social links */}
               <div className="mobile-menu-section">
                 <span className="mobile-menu-section-label">connect</span>
-                {site.home === "landing" && (
-                  <RepoLink
-                    location="menu"
-                    className="mobile-menu-link"
-                    onClick={handleLinkClick}
-                  >
-                    claudlobby on github
-                  </RepoLink>
-                )}
                 {CONNECT_LINKS.map((link) => (
                   <a
                     key={link.id}

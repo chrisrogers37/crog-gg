@@ -1,60 +1,108 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import site from "virtual:site-config";
+import { useContentStore, useUIStore } from "../../../store";
+import { makeBio } from "../../../test/builders";
 import {
+  fireEvent,
   renderWithProviders,
   screen,
-  userEvent,
+  waitFor,
   within,
 } from "../../../test/utils";
 import { HomePage } from "../HomePage";
-import { claudlobby } from "../../../content/claudlobby";
-import {
-  CLAUDLOBBY_GETTING_STARTED,
-  CLAUDLOBBY_README_QUICKSTART,
-  CLAUDLOBBY_REPO,
-} from "../../../content/links";
-import { track } from "../../../services/analytics";
 
-vi.mock("../../../services/analytics", () => ({ track: vi.fn() }));
+// Restored after each test, so a stubbed action can't leak into the next.
+const INITIAL = useContentStore.getState();
+const INITIAL_UI = useUIStore.getState();
 
-const { hero, maturity, quickstart, roadmap } = claudlobby;
+const BIO = makeBio({
+  display_name: "Ada Example",
+  tagline: "i build small things.\nand some bigger ones.",
+  about_text: "first paragraph.\n\nsecond paragraph.",
+});
+
+/** The page with its bio in, and the other files as the test says. */
+const loaded = (loads: Partial<typeof INITIAL.loads> = {}) => {
+  useContentStore.setState({
+    bio: BIO,
+    loads: { ...INITIAL.loads, bio: "ready", ...loads },
+  });
+  return renderWithProviders(<HomePage />, { initialRoute: "/" });
+};
+
+afterEach(() => {
+  useContentStore.setState(INITIAL, true);
+  useUIStore.setState(INITIAL_UI, true);
+  // Helmet never clears the title, so a test reading it starts from none.
+  document.title = "";
+});
+
+describe("HomePage before its content arrives", () => {
+  it("says a failed load failed, naming the file, and Retry reloads the content rather than the page", () => {
+    const loadContent = vi.fn();
+    useContentStore.setState({
+      loads: { ...INITIAL.loads, bio: { error: "content/bio.yaml answered 404" } },
+      loadContent,
+    });
+    renderWithProviders(<HomePage />, { initialRoute: "/" });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "This page didn't load: content/bio.yaml answered 404.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    expect(loadContent).toHaveBeenCalled();
+  });
+
+  it("holds the hero's place, and titles the tab, while it loads", async () => {
+    useContentStore.setState({ loads: { ...INITIAL.loads, bio: "loading" } });
+    renderWithProviders(<HomePage />, { initialRoute: "/" });
+
+    expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
+    await waitFor(() => expect(document.title).toBe(site.seo.site_name));
+  });
+});
 
 describe("HomePage", () => {
-  it("leads with one heading and both next steps", () => {
-    renderWithProviders(<HomePage />);
+  beforeEach(() => {
+    useUIStore.setState({ features: { regenerate: true, github: true } });
+  });
+
+  it("leads with the owner: their name, the tagline as the one h1, and two next steps", () => {
+    loaded();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("link", { name: hero.ctaStar })).toHaveAttribute(
-      "href",
-      CLAUDLOBBY_REPO,
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "i build small things.",
     );
-    expect(
-      screen.getByRole("link", { name: hero.ctaQuickstart }),
-    ).toHaveAttribute("href", "#quickstart");
-    expect(screen.getByRole("link", { name: hero.aboutLink })).toHaveAttribute(
-      "href",
-      "/about",
-    );
+    expect(screen.getByText("and some bigger ones.")).toBeInTheDocument();
+    expect(screen.getAllByText("Ada Example").length).toBeGreaterThan(0);
+    expect(screen.getByRole("img", { name: "Ada Example's profile photo" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Projects" })).toHaveAttribute("href", "/projects");
+    expect(screen.getByRole("link", { name: "Connect" })).toHaveAttribute("href", "#contact");
   });
 
-  it("reports a Quickstart click once", async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<HomePage />);
-
-    await user.click(screen.getByRole("link", { name: hero.ctaQuickstart }));
-
-    expect(track).toHaveBeenCalledExactlyOnceWith({ name: "quickstart_click" });
+  it("titles itself with the owner's name when there's no tagline", () => {
+    useContentStore.setState({
+      bio: { ...BIO, tagline: undefined },
+      loads: { ...INITIAL.loads, bio: "ready" },
+    });
+    renderWithProviders(<HomePage />, { initialRoute: "/" });
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Ada Example");
   });
 
-  it("states its maturity with the CTAs and points at the roadmap", () => {
-    const { container } = renderWithProviders(<HomePage />);
-    const note = container.querySelector<HTMLElement>(".cl-hero .cl-maturity")!;
-    expect(note).toHaveTextContent(maturity.label);
-    expect(
-      within(note).getByRole("link", { name: maturity.link }),
-    ).toHaveAttribute("href", "#roadmap");
+  it("shows site.yaml's sections in its order, then contact, each headed by its label", () => {
+    loaded();
+    const sections = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+    expect(sections).toEqual([
+      ...site.sections.map((section) => section.label),
+      site.contact.heading,
+    ]);
+    for (const { id } of site.sections) {
+      expect(document.getElementById(id)).toBeInTheDocument();
+    }
   });
 
   it("points every in-page link at a section on the page", () => {
-    const { container } = renderWithProviders(<HomePage />);
+    const { container } = loaded();
     const anchors = [...container.querySelectorAll('a[href^="#"]')];
     expect(anchors.length).toBeGreaterThan(0);
     for (const anchor of anchors) {
@@ -63,41 +111,48 @@ describe("HomePage", () => {
     }
   });
 
-  it("keeps today and next in separate lists", () => {
-    renderWithProviders(<HomePage />);
-    for (const column of [roadmap.today, roadmap.next]) {
-      const card = screen.getByRole("heading", { name: column.heading })
-        .parentElement!;
-      expect(within(card).getAllByRole("listitem")).toHaveLength(
-        column.items.length,
-      );
-    }
+  it("sets the About text a paragraph per block", () => {
+    loaded();
+    const about = within(document.getElementById("about")!);
+    expect(about.getByText("first paragraph.").tagName).toBe("P");
+    expect(about.getByText("second paragraph.").tagName).toBe("P");
+  });
+
+  it("puts SUMMON under the About text where the deployment serves it", () => {
+    loaded();
+    const about = within(document.getElementById("about")!);
+    expect(about.getByRole("button", { name: site.regenerate.labels.button })).toBeInTheDocument();
+  });
+
+  it("hides SUMMON where the deployment can't serve it (#189 M21)", () => {
+    useUIStore.setState({ features: { regenerate: false, github: true } });
+    loaded();
+    expect(
+      screen.queryByRole("button", { name: site.regenerate.labels.button }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps a failed journey to its own section, with the rest of the page up (#190 M23)", () => {
+    const reloadTimeline = vi.fn();
+    useContentStore.setState({ reloadTimeline });
+    loaded({ timeline: { error: "content/timeline.yaml has 1 problem(s)" } });
+
+    const journey = within(document.getElementById("journey")!);
+    expect(journey.getByRole("alert")).toHaveTextContent(
+      "The journey didn't load: content/timeline.yaml has 1 problem(s).",
+    );
+    fireEvent.click(journey.getByRole("button", { name: /retry/i }));
+    expect(reloadTimeline).toHaveBeenCalled();
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
   });
 
   it("never skips a heading level", () => {
-    renderWithProviders(<HomePage />);
+    loaded();
     const levels = screen
       .getAllByRole("heading")
       .map((heading) => Number(heading.tagName.slice(1)));
     levels.forEach((level, index) => {
       if (index > 0) expect(level).toBeLessThanOrEqual(levels[index - 1] + 1);
     });
-  });
-
-  it("renders backticked terms in the copy as code", () => {
-    const { container } = renderWithProviders(<HomePage />);
-    expect(container.querySelector(".cl-hero-sub code")?.textContent).toBe(
-      "fleet.yaml",
-    );
-  });
-
-  it("sends the quickstart to the README's own steps", () => {
-    renderWithProviders(<HomePage />);
-    expect(
-      screen.getByRole("link", { name: quickstart.readmeLink }),
-    ).toHaveAttribute("href", CLAUDLOBBY_README_QUICKSTART);
-    expect(
-      screen.getByRole("link", { name: quickstart.docsLink }),
-    ).toHaveAttribute("href", CLAUDLOBBY_GETTING_STARTED);
   });
 });

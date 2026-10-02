@@ -19,8 +19,6 @@ github:
   # needs an owner.
   username: octocat
 
-home: profile
-
 seo:
   site_name: Ada Example - a site made up for tests
   image:
@@ -89,11 +87,6 @@ regenerate:
     pronouns: they
   style_rules:
     - Keep every sentence short.
-
-about:
-  preview_height:
-    narrow: 400
-    wide: 300
 
 contact:
   heading: say hello

@@ -1,10 +1,5 @@
 import { useLayoutEffect, useState } from "react";
-import {
-  Outlet,
-  useLocation,
-  useMatches,
-  useNavigationType,
-} from "react-router";
+import { Outlet, useLocation, useNavigationType } from "react-router";
 import { Navigation } from "../Navigation";
 import { Footer } from "../Footer";
 import { MobileMenu } from "../MobileMenu";
@@ -17,7 +12,7 @@ import "./Layout.css";
 
 /**
  * A new page opens at the top; without this the window kept the last page's
- * scroll, so a link at the bottom of / opened /about halfway down.
+ * scroll, so a link at the bottom of / opened /projects halfway down.
  *
  * Instant, not smooth: index.css makes scrolling smooth for in-page links, and
  * a smooth scroll to the top stopped short when the new page's content moved
@@ -35,9 +30,6 @@ function useScrollToTopOnNavigate() {
   }, [pathname, hash, navigationType]);
 }
 
-/** Set on a route in router.tsx to opt out of the main column's padding. */
-type RouteHandle = { fullBleed?: boolean };
-
 /**
  * Layout Component
  *
@@ -49,9 +41,6 @@ type RouteHandle = { fullBleed?: boolean };
  *   (MobileMenu/sectionMenu.ts)
  */
 export function Layout() {
-  const fullBleed = useMatches().some(
-    (match) => (match.handle as RouteHandle | undefined)?.fullBleed,
-  );
   const [sectionMenu, setSectionMenu] = useState<SectionMenu | null>(null);
   useScrollToTopOnNavigate();
 
@@ -68,7 +57,7 @@ export function Layout() {
         </header>
 
         {/* Main content - renders child routes */}
-        <main className={`layout-main ${fullBleed ? "full-bleed" : ""}`}>
+        <main className="layout-main">
           <Outlet />
         </main>
 

@@ -49,13 +49,6 @@ export const SOCIAL_ICONS = [
 ] as const;
 export type SocialIcon = (typeof SOCIAL_ICONS)[number];
 
-/**
- * What `/` is: "landing", the Claudlobby landing page, with the personal page
- * at /about; or "profile", the personal page itself, with no landing page.
- */
-export const HOMES = ["landing", "profile"] as const;
-export type Home = (typeof HOMES)[number];
-
 /** The forms the API can write a persona in (api/_lib/site_config.py). */
 const PRONOUNS = ["he", "she", "they"] as const;
 
@@ -66,7 +59,7 @@ const PRONOUNS = ["he", "she", "they"] as const;
 export const FEATURE_MODES = ["auto", "on", "off"] as const;
 export type FeatureMode = (typeof FEATURE_MODES)[number];
 
-/** /about's sections; each id is a component, so the list is fixed. */
+/** The home page's sections; each id is a component, so the list is fixed. */
 export const SECTION_IDS = ["about", "journey", "projects", "music"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
@@ -99,7 +92,6 @@ const siteShape = object({
     /** Other owners whose public repos a project may link. */
     allowed_owners: optional(list(githubName)),
   }),
-  home: oneOf(HOMES),
   /** Whether SUMMON and the GitHub panels show; each `auto` if left out. */
   features: optional(
     object({
@@ -139,9 +131,6 @@ const siteShape = object({
     /** Asked of every rewrite, word for word. */
     style_rules: optional(list(text)),
   }),
-  about: object({
-    preview_height: object({ narrow: positiveInteger, wide: positiveInteger }),
-  }),
   contact: object({ heading: text, text }),
   music: object({
     /** "{artist}" marks where the artist's name goes. */
@@ -168,7 +157,7 @@ function crossCheck(config: SiteConfig, issues: string[]) {
   for (const id of duplicates(config.sections.map((section) => section.id))) {
     issues.push(`sections: "${id}" is listed twice`);
   }
-  // The collapsed preview and the default tab are About's.
+  // About is the page's own text, and the one SUMMON rewrites.
   if (!config.sections.some((section) => section.id === "about")) {
     issues.push('sections: "about" is required');
   }

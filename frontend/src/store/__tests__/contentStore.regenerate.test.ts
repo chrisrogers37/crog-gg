@@ -63,20 +63,6 @@ const respondWithUnparseableBody = () => {
   return mock;
 };
 
-/** Collect every contentRegenerated event fired during `run`. */
-const captureEvents = async (run: () => Promise<void>) => {
-  const seen: { section: string; content: unknown }[] = [];
-  const listener = (e: Event) =>
-    seen.push((e as CustomEvent).detail as { section: string; content: unknown });
-  window.addEventListener("contentRegenerated", listener);
-  try {
-    await run();
-  } finally {
-    window.removeEventListener("contentRegenerated", listener);
-  }
-  return seen;
-};
-
 describe("regenerateContent", () => {
   beforeEach(seed);
   afterEach(() => {
@@ -131,17 +117,12 @@ describe("regenerateContent", () => {
     expect(state.regenerationError).toBe("That one didn't come through. Press it again.");
   });
 
-  it("does not announce a section that failed", async () => {
-    // Legacy listeners assign event.detail.content straight into their own
-    // state, so announcing an absent section blanks the content the store just
-    // preserved -- the same collapse, one layer down.
+  it("keeps the about when its section failed, and says so", async () => {
     respondWith({ success: true, content: {}, failed_sections: ["about"] });
 
-    const seen = await captureEvents(() =>
-      useContentStore.getState().regenerateContent(true),
-    );
+    await useContentStore.getState().regenerateContent(true);
 
-    expect(seen).toEqual([]);
+    expect(useContentStore.getState().bio).toEqual(BIO);
     // The press reached the success path and said so, rather than throwing.
     expect(useContentStore.getState().regenerationError).toBe("That one didn't come through. Press it again.");
   });
@@ -169,7 +150,7 @@ describe("regenerateContent", () => {
     expect(useContentStore.getState().regenerationError).toBeNull();
   });
 
-  it("announces the rewritten about, and only that", async () => {
+  it("applies the rewritten about, and nothing else the reply carries", async () => {
     respondWith({
       success: true,
       content: {
@@ -178,13 +159,12 @@ describe("regenerateContent", () => {
       },
       failed_sections: [],
     });
+    const experience = useContentStore.getState().experience;
 
-    const seen = await captureEvents(() =>
-      useContentStore.getState().regenerateContent(true),
-    );
+    await useContentStore.getState().regenerateContent(true);
 
-    expect(seen.map((e) => e.section)).toEqual(["about"]);
-    expect(seen[0].content).toEqual({ ...BIO, about_text: "rewritten" });
+    expect(useContentStore.getState().bio).toEqual({ ...BIO, about_text: "rewritten" });
+    expect(useContentStore.getState().experience).toBe(experience);
   });
 
   it("does not set the fatal error on a failed regeneration", async () => {

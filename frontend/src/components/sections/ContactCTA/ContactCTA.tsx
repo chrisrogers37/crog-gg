@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
 import site from "virtual:site-config";
 import type { SocialIcon } from "../../../config/schema";
 import { socialsIn } from "../../../config/socials";
 import { useBio } from "../../../store";
 import { GitHubMark } from "../../common/GitHubMark";
+import { PageSection } from "../../common/PageSection";
 import { InstagramIcon, LinkIcon, SpotifyIcon } from "../../common/SocialIcons";
 import "./ContactCTA.css";
 
@@ -77,27 +77,23 @@ const contactLinks = () => [
   })),
 ];
 
+/** The contact section's id: the hero's Connect button links to it. */
+export const CONTACT_ID = "contact";
+
+/** The page's last section: the heading and line from site.yaml, then links. */
 export function ContactCTA() {
   const bio = useBio();
 
   if (!bio) return null;
 
   return (
-    <motion.section
-      className="contact-cta"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
-      <h2 className="contact-cta-heading">{site.contact.heading}</h2>
-      <p className="contact-cta-text">{site.contact.text}</p>
-      <div className="contact-brand-links">
+    <PageSection id={CONTACT_ID} heading={site.contact.heading} intro={site.contact.text}>
+      <div className="contact-links">
         {contactLinks().map((link) => (
           <a
             key={link.key}
             href={link.href}
-            className="contact-brand-link"
+            className="btn btn-ghost btn-sm contact-link"
             {...(link.external
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
@@ -107,7 +103,7 @@ export function ContactCTA() {
           </a>
         ))}
       </div>
-      {bio.location && <p className="contact-location">{bio.location}</p>}
-    </motion.section>
+      {bio.location && <p className="page-note">{bio.location}</p>}
+    </PageSection>
   );
 }

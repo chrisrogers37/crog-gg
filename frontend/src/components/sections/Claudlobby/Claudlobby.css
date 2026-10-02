@@ -1,118 +1,10 @@
-/* Claudlobby homepage (#173). Buttons and cards are the global .btn and .card
-   (index.css); colours are theme variables or palette shades, so both themes
-   work. */
-
-.cl-home {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 1.5rem 0 4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4.5rem;
-  color: var(--text-color);
-}
-
-.cl-home code {
-  font-family: theme("fontFamily.mono");
-  font-size: 0.9em;
-}
-
-.cl-home a:not(.btn) {
-  color: var(--primary-color);
-  text-underline-offset: 2px;
-}
-
-/* Hero */
-.cl-hero {
-  max-width: 780px;
-  padding-top: 1.5rem;
-}
-
-.cl-eyebrow {
-  margin: 0 0 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--text-color-secondary);
-}
-
-.cl-hero-headline {
-  margin: 0;
-  font-size: clamp(2.25rem, 6vw, 3.75rem);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-
-.cl-hero-sub {
-  margin: 1.25rem 0 0;
-  font-size: clamp(1.125rem, 2.2vw, 1.3rem);
-  line-height: 1.55;
-}
-
-.cl-hero-credibility {
-  margin: 1rem 0 0;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  color: var(--text-color-secondary);
-}
-
-.cl-hero-ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.75rem;
-}
+/* Claudlobby's project page (#173): what only its sections draw. The page,
+   hero and sections are the site's own (styles/page.css); buttons and cards
+   the global .btn and .card (index.css). */
 
 .cl-maturity {
   margin: 1.25rem 0 0;
   line-height: 1.55;
-}
-
-/* A quieter line: the early-alpha caveat in the hero and by the quickstart,
-   and a section's closing note (Updates). */
-.cl-note {
-  font-size: 0.9rem;
-  color: var(--text-color-secondary);
-}
-
-.cl-badge {
-  display: inline-block;
-  margin-right: 0.35rem;
-  padding: 0.1rem 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-/* Sections */
-/* The header sticks, so an in-page link (#quickstart and the like) stops its
-   section's heading below the header rather than under it. */
-.cl-section {
-  scroll-margin-top: 5rem;
-}
-
-.cl-section h2 {
-  margin: 0 0 0.75rem;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.cl-section h3 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.cl-lead {
-  max-width: 680px;
-  margin: 0 0 2rem;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  color: var(--text-color-secondary);
 }
 
 /* minmax(0, ...) throughout: a grid column otherwise grows to its widest
@@ -208,32 +100,6 @@
   color: var(--text-color-secondary);
 }
 
-/* Quickstart */
-/* The page's bulleted lists: the prerequisites and the roadmap. */
-.cl-list {
-  margin: 0.75rem 0 0;
-  padding-left: 1.1rem;
-  list-style: disc;
-  line-height: 1.6;
-}
-
-.cl-list li + li {
-  margin-top: 0.5rem;
-}
-
-.cl-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin: 2rem 0 0;
-  font-weight: 600;
-}
-
-/* A section's closing note, under its links. */
-.cl-section > .cl-note {
-  margin: 1rem 0 0;
-}
-
 /* Today, and what's next */
 .cl-roadmap {
   display: grid;
@@ -246,20 +112,11 @@
 }
 
 /* Muted like the other cards' body text (.cl-step p, .cl-points p). */
-.cl-roadmap-column .cl-list {
+.cl-roadmap-column .page-list {
   color: var(--text-color-secondary);
 }
 
 @media (max-width: 768px) {
-  .cl-home {
-    padding-top: 0;
-    gap: 3.5rem;
-  }
-
-  .cl-hero {
-    padding-top: 0.5rem;
-  }
-
   .cl-steps,
   .cl-points,
   .cl-roadmap {

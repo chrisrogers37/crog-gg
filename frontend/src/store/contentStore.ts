@@ -373,25 +373,6 @@ export const useContentStore = create<ContentStore>()(
               : null,
             ...cooldown,
           });
-
-          // Legacy components still listen for this instead of reading the
-          // store. Only announce a section that actually came back -- these
-          // listeners assign the payload straight into their own state, so
-          // announcing an absent section would blank the content the set()
-          // above just deliberately preserved. For the same reason they are
-          // handed the validated value: a shape the store refused would
-          // otherwise blank these listeners by the back door.
-          if (about) {
-            window.dispatchEvent(
-              new CustomEvent("contentRegenerated", {
-                detail: {
-                  section: "about",
-                  content: about,
-                  use_fantasy: useFantasy,
-                },
-              }),
-            );
-          }
         } catch (error) {
           const timedOut = controller.signal.aborted;
           if (!timedOut) console.error("Regeneration failed:", error);
@@ -462,31 +443,6 @@ export const useContentStore = create<ContentStore>()(
           hasModifiedContent: false,
           regenerationError: null,
         });
-
-        // Dispatch events for legacy components
-        window.dispatchEvent(
-          new CustomEvent("contentRegenerated", {
-            detail: {
-              section: "about",
-              content: data.bio,
-              is_full_regeneration: true,
-              use_fantasy: false,
-            },
-          }),
-        );
-        window.dispatchEvent(
-          new CustomEvent("contentRegenerated", {
-            detail: {
-              section: "portfolio",
-              content: {
-                experience: data.experience,
-                education: data.education,
-              },
-              is_full_regeneration: true,
-              use_fantasy: false,
-            },
-          }),
-        );
       },
     };
   }, { name: "content-store", enabled: import.meta.env.DEV }),

@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { ABOUT, OTHER_TABS, SUMMON, TABS_PATH, named, withLongAbout } from "./site";
+import { SECTIONS, named } from "./site";
 
 /**
  * Navigation E2E Tests
@@ -91,7 +91,7 @@ test.describe("Moving between pages", () => {
     // /projects first, so it renders at once later, as it does for anyone
     // who's been there.
     await page.goto("/projects");
-    await expect(page.locator("a.project-tile").first()).toBeVisible();
+    await expect(page.locator("a.project-card").first()).toBeVisible();
     await page.locator('header a[href="/"]').first().click();
     await expect(page).toHaveURL(/\/$/);
     await page.locator("footer").scrollIntoViewIfNeeded();
@@ -101,7 +101,7 @@ test.describe("Moving between pages", () => {
 
     await page.locator('header a[href="/projects"]').first().click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator("a.project-tile").first()).toBeVisible();
+    await expect(page.locator("a.project-card").first()).toBeVisible();
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 });
@@ -127,9 +127,9 @@ test.describe("External Links", () => {
   test("social links open in new tab", async ({ page }) => {
     await page.goto("/");
 
-    // Home ships external links (with home: landing, the Claudlobby repo in
-    // the header, hero and footer; with home: profile, the owner's socials),
-    // so a count-gate here would be inconsistent with the suite.
+    // Home ships external links (the owner's socials, in its contact section
+    // and the footer), so a count-gate here would be inconsistent with the
+    // suite.
     // Worse, this is a security assertion: under the gate, removing every
     // target="_blank" made the rel="noopener" check silently stop running
     // instead of failing, which is the one outcome it exists to prevent.
@@ -162,57 +162,32 @@ test.describe("Mobile Menu", () => {
     await expect(menu).not.toBeVisible();
   });
 
-  test("mobile menu section navigation works", async ({ page }) => {
-    // A tab that isn't About, which is selected on load.
-    const [second] = OTHER_TABS;
-    test.skip(!second, "needs a tab other than About");
+  test("mobile menu jumps to a section of the home page", async ({ page }) => {
+    const last = SECTIONS[SECTIONS.length - 1];
     await page.setViewportSize({ width: 375, height: 812 });
-    // The section links live on the personal page's menu.
-    await page.goto(TABS_PATH);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator(`#${last.id} h2`)).toBeAttached();
 
-    // Open menu
+    // The menu prints the label in lowercase.
     await page.locator(".nav-hamburger").click();
+    await page.locator(".mobile-menu-section-btn", { hasText: named(last.label) }).click();
 
-    // Click a section (the menu prints its label in lowercase)
-    const journeyBtn = page.locator(".mobile-menu-section-btn", {
-      hasText: named(second.label),
-    });
-    await journeyBtn.click();
-
-    // Menu should close
+    // The menu closes, and the page is at the section.
     await expect(page.locator(".mobile-menu")).not.toBeVisible();
-
-    // The section's panel should be visible
-    await expect(page.getByRole("tabpanel", { name: named(second.label) })).toBeVisible({
-      timeout: 5000,
-    });
-
-    // Reopened, the menu marks the section the page now has open.
-    await page.locator(".nav-hamburger").click();
-    await expect(journeyBtn).toHaveClass(/active/);
-    await expect(
-      page.locator(".mobile-menu-section-btn", { hasText: named(ABOUT.label) }),
-    ).not.toHaveClass(/active/);
-
-    // Choosing the open section again keeps it open: only a tab click
-    // closes a section. (Read from the menu's marking, which follows the
-    // page's state, not from an animation still running.)
-    await journeyBtn.click();
-    await expect(page.locator(".mobile-menu")).not.toBeVisible();
-    await page.locator(".nav-hamburger").click();
-    await expect(journeyBtn).toHaveClass(/active/);
+    await expect(page.locator(`#${last.id} h2`)).toBeInViewport();
   });
 
-  test("leaving the personal page takes its sections out of the menu", async ({
+  test("leaving the home page takes its sections out of the menu", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto(TABS_PATH);
+    await page.goto("/");
     await page.locator(".nav-hamburger").click();
     await expect(page.locator(".mobile-menu-section-btn").first()).toBeVisible();
 
-    // To /projects, which every site has, whatever its home.
-    await page.locator(".mobile-menu-link", { hasText: "all projects" }).click();
+    // To /projects, which every site has.
+    await page.locator(".mobile-menu-link", { hasText: "projects" }).click();
     await expect(page).toHaveURL(/\/projects$/);
     await page.locator(".nav-hamburger").click();
     await expect(page.locator(".mobile-menu")).toBeVisible();
@@ -265,14 +240,12 @@ test.describe("Responsive Design", () => {
     // Should show heading
     await expect(page.locator("h1")).toBeVisible();
 
-    // Projects ship with the repo, so the search input is required rather than
-    // conditional. The old gate asserted visibility only after establishing it,
-    // which could not fail either way: absent, it skipped the assertion;
-    // present, it re-checked what the guard had just read.
-    const searchInput = page.locator(
-      'input[type="search"], input[placeholder*="earch"]',
-    );
-    await expect(searchInput).toBeVisible();
+    // Projects ship with the repo, so a card is required rather than
+    // conditional, and the page stays inside the phone's width.
+    await expect(page.locator("a.project-card").first()).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(375);
   });
 });
 
@@ -297,38 +270,6 @@ test.describe("Page Load Performance", () => {
 
     const loadTime = Date.now() - startTime;
     expect(loadTime).toBeLessThan(10000);
-  });
-});
-
-test.describe("see more survives a collapse (#165)", () => {
-  test("expand, collapse, expand again", async ({ page }) => {
-    await withLongAbout(page);
-    await page.goto(TABS_PATH);
-
-    // First expansion. This is the POSITIVE CONTROL: without it the test
-    // would also pass on a page where "see more" never worked at all.
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    // Expanded: the open section's panel, which the preview isn't.
-    await expect(page.locator(".content-section")).toBeVisible({ timeout: 10000 });
-    if (SUMMON) await expect(page.locator(".generate-btn")).toBeVisible();
-
-    // Collapse the way a reader does -- clicking the tab that is already
-    // open. SectionNav reports the clicked id, and AboutPage turns a click on
-    // the open tab back into About's preview.
-    await page.locator(".section-nav-button.active").first().click();
-    await expect(page.locator(".section-fade-btn")).toBeVisible({
-      timeout: 10000,
-    });
-
-    // The regression: from here "see more" still rendered and still took
-    // clicks, but changed nothing, and SUMMON NEW LORE was gone with it. So
-    // both halves are asserted -- the control has to work AND has to put the
-    // reader back somewhere that has the primary action on it.
-    await page.click(".section-fade-btn");
-    await expect(page.locator(".content-section")).toBeVisible({ timeout: 10000 });
-    await expect(page.locator(".section-fade-btn")).toHaveCount(0);
-    if (SUMMON) await expect(page.locator(".generate-btn")).toBeVisible();
   });
 });
 
@@ -365,8 +306,8 @@ test.describe("With site data blocked (#196 M70)", () => {
       )
       .not.toBe(before);
 
-    await page.goto(TABS_PATH);
-    await expect(page.locator(".about-page h1")).toBeVisible();
+    await page.goto("/projects");
+    await expect(page.locator(".page-hero h1")).toBeVisible();
     expect(errors).toEqual([]);
   });
   }

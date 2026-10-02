@@ -273,37 +273,6 @@ describe("resetContent", () => {
     expect(s.experience).toEqual(EXPERIENCE);
     expect(s.hasModifiedContent).toBe(true); // and it did not pretend to act
   });
-
-  it("announces the restored content to legacy listeners", async () => {
-    // Components that never migrated to the store assign event.detail.content
-    // into their own state. If the revert does not reach them they keep
-    // rendering the regenerated text while the store says it is original.
-    useContentStore.setState({
-      bio: makeBio({
-        display_name: "Christopher Rogers",
-        about_text: "rewritten",
-      }),
-      originalBio: BIO,
-      originalExperience: EXPERIENCE,
-      originalEducation: EDUCATION,
-      hasModifiedContent: true,
-    });
-
-    const seen: { section: string; content: unknown }[] = [];
-    const listener = (e: Event) =>
-      seen.push(
-        (e as CustomEvent).detail as { section: string; content: unknown },
-      );
-    window.addEventListener("contentRegenerated", listener);
-    try {
-      useContentStore.getState().resetContent();
-    } finally {
-      window.removeEventListener("contentRegenerated", listener);
-    }
-
-    expect(seen.map((e) => e.section).sort()).toEqual(["about", "portfolio"]);
-    expect(seen.find((e) => e.section === "about")?.content).toEqual(BIO);
-  });
 });
 
 describe("the round trip a visitor actually performs", () => {

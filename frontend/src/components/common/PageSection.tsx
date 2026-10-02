@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { InlineCode } from "./InlineCode";
 
-type SectionProps = {
+type PageSectionProps = {
   /** Also the anchor the section can be linked to, e.g. #quickstart. */
   id: string;
   heading: string;
@@ -9,14 +9,17 @@ type SectionProps = {
   children: ReactNode;
 };
 
-/** A homepage section: an h2 that names it, an optional intro, the content. */
-export function Section({ id, heading, intro, children }: SectionProps) {
+/**
+ * One of a page's sections (styles/page.css): an h2 that names it, an
+ * optional intro, the content.
+ */
+export function PageSection({ id, heading, intro, children }: PageSectionProps) {
   const headingId = `${id}-heading`;
   return (
-    <section id={id} className="cl-section" aria-labelledby={headingId}>
+    <section id={id} className="page-section" aria-labelledby={headingId}>
       <h2 id={headingId}>{heading}</h2>
       {intro && (
-        <p className="cl-lead">
+        <p className="page-lead">
           <InlineCode text={intro} />
         </p>
       )}

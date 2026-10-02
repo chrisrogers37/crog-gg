@@ -4,7 +4,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 
 ## Project Overview
 
-**crog.gg** - The front door for Claudlobby (Chris's agent-fleet compositor for software "dark factories") on `/`, and **Choose Your Own Chris**, the personal portfolio with AI-regenerated content, on `/about`. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
+**crog.gg** - **Choose Your Own Chris**, Chris's personal site with AI-regenerated content, on `/`, and his projects on `/projects`, with Claudlobby (his agent-fleet compositor for software "dark factories") featured and on a page of its own. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
 - **Backend**: Flask (`api/index.py`) on Vercel Python runtime, OpenAI API, Upstash Redis for rate limiting
@@ -145,7 +145,7 @@ Tests should verify **structure and behavior**, not specific content:
 - **DO**: Test that interactions work (clicking toggles state, forms accept input)
 - **DO**: Use flexible selectors that match patterns, not exact classes
 - **DO**: Skip tests gracefully when genuinely optional data (external APIs, live GitHub stats) isn't available
-- **DO**: Take tabs, routes and the card from `e2e/site.ts` (the active site), and skip with a structural reason when a site lacks what a test needs (a landing page, a second tab)
+- **DO**: Take sections, routes and the card from `e2e/site.ts` (the active site), and skip with a structural reason when a site lacks what a test needs (a project it doesn't list, a section it hides)
 - **DON'T**: Test for exact text content that changes frequently
 - **DON'T**: Hard-code copy like "hey there!" or "Welcome to my site"
 - **DON'T**: Skip or vacuously pass when repo-shipped content is missing - YAML under `site/public/content/` ships with the repo, so a page rendering without it is a bug to fail on, not an environment to tolerate (see #120, where skip-gates hid a live production bug)
@@ -226,12 +226,12 @@ The README's [table](README.md#environment-variables) lists them all. The token'
 
 ## Site copy style (crog.gg instance; forks replace this)
 
-The site has two voices (#179), one per page:
+The site has two voices (#179):
 
-- **`/` (Claudlobby): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case, apart from the "i build things that build things." line. Copy is `frontend/src/content/claudlobby.ts`.
-- **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact, music and typewriter lines in `site/site.yaml`.
-- **Claims on `/` stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
-- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on `/`; on `/about` it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
+- **Claudlobby's page (`/projects/claudlobby`): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case. Copy is `frontend/src/content/claudlobby.ts`.
+- **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact, music and typewriter lines in `site/site.yaml`.
+- **Claims on Claudlobby's page stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
+- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on Claudlobby's page and `share-card.test.ts` on the share card; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
 
 ## Image Handling
 

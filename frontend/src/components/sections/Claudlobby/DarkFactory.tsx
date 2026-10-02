@@ -1,12 +1,12 @@
 import { claudlobby } from "../../../content/claudlobby";
-import { InlineCode } from "./InlineCode";
-import { Section } from "./Section";
+import { InlineCode } from "../../common/InlineCode";
+import { PageSection } from "../../common/PageSection";
 
 /** What a dark factory is, in the three steps it takes to run one. */
 export function DarkFactory() {
   const { darkFactory } = claudlobby;
   return (
-    <Section
+    <PageSection
       id="dark-factory"
       heading={darkFactory.heading}
       intro={darkFactory.intro}
@@ -26,6 +26,6 @@ export function DarkFactory() {
           </li>
         ))}
       </ol>
-    </Section>
+    </PageSection>
   );
 }

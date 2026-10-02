@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
+import "./styles/page.css";
 import App from "./App.tsx";
 import { startAnalytics } from "./services/analytics";
 import { useUIStore } from "./store/uiStore";

@@ -85,8 +85,12 @@ export const timelineShape = object({
   ),
 });
 
+const projectFile = matching(/^[a-z0-9]+(?:-[a-z0-9]+)*\.yaml$/, 'a file name, like "my-project.yaml"');
+
 export const projectIndexShape = object({
-  projects: list(matching(/^[a-z0-9]+(?:-[a-z0-9]+)*\.yaml$/, 'a file name, like "my-project.yaml"')),
+  projects: list(projectFile),
+  /** The one project shown first and largest; one of `projects`. */
+  featured: optional(projectFile),
 });
 
 export const PROJECT_STATUSES = ["active", "archived", "experimental"] as const;

@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml)
 
-crog.gg is two sites in one:
-- **`/` is the front door for [Claudlobby](https://github.com/Claudfather/Claudlobby)**, Chris Rogers's agent-fleet compositor for software "dark factories": what it is, a quickstart, the roadmap, and how to follow releases.
-- **`/about` is Choose Your Own Chris**, the personal portfolio. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
+crog.gg is Chris Rogers's site, Choose Your Own Chris:
+- **`/` is his page**: who he is, a career timeline, his projects, his music and how to reach him, in one column. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
+- **`/projects`** lists the projects, with [Claudlobby](https://github.com/Claudfather/Claudlobby), his agent-fleet compositor for software "dark factories", featured. Each has a page; Claudlobby's is its own: what it is, a quickstart, the roadmap, and how to follow releases.
 
 For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -14,19 +14,16 @@ For how it's built, and what each content file does, see the [documentation inde
 
 ## Features
 
-### The Claudlobby landing page (`/`)
+### The home page (`/`)
 
-- Its copy is a typed module (`frontend/src/content/claudlobby.ts`), bundled so the hero needs no request, and its calls to action are counted ([Web Analytics](#web-analytics)).
-
-### Choose Your Own Chris (`/about`)
-
-- **Tabs:** About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects, and Music (a Spotify embed and links).
+- **One column:** a hero with a photo, then About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects (the featured one first), Music (a Spotify embed and links), a photo strip and the contact links. `/about`, where the page lived from #173 until the redesign, redirects here.
 - **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location on the contact card) with OpenAI's `gpt-5.6-luna` (the `OPENAI_MODEL` environment variable overrides it), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
 - **Rate limits** on `/api/regenerate`: a 30 s cooldown, plus daily caps of 30 rewrites per visitor and 300 site-wide. A press rewrites one section, so it uses one of each. An IPv6 /64 counts as one visitor. They're backed by Upstash Redis, and the paid endpoint refuses to run without it (see [Troubleshooting](#troubleshooting)).
 
 ### Projects (`/projects`)
 
-- A searchable grid, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only.
+- The featured project first and larger, then a card for each other, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only.
+- **Claudlobby's page** (`/projects/claudlobby`) is its own: its copy is a typed module (`frontend/src/content/claudlobby.ts`), bundled so the hero needs no request, and its calls to action are counted ([Web Analytics](#web-analytics)).
 
 ### Under the hood
 

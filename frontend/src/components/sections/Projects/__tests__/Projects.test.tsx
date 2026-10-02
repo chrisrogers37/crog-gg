@@ -4,7 +4,7 @@ import { fireEvent, renderWithProviders, screen } from "../../../../test/utils";
 import type { Project } from "../../../../types";
 import { Projects } from "../Projects";
 
-/** The Projects tab shows its own load (#190 M23). */
+/** The home page's projects section shows its own load (#190 M23). */
 
 const INITIAL = useContentStore.getState();
 afterEach(() => useContentStore.setState(INITIAL, true));
@@ -43,18 +43,33 @@ describe("Projects", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("shows the projects once they're in", () => {
-    const project = {
-      id: "a",
-      title: "A Project",
-      description: "d",
-      url: "https://a.example",
-      icon: "x",
-      category: "c",
-      technologies: [],
-    } as Project;
-    useContentStore.setState({ projects: [project], loads: loads("ready") });
+  it("shows the featured project, the next three in order, and a link to them all", () => {
+    const project = (id: string, featured = false) =>
+      ({
+        id,
+        title: `Project ${id}`,
+        description: "d",
+        url: `https://${id}.example`,
+        icon: "x",
+        category: "c",
+        technologies: [],
+        featured,
+      }) as Project;
+    useContentStore.setState({
+      projects: [project("a"), project("b"), project("star", true), project("c"), project("d")],
+      loads: loads("ready"),
+    });
     renderWithProviders(<Projects />);
-    expect(screen.getByText("A Project")).toBeInTheDocument();
+
+    expect(screen.getByRole("article", { name: /Project star/ })).toBeInTheDocument();
+    const cards = screen
+      .getAllByRole("link")
+      .filter((link) => link.classList.contains("project-card"))
+      .map((link) => link.getAttribute("href"));
+    expect(cards).toEqual(["/projects/a", "/projects/b", "/projects/c"]);
+    expect(screen.getByRole("link", { name: "All projects" })).toHaveAttribute(
+      "href",
+      "/projects",
+    );
   });
 });
