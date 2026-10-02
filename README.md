@@ -187,6 +187,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 | `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
+| `VITE_SOURCE_REPO_URL`                  | optional          | The repo this site is built from. When set, the footer links to it as "view source"; left empty, there's no link. It's read at build time, so redeploy after changing it.                       |
 
 ### Provisioning Upstash Redis
 
