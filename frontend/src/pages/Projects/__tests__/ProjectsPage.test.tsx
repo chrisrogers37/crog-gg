@@ -14,6 +14,8 @@ const INITIAL = useContentStore.getState();
 describe("ProjectsPage when the content failed to load", () => {
   afterEach(() => {
     useContentStore.setState(INITIAL, true);
+    // Helmet never clears the title, so a test reading it starts from none.
+    document.title = "";
   });
 
   it("says so and offers a retry", () => {

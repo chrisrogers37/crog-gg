@@ -5,7 +5,10 @@ interface TypewriterLoopProps {
   typeSpeed?: number;
   deleteSpeed?: number;
   pauseTime?: number;
-  /** The least wait before typing starts; up to INITIAL_DELAY_JITTER_MS more is added. */
+  /**
+   * The least wait before typing starts; up to INITIAL_DELAY_JITTER_MS more is
+   * added. With 0 (the default), typing starts at once, with no jitter.
+   */
   initialDelay?: number;
   className?: string;
 }
@@ -32,7 +35,9 @@ export default function TypewriterLoop({
 }: TypewriterLoopProps) {
   const [displayText, setDisplayText] = useState("");
   const [messageIndex, setMessageIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>("initial");
+  const [phase, setPhase] = useState<Phase>(
+    initialDelay > 0 ? "initial" : "typing",
+  );
   // Picked once, at mount, so a re-render never restarts the wait.
   const [startDelay] = useState(
     () => initialDelay + Math.floor(Math.random() * INITIAL_DELAY_JITTER_MS),
@@ -41,8 +46,8 @@ export default function TypewriterLoop({
   const currentMessage = messages[messageIndex];
   const isLastMessage = messageIndex === messages.length - 1;
 
-  // The initial delay. (It used to ignore `initialDelay` and wait 1-4 s
-  // whatever was passed, #193.)
+  // The initial delay. (It used to wait 1-4 s whatever positive
+  // `initialDelay` was passed, #193.)
   useEffect(() => {
     if (phase !== "initial") return;
 

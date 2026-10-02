@@ -43,6 +43,38 @@ describe("TypewriterLoop", () => {
     expect(typed(container)).not.toBe("");
   });
 
+  it("starts typing at once when initialDelay is 0, with no jitter", () => {
+    // The most jitter there is: were it added to 0, nothing would show for ~3 s.
+    vi.spyOn(Math, "random").mockReturnValue(0.99);
+    const { container } = render(
+      <TypewriterLoop messages={["hello"]} typeSpeed={10} />,
+    );
+
+    advance(100);
+    expect(typed(container)).not.toBe("");
+  });
+
+  it("types a message, deletes it, types the next, and stays on the last", () => {
+    const { container } = render(
+      <TypewriterLoop
+        messages={["ab", "cd"]}
+        typeSpeed={10}
+        deleteSpeed={10}
+        pauseTime={100}
+      />,
+    );
+
+    advance(200);
+    expect(typed(container)).toBe("ab");
+
+    advance(3000);
+    expect(typed(container)).toBe("cd");
+
+    // The last message stays, rather than being deleted.
+    advance(5000);
+    expect(typed(container)).toBe("cd");
+  });
+
   it("shows the cursor from the start", () => {
     const { container } = render(
       <TypewriterLoop messages={["hello"]} initialDelay={1000} />,
