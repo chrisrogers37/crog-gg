@@ -10,9 +10,8 @@ import { useContentStore } from "../contentStore";
  * discarded -- including the section that had worked.
  *
  * These tests pin what came out of that: one click is one request, and a
- * failure never lands in `error`,
- * which drives AboutPage's full-page fatal screen and unmounts a page that still
- * has content to show.
+ * failure never lands in `error`, which drives AboutPage's full-page fatal
+ * screen and unmounts a page that still has content to show.
  */
 
 const BIO = { display_name: "Christopher Rogers", about_text: "original" };
@@ -125,7 +124,7 @@ describe("regenerateContent", () => {
     expect(state.bio).toEqual(BIO);
     expect(state.experience).toEqual([{ title: "Engineer" }]);
     expect(state.hasModifiedContent).toBe(false);
-    expect(state.regenerationError).toBeTruthy();
+    expect(state.regenerationError).toBe("That one didn't come through. Press it again.");
   });
 
   it("does not announce a section that failed", async () => {
@@ -139,6 +138,31 @@ describe("regenerateContent", () => {
     );
 
     expect(seen).toEqual([]);
+    // The press reached the success path and said so, rather than throwing.
+    expect(useContentStore.getState().regenerationError).toBe("That one didn't come through. Press it again.");
+  });
+
+  it("says so when a success reply carries no about at all", async () => {
+    // A 200 that names no failure but applies nothing is still a failed press.
+    respondWith({ success: true, content: {}, failed_sections: [] });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().bio).toEqual(BIO);
+    expect(useContentStore.getState().regenerationError).toBe("That one didn't come through. Press it again.");
+  });
+
+  it("applies a good rewrite even if failed_sections is malformed", async () => {
+    respondWith({
+      success: true,
+      content: { about: { about_text: "rewritten" } },
+      failed_sections: 5,
+    });
+
+    await useContentStore.getState().regenerateContent(true);
+
+    expect(useContentStore.getState().bio?.about_text).toBe("rewritten");
+    expect(useContentStore.getState().regenerationError).toBeNull();
   });
 
   it("announces the rewritten about, and only that", async () => {
@@ -430,7 +454,7 @@ describe("regenerateContent", () => {
  *
  * The gap is reachable because the store validates sections itself: a
  * well-formed but wrongly-shaped section is refused here even though the
- * server rewrote it and reported success. When every section is refused,
+ * server rewrote it and reported success. When the section is refused,
  * nothing on the page changes and the reset button used to appear anyway.
  */
 describe("hasModifiedContent reflects what was applied", () => {
@@ -439,7 +463,7 @@ describe("hasModifiedContent reflects what was applied", () => {
     useContentStore.setState({ hasModifiedContent: false });
   });
 
-  it("stays false when every section is refused by validation", async () => {
+  it("stays false when the section is refused by validation", async () => {
     // Shares no key with BIO, so the store declines to apply it.
     respondWith({ success: true, content: { about: { foo: 1 } } });
 
@@ -464,7 +488,7 @@ describe("hasModifiedContent reflects what was applied", () => {
     expect(s.hasModifiedContent).toBe(true);
   });
 
-  it("stays true after a later all-refused attempt", async () => {
+  it("stays true after a later refused attempt", async () => {
     // A previous regeneration did apply, so the content on screen IS modified
     // and the reset button is still legitimate. One refused attempt afterwards
     // must not retract it.
@@ -651,7 +675,7 @@ describe("the cooldown follows the server", () => {
     respondWith(
       {
         success: false,
-        error: "Content generation failed",
+        error: "That one didn't come through. Press it again.",
         failed_sections: ["about"],
         cooldown_total: 30,
       },

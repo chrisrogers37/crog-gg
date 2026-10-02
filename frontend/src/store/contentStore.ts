@@ -155,10 +155,6 @@ const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
     : undefined;
 };
 
-/** True when the server sent something for a section and validation refused it. */
-const wasRejected = (received: unknown, accepted: unknown): boolean =>
-  received !== undefined && accepted === undefined;
-
 // ===========================================
 // STORE IMPLEMENTATION
 // ===========================================
@@ -319,14 +315,13 @@ export const useContentStore = create<ContentStore>()(
           // object, an empty array or a bare string replaced what the visitor
           // was reading -- a blank section arriving from an HTTP 200 the server
           // called a success, with no error raised anywhere to notice it by.
-          // A section that fails validation is treated exactly like one the
-          // server named in failed_sections: keep what was there and say so.
           // Only `about` is sent, so only `about` is read: anything else in
-          // the reply isn't this press's.
+          // the reply isn't this press's. A press that applied nothing failed,
+          // whatever the reply says about itself: missing, refused by the
+          // validation above, or named in failed_sections, keep what was there
+          // and say so.
           const about = mergeBio(bio, result.content?.about);
-          const failed =
-            (result.failed_sections ?? []).includes("about") ||
-            wasRejected(result.content?.about, about);
+          const failed = about === undefined;
 
           // The flag claims "your content was modified", and the reset button
           // offers to undo that. Reaching the success path is a different
@@ -411,9 +406,10 @@ export const useContentStore = create<ContentStore>()(
        * header and nav and the button that was just clicked included, in order
        * to fetch files whose contents were already in memory.
        *
-       * Only the three sections a regeneration can touch are restored. Skills,
-       * projects and timeline are never rewritten, so re-reading them was
-       * always a no-op.
+       * Only the slices a regeneration could touch are restored: the bio, and
+       * experience and education until #190's step 2 settles them (a press
+       * sends only the bio now). Skills, projects and timeline are never
+       * rewritten, so re-reading them was always a no-op.
        */
       resetContent: () => {
         const state = get();
