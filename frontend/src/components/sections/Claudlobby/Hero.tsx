@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { claudlobby } from "../../../content/claudlobby";
 import { track } from "../../../services/analytics";
 import { RepoLink } from "../../common/RepoLink";

@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { Suspense } from "react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RouteError } from "../pages/RouteError";
 import { lazyPage } from "./lazyPage";

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { PROFILE_URLS } from "../../../content/links";
 import { RepoLink } from "../../common/RepoLink";
 import "./Footer.css";
