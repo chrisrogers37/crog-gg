@@ -86,8 +86,8 @@ tags:
 ```
 
 Optional fields (add only if available):
-- `github: https://github.com/<owner>/<repo>`: a public repo owned by the site's configured GitHub owner (today `GITHUB_USERNAME` in `api/_lib/request_utils.py`). The project page keeps only the repo name and looks it up under that owner, so another owner's repo shows the owner's same-named repo, or no README.
-- `demo: https://...` (if different from url): the project page embeds a `demo` that differs from `url`, and the site's Content-Security-Policy blocks frames from any host it doesn't list. Add the demo's exact origin to `frame-src` in `vercel.json` in the same PR, with no wildcards (or `'self'` for a demo this site serves), and say in the PR that it loosens the CSP.
+- `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the configured GitHub owner (`GITHUB_USERNAME` in `api/_lib/request_utils.py`); leave it out for anyone else's repo. The project page looks the repo's name up under that owner, so another owner's repo would show the owner's same-named repo, or no README.
+- `demo: https://...` (only if different from `url`): the project page embeds it, and the site's Content-Security-Policy blocks frames from hosts it doesn't list. Add its exact origin to `frame-src` in `vercel.json` in the same PR (no wildcards; `'self'` for a demo this site serves), and say in the PR that it loosens the CSP.
 
 **Update `frontend/public/content/projects/index.yaml`**:
 - Insert the new filename at the correct position in the list
