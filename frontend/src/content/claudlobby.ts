@@ -130,7 +130,8 @@ export const claudlobby = {
       "Not ready to set it up yet? Watch the repo's releases on GitHub, and GitHub lets you know when Claudlobby publishes one.",
     watchLink: "Watch releases on GitHub",
     feedLink: "Releases feed (Atom)",
-    howTo: "On the repo, choose Watch, then Custom, then Releases.",
+    howTo:
+      "On the repo, choose Watch, then Custom, check Releases and click Apply.",
   },
 
   roadmap: {

@@ -58,5 +58,13 @@ describe("RepoLink", () => {
       "menu",
       "quickstart",
     ]);
+    // The one other event is "Watch releases" reporting updates_click; the
+    // feed and the deeper links report nothing.
+    expect(
+      vi
+        .mocked(track)
+        .mock.calls.map(([event]) => event)
+        .filter((event) => event.name !== "repo_click"),
+    ).toEqual([{ name: "updates_click" }]);
   });
 });
