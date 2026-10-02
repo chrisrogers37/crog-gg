@@ -1,5 +1,5 @@
 import type { Project } from "../types/Project";
-import { CLAUDLOBBY_REPO } from "../content/links";
+import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../content/links";
 
 /**
  * What each page tells crawlers and link unfurlers about itself (#174).
@@ -42,7 +42,7 @@ export type PageMeta = {
    */
   path?: string;
   /** Page title; the site name is appended. */
-  title?: string;
+  title: string;
   description: string;
   type?: "website" | "profile";
   noIndex?: boolean;
@@ -55,8 +55,7 @@ export type LandingPage = PageMeta & { path: string };
 
 export const absoluteUrl = (path: string) => `${SITE_URL}${path}`;
 
-export const pageTitle = (meta: PageMeta) =>
-  meta.title ? `${meta.title} | ${SITE_NAME}` : SITE_NAME;
+export const pageTitle = (meta: PageMeta) => `${meta.title} | ${SITE_NAME}`;
 
 type HeadTag = { tag: "meta" | "link"; attrs: Record<string, string> };
 
@@ -152,11 +151,7 @@ export const ABOUT_META: LandingPage = {
       ...AUTHOR,
       image: absoluteUrl("/profile-photo.jpg"),
       jobTitle: "Builder of Things That Sometimes Work",
-      sameAs: [
-        "https://github.com/chrisrogers37",
-        "https://linkedin.com/in/chrisrogers37",
-        "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
-      ],
+      sameAs: Object.values(PROFILE_URLS),
       knowsAbout: [
         "Software Development",
         "Web Development",

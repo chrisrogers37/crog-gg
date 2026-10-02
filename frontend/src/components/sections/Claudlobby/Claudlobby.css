@@ -1,6 +1,6 @@
 /* Claudlobby homepage (#173). Buttons and cards are the global .btn and .card
    (index.css); colours are theme variables or palette shades, so both themes
-   work. The code block is dark in both. */
+   work. */
 
 .cl-home {
   max-width: 1040px;
@@ -93,7 +93,7 @@
 }
 
 /* minmax(0, ...) throughout: a grid column otherwise grows to its widest
-   unbreakable content, and the git clone line would widen the whole page. */
+   unbreakable content (a command in <code>, say) and widens the whole page. */
 
 /* What's a dark factory */
 .cl-steps {

@@ -4,6 +4,7 @@ export type SectionLink = { id: string; label: string };
 
 export type SectionMenu = {
   sections: SectionLink[];
+  activeSection: string;
   onSectionChange: (sectionId: string) => void;
 };
 
@@ -17,12 +18,13 @@ export const SectionMenuContext = createContext<
 >(() => {});
 
 /**
- * Lists `sections` in the mobile menu while the calling page is mounted.
- * `sections` should be stable (a module constant); `onSectionChange` may be a
- * new function every render.
+ * Lists `sections` in the mobile menu while the calling page is mounted, with
+ * `activeSection` marked. `sections` should be stable (a module constant);
+ * `onSectionChange` may be a new function every render.
  */
 export function useSectionMenu(
   sections: SectionLink[],
+  activeSection: string,
   onSectionChange: (sectionId: string) => void,
 ) {
   const register = useContext(SectionMenuContext);
@@ -33,7 +35,11 @@ export function useSectionMenu(
   });
 
   useEffect(() => {
-    register({ sections, onSectionChange: (id) => handler.current(id) });
+    register({
+      sections,
+      activeSection,
+      onSectionChange: (id) => handler.current(id),
+    });
     return () => register(null);
-  }, [register, sections]);
+  }, [register, sections, activeSection]);
 }

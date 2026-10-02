@@ -51,7 +51,11 @@ describe("renderPage", () => {
   });
 
   it("writes a $ in page text literally rather than as a replacement pattern", () => {
-    const html = renderPage(TEMPLATE, { path: "/x", description: "costs $& and $1" });
+    const html = renderPage(TEMPLATE, {
+      path: "/x",
+      title: "x",
+      description: "costs $& and $1",
+    });
     expect(html).toContain("costs $&amp; and $1");
   });
 });

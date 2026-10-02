@@ -13,6 +13,8 @@
  * - every number keeps its source and as-of date, and matches that source
  */
 
+import { CLAUDLOBBY_REPO } from "./links";
+
 type Step = { title: string; code: string; body: string };
 type Point = { title: string; body: string };
 type Count = { value: number; label: string };
@@ -72,8 +74,7 @@ export const claudlobby = {
       heading: "In the library today",
       // Counted from the README's "What this repo gives you" list, and checked
       // against the repo tree (library/, README.md files excluded) that day.
-      source:
-        "https://github.com/Claudfather/Claudlobby/blob/c4682f7ace169ae69b2337eaabdfcbc12e64001e/README.md#what-this-repo-gives-you--and-doesnt",
+      source: `${CLAUDLOBBY_REPO}/blob/c4682f7ace169ae69b2337eaabdfcbc12e64001e/README.md#what-this-repo-gives-you--and-doesnt`,
       sourceLabel: "Claudlobby README",
       asOf: "2026-09-30",
       counts: [

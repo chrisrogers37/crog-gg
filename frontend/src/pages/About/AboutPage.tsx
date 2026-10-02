@@ -1,10 +1,10 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Hooks
 import { useMediaQuery, useRegeneration } from "../../hooks";
 import {
-  useUIStore,
+  useContentStore,
   useIsLoading,
   useContentError,
   useRegenerationError,
@@ -31,9 +31,11 @@ import TypewriterLoop from "../../components/TypewriterLoop";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { SectionNavigator } from "../../components/common/SectionNavigator";
 import { ImageShowcase } from "../../components/common/ImageShowcase";
+import { LoadError } from "../../components/common/LoadError";
 import { useSectionMenu } from "../../components/layout/MobileMenu/sectionMenu";
 import { PROFILE_PHOTOS, photoSrc, photoSrcSet } from "../../utils/photos";
 import {
+  SECTIONS,
   SECTION_PANEL_ID,
   sectionTabId,
 } from "../../components/sectionTabs";
@@ -48,17 +50,6 @@ import "./AboutPage.css";
  * profile header, the about / journey / projects / music sections, the photo
  * strip and contact links, using Zustand stores for state management.
  */
-// Section order for flow navigation
-const SECTION_ORDER = ["about", "journey", "projects", "music"];
-
-// The same sections, as the site's mobile menu lists them.
-const MENU_SECTIONS = [
-  { id: "about", label: "About" },
-  { id: "journey", label: "Journey" },
-  { id: "projects", label: "Projects" },
-  { id: "music", label: "Music" },
-];
-
 // The About preview fades at a fixed point in the COPY rather than at a fixed
 // height: the gradient begins on the line carrying "all while optimizing
 // themselves", the end of the agent-teams paragraph.
@@ -93,8 +84,10 @@ export function AboutPage() {
   const regenerationError = useRegenerationError();
   const bio = useBio();
   const timeline = useTimeline();
-  const activeSection = useUIStore((state) => state.activeSection);
-  const setActiveSection = useUIStore((state) => state.setActiveSection);
+  const loadContent = useContentStore((s) => s.loadContent);
+
+  // The open tab is this page's own, so every visit lands on About's preview.
+  const [activeSection, setActiveSection] = useState("about");
 
   // Preview mode: starts true so About shows as a preview on load
   const isNarrowViewport = useMediaQuery(NARROW_VIEWPORT);
@@ -118,13 +111,6 @@ export function AboutPage() {
   // on the request to collapse took them away ~315ms before the content
   // actually went, so one click moved the page below twice. Both are the same
   // defect, and the fix for both is to follow the DOM rather than the intent.
-
-  // Every visit lands on About's preview. activeSection lives in the global
-  // store and outlives this page, so a tab picked on an earlier visit would
-  // otherwise sit selected over About's preview.
-  useEffect(() => {
-    setActiveSection("about");
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Regeneration; the button reads its own cooldown
   const {
@@ -157,7 +143,7 @@ export function AboutPage() {
   };
 
   // Before the early returns below, so the menu lists these while loading too.
-  useSectionMenu(MENU_SECTIONS, handleSectionChange);
+  useSectionMenu(SECTIONS, activeSection, handleSectionChange);
 
   // "see more" expands About: the preview is always About's.
   const handlePreviewExpand = () => {
@@ -191,11 +177,9 @@ export function AboutPage() {
         return null;
     }
 
-    const currentIndex = SECTION_ORDER.indexOf(activeSection);
     const nextSection =
-      currentIndex >= 0 && currentIndex < SECTION_ORDER.length - 1
-        ? SECTION_ORDER[currentIndex + 1]
-        : null;
+      SECTIONS[SECTIONS.findIndex(({ id }) => id === activeSection) + 1]?.id ??
+      null;
 
     return (
       <ErrorBoundary key={activeSection} compact>
@@ -223,7 +207,7 @@ export function AboutPage() {
         </header>
         <nav className="section-nav" aria-hidden="true">
           <div className="section-nav-container">
-            {["about", "journey", "projects", "music"].map((id) => (
+            {SECTIONS.map(({ id }) => (
               <span key={id} className="section-nav-button skeleton-nav-btn">
                 &nbsp;
               </span>
@@ -239,8 +223,7 @@ export function AboutPage() {
   if (error) {
     return (
       <div className="about-page">
-        <div className="error-message">{error}</div>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <LoadError message={error} onRetry={() => loadContent()} />
       </div>
     );
   }

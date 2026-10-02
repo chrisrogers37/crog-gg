@@ -52,12 +52,6 @@
     @apply dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-400;
   }
 
-  .btn-danger {
-    @apply bg-red-600 text-white;
-    @apply hover:bg-red-700;
-    @apply focus-visible:ring-red-500;
-  }
-
   /* One radius (8px), and a border rather than a shadow (CLAUDE.md). */
   .card {
     @apply bg-white rounded-lg border border-slate-200;

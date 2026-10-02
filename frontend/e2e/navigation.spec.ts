@@ -180,6 +180,13 @@ test.describe("Mobile Menu", () => {
     // Timeline should be visible
     const timeline = page.locator(".timeline-container");
     await expect(timeline).toBeVisible({ timeout: 5000 });
+
+    // Reopened, the menu marks the section the page now has open.
+    await page.locator(".nav-hamburger").click();
+    await expect(journeyBtn).toHaveClass(/active/);
+    await expect(
+      page.locator(".mobile-menu-section-btn", { hasText: "about" }),
+    ).not.toHaveClass(/active/);
   });
 
   test("hamburger hidden on desktop", async ({ page }) => {

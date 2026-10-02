@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
+import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../../../content/links";
 import "./Footer.css";
 
 const PROFILE_LINKS = [
-  { href: "https://github.com/chrisrogers37", label: "GitHub" },
-  { href: "https://linkedin.com/in/chrisrogers37", label: "LinkedIn" },
+  { href: PROFILE_URLS.github, label: "GitHub" },
+  { href: PROFILE_URLS.linkedin, label: "LinkedIn" },
 ];
 
 /**

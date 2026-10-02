@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
+import { CLAUDLOBBY_REPO, PROFILE_URLS } from "../../../content/links";
+import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
 
 // "about me", so it can't be mistaken for /about's own About section.
@@ -15,19 +16,13 @@ const PAGE_LINKS = [
 
 const CONNECT_LINKS = [
   { href: CLAUDLOBBY_REPO, label: "claudlobby on github" },
-  { href: "https://github.com/chrisrogers37", label: "github" },
-  { href: "https://linkedin.com/in/chrisrogers37", label: "linkedin" },
-  {
-    href: "https://open.spotify.com/artist/0UotSScPTiSFPmbmjam2jn",
-    label: "spotify",
-  },
+  { href: PROFILE_URLS.github, label: "github" },
+  { href: PROFILE_URLS.linkedin, label: "linkedin" },
+  { href: PROFILE_URLS.spotify, label: "spotify" },
 ];
 
-type MobileMenuProps = {
-  sections?: { id: string; label: string }[];
-  onSectionChange?: (section: string) => void;
-  activeSection?: string;
-};
+/** The page's sections, when it has registered some (see sectionMenu.ts). */
+type MobileMenuProps = Partial<SectionMenu>;
 
 export function MobileMenu({
   sections,

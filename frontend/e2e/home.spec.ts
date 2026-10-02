@@ -10,10 +10,12 @@ import { test, expect } from "@playwright/test";
 
 const REPO = "https://github.com/Claudfather/Claudlobby";
 
-for (const [label, viewport] of [
+const VIEWPORTS = [
   ["desktop", { width: 1366, height: 768 }],
   ["phone", { width: 390, height: 844 }],
-] as const) {
+] as const;
+
+for (const [label, viewport] of VIEWPORTS) {
   test(`the first screen names Claudlobby and shows both CTAs (${label})`, async ({
     page,
   }) => {
@@ -44,10 +46,7 @@ test.describe("Home Page", () => {
     }
   });
 
-  for (const [label, viewport] of [
-    ["desktop", { width: 1366, height: 768 }],
-    ["phone", { width: 390, height: 844 }],
-  ] as const) {
+  for (const [label, viewport] of VIEWPORTS) {
     test(`the Quickstart button lands below the sticky header (${label})`, async ({
       page,
     }) => {

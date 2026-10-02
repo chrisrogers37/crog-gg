@@ -13,7 +13,6 @@ import {
   type SectionMenu,
 } from "../MobileMenu/sectionMenu";
 import { useContentLoader } from "../../../hooks";
-import { useUIStore } from "../../../store";
 import "./Layout.css";
 
 /**
@@ -54,7 +53,6 @@ export function Layout() {
     (match) => (match.handle as RouteHandle | undefined)?.fullBleed,
   );
   const [sectionMenu, setSectionMenu] = useState<SectionMenu | null>(null);
-  const activeSection = useUIStore((state) => state.activeSection);
   useScrollToTopOnNavigate();
 
   // Load content here rather than in a page component: Layout wraps every
@@ -75,11 +73,7 @@ export function Layout() {
 
         <Footer />
 
-        <MobileMenu
-          sections={sectionMenu?.sections}
-          onSectionChange={sectionMenu?.onSectionChange}
-          activeSection={activeSection}
-        />
+        <MobileMenu {...sectionMenu} />
 
       </div>
     </SectionMenuContext.Provider>

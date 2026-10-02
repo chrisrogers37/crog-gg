@@ -594,20 +594,6 @@ a:hover {
   color: var(--text-color-secondary) !important;
 }
 
-.error-message {
-  background-color: #fee2e2;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-.dark .error-message {
-  background-color: rgba(153, 27, 27, 0.2);
-  color: #fca5a5;
-}
-
 /* Employment Section */
 .employment-section {
   margin: 1rem 0;
@@ -1268,8 +1254,7 @@ main,
   padding-right: 4px;
 }
 
-.loading-message,
-.error-message {
+.loading-message {
   text-align: center;
   padding: 2rem;
   color: var(--text-color-secondary);
