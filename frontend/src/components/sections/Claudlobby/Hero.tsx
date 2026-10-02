@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { claudlobby } from "../../../content/claudlobby";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
+import { track } from "../../../services/analytics";
+import { RepoLink } from "../../common/RepoLink";
 import { InlineCode } from "./InlineCode";
 
 function StarIcon() {
@@ -33,16 +34,15 @@ export function Hero() {
         {hero.credibility} <Link to="/about">{hero.aboutLink}</Link>
       </p>
       <div className="cl-hero-ctas">
-        <a
-          className="btn btn-primary"
-          href={CLAUDLOBBY_REPO}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <RepoLink location="hero" className="btn btn-primary">
           <StarIcon />
           {hero.ctaStar}
-        </a>
-        <a className="btn btn-ghost" href="#quickstart">
+        </RepoLink>
+        <a
+          className="btn btn-ghost"
+          href="#quickstart"
+          onClick={() => track({ name: "quickstart_click" })}
+        >
           {hero.ctaQuickstart}
         </a>
       </div>
