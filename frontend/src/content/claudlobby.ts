@@ -120,7 +120,7 @@ export const claudlobby = {
   factory: {
     heading: "Built by the factory",
     intro:
-      "Apps my fleet has been building. Each count is every pull request merged into the app's repo since its first, not counting dependency bots.",
+      "Apps my fleet has been building. Each count is the pull requests merged into the app's repo since the fleet started, not counting dependency bots.",
     apps: [
       {
         slug: "storydump",

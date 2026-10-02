@@ -23,10 +23,10 @@ export function Factory() {
                 <Link to={`/projects/${app.slug}`}>{app.name}</Link>
               </h3>
               <p>{app.summary}</p>
-              {stats.since && (
+              {stats.merged.value > 0 && (
                 <p className="cl-app-count">
                   <strong>{stats.merged.value.toLocaleString("en-US")}</strong>{" "}
-                  {factory.merged} {formatMonth(stats.since)}
+                  {factory.merged} {formatMonth(factoryStats.since)}
                   {stats.mergedLast30Days.value > 0 &&
                     `, ${stats.mergedLast30Days.value.toLocaleString("en-US")} ${factory.recent}`}
                 </p>

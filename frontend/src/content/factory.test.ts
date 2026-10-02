@@ -33,8 +33,19 @@ describe("Built by the factory (#176)", () => {
   });
 
   it("has a dated, sourced number behind every figure it shows", () => {
+    // Counted from the fleet's first day (Chris's call), through a closed day.
+    expect(factoryStats.since).toBe("2026-05-07");
     expect(factoryStats.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(factoryStats.asOf >= factoryStats.since).toBe(true);
     for (const stats of Object.values(factoryStats.apps)) {
+      // Each window is closed, ending on asOf, so its query reruns to the
+      // same count; the total starts on the fleet's first day.
+      expect(stats.merged.query).toContain(
+        `merged:${factoryStats.since}..${factoryStats.asOf}`,
+      );
+      expect(stats.mergedLast30Days.query).toMatch(
+        new RegExp(`merged:\\d{4}-\\d{2}-\\d{2}\\.\\.${factoryStats.asOf}$`),
+      );
       for (const count of [stats.merged, stats.mergedLast30Days]) {
         expect(Number.isInteger(count.value)).toBe(true);
         expect(count.query).toContain(`repo:${stats.repo} is:pr is:merged`);

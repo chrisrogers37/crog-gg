@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { githubService, Repository } from "../../../services/githubService";
 import { factoryStats, statsForRepo } from "../../../content/factory";
-import { formatDay } from "../../../utils/formatDate";
+import { formatDay, formatMonth } from "../../../utils/formatDate";
 import "./RepoStats.css";
 
 /**
@@ -121,7 +121,8 @@ export function RepoStats({ repoName }: RepoStatsProps) {
       )}
       {factory && (
         <p className="stats-source">
-          Pull requests merged, not counting dependency bots, as of{" "}
+          Pull requests merged since the fleet started in{" "}
+          {formatMonth(factoryStats.since)}, not counting dependency bots, as of{" "}
           {formatDay(factoryStats.asOf)}.
         </p>
       )}

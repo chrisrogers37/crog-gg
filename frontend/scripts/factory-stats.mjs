@@ -18,10 +18,16 @@ const NOT_BOTS = "-author:app/dependabot -author:app/renovate -author:app/github
 const token = process.env.GITHUB_TOKEN;
 if (!token) throw new Error("Set GITHUB_TOKEN, e.g. GITHUB_TOKEN=$(gh auth token)");
 
-// Local calendar days, so "as of" is the day the snapshot was taken here.
-const day = (date) => date.toLocaleDateString("en-CA");
-const asOf = day(new Date());
-const monthAgo = day(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+// The fleet's first day (Chris's call): each count is the fleet's work, not
+// the repo's whole history.
+const FLEET_START = "2026-05-07";
+
+// Whole UTC days through yesterday, the same days GitHub's search counts in.
+// A window that has closed gives the same count whenever its query is rerun.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const utcDay = (ms) => new Date(ms).toISOString().slice(0, 10);
+const asOf = utcDay(Date.now() - DAY_MS);
+const monthStart = utcDay(Date.now() - 30 * DAY_MS);
 
 const wait = (seconds) =>
   new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -54,8 +60,12 @@ async function github(path, attempt = 1) {
 // Search allows 30 requests a minute; spacing them keeps a run under that.
 async function search(query) {
   const result = await github(
-    `search/issues?q=${encodeURIComponent(query)}&sort=created&order=asc&per_page=1`,
+    `search/issues?q=${encodeURIComponent(query)}&per_page=1`,
   );
+  // A search that timed out counted only some of its matches.
+  if (result.incomplete_results) {
+    throw new Error(`GitHub returned incomplete results for: ${query}`);
+  }
   await wait(3);
   return result;
 }
@@ -70,16 +80,18 @@ for (const file of (await readYaml("index.yaml")).projects) {
   const repo = repoUrl?.match(/github\.com\/([\w.-]+\/[\w.-]+)/)?.[1];
   if (!repo) continue;
 
-  const merged = `repo:${repo} is:pr is:merged ${NOT_BOTS}`;
-  const recent = `${merged} merged:>=${monthAgo}`;
-  const all = await search(merged);
-  const lastMonth = await search(recent);
+  // Publishing a private repo's numbers would publish its activity.
+  if ((await github(`repos/${repo}`)).private) {
+    throw new Error(`${repo} is private: make it public before counting it`);
+  }
+
+  const prs = `repo:${repo} is:pr is:merged ${NOT_BOTS}`;
+  const merged = `${prs} merged:${FLEET_START}..${asOf}`;
+  const recent = `${prs} merged:${monthStart}..${asOf}`;
   apps[id] = {
     repo,
-    merged: { value: all.total_count, query: merged },
-    mergedLast30Days: { value: lastMonth.total_count, query: recent },
-    // When the oldest counted pull request was opened: every count is "since".
-    since: all.items[0]?.created_at.slice(0, 10) ?? null,
+    merged: { value: (await search(merged)).total_count, query: merged },
+    mergedLast30Days: { value: (await search(recent)).total_count, query: recent },
   };
   console.log(id, apps[id].merged.value, apps[id].mergedLast30Days.value);
 }
@@ -88,6 +100,7 @@ const latestPath = `repos/${TRACKER}/issues?state=all&sort=created&direction=des
 const [latest] = await github(latestPath);
 
 const stats = {
+  since: FLEET_START,
   asOf,
   apps,
   tracker: {

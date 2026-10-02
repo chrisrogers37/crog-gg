@@ -18,7 +18,8 @@ const repo = (name: string, stars: number): Repository => ({
   homepage: null,
   stargazers_count: stars,
   forks_count: 3,
-  watchers_count: stars,
+  // Not `stars`: a figure that shows twice can't be found by its text.
+  watchers_count: 1,
   open_issues_count: 303,
   language: "Python",
   topics: [],

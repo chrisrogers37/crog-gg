@@ -110,11 +110,23 @@ describe("ProjectDetailPage across projects", () => {
       isLoading: false,
       error: null,
     });
-    // alpha's stats can't render (no figures in the answer), so its section
-    // crashes; beta's answer is whole.
+    // alpha's answer can't be read at all, so its stats section crashes
+    // however RepoStats lays the figures out; beta's answer is whole.
+    const unreadable = new Proxy(
+      {},
+      {
+        // Not a thenable, so the promise resolves to it.
+        get: (_, field) =>
+          field === "then"
+            ? undefined
+            : (() => {
+                throw new Error("unreadable answer");
+              })(),
+      },
+    ) as Repository;
     vi.spyOn(githubService, "getRepository").mockImplementation(async (name) =>
       name === "alpha"
-        ? ({} as Repository)
+        ? unreadable
         : ({
             name,
             stargazers_count: 222,

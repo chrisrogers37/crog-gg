@@ -30,9 +30,14 @@ describe("Factory", () => {
         "href",
         `https://github.com/${stats.repo}`,
       );
-      expect(cards[index]).toHaveTextContent(
-        stats.merged.value.toLocaleString("en-US"),
-      );
+      if (stats.merged.value > 0) {
+        expect(cards[index]).toHaveTextContent(
+          stats.merged.value.toLocaleString("en-US"),
+        );
+      } else {
+        // Nothing merged since the fleet started: no count line, not a zero.
+        expect(cards[index].querySelector(".cl-app-count")).toBeNull();
+      }
     });
   });
 
