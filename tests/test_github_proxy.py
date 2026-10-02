@@ -384,7 +384,7 @@ def test_a_full_rate_limit_window_is_a_429_before_github_is_called(client, salte
     # Salted, so the key names the visitor by tag: one built from the raw
     # address would not match (#199 M75).
     from api._lib.request_utils import Visitor
-    from api.index import GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW, _gh_rate_key
+    from api._lib.github_proxy import GH_RATE_LIMIT_MAX, GH_RATE_LIMIT_WINDOW, _gh_rate_key
 
     key = _gh_rate_key(Visitor.from_ip("127.0.0.1"), endpoint)
     with patch("api.index.rate_limit.check_and_consume", return_value=key) as consume:
@@ -420,7 +420,7 @@ def test_repo_name_with_a_trailing_newline_is_rejected(client):
     ids=["license", "no-license"],
 )
 def test_repo_returns_only_the_repository_fields(client, license_in, license_out):
-    from api.index import _REPO_FIELDS
+    from api._lib.github_proxy import _REPO_FIELDS
 
     payload = {
         "name": "shuffify",
@@ -442,7 +442,7 @@ def test_repo_returns_only_the_repository_fields(client, license_in, license_out
 
 def test_repo_fields_match_the_frontend_type():
     """_REPO_FIELDS copies the frontend's Repository type; fail when they drift."""
-    from api.index import _REPO_FIELDS
+    from api._lib.github_proxy import _REPO_FIELDS
 
     source = (Path(__file__).resolve().parents[1] / "frontend/src/services/githubService.ts").read_text()
     block = source.split("export interface Repository {", 1)[1].split("\n}", 1)[0]

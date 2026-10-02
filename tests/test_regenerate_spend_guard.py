@@ -109,7 +109,8 @@ def test_free_github_gate_still_falls_open(metering_broken):
     # Deliberate asymmetry: an outage costs nothing on the free endpoints, so
     # dropping real traffic there would be the worse failure. Guard it so a
     # future sweep does not close the fail-open uniformly.
-    from api.index import _gh_rate_limit_or_429, app
+    from api._lib.github_proxy import _gh_rate_limit_or_429
+    from api.index import app
 
     with app.test_request_context("/api/v1/github/repo/whatever"):
         assert _gh_rate_limit_or_429("repo") is None

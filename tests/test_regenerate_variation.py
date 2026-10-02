@@ -37,7 +37,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from api.index import _LORE_REGISTERS, _VERBATIM_STRINGS, _lost_paragraphs, _lost_verbatim
+from api._lib.prompts import _LORE_REGISTERS, _VERBATIM_STRINGS
+from api.index import _lost_paragraphs, _lost_verbatim
 
 
 def _press(client, sections=None, use_fantasy=True):

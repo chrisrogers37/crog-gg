@@ -25,6 +25,8 @@ if not IP_HASH_SALT:
     )
 GITHUB_USERNAME = "chrisrogers37"
 GITHUB_API = "https://api.github.com"
+# The proxy's GitHub calls give up after this; the health check uses a shorter one.
+GITHUB_TIMEOUT_SECONDS = 10
 
 REPO_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9._-]+$")
 MAX_REPO_NAME_LENGTH = 100

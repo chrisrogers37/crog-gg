@@ -12,7 +12,8 @@ import pytest
 
 from api._lib import request_utils
 from api._lib.request_utils import Visitor, _rate_limit_subject, client_tag
-from api.index import _cooldown_key, _gh_rate_key, _regen_daily_key
+from api._lib.github_proxy import _gh_rate_key
+from api.index import _cooldown_key, _regen_daily_key
 
 
 @pytest.mark.parametrize(
