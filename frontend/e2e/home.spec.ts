@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SECTIONS, SUMMON, bio, expectBelowHeader, site } from "./site";
+import { SECTIONS, SUMMON, bio, expectBelowHeader, named, site } from "./site";
 
 /**
  * Home page E2E tests: the owner's page, one column (the redesign).
@@ -26,8 +26,8 @@ test.describe("Home page", () => {
   });
 
   test("shows site.yaml's sections in its order, each headed by its label", async ({ page }) => {
-    for (const { id } of SECTIONS) {
-      await expect(page.locator(`#${id} h2`), id).toBeVisible();
+    for (const { id, label } of SECTIONS) {
+      await expect(page.locator(`#${id} h2`), id).toHaveText(named(label));
     }
     const tops = await Promise.all(
       SECTIONS.map(async ({ id }) => (await page.locator(`#${id}`).boundingBox())!.y),
@@ -86,6 +86,42 @@ test.describe("A shared link to a section", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`/#${last.id}`);
     await expectBelowHeader(page, `#${last.id} h2`);
+  });
+
+  test("to the contact section waits for the photo strip above it", async ({ page }) => {
+    // showcase.yaml last of all, as on a slow network. And no scroll anchoring
+    // (Safari has none), so nothing but the wait keeps the section in place.
+    await page.route("**/content/showcase.yaml", async (route) => {
+      await new Promise((done) => setTimeout(done, 1500));
+      await route.continue();
+    });
+    await page.addInitScript(() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent = "* { overflow-anchor: none !important; }";
+        document.head.append(style);
+      });
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const stripIn = page.waitForResponse("**/content/showcase.yaml");
+    await page.goto("/#contact");
+    await stripIn;
+    await expectBelowHeader(page, "#contact h2");
+
+    // Where the jump put it, after the strip: at its scroll margin below the
+    // header, or as far up as the page's end lets it go.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const contact = document.getElementById("contact")!;
+          const offset =
+            contact.getBoundingClientRect().top - parseFloat(getComputedStyle(contact).scrollMarginTop);
+          const end = document.documentElement.scrollHeight - window.innerHeight;
+          return Math.abs(offset) <= 2 || window.scrollY >= end - 1;
+        }),
+      )
+      .toBe(true);
   });
 });
 

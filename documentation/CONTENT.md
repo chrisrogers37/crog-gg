@@ -25,7 +25,7 @@ The files the site renders (`bio.yaml`, `timeline.yaml`, the projects and `showc
 
 - **`display_name` and `tagline`:** the top of `/`. The tagline's first line is the headline, and the rest reads under it; with no tagline, the name is the headline.
 - **`about_text`:** the About section, as paragraphs separated by blank lines in one block string (`|`). The page keeps the breaks with `white-space: pre-line`, so write each paragraph on one line: a line break inside a paragraph shows on the page.
-- **`location`** (optional): the contact card. It and `tagline` (optional) show only when set.
+- **`location`** (optional): the contact section. It and `tagline` (optional) show only when set.
 - The email address and the links are in `site/site.yaml` (#188), not here.
 - SUMMON NEW LORE rewrites the bio's text: the name, the tagline, the About text and the location.
 
@@ -50,12 +50,12 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 **`index.yaml`** lists which project files the site shows, in the order it shows them (#190), each as a lowercase file name (`my-project.yaml`), once.
 - A file it doesn't list is shown nowhere.
 - But it's still public: everything in `site/public/` is served as is.
-- **`featured`** (optional): one of the files it lists, shown first and larger, on `/` and `/projects`. A file it doesn't list fails.
+- **`featured`** (optional): one of the files it lists, shown first and larger, on `/` and `/projects`. A file it doesn't list fails. The projects' loading skeleton draws a featured card, so a site that features none sees its cards move up as they arrive; `site.example/` features one.
 
 **Each project file:**
 - **`id`:** a lowercase slug (`my-project`). It's the page's URL, `/projects/<id>`, and the name of its prerendered file.
 - **`title`, `description`, `icon` and `category`:** required.
-- **`url`** (optional): the main link, `https`. Without one, the card falls back to `demo`, then `github`.
+- **`url`** (optional): the main link, `https`. Without one, the project page's link falls back to `demo`, then `github`.
 - **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The card prints it as text, and no icon font is loaded.
 - **`technologies`** (optional): the card shows the first three.
 - **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails, unless the project has a page of its own (below), which shows neither. Without `github`, a `url` that is a GitHub repo is used instead.
@@ -103,7 +103,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 
 Claudlobby's page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules, shown only on a site that lists the `claudlobby` project ([FORKING.md](../FORKING.md)).
 
-`home` and `about.preview_height` are gone (the redesign: the owner's page is `/`, in one column), so a `site.yaml` that still has either fails, naming it.
+`home` and `about` (which held only `preview_height`) are gone (the redesign: the owner's page is `/`, in one column), so a `site.yaml` that still has either fails, naming the key.
 
 ## What catches a mistake
 
@@ -112,7 +112,7 @@ Claudlobby's page's copy isn't here: it's a typed module (`frontend/src/content/
   - the files `site.yaml` and `index.html` name exist, and every photo at every size, and a logo for each timeline domain;
   - the music player's origin is in the CSP;
   - none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code;
-  - the projects: at least one, each in a category, one emoji icon, repos of the site's owner, and a `frame-src` entry for an embedded demo;
+  - the projects: at least one, each in a category, one emoji icon, repos of the site's owner (a project with a page of its own shows no GitHub panels, so its repo may be anyone's), Claudlobby's file naming no other model provider when the site lists it, and a `frame-src` entry for an embedded demo;
   - the About copy is at least one paragraph and, unless `features.regenerate` is `off`, ends on the sign-off that names the button (`regenerate.labels.button`);
   - the card's text matches `seo.image.alt` and uses no em-dash, and the Person schema's role matches the timeline's current one.
 - **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A content file that doesn't fit its shape, a project id that can't be a page's URL among them, fails the build and `npm run site:check` (`config/contentSchema.ts`).

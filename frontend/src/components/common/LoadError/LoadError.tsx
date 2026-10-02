@@ -1,5 +1,5 @@
-// ErrorBoundary's panel and button, so the site keeps one filled button style.
-// ErrorBoundary's own compact fallback is this component.
+// ErrorBoundary's panel, with the site's filled button. ErrorBoundary's own
+// compact fallback is this component.
 import "../ErrorBoundary/ErrorBoundary.css";
 
 type LoadErrorProps = {
@@ -17,7 +17,7 @@ export function LoadError({ message, onRetry, compact = false }: LoadErrorProps)
       role="alert"
     >
       <p className="error-boundary__message">{message}</p>
-      <button className="error-boundary__retry-btn" onClick={onRetry}>
+      <button className="btn btn-primary btn-sm" onClick={onRetry}>
         Retry
       </button>
     </div>

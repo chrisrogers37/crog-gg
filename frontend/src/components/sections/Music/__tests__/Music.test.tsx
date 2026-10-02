@@ -75,7 +75,8 @@ describe("Music", () => {
 
   it("shows no player when site.yaml leaves it empty", () => {
     site.music.embed = undefined;
-    render(<Music />);
-    expect(screen.queryByTitle(site.music.embed_title ?? "music player")).toBeNull();
+    const { container } = render(<Music />);
+    // Not even its box, which renders at once (the iframe waits until it's near).
+    expect(container.querySelector(".spotify-embed")).toBeNull();
   });
 });

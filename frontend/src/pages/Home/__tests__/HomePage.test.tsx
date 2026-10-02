@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import site from "virtual:site-config";
 import { useContentStore, useUIStore } from "../../../store";
-import { makeBio } from "../../../test/builders";
+import { makeBio, makeProject } from "../../../test/builders";
 import {
+  act,
   fireEvent,
   renderWithProviders,
   screen,
@@ -98,6 +99,59 @@ describe("HomePage", () => {
     ]);
     for (const { id } of site.sections) {
       expect(document.getElementById(id)).toBeInTheDocument();
+    }
+  });
+
+  it("renders only the sections site.yaml lists, in its order", () => {
+    const original = site.sections;
+    // The last and the first, the other way round.
+    site.sections = [original[original.length - 1], original[0]];
+    try {
+      loaded();
+      const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+      expect(headings).toEqual([...site.sections.map((s) => s.label), site.contact.heading]);
+      for (const { id } of original.slice(1, -1)) {
+        expect(document.getElementById(id), id).toBeNull();
+      }
+    } finally {
+      site.sections = original;
+    }
+  });
+
+  it("shows the featured project, the next three and a link to them all", () => {
+    useContentStore.setState({
+      projects: ["one", "two", "three", "four", "five"].map((id) =>
+        makeProject({ id, title: id, featured: id === "three" }),
+      ),
+    });
+    loaded({ projects: "ready" });
+
+    const section = document.getElementById("projects")!;
+    expect(within(section).getByRole("article", { name: /three/ })).toBeInTheDocument();
+    const cards = [...section.querySelectorAll("a.project-card")].map((card) =>
+      card.getAttribute("href"),
+    );
+    expect(cards).toEqual(["/projects/one", "/projects/two", "/projects/four"]);
+    expect(within(section).getByRole("link", { name: "All projects" })).toHaveAttribute(
+      "href",
+      "/projects",
+    );
+  });
+
+  it("waits for every file above a linked section, the photo strip's too, before it scrolls", () => {
+    window.history.replaceState(null, "", "/#contact");
+    const scrollIntoView = vi.mocked(Element.prototype.scrollIntoView);
+    scrollIntoView.mockClear();
+    try {
+      // Everything in but showcase.yaml, whose strip sits above the contact section.
+      loaded({ timeline: "ready", projects: "ready" });
+      expect(scrollIntoView).not.toHaveBeenCalled();
+
+      act(() => useContentStore.setState({ showcase: [] }));
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(scrollIntoView.mock.contexts[0]).toBe(document.getElementById("contact"));
+    } finally {
+      window.history.replaceState(null, "", "/");
     }
   });
 

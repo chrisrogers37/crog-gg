@@ -13,10 +13,10 @@
   --text-color-secondary: #64748b; /* slate.500 */
   --card-background: #ffffff; /* white */
   --border-color: #e2e8f0; /* slate.200 */
-  /* Filled buttons and active tabs, under white text, in both themes, as
-     .btn-primary (index.css): white is 5.2:1 on primary.600 and 6.7:1 on
-     primary.700. --primary-color is the text accent, and in the dark theme it
-     is too light to put white on. */
+  /* SUMMON's filled button (ActionButtons.css), under white text in both
+     themes, as .btn-primary (index.css): white is 5.2:1 on primary.600 and
+     6.7:1 on primary.700. --primary-color is the text accent, and in the dark
+     theme it is too light to put white on. */
   --button-color: #2563eb; /* primary.600 */
   --hover-color: #1d4ed8; /* primary.700 */
 }

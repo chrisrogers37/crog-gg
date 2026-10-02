@@ -94,6 +94,8 @@ test.describe("Moving between pages", () => {
     await expect(page.locator("a.project-card").first()).toBeVisible();
     await page.locator('header a[href="/"]').first().click();
     await expect(page).toHaveURL(/\/$/);
+    // The home page's own: /projects, on its way out, has a footer too.
+    await expect(page.locator(".home-page #contact")).toBeAttached();
     await page.locator("footer").scrollIntoViewIfNeeded();
     await expect
       .poll(() => page.evaluate(() => window.scrollY))
@@ -175,6 +177,14 @@ test.describe("Mobile Menu", () => {
     // Menu should be visible
     const menu = page.locator(".mobile-menu");
     await expect(menu).toBeVisible({ timeout: 3000 });
+
+    // Each link is a full row to tap, not just its line of text: a lost rule
+    // once left them 24px tall, in the link colour.
+    for (const box of await menu.locator(".mobile-menu-link").evaluateAll((links) =>
+      links.map((link) => link.getBoundingClientRect().height),
+    )) {
+      expect(box).toBeGreaterThanOrEqual(40);
+    }
 
     // Close button should work
     const closeBtn = page.locator(".mobile-menu-close");

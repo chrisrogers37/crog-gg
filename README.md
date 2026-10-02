@@ -17,7 +17,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### The home page (`/`)
 
 - **One column:** a hero with a photo, then About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects (the featured one first), Music (a Spotify embed and links), a photo strip and the contact links. `/about`, where the page lived from #173 until the redesign, redirects here.
-- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location on the contact card) with OpenAI's `gpt-5.6-luna` (the `OPENAI_MODEL` environment variable overrides it), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
+- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location in the contact section) with OpenAI's `gpt-5.6-luna` (the `OPENAI_MODEL` environment variable overrides it), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
 - **Rate limits** on `/api/regenerate`: a 30 s cooldown, plus daily caps of 30 rewrites per visitor and 300 site-wide. A press rewrites one section, so it uses one of each. An IPv6 /64 counts as one visitor. They're backed by Upstash Redis, and the paid endpoint refuses to run without it (see [Troubleshooting](#troubleshooting)).
 
 ### Projects (`/projects`)

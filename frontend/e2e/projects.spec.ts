@@ -73,11 +73,9 @@ test.describe("Project Detail Page", () => {
     await projectCards.first().click();
     await expect(page).toHaveURL(/\/projects\/.+/);
 
-    // Should have some way to go back (breadcrumb, back link, etc.)
-    const backNav = page.locator(
-      'a[href="/projects"], a[href*="projects"]:not([href*="/projects/"])',
-    );
-    await expect(backNav.first()).toBeVisible();
+    // Some way back on the page itself (breadcrumbs, a back link), not the
+    // header's own link.
+    await expect(page.locator('main a[href="/projects"]').first()).toBeVisible();
   });
 
   test("non-existent project says so, once the content has loaded", async ({
@@ -278,18 +276,27 @@ test.describe("/projects while the projects load (final UI review)", () => {
 
     const skeleton = page.getByRole("status", { name: /loading projects/i });
     await expect(skeleton).toBeVisible();
-    const before = (await skeleton.boundingBox())!;
+    const box = async (locator: import("@playwright/test").Locator) =>
+      (await locator.boundingBox())!;
+    const featuredStandIn = await box(skeleton.locator(".project-featured"));
+    const cardStandIn = await box(skeleton.locator(".projects-grid > *").first());
     release();
-    await expect(page.locator("a.project-card").first()).toBeVisible();
-    const after = (await page.getByRole("region", { name: "Projects" }).boundingBox())!;
+    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
 
-    // The projects start where the skeleton stood, at its width: the page's
-    // width doesn't follow its content. (Not the grid's top: the featured
-    // card's description wraps to as many lines as the fonts make it, which
-    // the skeleton can't know.)
-    expect(after.y).toBeCloseTo(before.y, 0);
-    expect(after.x).toBeCloseTo(before.x, 0);
-    expect(after.width).toBeCloseTo(before.width, 0);
+    // The featured card lands where its stand-in stood, at its width; the
+    // page's width doesn't follow its content.
+    if (FEATURED) {
+      const featured = await box(page.locator(".projects-page article.project-featured"));
+      expect(featured.y).toBeCloseTo(featuredStandIn.y, 0);
+      expect(featured.x).toBeCloseTo(featuredStandIn.x, 0);
+      expect(featured.width).toBeCloseTo(featuredStandIn.width, 0);
+    }
+    // And the cards in their stand-ins' column, at their width. (Not their
+    // top: the featured card's description wraps to as many lines as the fonts
+    // make it, which the skeleton can't know.)
+    const card = await box(page.locator(".projects-page .projects-grid a.project-card").first());
+    expect(card.x).toBeCloseTo(cardStandIn.x, 0);
+    expect(card.width).toBeCloseTo(cardStandIn.width, 0);
   });
 });
 

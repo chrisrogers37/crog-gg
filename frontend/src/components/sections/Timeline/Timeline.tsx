@@ -58,10 +58,8 @@ export function Timeline({ data }: TimelineProps) {
   // Active skills are derived from the visible entries rather than stored
   // alongside them. Computing this in an effect meant the first painted frame
   // had an empty bubble row, which gained its first line one frame later and
-  // pushed everything below it down -- at narrow widths the bubbles sit above
-  // the timeline, so that is the whole section and the buttons beneath it. A
-  // value computed during render is present on the first paint, so there is no
-  // zero-height frame to grow out of.
+  // pushed everything below it down. A value computed during render is present
+  // on the first paint, so there is no zero-height frame to grow out of.
   const activeSkills = useMemo(() => {
     const skills = new Set<string>();
     sortedEntries.slice(0, visibleIndex + 1).forEach((entry) => {

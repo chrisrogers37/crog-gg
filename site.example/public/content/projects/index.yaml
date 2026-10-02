@@ -1,4 +1,6 @@
-# The example projects, in display order (site.example, #191).
+# The example projects, in display order (site.example, #191). `featured`
+# names the one shown first and larger, on / and /projects.
+featured: example.yaml
 projects:
   - example.yaml
   - placeholder.yaml

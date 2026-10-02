@@ -76,14 +76,11 @@ export class ErrorBoundary extends Component<
             persists, try refreshing the page.
           </p>
           <div className="error-boundary__actions">
-            <button
-              className="error-boundary__retry-btn"
-              onClick={this.handleReset}
-            >
+            <button className="btn btn-primary btn-sm" onClick={this.handleReset}>
               Try again
             </button>
             <button
-              className="error-boundary__reload-btn"
+              className="btn btn-ghost btn-sm"
               onClick={() => window.location.reload()}
             >
               Reload page

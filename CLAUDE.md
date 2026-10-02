@@ -135,7 +135,7 @@ git diff                # Review changes before commit
 - Unit tests co-located with components in `__tests__` directories
 - E2E tests in `frontend/e2e/`
 - Mock external APIs in tests
-- Unit tests read the fictional `site.example/` (#191), through `virtual:site-config` and `@site/...`; never import the owner's `site/` by path, and say which `home` a test needs instead of assuming it. The owner's content rules live in `src/site-check/` (`npm run site:check`, the active site)
+- Unit tests read the fictional `site.example/` (#191), through `virtual:site-config` and `@site/...`; never import the owner's `site/` by path, and set what a test needs on the fixture (its sections, a feature) instead of assuming it. The owner's content rules live in `src/site-check/` (`npm run site:check`, the active site)
 
 ### E2E Test Philosophy (IMPORTANT)
 
@@ -145,7 +145,7 @@ Tests should verify **structure and behavior**, not specific content:
 - **DO**: Test that interactions work (clicking toggles state, forms accept input)
 - **DO**: Use flexible selectors that match patterns, not exact classes
 - **DO**: Skip tests gracefully when genuinely optional data (external APIs, live GitHub stats) isn't available
-- **DO**: Take sections, routes and the card from `e2e/site.ts` (the active site), and skip with a structural reason when a site lacks what a test needs (a project it doesn't list, a section it hides)
+- **DO**: Take sections, the bio and the projects from `e2e/site.ts` (the active site), and skip with a structural reason when a site lacks what a test needs (a project it doesn't list, a section it hides)
 - **DON'T**: Test for exact text content that changes frequently
 - **DON'T**: Hard-code copy like "hey there!" or "Welcome to my site"
 - **DON'T**: Skip or vacuously pass when repo-shipped content is missing - YAML under `site/public/content/` ships with the repo, so a page rendering without it is a bug to fail on, not an environment to tolerate (see #120, where skip-gates hid a live production bug)
@@ -167,7 +167,7 @@ await expect(welcomeArea).toBeVisible();
 
 - Who the site is (the owner, the URLs, the socials, the copy around the content) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188; fields: documentation/CONTENT.md). Don't type an owner value into the code: `npm run site:check` fails on its distinctive ones (the name, email, host, descriptions and URLs). Code that `vite.config.ts` imports can't import the virtual module; it calls `siteConfig()` (`frontend/scripts/site-config.ts`). The API reads the same file (`api/_lib/site_config.py`, #189): its CORS origins, GitHub owner, the button's label, the rewrite's persona, and the `features` that hide SUMMON and the GitHub panels where the deployment can't serve them (`GET /api/features`)
 - Content lives in `site/public/content/` as YAML files
-- Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules, on the copy and on `/`'s title, meta description, share card and JSON-LD: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
+- Exception: Claudlobby's page copy (`/projects/claudlobby`) is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched); its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules on the copy: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. `site-check/projects.test.ts` holds its project file, which the card and the page's head show, to the provider rule. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `site/public/content/projects/` directory
 - Loading chain: `contentStore.loadContent` → `utils/*Loader.ts` → YAML files at runtime. The rendered ones (bio, timeline, projects, showcase) are held to their shapes in `config/contentSchema.ts` (#190), by the build and site:check too; on the page, a file that fails takes down only its own section

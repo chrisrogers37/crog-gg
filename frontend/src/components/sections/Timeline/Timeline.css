@@ -182,15 +182,15 @@
   color: var(--text-color);
 }
 
-/* Mobile: Single column, skills above timeline */
+/* Mobile: one column, the skills after the timeline. Above it, the cloud grew
+   as entries scrolled in and pushed the one being read down (a layout shift;
+   scroll anchoring doesn't hold while the entries animate in). Below it, the
+   cloud is whole by the time it's on screen. */
 @media (max-width: 768px) {
   .timeline-layout {
     grid-template-columns: 1fr;
-  }
-
-  .timeline-skills-sidebar {
-    order: -1;
-    margin-bottom: 1rem;
+    /* The last entry's margin and the track's padding space them already. */
+    gap: 0;
   }
 
   .timeline-skills-sticky {

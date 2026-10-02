@@ -75,7 +75,7 @@ export function EmailIcon({ className }: IconProps) {
 }
 
 /** A social's mark, by its site.yaml `icon`. hoobe has none, so its name stands in. */
-export function SocialMark({ icon }: { icon: SocialIcon }) {
+export function SocialMark({ icon }: { icon: SocialIcon }): JSX.Element {
   switch (icon) {
     case "github":
       return <GitHubMark className="link-row-icon" />;

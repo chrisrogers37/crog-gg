@@ -22,11 +22,13 @@ const loadBio = vi.fn();
 const loadTimeline = vi.fn();
 const loadProjects = vi.fn();
 const loadResume = vi.fn();
+const loadShowcase = vi.fn();
 
 vi.mock("../../utils/bioLoader", () => ({ loadBio: () => loadBio() }));
 vi.mock("../../utils/timelineLoader", () => ({ loadTimeline: () => loadTimeline() }));
 vi.mock("../../utils/projectLoader", () => ({ loadProjects: () => loadProjects() }));
 vi.mock("../../data/resume", () => ({ loadResume: () => loadResume() }));
+vi.mock("../../utils/showcaseLoader", () => ({ loadShowcase: () => loadShowcase() }));
 
 const { useContentStore } = await import("../contentStore");
 
@@ -53,6 +55,7 @@ const blankStore = () =>
     education: [],
     timeline: null,
     projects: [],
+    showcase: null,
     originalBio: null,
     originalExperience: [],
     originalEducation: [],
@@ -65,6 +68,7 @@ describe("loadContent", () => {
   beforeEach(() => {
     blankStore();
     vi.clearAllMocks();
+    loadShowcase.mockResolvedValue([]);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => vi.restoreAllMocks());
@@ -153,6 +157,24 @@ describe("loadContent", () => {
 
     expect(useContentStore.getState().bio).toEqual(BIO);
     expect(useContentStore.getState().loads.projects).toBe("loading");
+  });
+
+  it("loads the photo strip's images with the rest, so a link below the strip can wait for them", async () => {
+    const IMAGES = [{ src: "/profile-photos/a", alt: "a" }];
+    let resolve!: (value: typeof IMAGES) => void;
+    loadShowcase.mockReturnValue(new Promise((r) => (resolve = r)));
+    loadBio.mockResolvedValue(BIO);
+    loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockResolvedValue(PROJECTS);
+    loadResume.mockResolvedValue(RESUME);
+
+    const loading = useContentStore.getState().loadContent();
+    expect(loadShowcase).toHaveBeenCalledTimes(1);
+    // Null until the file settles: the home page's hash scroll waits on it.
+    expect(useContentStore.getState().showcase).toBeNull();
+    resolve(IMAGES);
+    await loading;
+    expect(useContentStore.getState().showcase).toEqual(IMAGES);
   });
 
   it("takes nothing down when a résumé file no page renders fails (#159)", async () => {

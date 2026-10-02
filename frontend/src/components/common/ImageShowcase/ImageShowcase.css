@@ -24,25 +24,13 @@
   width: 140px;
   height: 140px;
   object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  /* The site's one radius, and no shadow (CLAUDE.md). */
+  border-radius: 8px;
+  transition: transform 0.3s ease;
 }
 
 .image-showcase-photo:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* Dark mode shadow enhancement */
-.dark .image-showcase-photo {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.dark .image-showcase-photo:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes marquee-scroll {
@@ -81,7 +69,6 @@
   .image-showcase-photo {
     width: 100px;
     height: 100px;
-    border-radius: 10px;
   }
 }
 
@@ -99,6 +86,5 @@
   .image-showcase-photo {
     width: 80px;
     height: 80px;
-    border-radius: 8px;
   }
 }

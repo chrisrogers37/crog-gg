@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
 import { CLAUDLOBBY } from "./site";
 
 /**
@@ -8,8 +9,6 @@ import { CLAUDLOBBY } from "./site";
  * @vercel/analytics keeps for it: exactly what the page hands the real script.
  * Links are found by where they go, not by their copy.
  */
-
-const REPO = "https://github.com/Claudfather/Claudlobby";
 
 test.beforeEach(async ({ context }) => {
   // The repo links open GitHub in a new tab; keep the test offline.
@@ -24,18 +23,9 @@ test("loads the analytics script from the site's own origin", async ({
   expect(new URL((await script).url()).origin).toBe(
     new URL(page.url()).origin,
   );
-});
-
-test("reports each CTA click once, with where it was", async ({ page }) => {
-  test.skip(!CLAUDLOBBY, "the calls to action are Claudlobby's page's");
-  await page.goto("/projects/claudlobby");
-
-  await page.locator(`.page-hero a[href="${REPO}"]`).click();
-  await page.locator('.page-hero a[href="#quickstart"]').click();
-  await page.locator(`#quickstart a[href="${REPO}#quick-start"]`).click();
 
   // The filter the real script is handed keeps utm_* tags and drops every
-  // other query parameter and the fragment...
+  // other query parameter and the fragment.
   const reported = await page.evaluate(() => {
     const filter = (window.vaq ?? []).find(([type]) => type === "beforeSend")?.[1] as
       | ((event: { type: "pageview"; url: string }) => { url: string })
@@ -46,7 +36,17 @@ test("reports each CTA click once, with where it was", async ({ page }) => {
     }).url;
   });
   expect(reported).toBe(`${new URL(page.url()).origin}/?utm_source=x`);
-  // ...and each click is reported once.
+});
+
+test("reports each CTA click once, with where it was", async ({ page }) => {
+  test.skip(!CLAUDLOBBY, "the calls to action are Claudlobby's page's");
+  await page.goto("/projects/claudlobby");
+
+  await page.locator(`.page-hero a[href="${REPO}"]`).click();
+  await page.locator('.page-hero a[href="#quickstart"]').click();
+  await page.locator(`#quickstart a[href="${REPO}#quick-start"]`).click();
+
+  // Each click is reported once.
   const events = await page.evaluate(() =>
     (window.vaq ?? []).filter(([type]) => type === "event"),
   );

@@ -20,7 +20,7 @@ export function RouteError() {
         </p>
         <div className="error-boundary__actions">
           <button
-            className="error-boundary__retry-btn"
+            className="btn btn-primary"
             onClick={() => window.location.reload()}
           >
             Reload page

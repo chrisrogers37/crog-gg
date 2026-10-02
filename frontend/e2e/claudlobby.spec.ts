@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
 import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
 
 /**
@@ -10,7 +11,6 @@ import { CLAUDLOBBY, expectBelowHeader, site } from "./site";
  * point of the page. Links are found by where they go.
  */
 
-const REPO = "https://github.com/Claudfather/Claudlobby";
 const PAGE = "/projects/claudlobby";
 
 // The whole file is the page's, which only a site listing Claudlobby has.
@@ -109,12 +109,13 @@ test.describe("Claudlobby's page", () => {
 
 test.describe("A shared link to one of its sections", () => {
   test("opens on it, below the header, once the page is in", async ({ page }) => {
-    test.skip(!CLAUDLOBBY, "the site doesn't list Claudlobby");
-    // Mid-page, so the browser can bring the section all the way up: only the
-    // sections' scroll margin keeps the heading out from under the header.
+    // Mid-page and off the first screen, so the page has to scroll there, and
+    // can bring the section all the way up: only the sections' scroll margin
+    // keeps the heading out from under the header.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto(`${PAGE}#dark-factory`);
-    await expectBelowHeader(page, "#dark-factory h2");
+    await page.goto(`${PAGE}#quickstart`);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    await expectBelowHeader(page, "#quickstart h2");
   });
 });

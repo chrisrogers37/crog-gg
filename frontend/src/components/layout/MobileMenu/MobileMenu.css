@@ -81,8 +81,20 @@
   letter-spacing: 0.5px;
 }
 
-/* Links and buttons */
-.mobile-menu-link,
+/* Links */
+.mobile-menu-link {
+  display: block;
+  padding: 0.6rem 0;
+  font-size: 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.mobile-menu-link:hover {
+  color: var(--primary-color);
+}
+
 /* Theme section */
 .mobile-menu-theme {
   flex-direction: row;

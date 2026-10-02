@@ -4,9 +4,11 @@ import site from "virtual:site-config";
 import { API_URL } from "../config/api";
 import { BioData, Employment, Education, Skill, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
+import type { ShowcaseImage } from "../types/Showcase";
 import { loadResume } from "../data/resume";
 import { loadBio } from "../utils/bioLoader";
 import { loadProjects } from "../utils/projectLoader";
+import { loadShowcase } from "../utils/showcaseLoader";
 import { loadTimeline } from "../utils/timelineLoader";
 
 // ===========================================
@@ -30,6 +32,9 @@ interface ContentState {
   skills: Skill[];
   projects: Project[];
   timeline: TimelineData | null;
+  // The photo strip's images, null until showcase.yaml settles. The strip is
+  // decoration, so its file never fails: one that won't load is no photos.
+  showcase: ShowcaseImage[] | null;
 
   // Original data for reset functionality
   originalBio: BioData | null;
@@ -87,6 +92,7 @@ const initialState: ContentState = {
   skills: [],
   projects: [],
   timeline: null,
+  showcase: null,
   originalBio: null,
   originalExperience: [],
   originalEducation: [],
@@ -221,6 +227,9 @@ export const useContentStore = create<ContentStore>()(
           reload("bio", loadBio, (bio) => ({ bio, originalBio: bio })),
           reload("timeline", loadTimeline, (timeline) => ({ timeline })),
           reload("projects", loadProjects, (projects) => ({ projects })),
+          // With the rest, not once the home page is up: a link to the
+          // contact section below the strip waits for it (HomePage).
+          loadShowcase().then((showcase) => set({ showcase })),
           resume,
         ]);
       },
@@ -465,3 +474,5 @@ export const useLoad = (part: LoadedContent) =>
 export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
 export const useTimeline = () => useContentStore((state) => state.timeline);
+/** The photo strip's images: null while showcase.yaml loads. */
+export const useShowcase = () => useContentStore((state) => state.showcase);

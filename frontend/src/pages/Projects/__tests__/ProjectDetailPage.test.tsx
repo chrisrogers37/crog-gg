@@ -8,6 +8,7 @@ import { useContentStore, useUIStore } from "../../../store";
 import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
 import { makeProject } from "../../../test/builders";
+import { claudlobby } from "../../../content/claudlobby";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -95,9 +96,42 @@ describe("ProjectDetailPage's Go Back", () => {
   });
 
   it("goes back when there's a page of ours to go back to", () => {
-    const router = renderAt(["/about", "/projects/benzo"]);
+    const router = renderAt(["/", "/projects/benzo"]);
     fireEvent.click(screen.getByRole("button", { name: /go back/i }));
-    expect(router.state.location.pathname).toBe("/about");
+    expect(router.state.location.pathname).toBe("/");
+  });
+});
+
+/**
+ * A project content/ownPages.ts lists gets its own page in place of the
+ * standard one. site:check lets its repo be any owner's because that page
+ * shows no GitHub panels, so this holds it to that.
+ */
+describe("A project with a page of its own", () => {
+  it("renders that page under the breadcrumbs, and asks GitHub for nothing", () => {
+    useContentStore.setState({
+      projects: [
+        makeProject({
+          id: "claudlobby",
+          title: "Claudlobby",
+          github: "https://github.com/Claudfather/Claudlobby",
+          featured: true,
+        }),
+      ],
+      loads: { ...INITIAL.loads, projects: "ready" },
+    });
+    githubServed();
+    const getRepository = vi
+      .spyOn(githubService, "getRepository")
+      .mockRejectedValue(new Error("offline"));
+    const getReadme = vi.spyOn(githubService, "getReadme").mockRejectedValue(new Error("offline"));
+    renderAt(["/projects/claudlobby"]);
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(claudlobby.hero.headline);
+    expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^(repository|readme)$/i })).toBeNull();
+    expect(getRepository).not.toHaveBeenCalled();
+    expect(getReadme).not.toHaveBeenCalled();
   });
 });
 

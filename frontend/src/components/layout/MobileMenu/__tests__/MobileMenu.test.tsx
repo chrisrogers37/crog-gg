@@ -19,9 +19,10 @@ vi.mock("../../../../store", () => ({
 }));
 
 describe("MobileMenu", () => {
+  // As site.yaml may write them; the menu shows them lowercase.
   const sections = [
-    { id: "about", label: "about" },
-    { id: "journey", label: "journey" },
+    { id: "about", label: "About" },
+    { id: "journey", label: "Journey" },
   ];
 
   it("renders menu when open, linking the page's sections by their ids", () => {

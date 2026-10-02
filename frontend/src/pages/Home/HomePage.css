@@ -45,6 +45,12 @@
   margin-top: 0.75rem;
 }
 
+/* Full height, as the route's own fallback is (router.tsx). Shorter, it let
+   the footer up into view for the moment before the page replaced it. */
+.home-skeleton {
+  min-height: 100vh;
+}
+
 /* The photo's circle while the bio loads; the lines are page.css's. */
 .home-photo--loading {
   background: var(--border-color);

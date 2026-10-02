@@ -169,4 +169,30 @@ describe("readProjects", () => {
     const projects = await readProjects(async (file) => files[file]);
     expect(projects.map((project) => project.id)).toEqual(["zeta", "alpha", "mid"]);
   });
+
+  it("marks the one project index.yaml features, and only that one", async () => {
+    const files: Record<string, string> = {
+      "index.yaml": "featured: b.yaml\nprojects:\n  - a.yaml\n  - b.yaml\n",
+      "a.yaml": VALID.replace("a-b", "a"),
+      "b.yaml": VALID.replace("a-b", "b"),
+    };
+    const projects = await readProjects(async (file) => files[file]);
+    expect(projects.map((project) => [project.id, project.featured])).toEqual([
+      ["a", false],
+      ["b", true],
+    ]);
+  });
+
+  it("features nothing when index.yaml names none", async () => {
+    const projects = await readOne(VALID);
+    expect(projects.map((project) => project.featured)).toEqual([false]);
+  });
+
+  it("refuses to feature a file the index doesn't list", async () => {
+    await expect(
+      readProjects(async (file) =>
+        file === "index.yaml" ? "featured: z.yaml\nprojects:\n  - a.yaml\n" : VALID,
+      ),
+    ).rejects.toThrow("content/projects/index.yaml features z.yaml, which it doesn't list");
+  });
 });

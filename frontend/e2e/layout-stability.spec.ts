@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { SUMMON } from "./site";
+import { SECTIONS, SUMMON } from "./site";
 
 /**
  * Interaction-shift gates for SUMMON NEW LORE.
@@ -281,5 +281,77 @@ test.describe("idle typewriter does not reflow the page (#148)", () => {
     // nor the buttons under it move while characters are typed and deleted.
     expect(travel(mounted.map((s) => s.msgHeight))).toBe(0);
     expect(travel(mounted.map((s) => s.ctasTop))).toBe(0);
+  });
+});
+
+/** Sum the layout shifts from here on, as the browser scores them. */
+const OBSERVE_SHIFTS = () => {
+  const w = window as unknown as Record<string, number>;
+  w.__shift = 0;
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries() as (PerformanceEntry & {
+      value: number;
+      hadRecentInput: boolean;
+    })[]) {
+      if (!entry.hadRecentInput) w.__shift += entry.value;
+    }
+  }).observe({ type: "layout-shift" });
+};
+
+// What #247's UI review measured on the preview: 0.11 on a desktop's cold
+// load, and 0.46 on a phone that loads the page and reads down the journey.
+test.describe("the home page holds still while it loads and scrolls (#247)", () => {
+  test("its skeleton keeps the footer below the fold until the page arrives", async ({
+    page,
+  }) => {
+    // bio.yaml held back, so the skeleton stands in for the page meanwhile.
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/content/bio.yaml", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto("/");
+    await expect(page.locator(".home-skeleton")).toBeVisible();
+    // Shorter than the screen, it let the footer up into view, and the page
+    // arriving dropped it away again: a shift on every cold load.
+    await expect(page.locator("footer.footer")).not.toBeInViewport();
+    release();
+    await expect(page.locator(".home-hero h1")).toBeVisible();
+  });
+
+  test("the journey doesn't push the entries about as a phone reads down it", async ({
+    page,
+  }) => {
+    test.skip(!SECTIONS.some(({ id }) => id === "journey"), "the site shows no journey");
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/");
+    await expect(page.locator("#journey .timeline-entry").first()).toBeAttached();
+    await page.evaluate(() => document.fonts.ready);
+
+    await page.evaluate(OBSERVE_SHIFTS);
+    // Down a step at a time, as a reader does, to a screen past the journey.
+    // Each entry that scrolls in adds its skills to the cloud; above the
+    // entries, the cloud grew and pushed the one being read down.
+    const past = await page
+      .locator("#journey")
+      .evaluate((el) => el.getBoundingClientRect().bottom + window.scrollY + window.innerHeight);
+    for (let step = 0; step < 60; step++) {
+      const y = await page.evaluate(() => {
+        window.scrollBy(0, 300);
+        return window.scrollY;
+      });
+      await page.waitForTimeout(120);
+      if (y + 812 >= past) break;
+    }
+    // The last entries' animations, and the bubbles they add.
+    await page.waitForTimeout(1000);
+
+    // POSITIVE CONTROL: the scroll went past the journey, so every entry came by.
+    const bottom = await page.locator("#journey").evaluate((el) => el.getBoundingClientRect().bottom);
+    expect(bottom).toBeLessThan(0);
+    expect(
+      await page.evaluate(() => (window as unknown as Record<string, number>).__shift),
+    ).toBeLessThan(0.01);
   });
 });

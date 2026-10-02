@@ -8,6 +8,7 @@ import {
   useContentStore,
   useLoad,
   useRegenerationError,
+  useShowcase,
   useTimeline,
 } from "../../store";
 import { SEO } from "../../components/SEO";
@@ -100,6 +101,7 @@ function HomeContent() {
   const projectsLoad = useLoad("projects");
   const bio = useBio();
   const timeline = useTimeline();
+  const showcase = useShowcase();
   const loadContent = useContentStore((s) => s.loadContent);
   const reloadTimeline = useContentStore((s) => s.reloadTimeline);
 
@@ -107,9 +109,13 @@ function HomeContent() {
   useSectionMenu(MENU_SECTIONS);
 
   // A link to a section (/#music) lands on it once every file above it is in:
-  // until then, the sections it sits under are still growing.
+  // until then, the sections it sits under are still growing. The photo strip
+  // is above the contact section.
   useScrollToHash(
-    bioLoad === "ready" && timelineLoad !== "loading" && projectsLoad !== "loading",
+    bioLoad === "ready" &&
+      timelineLoad !== "loading" &&
+      projectsLoad !== "loading" &&
+      showcase !== null,
   );
 
   if (bioLoad === "loading" || !bio) {
