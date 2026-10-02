@@ -514,9 +514,10 @@ def _regenerate_section(
         return _fail(section, FAILURE_TOO_LONG, chars=size)
 
     # Observed, not enforced -- see the two helpers for why each is a warning
-    # rather than a rejection. Both are what makes the shape and literal anchors
-    # in prompts.py falsifiable at all: without a count, "the model preserves structure" is a
-    # claim no affordable number of presses could check.
+    # rather than a rejection. Both are what makes the shape and literal
+    # anchors in prompts.py falsifiable at all: without a count, "the model
+    # preserves structure" is a claim no affordable number of presses could
+    # check.
     if flattened := _lost_paragraphs(content, parsed):
         logger.warning("regenerate.shape_lost section=%s fields=%s", section, ",".join(flattened))
     if renamed := _lost_verbatim(content, parsed):

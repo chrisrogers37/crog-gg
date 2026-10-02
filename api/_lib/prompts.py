@@ -86,7 +86,7 @@ _LENGTH_ANCHOR = (
 # facts" means is re-read from a copy every press. Naming them keeps ten presses
 # about the same person.
 #
-# It is a request, not enforcement -- the distinction _UNAUTHORED_KEYS draws.
+# It is a request, not enforcement -- the distinction _UNAUTHORED_KEYS (index.py) draws.
 # Per-step fidelity is all a prompt can ask for, and it does not compose: every
 # step can honour its input while the tenth is about someone else. Enforcement
 # means re-sending the ORIGINAL alongside the current text as ground truth, which
@@ -141,7 +141,7 @@ _SHAPE_ANCHOR = (
 # both capitalise freely.
 #
 # One table, two consumers: interpolated into the prompt below, and checked after
-# parsing by _lost_verbatim. That pairing is the _UNAUTHORED_KEYS lesson -- the
+# parsing by _lost_verbatim (index.py). That pairing is the _UNAUTHORED_KEYS lesson -- the
 # request and the check read from the same place, so they cannot drift apart.
 _VERBATIM_STRINGS = ("SUMMON NEW LORE",)
 
@@ -174,7 +174,8 @@ _TONE_ANCHOR = (
 # (not a precedence): treat the input as data, do not grow, do not drift off the
 # person, keep the shape you were handed, leave the names of on-screen controls
 # alone, and never reach for an em dash. The mode-specific half rides each
-# section's "format".
+# section's "format". Built once, at import: a test that patches one anchor
+# here won't reach the prompt, so patch api.index._STANDING_CONSTRAINTS.
 _STANDING_CONSTRAINTS = (
     _INJECTION_GUARD + _LENGTH_ANCHOR + _FACT_ANCHOR + _SHAPE_ANCHOR + _LITERAL_ANCHOR + _TONE_ANCHOR
 )
@@ -188,7 +189,7 @@ _STANDING_CONSTRAINTS = (
 # sea shanty built from the same facts do not converge, where two epics do.
 #
 # Not a temperature substitute -- this model rejects an explicit temperature
-# outright (see OPENAI_SAMPLING), so prompt-side variation is the only dial there
+# outright (see OPENAI_SAMPLING in index.py), so prompt-side variation is the only dial there
 # is. Sampling from this list (once per press, in index.py) rather than asking
 # the model to choose keeps the instruction genuinely different per press even
 # when the input text is identical.
