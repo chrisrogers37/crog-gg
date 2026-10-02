@@ -11,7 +11,7 @@ This is the interim guide. The owner's identity is still typed into a few dozen 
 
 **Content** (see [documentation/CONTENT.md](documentation/CONTENT.md) for every field):
 - `frontend/public/content/`: the bio, the timeline, the projects and the showcase;
-- `experience.yaml`, `education.yaml` and `skills.yaml` there too. Nothing renders them, but they load with the rest, so empty each to its list (`experience: []`) rather than deleting it: a missing or empty file takes `/about` and `/projects` down;
+- `experience.yaml`, `education.yaml` and `skills.yaml` there too. Nothing renders them, but they load with the rest, so empty each to its list (`experience: []`) rather than deleting it: a missing or blank file takes `/about` and `/projects` down;
 - `frontend/public/content/projects/hedwig.yaml`, which `index.yaml` doesn't list but which is still served: delete it;
 - the photos: `frontend/public/profile-photo.jpg`, `frontend/public/profile-photos/`, the originals in `frontend/scripts/photos/originals/`, and the list of hero photos (`PROFILE_PHOTOS` in `frontend/src/utils/photos.ts`);
 - `frontend/public/logos/`: one PNG per organisation domain in your timeline.
@@ -22,7 +22,7 @@ This is the interim guide. The owner's identity is still typed into a few dozen 
 - the name in `frontend/src/components/layout/Navigation/Navigation.tsx` and `Footer/Footer.tsx`;
 - the typewriter phrases on `/about`, in `frontend/src/pages/About/AboutPage.tsx`;
 - `frontend/src/components/sections/Music/Music.tsx`: its intro, its fallback links, and its Spotify player, which is hardcoded to the owner's artist page;
-- `frontend/src/components/sections/ContactCTA/ContactCTA.tsx`: its fallback links and copy;
+- `frontend/src/components/sections/ContactCTA/ContactCTA.tsx`: the Instagram handles it prints as labels (`@cr0g`, `@crogmusic`), and its copy;
 - `frontend/src/components/features/GitHubReadme/GitHubReadme.tsx`: the GitHub owner in its links.
 
 **SEO and the social card:**
@@ -42,7 +42,7 @@ This is the interim guide. The owner's identity is still typed into a few dozen 
 Then look for what's left:
 
 ```bash
-git grep -n -i -E "chris|crog|chrisrogers37"
+git grep -n -i -E "chris|crog|cr0g"
 ```
 
 ## Deploying

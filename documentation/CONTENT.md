@@ -21,7 +21,7 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
   - The collapsed About preview is cut at a fixed height, tuned to today's text (`ABOUT_CLAMP_NARROW` and `ABOUT_CLAMP_WIDE` in `frontend/src/pages/About/AboutPage.tsx`). After editing `about_text`, re-measure them (#162), or the fade can fall mid-line, or hide most of the text.
 - **`email` and `location`:** the contact card.
 - **`social_links`:** `github`, `hoobe`, `spotify` and `linkedin` are typed as required, and `telegram`, `instagram_personal` and `instagram_music` as optional; nothing checks them at run time. The contact card links them. The Music tab links `spotify`, `hoobe` and `instagram_music`, falling back to the owner's own URLs when one is missing; its Spotify player is hardcoded (`Music.tsx`).
-- **Never written by the model.** SUMMON NEW LORE rewrites the bio's text (the name, the tagline and the About text), but the server puts `email` and `social_links` back after every rewrite (`_UNAUTHORED_KEYS` in `api/index.py`), because the page turns them straight into links.
+- **Never written by the model.** SUMMON NEW LORE rewrites the bio's text (the name, the tagline, the About text and the location), but the server puts `email` and `social_links` back after every rewrite (`_UNAUTHORED_KEYS` in `api/index.py`), because the page turns them straight into links.
 - `role` is typed but nothing reads it.
 
 ## timeline.yaml
@@ -36,6 +36,7 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 **`skill_categories`**, each with a `color` and the `skills` in it.
 - `color` is a quoted hex colour, `"#rrggbb"` or `"#rgb"`. Unquoted, YAML reads `#` as the start of a comment. Anything else shows in the default grey.
 - A skill in no category shows in grey too.
+- Each category's `skills` is required too (`skills: []` if empty): a category without it breaks the Journey tab.
 
 If `timeline.yaml` won't load or parse, the Journey tab says "Loading journey..." and stays that way (#190 M23).
 
@@ -53,7 +54,7 @@ If `timeline.yaml` won't load or parse, the Journey tab says "Loading journey...
 - **`technologies`:** the card shows the first three.
 - **`github`** (optional): a public repo of the site's GitHub owner (`GITHUB_USERNAME` in `api/_lib/request_utils.py`). The page looks the repo's name up under that owner, so another owner's repo would show the wrong repo, or no README. Without `github`, a `url` that is a GitHub repo is used instead.
 - **`demo`** (optional): when it differs from `url` and isn't on github.com, the page embeds it. Its exact origin must then be in `frame-src` in `vercel.json`, or the frame is blocked.
-- **`order`:** where the project sits, lowest first; the order of `index.yaml` doesn't matter. `order: 0` counts as unset and sorts last.
+- **`order`:** where the project sits, lowest first; `index.yaml`'s order only breaks ties. `order: 0` counts as unset and sorts last.
 - **`gradient`:** the card's header colour. Without one, the header is grey.
 - **`status`:** a badge on the project's page (`active`, `archived` or `experimental`).
 - **`category`:** the filter buttons on `/projects`; the raw value is the button's label.
@@ -71,10 +72,10 @@ The strip needs at least three images. With fewer, it doesn't show.
 
 ## experience.yaml, education.yaml and skills.yaml
 
-They're loaded at start-up with the rest of the content, but nothing renders them: the Journey tab renders `timeline.yaml`. A valid edit changes nothing on the site, but a broken, emptied or deleted file takes `/about` and `/projects` down (#190 M23). To retire one, leave its list empty (`experience: []`). #159's item 1 decides whether they're deleted, or rendered on `/about`.
+They're loaded at start-up with the rest of the content, but nothing renders them: the Journey tab renders `timeline.yaml`. A valid edit changes nothing on the site, but a broken, blank or deleted file takes `/about` and `/projects` down (#190 M23). To retire one, leave its list empty (`experience: []`). #159's item 1 decides whether they're deleted, or rendered on `/about`.
 
 ## What catches a mistake
 
 - **`npm run build`** parses every project file `index.yaml` lists, so a broken one fails the build.
-- **The unit tests** read the shipped content with the site's own loaders. `shippedContent.test.ts` holds each project to the rules above (one emoji icon, the owner's public repos, a `frame-src` entry for an embedded demo), `photos.test.ts` checks every photo's variants exist, and a project id the router can't serve fails `router.test.tsx`.
+- **The unit tests** read the shipped content with the site's own loaders. `shippedContent.test.ts` holds each project to the rules above (one emoji icon, repos of the site's owner, a `frame-src` entry for an embedded demo), `photos.test.ts` checks every photo's variants exist, and a project id the router can't serve fails `router.test.tsx`.
 - **The e2e tests** run against the shipped content, and fail rather than skip when it's missing (#120).

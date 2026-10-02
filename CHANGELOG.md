@@ -78,6 +78,9 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 - The lore varies by form, a different register each press, and the prompt states what a rewrite may not move (#144).
 
+### Fixed
+- DISPEL ENCHANTMENT is offered only when a rewrite actually changed something (#155).
+
 ## 2026-08-03
 
 ### Changed
@@ -96,8 +99,23 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ## 2026-07-30
 
+### Changed
+- The `/languages` aggregate is cached in Redis, so a burst of visits can't spend the GitHub token's quota (#127).
+
 ### Security
 - `/api/regenerate` validates its input, fences the content as data in the prompt, and meters before it calls the model (#116).
+
+## 2026-06-28
+
+### Security
+- The GitHub proxy serves only the owner's public repos (#100).
+
+## 2026-05-29
+
+### Security
+- `/api/regenerate` has a daily cap per visitor (#92).
+- Tighter CORS, and errors that no longer echo internals or the model's raw output (#93, #95).
+- Security headers, including the Content-Security-Policy (#94).
 
 ## 2026-05-27
 

@@ -23,7 +23,7 @@ Give Claude verification loops for 2-3x quality improvement:
 4. Lint before committing: `cd frontend && npm run lint`
 5. Before creating a PR: run every row of the table in CONTRIBUTING.md's "Before you open a PR" (the API rows only if the Python side changed)
 
-**Linking issues (#169):** `Closes #N` only for a full fix; otherwise `Refs #N`, with no closing keyword anywhere (even a negated one), and an issue naming what's left. Details: CONTRIBUTING.md.
+**Linking issues (#169):** `Closes #N` only for a full fix; otherwise `Refs #N`, with no closing keyword for #N anywhere in the PR (even a negated one), and an issue naming what's left. Details: CONTRIBUTING.md.
 
 **Docs travel with the change:** a PR that changes behaviour, an environment variable, a command or a limit updates the doc that owns the fact (CONTRIBUTING.md lists which), and adds a CHANGELOG.md line for anything a visitor or a forker would notice.
 
@@ -111,7 +111,7 @@ git diff                # Review changes before commit
 
 | Endpoint                          | Method | Description                                   |
 | --------------------------------- | ------ | --------------------------------------------- |
-| `/api/regenerate`                 | POST   | AI content regeneration (30s cooldown per IP) |
+| `/api/regenerate`                 | POST   | AI content regeneration (30 s cooldown per visitor) |
 | `/api/limits`                     | GET    | Current cooldown status                       |
 | `/api/health`                     | GET    | Health checks for uptime monitors (200 / 503) |
 | `/api/v1/github/repo/<name>`      | GET    | GitHub repo details                           |
@@ -194,7 +194,7 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 Deployed on Vercel. Every push to `main` auto-deploys to production at https://www.crog.gg, the canonical host (the apex `crog.gg` 308s to it, a Vercel domain setting); every push to any other branch gets a preview URL posted on the PR.
 
-Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` and `robots.txt` are generated at build time from the prerendered page list, so there are no static copies in `public/`.
+Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robots) comes from `SITE_URL` in `frontend/src/seo/site.ts`; don't hard-code the host anywhere else. `sitemap.xml` is generated at build time from the prerendered page list, and `robots.txt` beside it points to it, so there are no static copies in `public/`.
 
 ### Layout
 

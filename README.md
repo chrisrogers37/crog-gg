@@ -17,7 +17,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### Choose Your Own Chris (`/about`)
 
 - **Tabs:** About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects, and Music (a Spotify embed and links).
-- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline and the text) with OpenAI's `gpt-5.6-luna` (`OPENAI_MODEL` in `api/index.py`), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
+- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location on the contact card) with OpenAI's `gpt-5.6-luna` (`OPENAI_MODEL` in `api/index.py`), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
 - **Rate limits** on `/api/regenerate`: a 30 s cooldown, plus daily caps of 30 rewrites per visitor and 300 site-wide. A press rewrites one section, so it uses one of each. An IPv6 /64 counts as one visitor. They're backed by Upstash Redis, and the paid endpoint refuses to run without it (see [Troubleshooting](#troubleshooting)).
 
 ### Projects (`/projects`)
@@ -27,7 +27,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### Under the hood
 
 - **One origin:** the static frontend and the Flask API (`/api/*`) are served from the same Vercel domain, so there's no CORS in production.
-- **Prerendered heads:** each landing page ships its own title, description and social card, and the sitemap and robots.txt are generated from the same page list at build time.
+- **Prerendered heads:** each landing page ships its own title, description and social card, and the build generates the sitemap from the same page list (robots.txt points to it).
 - **Light and dark themes:** light by default; the toggle cycles light, dark and system, which follows the OS.
 - **Quality gates:** lint, type checks and tests on both halves, run by Husky locally and by [CI](#cicd) on every PR.
 
@@ -185,7 +185,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 
 ### Environment variables
 
-Set them in the Vercel project's settings. This table is the list the other docs point to; local development needs none of them ([`.env.example`](.env.example) is the template).
+Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one that's local only). This table is the list the other docs point to; local development needs none of them ([`.env.example`](.env.example) is the template).
 
 | Var                                     | Required          | Notes                                                                                                                                                                                           |
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -202,7 +202,7 @@ Set them in the Vercel project's settings. This table is the list the other docs
 - Caps are charged before any OpenAI call, and without Redis the endpoint answers 503 rather than run unmetered ([ARCHITECTURE](documentation/ARCHITECTURE.md#apiregenerate-gate-by-gate), #113).
 - The per-visitor cap (`REGEN_DAILY_MAX`) bounds one address; the site-wide cap (`REGEN_GLOBAL_DAILY_MAX`) bounds all of them together, so many addresses can't multiply the spend past it.
 - Both caps live in this code and in Redis. Set a **monthly budget in the OpenAI billing dashboard**, and check that it stops requests rather than only alerting: it's the one limit outside this infrastructure, so it holds even if a cap is raised by mistake.
-- Previews share production's Upstash database and OpenAI key, so a press on a preview spends production's site-wide daily slots (#139). Unless Preview has its own `IP_HASH_SALT`, it also spends the presser's own daily slots and cooldown.
+- Previews share production's Upstash database and OpenAI key, so a press on a preview spends production's site-wide daily slots (#139). If Preview uses Production's `IP_HASH_SALT` (or neither sets one), it also spends the presser's own daily slots and cooldown.
 
 ### Provisioning Upstash Redis
 
@@ -232,7 +232,7 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints' rate limiter fails open), so fix Upstash, not the endpoint |
 | `/api/regenerate` returns 503 `"Daily regeneration budget reached"`                   | The site-wide daily ceiling (`REGEN_GLOBAL_DAILY_MAX` in `api/index.py`) is used up; each refusal logs `regenerate.global_cap_reached`. It frees up as the rolling 24 h window moves. Raise it only if the OpenAI budget allows |
 | `/api/regenerate` failures with reason `model_error`                                    | The OpenAI key is invalid, or its quota or budget is used up. Check the OpenAI usage page.                                               |
-| Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy currently reports these as "not found".       |
+| Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy answers 502, or 503 when GitHub rate-limits it, with "GitHub is unavailable right now", and logs `github upstream error`. |
 | GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. Their rate limiter fails open by design.                                                                  |
 | `/api/v1/github/languages` returns 503 `"Language stats are unavailable right now"` | Upstash is unavailable. The aggregate refuses rather than fan out to GitHub uncached (#194 M33). |
 | Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
