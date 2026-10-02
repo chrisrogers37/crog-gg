@@ -39,8 +39,9 @@ if [ -n "$MERGE_BASE" ]; then
   fi
 
   # Dependency, Python version and tool config changes count too, and the
-  # site.yaml files the API and its tests read (#189).
-  if echo "$CHANGED_FILES" | grep -qE "^(api/|tests/|conftest\.py$|requirements|\.python-version$|setup\.cfg$|pyproject\.toml$|\.flake8$|pytest\.ini$|site/site\.yaml$|site\.example/site\.yaml$)"; then
+  # site.yaml files the API and its tests read, and vercel.json, which bundles
+  # one with the function (#189).
+  if echo "$CHANGED_FILES" | grep -qE "^(api/|tests/|conftest\.py$|requirements|\.python-version$|setup\.cfg$|pyproject\.toml$|\.flake8$|pytest\.ini$|site/site\.yaml$|site\.example/site\.yaml$|vercel\.json$)"; then
     PYTHON_CHANGED=true
   fi
 else

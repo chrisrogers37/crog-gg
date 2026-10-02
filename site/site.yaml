@@ -28,8 +28,7 @@ site:
     - https://crog.gg
 
 github:
-  # Whose public repos the project pages' stats and READMEs come from. The
-  # GITHUB_OWNER environment variable overrides it.
+  # Whose public repos the project pages' stats and READMEs come from.
   username: chrisrogers37
 
 # What / shows. landing: the Claudlobby landing page, with the personal page at

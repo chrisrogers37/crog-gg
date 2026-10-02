@@ -553,3 +553,21 @@ def test_a_private_repo_of_an_allowed_owner_is_still_hidden(client):
         r = client.get(f"/api/v1/github/repo/{CONFIG.github_owner}/secret")
     assert r.status_code == 404
     assert r.get_json() == {"error": "Repository not found"}
+
+
+def test_a_repo_that_redirects_to_another_owner_is_hidden(client):
+    # GitHub redirects a transferred repo, and requests follows: the repo it
+    # lands on belongs to someone the site doesn't serve.
+    payload = {"name": "shuffify", "private": False, "owner": {"login": "someone-else"}}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        repo = client.get("/api/v1/github/repo/octocat/shuffify")
+        readme = client.get("/api/v1/github/readme/octocat/shuffify")
+    for r in (repo, readme):
+        assert r.status_code == 404
+        assert r.get_json() == {"error": "Repository not found"}
+
+
+def test_a_repo_still_with_an_allowed_owner_is_served(client):
+    payload = {"name": "shuffify", "private": False, "owner": {"login": "OctoCat"}}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        assert client.get("/api/v1/github/repo/octocat/shuffify").status_code == 200

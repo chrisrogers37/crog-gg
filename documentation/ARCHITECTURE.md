@@ -69,7 +69,7 @@ Each section costs the visitor a daily slot, so send only what the page shows (#
 
 ### The GitHub proxy
 
-- `/api/v1/github/repo`, `/readme` and `/languages/<name>` serve **only public repos of allowed owners**: `github.username` (or `GITHUB_OWNER`) and `github.allowed_owners`. `/repo/<owner>/<name>` and `/readme/<owner>/<name>` name the owner, as the project pages do; the one-segment routes mean `github.username`. Any other owner, and a private or missing repo, get the same 404 before or after GitHub is asked, so the proxy can't reveal which private repos exist (#97, #189).
+- `/api/v1/github/repo`, `/readme` and `/languages/<name>` serve **only public repos of allowed owners**: `github.username` and `github.allowed_owners`. `/repo/<owner>/<name>` and `/readme/<owner>/<name>` name the owner, as the project pages do; the one-segment routes mean `github.username`. Any other owner, and a private or missing repo, get the same 404 before or after GitHub is asked, so the proxy can't reveal which private repos exist (#97, #189).
 - Each is limited to 30 requests a minute per visitor (failing open), and a 200 is cached at Vercel's edge for an hour.
 - The `/languages` aggregate is cached in Redis for an hour. When that cache can't be read, it answers 503 rather than make 1 + N uncached GitHub calls (#194 M33).
 - `/contributions` asks GitHub's GraphQL API, which needs `GITHUB_TOKEN`.

@@ -1,7 +1,9 @@
 """site_config: the API's reading of site.yaml (#189).
 
-The tests run on site.example (conftest.py sets SITE_DIR); these also load the
-owner's site/site.yaml, since the function ships with that one.
+The tests run on site.example (conftest.py sets SITE_DIR), and break copies of
+its site.yaml. The owner's own site/site.yaml is only loaded, never read for
+its values, since the function ships with it and a fork's edits to it must
+not turn these red (#191).
 """
 
 import json
@@ -14,31 +16,23 @@ from api._lib import site_config
 from api._lib.site_config import REPO_ROOT, SiteConfigError, load
 
 OWNER_SITE = REPO_ROOT / "site" / "site.yaml"
+FIXTURE = REPO_ROOT / "site.example" / "site.yaml"
 
 
-def _write(tmp_path: Path, text: str) -> Path:
+def _with(tmp_path: Path, old: str, new: str) -> Path:
+    """site.example's site.yaml with one edit, as a file to load."""
+    text = FIXTURE.read_text(encoding="utf-8")
+    assert old in text, f"{old!r} isn't in {FIXTURE}"
     path = tmp_path / "site.yaml"
-    path.write_text(text, encoding="utf-8")
+    path.write_text(text.replace(old, new, 1), encoding="utf-8")
     return path
 
 
-def _with(base: Path, tmp_path: Path, old: str, new: str) -> Path:
-    text = base.read_text(encoding="utf-8")
-    assert old in text, f"{old!r} isn't in {base}"
-    return _write(tmp_path, text.replace(old, new, 1))
-
-
-def test_the_owners_site_yaml_loads(monkeypatch):
-    monkeypatch.delenv("GITHUB_OWNER", raising=False)
+def test_the_shipped_site_yaml_loads():
     config = load(OWNER_SITE)
-    assert config.site_url == "https://www.crog.gg"
-    # The apex 308s to www, but a browser on it may still call the API.
-    assert set(config.cors_origins) == {"https://www.crog.gg", "https://crog.gg"}
-    assert config.github_owner == "chrisrogers37"
-    assert config.button_label == "SUMMON NEW LORE"
-    assert config.name_variants == ("Christopher", "Chris")
-    assert config.pronouns["subj"] == "he"
-    assert config.style_rules and "—" in config.style_rules[0]
+    assert config.site_url in config.cors_origins
+    assert config.allows(config.github_owner)
+    assert config.button_label and config.name_variants
 
 
 def test_the_tests_site_is_the_fixture():
@@ -59,42 +53,70 @@ def test_a_missing_file_says_where_vercel_needs_it(tmp_path):
 
 
 def test_a_missing_key_is_named(tmp_path):
-    path = _with(OWNER_SITE, tmp_path, "    button: SUMMON NEW LORE\n", "")
+    path = _with(tmp_path, "    button: ASK AGAIN\n", "")
     with pytest.raises(SiteConfigError, match=r"regenerate\.labels\.button is missing"):
         load(path)
 
 
 def test_the_name_rule_needs_a_name(tmp_path):
-    path = _with(
-        OWNER_SITE,
-        tmp_path,
-        "    name_variants:\n      - Christopher\n      - Chris\n",
-        "    name_variants: []\n",
-    )
+    path = _with(tmp_path, "    name_variants:\n      - Ada\n", "    name_variants: []\n")
     with pytest.raises(SiteConfigError, match=r"name_variants must name at least one"):
         load(path)
 
 
 def test_pronouns_are_ones_the_prompt_can_write(tmp_path):
-    path = _with(OWNER_SITE, tmp_path, "    pronouns: he\n", "    pronouns: xe\n")
+    path = _with(tmp_path, "    pronouns: they\n", "    pronouns: xe\n")
     with pytest.raises(SiteConfigError, match=r"pronouns must be one of he, she, they"):
         load(path)
 
 
 def test_pronouns_default_to_they(tmp_path):
-    path = _with(OWNER_SITE, tmp_path, "    pronouns: he\n", "")
+    path = _with(tmp_path, "    pronouns: they\n", "")
     assert load(path).pronouns["subj"] == "they"
 
 
 def test_the_owner_must_be_a_github_name(tmp_path):
-    for name in ("not/a name", "jos\u00e9", "x" * 40):
-        path = _with(OWNER_SITE, tmp_path, "  username: chrisrogers37\n", f"  username: {name}\n")
+    for name in ("not/a name", "josé", "x" * 40):
+        path = _with(tmp_path, "  username: octocat\n", f"  username: {name}\n")
         with pytest.raises(SiteConfigError, match=r"github\.username must be a GitHub username"):
             load(path)
 
 
-def test_github_owner_env_wins(monkeypatch):
-    monkeypatch.setenv("GITHUB_OWNER", "someone-else")
-    config = load(OWNER_SITE)
-    assert config.github_owner == "someone-else"
-    assert config.allowed_owners == frozenset({"someone-else"})
+def test_the_allowed_owners_are_the_username_and_the_extras_lower_cased(tmp_path):
+    path = _with(
+        tmp_path,
+        "  username: octocat\n",
+        "  username: OctoCat\n  allowed_owners: [Some-Org]\n",
+    )
+    config = load(path)
+    assert config.github_owner == "OctoCat"
+    assert config.allowed_owners == frozenset({"octocat", "some-org"})
+    assert config.allows("SOME-ORG") and not config.allows("someone-else")
+
+
+def test_an_extra_owner_must_be_a_github_name_too(tmp_path):
+    path = _with(
+        tmp_path,
+        "  username: octocat\n",
+        "  username: octocat\n  allowed_owners: [not/a name]\n",
+    )
+    with pytest.raises(SiteConfigError, match=r"github\.allowed_owners\.0 must be a GitHub username"):
+        load(path)
+
+
+def test_style_rules_are_optional(tmp_path):
+    path = _with(tmp_path, "  style_rules:\n    - Keep every sentence short.\n", "")
+    assert load(path).style_rules == ()
+
+
+def test_on_and_off_are_text_as_the_frontend_reads_them(tmp_path):
+    # PyYAML's default (YAML 1.1) reads on, off, yes and no as booleans;
+    # js-yaml, which builds the page, reads them as text (#189).
+    path = _with(tmp_path, "    button: ASK AGAIN\n", "    button: off\n")
+    assert load(path).button_label == "off"
+
+
+def test_true_is_still_a_boolean(tmp_path):
+    path = _with(tmp_path, "    button: ASK AGAIN\n", "    button: true\n")
+    with pytest.raises(SiteConfigError, match=r"regenerate\.labels\.button must be text"):
+        load(path)

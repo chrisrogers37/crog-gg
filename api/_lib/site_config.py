@@ -10,7 +10,8 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Mapping
 
 import yaml
 
@@ -22,15 +23,9 @@ PATH = REPO_ROOT / (os.environ.get("SITE_DIR") or "site") / "site.yaml"
 
 # The forms a prompt needs, by site.yaml's regenerate.persona.pronouns.
 PRONOUN_FORMS = {
-    "he": {"subj": "he", "obj": "him", "pos": "his", "does": "does", "has": "has"},
-    "she": {"subj": "she", "obj": "her", "pos": "her", "does": "does", "has": "has"},
-    "they": {
-        "subj": "they",
-        "obj": "them",
-        "pos": "their",
-        "does": "do",
-        "has": "have",
-    },
+    "he": MappingProxyType({"subj": "he", "obj": "him", "pos": "his", "does": "does", "has": "has"}),
+    "she": MappingProxyType({"subj": "she", "obj": "her", "pos": "her", "does": "does", "has": "has"}),
+    "they": MappingProxyType({"subj": "they", "obj": "them", "pos": "their", "does": "do", "has": "have"}),
 }
 
 # What GitHub accepts as a username or organisation, as schema.ts's githubName.
@@ -38,6 +33,20 @@ PRONOUN_FORMS = {
 GITHUB_NAME = re.compile(r"[A-Za-z0-9-]{1,39}")
 
 _REQUIRED = object()
+
+
+class _Loader(yaml.SafeLoader):
+    """YAML as the frontend's js-yaml reads it (1.2): only true and false are
+    booleans, so off, on, yes and no stay text, as a label or a mode says them."""
+
+
+_Loader.yaml_implicit_resolvers = {
+    first: [(tag, regexp) for tag, regexp in resolvers if tag != "tag:yaml.org,2002:bool"]
+    for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
+_Loader.add_implicit_resolver(
+    "tag:yaml.org,2002:bool", re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF")
+)
 
 
 class SiteConfigError(RuntimeError):
@@ -49,7 +58,7 @@ class SiteConfig:
     site_url: str
     # The origins a browser may call the API from: site.url and its aliases.
     cors_origins: tuple[str, ...]
-    # Whose repos the one-segment proxy routes serve.
+    # github.username: whose repos the one-segment proxy routes serve.
     github_owner: str
     # Owners whose public repos the proxy serves at all, lower-cased.
     allowed_owners: frozenset[str]
@@ -57,9 +66,16 @@ class SiteConfig:
     button_label: str
     # The rewrite keeps one of these in the name it writes.
     name_variants: tuple[str, ...]
-    pronouns: dict[str, str]
+    pronouns: Mapping[str, str]
     # Rules every rewrite is asked to keep, appended to the prompt.
     style_rules: tuple[str, ...]
+
+    def allows(self, owner: str) -> bool:
+        """Whether the proxy serves this owner's repos: a GitHub name that is
+        github.username or one of github.allowed_owners, in any case. GitHub
+        names are ASCII, so a look-alike that lower-cases into an allowed name
+        (the Kelvin sign into "k") is refused."""
+        return bool(GITHUB_NAME.fullmatch(owner)) and owner.lower() in self.allowed_owners
 
 
 def _at(data: Any, key: str, source: Path, default: Any = _REQUIRED) -> Any:
@@ -101,7 +117,7 @@ def _github_name(value: Any, key: str, source: Path) -> str:
 def load(path: Path = PATH) -> SiteConfig:
     """site.yaml's keys the API reads, checked; a SiteConfigError names the key."""
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data = yaml.load(path.read_text(encoding="utf-8"), Loader=_Loader)
     except FileNotFoundError as exc:
         # On Vercel the file reaches the function only through vercel.json's
         # functions.includeFiles.
@@ -110,8 +126,7 @@ def load(path: Path = PATH) -> SiteConfig:
     site_url = _text(data, "site.url", path)
     aliases = _texts(data, "site.aliases", path, required=False)
 
-    owner = os.environ.get("GITHUB_OWNER") or _at(data, "github.username", path)
-    owner = _github_name(owner, "github.username", path)
+    owner = _github_name(_at(data, "github.username", path), "github.username", path)
     allowed = _texts(data, "github.allowed_owners", path, required=False)
     for index, extra in enumerate(allowed):
         _github_name(extra, f"github.allowed_owners.{index}", path)

@@ -137,11 +137,12 @@ _SHAPE_ANCHOR = (
     "yours to choose; where the text is broken up is not."
 )
 
-# The copy is not only prose: its last line names the SUMMON NEW LORE button, so
-# a reader is being told which control to press. A rewrite that renames it in the
-# world of the telling is obeying every other constraint here and still breaking
-# the page -- the instruction now points at a control that does not exist. Lore is
-# free to rename his employers and his tools; it is not free to rename the UI.
+# The copy is not only prose: its last line names the regenerate button
+# (regenerate.labels.button in site.yaml), so a reader is being told which control
+# to press. A rewrite that renames it in the world of the telling is obeying every
+# other constraint here and still breaking the page -- the instruction now points
+# at a control that does not exist. Lore is free to rename the person's employers
+# and tools; it is not free to rename the UI.
 #
 # A request rather than enforcement, which is the distinction _UNAUTHORED_KEYS
 # draws. The restore there is wholesale, per key -- and this is a substring inside
@@ -187,7 +188,7 @@ _TONE_ANCHOR = _tone_anchor(CONFIG.style_rules)
 # What every section's system prompt carries after its role, in reading order
 # (not a precedence): treat the input as data, do not grow, do not drift off the
 # person, keep the shape you were handed, leave the names of on-screen controls
-# alone, and never reach for an em dash. The mode-specific half rides each
+# alone, and keep site.yaml's style rules. The mode-specific half rides each
 # section's "format". Built once, at import: a test that patches one anchor
 # here won't reach the prompt, so patch api.index._STANDING_CONSTRAINTS.
 _STANDING_CONSTRAINTS = (

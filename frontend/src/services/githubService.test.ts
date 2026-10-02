@@ -58,6 +58,21 @@ describe("githubService", () => {
 
       expect(fetch).toHaveBeenCalledTimes(1);
     });
+
+    it("asks by owner, and caches each owner's repo apart (#189)", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ name: "same-name" }),
+      });
+
+      await githubService.getRepository("ada", "same-name");
+      await githubService.getRepository("octocat", "same-name");
+
+      expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
+        "/api/v1/github/repo/ada/same-name",
+        "/api/v1/github/repo/octocat/same-name",
+      ]);
+    });
   });
 
   describe("getReadme", () => {
@@ -101,6 +116,18 @@ describe("githubService", () => {
       });
 
       expect((await githubService.getReadme("owner", "shitpost-alpha"))?.text).toBe(text);
+    });
+
+    it("asks by owner, and caches each owner's README apart (#189)", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
+
+      await githubService.getReadme("ada", "same-name");
+      await githubService.getReadme("octocat", "same-name");
+
+      expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
+        "/api/v1/github/readme/ada/same-name",
+        "/api/v1/github/readme/octocat/same-name",
+      ]);
     });
 
     it("returns null when the repo has no README", async () => {

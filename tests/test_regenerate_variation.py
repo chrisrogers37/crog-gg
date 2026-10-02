@@ -174,6 +174,8 @@ def test_the_button_cannot_be_renamed_by_the_lore_that_names_it(client):
     assert _VERBATIM_STRINGS, "the protected-string table is empty"
     for verbatim in _VERBATIM_STRINGS:
         assert verbatim in system, f"{verbatim!r} is never shown to the model"
+    # The tests' site's own button, from its site.yaml (#189).
+    assert repr(CONFIG.button_label) in system
     assert "character for character" in system
     assert "never rename the interface" in system
 
@@ -325,3 +327,11 @@ def test_a_control_that_survived_is_not_reported():
 def test_a_control_absent_from_the_input_is_not_expected_back():
     """Only what was sent is owed back. Otherwise every portfolio press reports a loss."""
     assert _lost_verbatim({"bio": "no controls here."}, {"bio": "still none."}) == []
+
+
+def test_the_name_rule_names_the_sites_own_names(client):
+    # The rewritten name keeps one of site.yaml's name variants, not the
+    # owner's (#189 M06).
+    prompts = _press(client)[0]
+    rule = " or ".join(f"'{name}'" for name in CONFIG.name_variants)
+    assert f"still contains {rule}" in prompts["system"] + prompts["user"]

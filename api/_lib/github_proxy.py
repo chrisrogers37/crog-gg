@@ -21,7 +21,7 @@ from api._lib.request_utils import (
     github_headers,
     validate_repo_name,
 )
-from api._lib.site_config import CONFIG, GITHUB_NAME
+from api._lib.site_config import CONFIG
 
 logger = logging.getLogger("crog")
 
@@ -50,14 +50,6 @@ def _gh_rate_limit_or_429(endpoint: str):
     return None
 
 
-def _allowed_owner(owner: str) -> bool:
-    """Whether the proxy serves this owner's repos: a GitHub name that is
-    site.yaml's github.username (or GITHUB_OWNER) or one of its allowed_owners,
-    in any case. GitHub names are ASCII, so a look-alike that lower-cases into
-    an allowed name (the Kelvin sign into "k") is refused."""
-    return bool(GITHUB_NAME.fullmatch(owner)) and owner.lower() in CONFIG.allowed_owners
-
-
 def _guard_repo_request(owner: str, repo_name: str, endpoint: str):
     """Shared entry guard for the single-repo proxy routes: per-IP rate limit,
     the owner, then repo-name validation. Returns an error response to
@@ -68,7 +60,7 @@ def _guard_repo_request(owner: str, repo_name: str, endpoint: str):
     """
     if (resp := _gh_rate_limit_or_429(endpoint)) is not None:
         return resp
-    if not _allowed_owner(owner):
+    if not CONFIG.allows(owner):
         return jsonify({"error": "Repository not found"}), 404
     is_valid, error_msg = validate_repo_name(repo_name)
     if not is_valid:
@@ -134,6 +126,11 @@ def _fetch_public_repo(owner: str, repo_name: str, endpoint: str):
     if not isinstance(data, dict):
         return None, _github_unavailable(endpoint, repo_name, r=r)
     if data.get("private"):
+        return None, (jsonify({"error": "Repository not found"}), 404)
+    # GitHub answers a renamed or transferred repo with a redirect, which
+    # requests follows: serve it only if its owner is still one we serve.
+    login = (data.get("owner") or {}).get("login")
+    if isinstance(login, str) and not CONFIG.allows(login):
         return None, (jsonify({"error": "Repository not found"}), 404)
     return data, None
 

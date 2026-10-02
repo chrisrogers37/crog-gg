@@ -139,7 +139,7 @@ export const HOMES = ["landing", "profile"] as const;
 export type Home = (typeof HOMES)[number];
 
 /** The forms the API can write a persona in (api/_lib/site_config.py). */
-export const PRONOUNS = ["he", "she", "they"] as const;
+const PRONOUNS = ["he", "she", "they"] as const;
 
 /** /about's sections; each id is a component, so the list is fixed. */
 export const SECTION_IDS = ["about", "journey", "projects", "music"] as const;

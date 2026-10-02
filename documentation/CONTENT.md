@@ -57,7 +57,7 @@ If `timeline.yaml` won't load or parse, the Journey tab says "Loading journey...
 - **`url`:** the main link. Without one, the card falls back to `demo`, then `github`.
 - **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The card prints it as text, and no icon font is loaded.
 - **`technologies`:** the card shows the first three.
-- **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The page looks the repo's name up under that owner, so another owner's repo would show the wrong repo, or no README. Without `github`, a `url` that is a GitHub repo is used instead.
+- **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails. Without `github`, a `url` that is a GitHub repo is used instead.
 - **`demo`** (optional): when it differs from `url` and isn't on github.com, the page embeds it. Its exact origin must then be in `frame-src` in `vercel.json`, or the frame is blocked.
 - **`order`:** where the project sits, lowest first; `index.yaml`'s order only breaks ties. `order: 0` counts as unset and sorts last.
 - **`gradient`:** the card's header colour. Without one, the header is grey.
@@ -86,7 +86,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`owner`:** `name` (the header, the footer, the Person schema and the landing page's byline), `email` (the contact card), `job_title`, `works_for` (optional: `name`, `url`), `image` (a path in `site/public/`) and `knows_about`, for the Person schema.
 - **`site.url`:** the canonical origin, `https://` with no path or trailing slash. Every absolute link to the site is built from it.
 - **`site.aliases`** (optional): other origins that serve the site, such as the apex that redirects to `www`. The API accepts calls from them and from `site.url` (CORS).
-- **`github.username`:** whose public repos the project pages' stats and READMEs come from. The API serves no one else's, unless `github.allowed_owners` (optional) names them. The `GITHUB_OWNER` environment variable overrides the username.
+- **`github.username`:** whose public repos the project pages' stats and READMEs come from. The API serves no one else's, unless `github.allowed_owners` (optional) names them.
 - **`home`:** what `/` is. `landing` is the Claudlobby landing page, with the personal page at `/about`. `profile` makes the personal page `/`, and drops the landing page and every Claudlobby link.
 - **`seo`:** `site_name` (appended to every title), `image` (the social card: `path`, `width`, `height`, and `alt`, which must match the card's text in `site/og-image.html`), and the `description` of `about` and `projects`.
 - **`socials`:** each has an `id`, a `label` (the link's text and its name to a screen reader), an `icon` (`github`, `linkedin`, `telegram`, `instagram`, `spotify`, `hoobe` or `link`), an `https` `url`, and `show_in`: any of `footer`, `menu`, `contact`, `music` and `schema` (the Person schema's `sameAs`). They show in the order listed.
@@ -96,7 +96,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189).
   - `labels`: the button's words, idle (`button`), while it works (`busy`), and the undo (`reset`). The rewrite is told to leave `button` as it is, since the About text's last line names it.
   - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`, the default).
-  - `style_rules` (optional): sentences asked of every rewrite, word for word. A request, not a check.
+  - `style_rules` (optional): sentences asked of every rewrite, word for word. A request, not a check. Keep them narrow: casing, formality and voice are the register's to choose, so a rule such as "write in lowercase" fights every register the button picks. A mark that is wrong in every register (the owner's em-dash rule) is the kind that works.
 - **`about.preview_height`:** `narrow` and `wide`, in px: where the collapsed About text fades, tuned to `bio.yaml`'s `about_text` (#162).
 - **`contact`:** the card's `heading` and `text`.
 - **`music`:** the tab's `intro`, with `{artist}` where the `artist` name goes; `embed` (optional), the player's URL, whose origin must be in `frame-src` in `vercel.json`; and `embed_title` (optional), the player's name to a screen reader, "music player" if left out.

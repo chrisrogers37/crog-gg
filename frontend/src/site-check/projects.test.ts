@@ -32,7 +32,7 @@ describe("the shipped projects", () => {
     }
   });
 
-  it("only link GitHub repos of the site's owner", (ctx) => {
+  it("only link GitHub repos of an owner the API serves", (ctx) => {
     const linked = projects.filter((project) => githubRepo(project));
     if (linked.length === 0) ctx.skip(); // no project links a repo
     // The API serves the public repos of github.username (and any
