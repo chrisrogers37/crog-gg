@@ -16,16 +16,24 @@ describe("the shipped projects", () => {
     projects = await shippedProjects();
   });
 
+  it("are there to check", () => {
+    expect(projects.length).toBeGreaterThan(0);
+  });
+
   it("each use one emoji as the icon, which the card prints as text", () => {
+    // One pictograph, with any variation selector, skin tone or ZWJ joins. An
+    // icon-font class name would print as its letters.
+    const ONE_EMOJI =
+      /^\p{Extended_Pictographic}(?:\uFE0F|\p{Emoji_Modifier}|\u200D\p{Extended_Pictographic})*$/u;
     for (const project of projects) {
-      // An icon-font class (e.g. "fas fa-rocket") would show as those words.
-      expect(project.icon, project.id).not.toMatch(/[A-Za-z]/);
+      expect(project.icon, project.id).toMatch(ONE_EMOJI);
     }
   });
 
   it("only link GitHub repos of the site's owner", () => {
     // The API looks a repo's name up under this owner, so another owner's repo
-    // would show the owner's same-named repo, or no README.
+    // would show the owner's same-named repo, or no README. PROFILE_URLS.github
+    // stands in for the API's GITHUB_USERNAME; #189 moves both into config.
     const owner = new URL(PROFILE_URLS.github).pathname.split("/")[1];
     for (const project of projects) {
       const repo = githubRepo(project);
@@ -53,6 +61,9 @@ describe("the shipped projects", () => {
         .map((directive) => directive.trim().split(/\s+/))
         .find(([name]) => name === "frame-src")
         ?.slice(1) ?? [];
+    // The parse itself, so a reshaped vercel.json can't make this pass empty.
+    expect(policy, "no CSP in vercel.json").toBeDefined();
+    expect(frameSrc, "no frame-src in the CSP").not.toHaveLength(0);
 
     for (const project of projects) {
       if (hasLiveDemo(project)) {

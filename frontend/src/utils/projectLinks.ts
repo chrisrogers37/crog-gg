@@ -19,7 +19,7 @@ export const githubRepo = (
 
 /**
  * Whether the page embeds the project's demo: only when it goes somewhere
- * `url` doesn't.
+ * `url` doesn't, and isn't on github.com.
  */
 export const hasLiveDemo = (project: Project): boolean =>
   !!project.demo &&

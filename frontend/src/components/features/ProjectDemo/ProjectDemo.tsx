@@ -16,9 +16,10 @@ interface ProjectDemoProps {
  * The site's Content-Security-Policy (`vercel.json`) allows frames only from
  * `https://open.spotify.com`, so a demo from any other host renders as a
  * blocked frame. A project shows this component when its `demo` differs from
- * its `url` (`hasLiveDemo` in ProjectDetailPage). A change that turns on a live
- * demo must add that demo's exact origin to `frame-src` in the same PR, with no
- * wildcards, or `'self'` for a demo served from this site (#199).
+ * its `url` (`hasLiveDemo` in utils/projectLinks.ts). A change that turns on a
+ * live demo must add that demo's exact origin to `frame-src` in the same PR,
+ * with no wildcards (#199). A demo this site serves can't be embedded at all:
+ * every path sends `X-Frame-Options: DENY`.
  */
 export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
   const [isLoading, setIsLoading] = useState(true);

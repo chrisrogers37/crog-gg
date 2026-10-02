@@ -86,8 +86,8 @@ tags:
 ```
 
 Optional fields (add only if available):
-- `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the configured GitHub owner (`GITHUB_USERNAME` in `api/_lib/request_utils.py`); leave it out for anyone else's repo. The project page looks the repo's name up under that owner, so another owner's repo would show the owner's same-named repo, or no README.
-- `demo: https://...` (only if different from `url`): the project page embeds it, and the site's Content-Security-Policy blocks frames from hosts it doesn't list. Add its exact origin to `frame-src` in `vercel.json` in the same PR (no wildcards; `'self'` for a demo this site serves), and say in the PR that it loosens the CSP.
+- `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the configured GitHub owner (`GITHUB_USERNAME` in `api/_lib/request_utils.py`); leave it out for anyone else's repo. The project page looks the repo's name up under that owner, so another owner's repo would show the owner's same-named repo, or no README. The same goes for a `url` on github.com: without `github`, the page reads `url` as the repo, so point another owner's project at its site, not its repo.
+- `demo: https://...` (only if different from `url`): the project page embeds it, and the site's Content-Security-Policy blocks frames from hosts it doesn't list. Add its exact origin to `frame-src` in `vercel.json` in the same PR (no wildcards), and say in the PR that it loosens the CSP. A demo this site serves can't be embedded: every path sends `X-Frame-Options: DENY`, so make it the `url` instead.
 
 **Update `frontend/public/content/projects/index.yaml`**:
 - Insert the new filename at the correct position in the list
@@ -116,6 +116,7 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 | featured | No | Defaults to false |
 | status | No | active, archived, experimental |
 | github | No | A public repo of the configured GitHub owner (see step 5) |
+| demo | No | Only if it differs from `url`; needs a `frame-src` entry (see step 5) |
 | tags | No | Metadata tags |
 
 ## Common Mistakes
