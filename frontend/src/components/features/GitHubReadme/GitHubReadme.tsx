@@ -54,7 +54,7 @@ export function GitHubReadme({
       try {
         setIsLoading(true);
         setError(null);
-        const content = await githubService.getReadme(repoName);
+        const content = await githubService.getReadme(owner, repoName);
         if (!ignore) {
           setReadme(content);
         }
@@ -75,7 +75,7 @@ export function GitHubReadme({
     return () => {
       ignore = true;
     };
-  }, [repoName]);
+  }, [owner, repoName]);
 
   if (isLoading) {
     return (

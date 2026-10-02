@@ -14,6 +14,11 @@ owner:
 site:
   url: https://ada.example
 
+github:
+  # GitHub's mascot account: no example project links a repo, but the API
+  # needs an owner.
+  username: octocat
+
 home: profile
 
 seo:
@@ -72,6 +77,18 @@ hero:
     - "hello!"
     - "this site is made up"
     - "it exists so the tests have something to read"
+
+regenerate:
+  labels:
+    button: ASK AGAIN
+    busy: asking...
+    reset: PUT IT BACK
+  persona:
+    name_variants:
+      - Ada
+    pronouns: they
+  style_rules:
+    - Keep every sentence short.
 
 about:
   preview_height:

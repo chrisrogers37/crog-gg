@@ -14,3 +14,8 @@ cd frontend
 SITE_DIR=site.example npm run build
 SITE_DIR=site.example npm run site:check
 ```
+
+The API reads the same variable (`SITE_DIR=site.example python3 -m api.index`,
+from the repo root), and its tests always use this folder. On Vercel, the
+function bundles only `site/site.yaml` (`includeFiles` in `vercel.json`), so a
+deploy of another folder needs that pattern widened.

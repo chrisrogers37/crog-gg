@@ -102,11 +102,12 @@ class GitHubService {
   }
 
   /**
-   * Fetch repository information
+   * Fetch repository information. By owner, which the API serves only when
+   * site.yaml allows it (#189).
    */
-  async getRepository(repoName: string): Promise<Repository> {
-    return this.cachedFetch(`repo:${repoName}`, async () => {
-      const response = await fetch(`${this.baseUrl}/repo/${repoName}`, {
+  async getRepository(owner: string, repoName: string): Promise<Repository> {
+    return this.cachedFetch(`repo:${owner}/${repoName}`, async () => {
+      const response = await fetch(`${this.baseUrl}/repo/${owner}/${repoName}`, {
         credentials: "include",
       });
 
@@ -121,9 +122,9 @@ class GitHubService {
   /**
    * Fetch repository README content
    */
-  async getReadme(repoName: string): Promise<Readme | null> {
-    return this.cachedFetch(`readme:${repoName}`, async () => {
-      const response = await fetch(`${this.baseUrl}/readme/${repoName}`, {
+  async getReadme(owner: string, repoName: string): Promise<Readme | null> {
+    return this.cachedFetch(`readme:${owner}/${repoName}`, async () => {
+      const response = await fetch(`${this.baseUrl}/readme/${owner}/${repoName}`, {
         credentials: "include",
       });
 

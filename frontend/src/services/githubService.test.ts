@@ -23,11 +23,11 @@ describe("githubService", () => {
         json: () => Promise.resolve(mockRepo),
       });
 
-      const result = await githubService.getRepository("shuffify");
+      const result = await githubService.getRepository("owner", "shuffify");
 
       expect(result).toEqual(mockRepo);
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/github/repo/shuffify"),
+        expect.stringContaining("/api/v1/github/repo/owner/shuffify"),
         expect.any(Object),
       );
     });
@@ -38,7 +38,7 @@ describe("githubService", () => {
         status: 404,
       });
 
-      await expect(githubService.getRepository("nonexistent")).rejects.toThrow(
+      await expect(githubService.getRepository("owner", "nonexistent")).rejects.toThrow(
         "Failed to fetch repository: 404",
       );
     });
@@ -52,11 +52,26 @@ describe("githubService", () => {
       });
 
       // First call
-      await githubService.getRepository("test-repo");
+      await githubService.getRepository("owner", "test-repo");
       // Second call should use cache
-      await githubService.getRepository("test-repo");
+      await githubService.getRepository("owner", "test-repo");
 
       expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("asks by owner, and caches each owner's repo apart (#189)", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ name: "same-name" }),
+      });
+
+      await githubService.getRepository("ada", "same-name");
+      await githubService.getRepository("octocat", "same-name");
+
+      expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
+        "/api/v1/github/repo/ada/same-name",
+        "/api/v1/github/repo/octocat/same-name",
+      ]);
     });
   });
 
@@ -76,7 +91,7 @@ describe("githubService", () => {
         json: () => Promise.resolve(mockReadme),
       });
 
-      const result = await githubService.getReadme("shuffify");
+      const result = await githubService.getReadme("owner", "shuffify");
 
       expect(result).toEqual({
         text: "# Test README\n\nThis is a test.",
@@ -84,7 +99,7 @@ describe("githubService", () => {
         downloadUrl: mockReadme.download_url,
       });
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/v1/github/readme/shuffify"),
+        expect.stringContaining("/api/v1/github/readme/owner/shuffify"),
         expect.any(Object),
       );
     });
@@ -100,7 +115,19 @@ describe("githubService", () => {
         json: () => Promise.resolve({ content: btoa(utf8).replace(/(.{60})/g, "$1\n") }),
       });
 
-      expect((await githubService.getReadme("shitpost-alpha"))?.text).toBe(text);
+      expect((await githubService.getReadme("owner", "shitpost-alpha"))?.text).toBe(text);
+    });
+
+    it("asks by owner, and caches each owner's README apart (#189)", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
+
+      await githubService.getReadme("ada", "same-name");
+      await githubService.getReadme("octocat", "same-name");
+
+      expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
+        "/api/v1/github/readme/ada/same-name",
+        "/api/v1/github/readme/octocat/same-name",
+      ]);
     });
 
     it("returns null when the repo has no README", async () => {
@@ -109,7 +136,7 @@ describe("githubService", () => {
         status: 404,
       });
 
-      const result = await githubService.getReadme("no-readme-repo");
+      const result = await githubService.getReadme("owner", "no-readme-repo");
 
       expect(result).toBeNull();
     });
@@ -120,7 +147,7 @@ describe("githubService", () => {
         status: 500,
       });
 
-      await expect(githubService.getReadme("error-repo")).rejects.toThrow(
+      await expect(githubService.getReadme("owner", "error-repo")).rejects.toThrow(
         "Failed to fetch README: 500",
       );
     });
@@ -209,13 +236,13 @@ describe("githubService", () => {
       });
 
       // First call
-      await githubService.getRepository("test-repo");
+      await githubService.getRepository("owner", "test-repo");
 
       // Clear cache
       githubService.clearCache();
 
       // Second call should fetch again
-      await githubService.getRepository("test-repo");
+      await githubService.getRepository("owner", "test-repo");
 
       expect(fetch).toHaveBeenCalledTimes(2);
     });

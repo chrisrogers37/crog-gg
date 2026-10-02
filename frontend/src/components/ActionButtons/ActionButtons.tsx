@@ -1,3 +1,4 @@
+import site from "virtual:site-config";
 import { useCooldown } from "../../hooks/useCooldown";
 import "./ActionButtons.css";
 
@@ -37,13 +38,16 @@ export function ActionButtons({
     cooldownTotal > 0 ? cooldownRemaining / cooldownTotal : 0;
   const sweepDegrees = sweepProgress * 360;
 
+  // The words are site.yaml's (#189); the API tells the rewrite to keep the
+  // button's, since the About text's last line names it.
+  const { labels } = site.regenerate;
   const buttonText = isRegenerating
-    ? "Weaving Epic Saga..."
+    ? labels.busy
     : isOnCooldown
       ? ""
       : dailyCapReached
         ? "Daily limit reached"
-        : "SUMMON NEW LORE";
+        : labels.button;
 
   return (
     <div className="action-buttons">
@@ -100,7 +104,7 @@ export function ActionButtons({
             disabled={isRegenerating}
             aria-describedby="reset-btn-description"
           >
-            DISPEL ENCHANTMENT
+            {labels.reset}
           </button>
           <span id="reset-btn-description" className="sr-only">
             Restores the original text

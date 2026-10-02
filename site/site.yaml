@@ -23,6 +23,13 @@ owner:
 site:
   # The canonical origin: every absolute link to the site is built from it.
   url: https://www.crog.gg
+  # Other origins that serve the site; the API accepts calls from them (CORS).
+  aliases:
+    - https://crog.gg
+
+github:
+  # Whose public repos the project pages' stats and READMEs come from.
+  username: chrisrogers37
 
 # What / shows. landing: the Claudlobby landing page, with the personal page at
 # /about. profile: the personal page itself, and no landing page or Claudlobby
@@ -122,6 +129,24 @@ hero:
     - "there are some easter eggs if you go exploring"
     - "hope you enjoy!"
     - "have a nice day =)"
+
+regenerate:
+  # The button's words. The rewrite is told to leave the label as it is,
+  # since the About text's last line names it.
+  labels:
+    button: SUMMON NEW LORE
+    busy: Weaving Epic Saga...
+    reset: DISPEL ENCHANTMENT
+  persona:
+    # The rewritten name keeps one of these.
+    name_variants:
+      - Christopher
+      - Chris
+    # he, she or they.
+    pronouns: he
+  # Asked of every rewrite, word for word (a request, not a check).
+  style_rules:
+    - "Never use an em dash (\u2014) or an en dash (\u2013), in any field. Where you would reach for one, use a comma, a colon, a full stop or an ellipsis. This holds in every register, including ones whose form would normally invite one."
 
 about:
   # Where the collapsed About text fades, in px, tuned to today's text in

@@ -47,11 +47,11 @@ from api._lib.request_utils import (
     GITHUB_API,
     GITHUB_TIMEOUT_SECONDS,
     GITHUB_TOKEN,
-    GITHUB_USERNAME,
     Visitor,
     current_visitor,
     github_headers,
 )
+from api._lib.site_config import CONFIG
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(name)s - %(message)s")
 logger = logging.getLogger("crog")
@@ -64,7 +64,8 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 
 _DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() in ("true", "1", "yes")
-_cors_origins = ["https://crog.gg", "https://www.crog.gg"]
+# site.yaml's site.url and its aliases (#189).
+_cors_origins = list(CONFIG.cors_origins)
 if _DEBUG:
     _cors_origins += [
         "http://localhost:5173",
@@ -103,7 +104,7 @@ openai_client = _make_openai_client(OPENAI_API_KEY) if OPENAI_API_KEY else None
 # small tier: it keeps cost per call below the previous pick while staying far
 # from a retirement date, so this endpoint is not re-migrated on someone else's
 # schedule.
-OPENAI_MODEL = "gpt-5.6-luna"
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL") or "gpt-5.6-luna"
 
 # Sampling parameters belong with the model choice, not hardcoded at the call
 # site: which ones are legal depends entirely on which model is selected. The
@@ -845,23 +846,29 @@ def health():
 # ---------------------------------------------------------------------------
 
 
+# With an owner, a project can link another allowed owner's repo (#189); the
+# one-segment routes are the site's own github.username.
 @app.route("/api/v1/github/repo/<repo_name>", methods=["GET"])
-def get_repository(repo_name):
-    if (resp := _guard_repo_request(repo_name, "repo")) is not None:
+@app.route("/api/v1/github/repo/<owner>/<repo_name>", methods=["GET"])
+def get_repository(repo_name, owner=None):
+    owner = owner or CONFIG.github_owner
+    if (resp := _guard_repo_request(owner, repo_name, "repo")) is not None:
         return resp
     # The public-repo guard already fetches the repo metadata, which IS this
     # endpoint's payload, so reuse it directly (one GitHub call, not two).
-    data, error = _fetch_public_repo(repo_name, "repo")
+    data, error = _fetch_public_repo(owner, repo_name, "repo")
     if error is not None:
         return error
     return _cdn_cached(jsonify(_repository_fields(data)))
 
 
 @app.route("/api/v1/github/readme/<repo_name>", methods=["GET"])
-def get_readme(repo_name):
-    if (resp := _guard_repo_request(repo_name, "readme")) is not None:
+@app.route("/api/v1/github/readme/<owner>/<repo_name>", methods=["GET"])
+def get_readme(repo_name, owner=None):
+    owner = owner or CONFIG.github_owner
+    if (resp := _guard_repo_request(owner, repo_name, "readme")) is not None:
         return resp
-    _data, error = _fetch_public_repo(repo_name, "readme")
+    _data, error = _fetch_public_repo(owner, repo_name, "readme")
     if error is not None:
         return error
     # Ask for the root README explicitly. GitHub's /readme endpoint resolves
@@ -869,6 +876,7 @@ def get_readme(repo_name):
     # contributing notes as if they were the project documentation. The fallback
     # covers repos with no root README.md (.rst/.txt, non-standard casing).
     return _proxy_sub_resource(
+        owner,
         repo_name,
         ("/contents/README.md", "/readme"),
         "README",
@@ -879,12 +887,13 @@ def get_readme(repo_name):
 
 @app.route("/api/v1/github/languages/<repo_name>", methods=["GET"])
 def get_repo_languages(repo_name):
-    if (resp := _guard_repo_request(repo_name, "languages_repo")) is not None:
+    owner = CONFIG.github_owner
+    if (resp := _guard_repo_request(owner, repo_name, "languages_repo")) is not None:
         return resp
-    _data, error = _fetch_public_repo(repo_name, "languages_repo")
+    _data, error = _fetch_public_repo(owner, repo_name, "languages_repo")
     if error is not None:
         return error
-    return _proxy_sub_resource(repo_name, "/languages", "languages", "languages_repo")
+    return _proxy_sub_resource(owner, repo_name, "/languages", "languages", "languages_repo")
 
 
 @app.route("/api/v1/github/languages", methods=["GET"])
@@ -904,7 +913,7 @@ def get_all_languages_v1():
 
     try:
         repos_response = requests.get(
-            f"{GITHUB_API}/users/{GITHUB_USERNAME}/repos?per_page=100",
+            f"{GITHUB_API}/users/{CONFIG.github_owner}/repos?per_page=100",
             headers=github_headers(),
             timeout=GITHUB_TIMEOUT_SECONDS,
         )
@@ -918,7 +927,7 @@ def get_all_languages_v1():
             if repo.get("fork") or repo.get("private"):
                 continue
             lang_response = requests.get(
-                f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo['name']}/languages",
+                f"{GITHUB_API}/repos/{CONFIG.github_owner}/{repo['name']}/languages",
                 headers=github_headers(),
                 timeout=GITHUB_TIMEOUT_SECONDS,
             )
@@ -970,7 +979,7 @@ def get_contributions():
                 "Authorization": f"bearer {github_token}",
                 "Content-Type": "application/json",
             },
-            json={"query": query, "variables": {"username": GITHUB_USERNAME}},
+            json={"query": query, "variables": {"username": CONFIG.github_owner}},
             timeout=GITHUB_TIMEOUT_SECONDS,
         )
         response.raise_for_status()

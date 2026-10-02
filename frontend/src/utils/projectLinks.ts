@@ -5,14 +5,15 @@ import type { Project } from "../types/Project";
  * explicit `github` field and falls back to `url` for entries whose primary
  * link is the repo itself: reading only `url` meant a declared `github` was
  * silently ignored, so any project pointing at a live app got no repo stats
- * and no docs. The API takes only `name`, and looks it up under the site's own
- * GitHub owner.
+ * and no docs. The API serves it by owner and name, for the owners site.yaml's
+ * `github` allows (#189). A name may hold dots; a trailing `.git` isn't part
+ * of it.
  */
 export const githubRepo = (
   project: Project,
 ): { owner: string; name: string } | null => {
   const match = (project.github || project.url)?.match(
-    /github\.com\/([\w-]+)\/([\w-]+)/,
+    /github\.com\/([\w-]+)\/([\w.-]+?)(?:\.git)?(?:[/?#]|$)/,
   );
   return match ? { owner: match[1], name: match[2] } : null;
 };

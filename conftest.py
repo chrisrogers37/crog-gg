@@ -15,6 +15,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# The fictional site.example (#191), so the owner's own edits to site/ can't
+# turn the API's tests red. Assigned, not defaulted, so a developer's shell
+# can't leak another site in; test_site_config.py loads site/site.yaml itself.
+os.environ["SITE_DIR"] = "site.example"
+
 from unittest.mock import patch  # noqa: E402
 
 import pytest  # noqa: E402

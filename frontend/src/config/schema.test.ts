@@ -98,6 +98,19 @@ describe("parseSiteConfig", () => {
     expect(problems(raw)).toContain("home: expected one of landing, profile");
   });
 
+  it("holds the API's keys to what the API can use (#189)", () => {
+    const raw = shipped();
+    at(raw, "regenerate.persona").pronouns = "xe";
+    at(raw, "github").username = "not/a name";
+    at(raw, "regenerate.persona").name_variants = [];
+    at(raw, "site").aliases = ["https://example.com/path"];
+    const message = problems(raw);
+    expect(message).toContain("regenerate.persona.pronouns: expected one of he, she, they");
+    expect(message).toContain("github.username: expected a GitHub username");
+    expect(message).toContain("regenerate.persona.name_variants: expected at least 1");
+    expect(message).toContain("site.aliases.0: expected an https origin");
+  });
+
   it("needs {artist} in the music intro, once", () => {
     const raw = shipped();
     at(raw, "music").intro = "i make music.";

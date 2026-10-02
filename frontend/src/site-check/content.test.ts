@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import yaml from "js-yaml";
+import site from "virtual:site-config";
 import bioYaml from "@site/public/content/bio.yaml?raw";
 import type { BioData } from "../types/Bio";
 
@@ -27,6 +28,6 @@ describe("the site's About copy", () => {
     // told to leave it alone; this pins the source it starts from. On the last
     // paragraph, not the file: the label sitting in a comment or halfway up
     // the copy would satisfy a whole-file check.
-    expect(paragraphs.at(-1)).toContain("SUMMON NEW LORE");
+    expect(paragraphs.at(-1)).toContain(site.regenerate.labels.button);
   });
 });

@@ -4,6 +4,8 @@ import { githubService, Repository } from "../../../services/githubService";
 import "./RepoStats.css";
 
 interface RepoStatsProps {
+  /** The repo's owner, from the project's own GitHub URL. */
+  owner: string;
   repoName: string;
 }
 
@@ -16,7 +18,7 @@ interface RepoStatsProps {
  * - Last updated date
  * - License
  */
-export function RepoStats({ repoName }: RepoStatsProps) {
+export function RepoStats({ owner, repoName }: RepoStatsProps) {
   const [repo, setRepo] = useState<Repository | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,7 +33,7 @@ export function RepoStats({ repoName }: RepoStatsProps) {
       setRepo(null);
       setIsLoading(true);
       try {
-        const data = await githubService.getRepository(repoName);
+        const data = await githubService.getRepository(owner, repoName);
         if (!ignore) {
           setRepo(data);
         }
@@ -50,7 +52,7 @@ export function RepoStats({ repoName }: RepoStatsProps) {
     return () => {
       ignore = true;
     };
-  }, [repoName]);
+  }, [owner, repoName]);
 
   if (isLoading) {
     return (

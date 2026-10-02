@@ -17,7 +17,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### Choose Your Own Chris (`/about`)
 
 - **Tabs:** About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects, and Music (a Spotify embed and links).
-- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location on the contact card) with OpenAI's `gpt-5.6-luna` (`OPENAI_MODEL` in `api/index.py`), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
+- **SUMMON NEW LORE** rewrites the About section (the name at the top, the tagline, the text, and the location on the contact card) with OpenAI's `gpt-5.6-luna` (the `OPENAI_MODEL` environment variable overrides it), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
 - **Rate limits** on `/api/regenerate`: a 30 s cooldown, plus daily caps of 30 rewrites per visitor and 300 site-wide. A press rewrites one section, so it uses one of each. An IPv6 /64 counts as one visitor. They're backed by Upstash Redis, and the paid endpoint refuses to run without it (see [Troubleshooting](#troubleshooting)).
 
 ### Projects (`/projects`)
@@ -47,7 +47,7 @@ For how it's built, and what each content file does, see the [documentation inde
 
 - Flask (`api/index.py`) deployed as a single Vercel Python Function under Fluid Compute
 - OpenAI API
-- Python 3.12 (`.python-version`). `requirements.in` lists `flask`, `flask-cors`, `openai` and `requests`; `requirements.txt` is the hash-pinned lock generated from it
+- Python 3.12 (`.python-version`). `requirements.in` lists `flask`, `flask-cors`, `openai`, `requests` and `pyyaml` (the API reads `site/site.yaml`, #189); `requirements.txt` is the hash-pinned lock generated from it
 - Upstash Redis (via Vercel Marketplace) for rate-limit and cooldown state
 
 ## Local Development Setup
@@ -194,6 +194,7 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 | `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data (CLAUDE.md has the settings) |
 | `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
+| `OPENAI_MODEL`                          | optional          | Overrides the rewrite model (`gpt-5.6-luna`). Changing it means checking `OPENAI_SAMPLING` in `api/index.py`, which depends on the model. `REGEN_GLOBAL_DAILY_MAX` is sized from the default model's worst-case cost |
 | `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 

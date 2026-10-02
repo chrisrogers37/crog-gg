@@ -8,8 +8,11 @@ import logging
 import os
 import re
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from flask import request
+
+from api._lib.site_config import CONFIG
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 if not GITHUB_TOKEN:
@@ -23,7 +26,6 @@ if not IP_HASH_SALT:
         "ip hash salt missing: rate-limit keys and logs name visitors by address,"
         " and regenerate calls go without a safety_identifier"
     )
-GITHUB_USERNAME = "chrisrogers37"
 GITHUB_API = "https://api.github.com"
 # The proxy's GitHub calls give up after this; the health check uses a shorter one.
 GITHUB_TIMEOUT_SECONDS = 10
@@ -113,7 +115,8 @@ def current_visitor() -> Visitor:
 def github_headers() -> dict:
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "CYOC-Portfolio",
+        # GitHub asks for one that names the app: the site's host.
+        "User-Agent": urlsplit(CONFIG.site_url).hostname or "site",
     }
     if GITHUB_TOKEN:
         headers["Authorization"] = f"token {GITHUB_TOKEN}"

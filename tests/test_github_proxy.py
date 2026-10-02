@@ -488,3 +488,86 @@ def test_missing_token_is_logged_once_at_import():
     env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
     assert _import_request_utils(env).count("github token missing") == 1
     assert "github token missing" not in _import_request_utils({**env, "GITHUB_TOKEN": "x"})
+
+
+# --- owners (#189) ----------------------------------------------------------
+
+
+def test_the_one_segment_routes_serve_the_sites_own_owner(client):
+    from api._lib.site_config import CONFIG
+
+    payload = {"name": "shuffify", "private": False}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)) as get:
+        r = client.get("/api/v1/github/repo/shuffify")
+    assert r.status_code == 200
+    assert get.call_args.args[0].endswith(f"/repos/{CONFIG.github_owner}/shuffify")
+
+
+def test_an_allowed_owner_is_served_by_name_whatever_its_case(client):
+    from api._lib.site_config import CONFIG
+
+    owner = CONFIG.github_owner.upper()
+    payload = {"name": "shuffify", "private": False}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)) as get:
+        repo = client.get(f"/api/v1/github/repo/{owner}/shuffify")
+        readme = client.get(f"/api/v1/github/readme/{owner}/shuffify")
+    assert repo.status_code == 200
+    assert readme.status_code == 200
+    assert all(f"/repos/{owner}/shuffify" in call.args[0] for call in get.call_args_list)
+
+
+@pytest.mark.parametrize("owner", ["someone-else", "not_a.name", "x" * 40])
+def test_another_owner_gets_the_generic_404_without_a_github_call(client, owner):
+    with patch("api.index.requests.get") as get:
+        repo = client.get(f"/api/v1/github/repo/{owner}/shuffify")
+        readme = client.get(f"/api/v1/github/readme/{owner}/shuffify")
+    for r in (repo, readme):
+        assert r.status_code == 404
+        assert r.get_json() == {"error": "Repository not found"}
+    get.assert_not_called()
+
+
+def test_a_look_alike_of_an_allowed_owner_is_refused(client, monkeypatch):
+    # The Kelvin sign lower-cases to "k": only the ASCII rule keeps
+    # "\u212aelvin" from passing as an allowed "kelvin".
+    import dataclasses
+
+    from api._lib import github_proxy
+
+    allowed = dataclasses.replace(github_proxy.CONFIG, allowed_owners=frozenset({"kelvin"}))
+    monkeypatch.setattr(github_proxy, "CONFIG", allowed)
+    payload = {"name": "shuffify", "private": False}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)) as get:
+        assert client.get("/api/v1/github/repo/kelvin/shuffify").status_code == 200
+        get.reset_mock()
+        r = client.get("/api/v1/github/repo/\u212aelvin/shuffify")
+    assert r.status_code == 404
+    get.assert_not_called()
+
+
+def test_a_private_repo_of_an_allowed_owner_is_still_hidden(client):
+    from api._lib.site_config import CONFIG
+
+    payload = {"name": "secret", "private": True}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        r = client.get(f"/api/v1/github/repo/{CONFIG.github_owner}/secret")
+    assert r.status_code == 404
+    assert r.get_json() == {"error": "Repository not found"}
+
+
+def test_a_repo_that_redirects_to_another_owner_is_hidden(client):
+    # GitHub redirects a transferred repo, and requests follows: the repo it
+    # lands on belongs to someone the site doesn't serve.
+    payload = {"name": "shuffify", "private": False, "owner": {"login": "someone-else"}}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        repo = client.get("/api/v1/github/repo/octocat/shuffify")
+        readme = client.get("/api/v1/github/readme/octocat/shuffify")
+    for r in (repo, readme):
+        assert r.status_code == 404
+        assert r.get_json() == {"error": "Repository not found"}
+
+
+def test_a_repo_still_with_an_allowed_owner_is_served(client):
+    payload = {"name": "shuffify", "private": False, "owner": {"login": "OctoCat"}}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)):
+        assert client.get("/api/v1/github/repo/octocat/shuffify").status_code == 200

@@ -21,6 +21,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The contact card's labels are lowercase, like the footer's and the menu's (#239).
 - "view source" opens the repo at the commit the site was built from (#240).
 - The unit tests read a fictional site, `site.example/`, so a fork's edits can't turn them red; `npm run site:check` holds a site's own content to its rules, and CI runs the e2e tests on both sites (#241).
+- The API reads who the site is from `site/site.yaml`: the CORS origins, the GitHub owner (project pages can link another allowed owner's repos), and the rewrite's button label, persona and style rules. It adds PyYAML, and its tests run on `site.example/` (#242).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).

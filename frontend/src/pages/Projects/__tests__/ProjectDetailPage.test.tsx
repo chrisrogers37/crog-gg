@@ -112,7 +112,7 @@ describe("ProjectDetailPage across projects", () => {
     });
     // alpha's stats can't render (no figures in the answer), so its section
     // crashes; beta's answer is whole.
-    vi.spyOn(githubService, "getRepository").mockImplementation(async (name) =>
+    vi.spyOn(githubService, "getRepository").mockImplementation(async (_owner, name) =>
       name === "alpha"
         ? ({} as Repository)
         : ({
@@ -133,6 +133,9 @@ describe("ProjectDetailPage across projects", () => {
     expect(
       await screen.findByText(/something went wrong loading this section/i),
     ).toBeInTheDocument();
+    // By the owner in the project's own URL (#189).
+    expect(githubService.getRepository).toHaveBeenCalledWith("owner", "alpha");
+    expect(githubService.getReadme).toHaveBeenCalledWith("owner", "alpha");
 
     await act(() => router.navigate("/projects/beta"));
     expect(await screen.findByText("222")).toBeInTheDocument();

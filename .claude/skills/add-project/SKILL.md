@@ -86,7 +86,7 @@ tags:
 ```
 
 Optional fields (add only if available):
-- `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the configured GitHub owner (`GITHUB_USERNAME` in `api/_lib/request_utils.py`); leave it out for anyone else's repo. The project page looks the repo's name up under that owner, so another owner's repo would show the owner's same-named repo, or no README. The same goes for a `url` on github.com: without `github`, the page reads `url` as the repo, so point another owner's project at its site, not its repo.
+- `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the site's GitHub owner (`github.username` in `site/site.yaml`) or one of its `allowed_owners`; leave it out for anyone else's repo, since the API serves no one else's. The same goes for a `url` on github.com: without `github`, the page reads `url` as the repo, so point another owner's project at its site, not its repo.
 - `demo: https://...` (only if different from `url`): the project page embeds it, and the site's Content-Security-Policy blocks frames from hosts it doesn't list. Add its exact origin to `frame-src` in `vercel.json` in the same PR (no wildcards), and say in the PR that it loosens the CSP. A demo this site serves can't be embedded: every path sends `X-Frame-Options: DENY`, so make it the `url` instead.
 
 **Update `site/public/content/projects/index.yaml`**:

@@ -60,6 +60,9 @@ const email = matching(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "an email address");
 
 const slug = matching(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "a lowercase id (a-z, 0-9, -)");
 
+/** What GitHub accepts as a username or organisation. */
+const githubName = matching(/^[A-Za-z0-9-]{1,39}$/, "a GitHub username");
+
 const positiveInteger: Check<number> = (value, path, issues) =>
   Number.isInteger(value) && (value as number) > 0
     ? (value as number)
@@ -135,6 +138,9 @@ export type SocialIcon = (typeof SOCIAL_ICONS)[number];
 export const HOMES = ["landing", "profile"] as const;
 export type Home = (typeof HOMES)[number];
 
+/** The forms the API can write a persona in (api/_lib/site_config.py). */
+const PRONOUNS = ["he", "she", "they"] as const;
+
 /** /about's sections; each id is a component, so the list is fixed. */
 export const SECTION_IDS = ["about", "journey", "projects", "music"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -157,7 +163,17 @@ const siteShape = object({
     image: sitePath,
     knows_about: list(text),
   }),
-  site: object({ url: origin }),
+  site: object({
+    url: origin,
+    /** Other origins that serve the site; the API accepts calls from them. */
+    aliases: optional(list(origin)),
+  }),
+  github: object({
+    /** Whose public repos the project pages' stats and READMEs come from. */
+    username: githubName,
+    /** Other owners whose public repos a project may link. */
+    allowed_owners: optional(list(githubName)),
+  }),
   home: oneOf(HOMES),
   seo: object({
     /** Appended to every page title. */
@@ -178,6 +194,18 @@ const siteShape = object({
   hero: object({
     photos: list(sitePath, { min: 1 }),
     typewriter: list(text, { min: 1 }),
+  }),
+  regenerate: object({
+    /** The button's words: idle, while it works, and the undo. */
+    labels: object({ button: text, busy: text, reset: text }),
+    persona: object({
+      /** The rewritten name keeps one of these. */
+      name_variants: list(text, { min: 1 }),
+      /** "they" if left out. */
+      pronouns: optional(oneOf(PRONOUNS)),
+    }),
+    /** Asked of every rewrite, word for word. */
+    style_rules: optional(list(text)),
   }),
   about: object({
     preview_height: object({ narrow: positiveInteger, wide: positiveInteger }),
