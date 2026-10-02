@@ -14,8 +14,11 @@ import {
  * Only production builds report; the dev server and tests send nothing.
  */
 
-/** Where a link to the Claudlobby repo's front page sits, on its page. */
-export type RepoLinkLocation = "hero" | "quickstart";
+/**
+ * Where a link to the Claudlobby repo's front page sits: its page's hero and
+ * quickstart, or the featured card on / and /projects.
+ */
+export type RepoLinkLocation = "hero" | "quickstart" | "featured";
 
 export type AnalyticsEvent =
   | { name: "repo_click"; location: RepoLinkLocation }

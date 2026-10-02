@@ -9,6 +9,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - Docs: how the site works, what each content file does, contributing, forking, this changelog, and PR and issue templates (#237).
 - The owner's identity lives in one folder, `site/`: `site/site.yaml`, checked at build time, and `site/public/`. The footer's source link comes from it (#239).
 - `home: profile` in `site/site.yaml` puts the personal page at `/` for a fork, with no landing page (#240).
+- The featured card's GitHub link counts as a repo click when it's Claudlobby's (`repo_click`, location `featured`), as the links on Claudlobby's page do (#248).
 
 ### Changed
 - A SUMMON NEW LORE press rewrites only the About section, the one the page shows, so it uses one daily slot (#234).

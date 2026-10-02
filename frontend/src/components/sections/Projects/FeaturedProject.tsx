@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import type { Project } from "../../../types";
+import { RepoLink } from "../../common/RepoLink";
 import "./Projects.css";
 
 type FeaturedProjectProps = {
@@ -31,14 +32,10 @@ export function FeaturedProject({ project, headingLevel = 3 }: FeaturedProjectPr
           View project
         </Link>
         {project.github && (
-          <a
-            href={project.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-ghost"
-          >
+          // Counted when it's Claudlobby's repo, as its page's links are (#177).
+          <RepoLink location="featured" href={project.github} className="btn btn-ghost">
             GitHub
-          </a>
+          </RepoLink>
         )}
       </div>
     </article>

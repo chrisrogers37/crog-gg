@@ -6,8 +6,9 @@ import { createMemoryRouter, MemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { routes } from "../../../router";
 import { ClaudlobbyPage } from "../../sections/Claudlobby";
+import { RepoLink } from "../RepoLink";
 import { makeProject } from "../../../test/builders";
-import { CLAUDLOBBY_REPO } from "../../../content/links";
+import { CLAUDLOBBY_REPO, isClaudlobbyFrontPage } from "../../../content/links";
 import { track } from "../../../services/analytics";
 
 vi.mock("../../../services/analytics", () => ({ track: vi.fn() }));
@@ -15,16 +16,6 @@ vi.mock("../../../services/analytics", () => ({ track: vi.fn() }));
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-/**
- * The repo's front page, where the Star button is: with or without an anchor,
- * a trailing slash or a query like `?tab=readme-ov-file`, which GitHub serves
- * as the same page.
- */
-const isFrontPage = (href: string) => {
-  const url = new URL(href);
-  return `${url.origin}${url.pathname.replace(/\/$/, "")}` === CLAUDLOBBY_REPO;
-};
 
 describe("RepoLink", () => {
   it("counts each click on Claudlobby's page to the repo's front page once, with where the link sits", async () => {
@@ -43,7 +34,7 @@ describe("RepoLink", () => {
       .filter(([, href]) => href.startsWith(CLAUDLOBBY_REPO));
     for (const [link] of intoRepo) await user.click(link);
 
-    const frontPage = intoRepo.filter(([, href]) => isFrontPage(href));
+    const frontPage = intoRepo.filter(([, href]) => isClaudlobbyFrontPage(href));
     const repoClicks = vi
       .mocked(track)
       .mock.calls.flatMap(([event]) =>
@@ -59,6 +50,21 @@ describe("RepoLink", () => {
         .mock.calls.map(([event]) => event)
         .filter((event) => event.name !== "repo_click"),
     ).toEqual([{ name: "updates_click" }]);
+  });
+
+  it("is just a link into any other repo", async () => {
+    const user = userEvent.setup();
+    render(
+      <RepoLink location="featured" href="https://github.com/someone/else">
+        else
+      </RepoLink>,
+    );
+    const link = screen.getByRole("link", { name: "else" });
+    expect(link).toHaveAttribute("href", "https://github.com/someone/else");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    await user.click(link);
+    expect(track).not.toHaveBeenCalled();
   });
 
   it("is Claudlobby's page's alone: the site's header, menu and footer link nowhere into it", async () => {

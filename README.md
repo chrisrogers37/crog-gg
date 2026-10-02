@@ -216,7 +216,7 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 
 ### Web Analytics
 
-Pageviews and the CTA events (`repo_click`, `quickstart_click`, `updates_click`) go to Vercel Web Analytics, through `frontend/src/services/analytics.ts`. It sets no cookies, its script and beacons are served from the site's own origin (`/_vercel/insights/*`), so the CSP needs no change, and a reported URL keeps its path and `utm_*` query parameters: no other parameter, and no fragment.
+Pageviews and the CTA events (`repo_click`, with where the link was: Claudlobby's hero, its quickstart or the featured card; `quickstart_click`; `updates_click`) go to Vercel Web Analytics, through `frontend/src/services/analytics.ts`. It sets no cookies, its script and beacons are served from the site's own origin (`/_vercel/insights/*`), so the CSP needs no change, and a reported URL keeps its path and `utm_*` query parameters: no other parameter, and no fragment.
 
 1. Vercel → project → **Analytics** → **Enable**, before the first deploy that ships `@vercel/analytics`. The `/_vercel/insights/*` routes exist from the next deployment on; until then every page requests a script that 404s.
 2. Custom events need the **Pro** plan. On Hobby only pageviews are recorded, up to the plan's monthly event cap.
