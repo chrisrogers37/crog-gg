@@ -32,6 +32,10 @@ PRONOUN_FORMS = {
 # ASCII only, so nothing else lower-cases into an allowed owner's name.
 GITHUB_NAME = re.compile(r"[A-Za-z0-9-]{1,39}")
 
+# What features.regenerate and features.github take: auto shows the feature
+# when the deployment can serve it, and on and off override that (#189 M21).
+FEATURE_MODES = ("auto", "on", "off")
+
 _REQUIRED = object()
 
 
@@ -69,6 +73,9 @@ class SiteConfig:
     pronouns: Mapping[str, str]
     # Rules every rewrite is asked to keep, appended to the prompt.
     style_rules: tuple[str, ...]
+    # features.regenerate and features.github: one of FEATURE_MODES.
+    regenerate_mode: str
+    github_mode: str
 
     def allows(self, owner: str) -> bool:
         """Whether the proxy serves this owner's repos: a GitHub name that is
@@ -114,6 +121,15 @@ def _github_name(value: Any, key: str, source: Path) -> str:
     return value
 
 
+def _mode(data: Any, key: str, source: Path) -> str:
+    mode = _at(data, key, source, None)
+    if mode is None or mode == "":
+        return "auto"
+    if mode not in FEATURE_MODES:
+        raise SiteConfigError(f"{source}: {key} must be one of {', '.join(FEATURE_MODES)}")
+    return mode
+
+
 def load(path: Path = PATH) -> SiteConfig:
     """site.yaml's keys the API reads, checked; a SiteConfigError names the key."""
     try:
@@ -144,6 +160,8 @@ def load(path: Path = PATH) -> SiteConfig:
         name_variants=_texts(data, "regenerate.persona.name_variants", path, required=True),
         pronouns=PRONOUN_FORMS[pronouns],
         style_rules=_texts(data, "regenerate.style_rules", path, required=False),
+        regenerate_mode=_mode(data, "features.regenerate", path),
+        github_mode=_mode(data, "features.github", path),
     )
 
 

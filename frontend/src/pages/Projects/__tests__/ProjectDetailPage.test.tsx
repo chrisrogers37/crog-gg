@@ -3,16 +3,27 @@ import { HelmetProvider } from "react-helmet-async";
 import { createMemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useContentStore } from "../../../store";
+import site from "virtual:site-config";
+import { useContentStore, useUIStore } from "../../../store";
 import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
 const INITIAL = useContentStore.getState();
+const INITIAL_UI = useUIStore.getState();
+const SITE_FEATURES = site.features;
 afterEach(() => {
   useContentStore.setState(INITIAL, true);
+  useUIStore.setState(INITIAL_UI, true);
+  site.features = SITE_FEATURES;
 });
+
+/** What GET /api/features answers where the API serves GitHub. */
+const githubServed = () => useUIStore.setState({ features: { regenerate: false, github: true } });
+
+/** The tests' site's GitHub owner (site.example's github.username). */
+const OWNER = site.github.username;
 
 const BENZO = {
   id: "benzo",
@@ -103,7 +114,7 @@ describe("ProjectDetailPage across projects", () => {
         id,
         title: id,
         description: "A project",
-        url: `https://github.com/owner/${id}`,
+        url: `https://github.com/${OWNER}/${id}`,
       }) as Project;
     useContentStore.setState({
       projects: [project("alpha"), project("beta")],
@@ -128,14 +139,15 @@ describe("ProjectDetailPage across projects", () => {
     );
     vi.spyOn(githubService, "getReadme").mockRejectedValue(new Error("offline"));
     vi.spyOn(console, "error").mockImplementation(() => {});
+    githubServed();
 
     const router = renderAt(["/projects/alpha"]);
     expect(
       await screen.findByText(/something went wrong loading this section/i),
     ).toBeInTheDocument();
     // By the owner in the project's own URL (#189).
-    expect(githubService.getRepository).toHaveBeenCalledWith("owner", "alpha");
-    expect(githubService.getReadme).toHaveBeenCalledWith("owner", "alpha");
+    expect(githubService.getRepository).toHaveBeenCalledWith(OWNER, "alpha");
+    expect(githubService.getReadme).toHaveBeenCalledWith(OWNER, "alpha");
 
     await act(() => router.navigate("/projects/beta"));
     expect(await screen.findByText("222")).toBeInTheDocument();
@@ -143,5 +155,61 @@ describe("ProjectDetailPage across projects", () => {
       screen.queryByText(/something went wrong loading this section/i),
     ).not.toBeInTheDocument();
     vi.restoreAllMocks();
+  });
+});
+
+/**
+ * The repo's stats and README show only where the API serves them (#189
+ * M21): site.yaml's features.github decides, or, left at auto, the API's
+ * answer, and then only for an owner it serves.
+ */
+describe("ProjectDetailPage's GitHub panels", () => {
+  const LINKED = { ...BENZO, github: `https://github.com/${OWNER.toUpperCase()}/benzo` } as Project;
+  const panels = () => [
+    screen.queryByRole("heading", { name: /repository stats/i }),
+    screen.queryByRole("heading", { name: /documentation/i }),
+  ];
+
+  beforeEach(() => {
+    useContentStore.setState({ projects: [LINKED], isLoading: false, error: null });
+    vi.spyOn(githubService, "getRepository").mockReturnValue(new Promise(() => {}));
+    vi.spyOn(githubService, "getReadme").mockReturnValue(new Promise(() => {}));
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([
+    // As on a deployment that serves them, so a deep link doesn't shift.
+    ["the API hasn't answered yet", () => {}, true],
+    [
+      "the API couldn't answer",
+      () => useUIStore.setState({ features: { regenerate: false, github: false } }),
+      false,
+    ],
+    ["the API serves GitHub (the owner in any case)", githubServed, true],
+    [
+      "site.yaml turns GitHub off",
+      () => {
+        githubServed();
+        site.features = { regenerate: undefined, github: "off" };
+      },
+      false,
+    ],
+    ["site.yaml turns GitHub on", () => (site.features = { regenerate: undefined, github: "on" }), true],
+  ])("when %s: shown is %s", (_, arrange, shown) => {
+    arrange();
+    renderAt(["/projects/benzo"]);
+    for (const panel of panels()) {
+      if (shown) expect(panel).toBeInTheDocument();
+      else expect(panel).not.toBeInTheDocument();
+    }
+  });
+
+  it("hides them for an owner the API doesn't serve", () => {
+    githubServed();
+    useContentStore.setState({
+      projects: [{ ...BENZO, github: "https://github.com/someone-else/benzo" } as Project],
+    });
+    renderAt(["/projects/benzo"]);
+    for (const panel of panels()) expect(panel).not.toBeInTheDocument();
   });
 });

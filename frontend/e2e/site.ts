@@ -37,6 +37,13 @@ export const TABS_PATH = aboutPath(site);
 /** Whether / is the Claudlobby landing page. */
 export const LANDING = site.home === "landing";
 
+/**
+ * Whether the page can offer SUMMON, given that the specs' API answers that
+ * it's served (fixtures.ts): only site.yaml's features.regenerate: off hides
+ * it then (#189).
+ */
+export const SUMMON = site.features?.regenerate !== "off";
+
 /** A tab's or panel's name, matched whole, whatever characters it has. */
 export const named = (label: string) =>
   new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");

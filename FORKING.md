@@ -25,7 +25,7 @@ This is the interim guide. The owner's identity lives in one folder, `site/` (#1
 **Still in the code:**
 - The Claudlobby landing page: set `home: profile` in `site/site.yaml`, and the personal page becomes `/`, with no landing page, no Claudlobby links and no Claudlobby head. To keep a landing page of your own instead, replace `frontend/src/content/claudlobby.ts`, the sections in `frontend/src/components/sections/Claudlobby/`, and the landing page's head (`HOME_META` in `frontend/src/seo/site.ts`).
 
-**The API** reads `site/site.yaml` too (#189): `github.username` for the project pages' GitHub owner, `site.url` and `site.aliases` for CORS, and `regenerate` for the button's label (the rewrite must leave it as it is), the persona's names and pronouns, and the style rules every rewrite is asked to keep.
+**The API** reads `site/site.yaml` too (#189): `github.username` for the project pages' GitHub owner, `site.url` and `site.aliases` for CORS, `regenerate` for the button's label (the rewrite must leave it as it is), the persona's names and pronouns, and the style rules every rewrite is asked to keep, and `features` for what it serves.
 
 **Hosting:**
 - the Content-Security-Policy in `vercel.json`: add any host you frame or load images from (`site:check` fails if the music player's isn't there);
@@ -40,7 +40,7 @@ git grep -n -i -E "chris|crog|cr0g"
 ## Deploying
 
 1. Import the repo into Vercel. `vercel.json` already sets the build, the output folder, the API rewrite and the headers.
-2. Add Upstash Redis, as the README's [Provisioning Upstash Redis](README.md#provisioning-upstash-redis) describes. Without it, SUMMON NEW LORE answers 503: the paid endpoint refuses to run unmetered (#113).
+2. Add Upstash Redis, as the README's [Provisioning Upstash Redis](README.md#provisioning-upstash-redis) describes. Without it, or without `OPENAI_API_KEY`, SUMMON NEW LORE doesn't show: the paid endpoint refuses to run unmetered (#113), and the page asks `GET /api/features` before it offers the button. To retire the button for good, set `features.regenerate: off` in `site/site.yaml`.
 3. Set the variables in the README's [table](README.md#environment-variables); Upstash injects its own (step 2).
 4. **Set a monthly budget in the OpenAI billing dashboard** ([why](README.md#bounding-openai-spend)).
 

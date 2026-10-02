@@ -4,7 +4,7 @@ import site from "virtual:site-config";
 import type { SectionId } from "../../config/schema";
 
 // Hooks
-import { useMediaQuery, useRegeneration } from "../../hooks";
+import { useMediaQuery, useRegenerateOn, useRegeneration } from "../../hooks";
 import {
   useContentStore,
   useIsLoading,
@@ -117,6 +117,8 @@ function AboutContent() {
   // renders against a layout that is about to change height and gets displaced
   // once the real content lands.
   const [contentMounted, setContentMounted] = useState(false);
+  // SUMMON shows only where the deployment can serve it (#189 M21).
+  const regenerateOn = useRegenerateOn();
 
   // Nothing else needs to be consulted: the flag is set when the content node
   // attaches and cleared when it detaches, so it says only "the expanded
@@ -329,7 +331,7 @@ function AboutContent() {
       {/* Action Buttons — gated on the content being present, not requested.
           openSection is deliberately not consulted: it is the request, and
           reading it here is what unmounted these ahead of the content. */}
-      {contentMounted && (
+      {contentMounted && regenerateOn && (
         <>
           <ActionButtons
             onRegenerate={() => regenerate(true)}

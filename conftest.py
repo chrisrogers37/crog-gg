@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # can't leak another site in; test_site_config.py loads site/site.yaml itself.
 os.environ["SITE_DIR"] = "site.example"
 
-from unittest.mock import patch  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
 import pytest  # noqa: E402
 
@@ -58,6 +58,19 @@ def _unsalted():
     exported in the shell can't change what the tests see."""
     with patch.object(request_utils, "IP_HASH_SALT", ""):
         yield
+
+
+@pytest.fixture(autouse=True)
+def _no_real_openai():
+    """No test reaches OpenAI, whatever OPENAI_API_KEY the shell exports: a
+    test that doesn't patch the client gets one whose every call fails. A test
+    of the keyless path patches it to None itself (#189 M21)."""
+    client = MagicMock()
+    client.chat.completions.create.side_effect = AssertionError("unexpected OpenAI call")
+    with patch("api.index.openai_client", client):
+        yield
+    # A press the handler turned into a failed section still fails the test.
+    client.chat.completions.create.assert_not_called()
 
 
 @pytest.fixture

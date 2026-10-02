@@ -1,11 +1,13 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import {
   ABOUT,
   OTHER_TABS,
   SECTIONS,
+  SUMMON,
   TABS_PATH,
   bio,
   named,
+  site,
   tabAfter,
   withLongAbout,
 } from "./site";
@@ -134,10 +136,11 @@ test.describe("Section Navigation", () => {
 
     await about.click();
 
-    // Expanded: the preview's "see more" is gone, and the action buttons that
-    // mount with the expanded content are there.
+    // Expanded: the preview's "see more" is gone, the expanded panel is in,
+    // and so are the action buttons that mount with it, where SUMMON shows.
     await expect(page.getByRole("button", { name: /see more/i })).toHaveCount(0);
-    await expect(page.locator(".action-buttons")).toBeVisible();
+    await expect(page.locator(".content-section")).toBeVisible();
+    if (SUMMON) await expect(page.locator(".action-buttons")).toBeVisible();
     await expect(about).toHaveAttribute("aria-selected", "true");
   });
 
@@ -230,6 +233,7 @@ test.describe("Section Flow Navigation", () => {
 
 test.describe("Action Buttons", () => {
   test("action buttons appear when section is active", async ({ page }) => {
+    test.skip(!SUMMON, "site.yaml turns SUMMON off");
     test.skip(!SECOND, "needs a tab other than About");
     // Not About (auto-selected, so in preview mode)
     await page.locator(`button[data-section="${SECOND.id}"]`).click();
@@ -266,5 +270,19 @@ test.describe("Contact CTA", () => {
   test("about page has footer", async ({ page }) => {
     const footer = page.locator("footer.footer");
     await expect(footer).toBeVisible({ timeout: 5000 });
+  });
+});
+
+test.describe("Where SUMMON isn't served (#189 M21)", () => {
+  // What a deployment with no OpenAI key or no Upstash answers.
+  test.use({ features: { regenerate: false, github: true } });
+
+  test("the page offers no regenerate button", async ({ page }) => {
+    test.skip(site.features?.regenerate === "on", "site.yaml shows it whatever the API says");
+    // Expanding About mounts the panel whose mount brings the buttons, so
+    // once it's in, they would be too.
+    await page.getByRole("tab", { name: named(ABOUT.label) }).click();
+    await expect(page.locator(".content-section")).toBeVisible();
+    await expect(page.locator(".generate-btn")).toHaveCount(0);
   });
 });

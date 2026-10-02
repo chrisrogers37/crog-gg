@@ -16,6 +16,7 @@ import {
 } from "../../components/features";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
+import { useGithubOn } from "../../hooks";
 import "./ProjectDetailPage.css";
 
 function ProjectDetailSkeleton() {
@@ -56,6 +57,9 @@ export function ProjectDetailPage() {
 
   // Find the project by slug (id)
   const project = projects.find((p) => p.id === slug);
+  const repo = project ? githubRepo(project) : null;
+  // Its stats and README show only where the API serves them (#189 M21).
+  const githubOn = useGithubOn(repo?.owner);
 
   if (!project) {
     // A deep link renders before the content has loaded, and a failed load is
@@ -83,7 +87,6 @@ export function ProjectDetailPage() {
     );
   }
 
-  const repo = githubRepo(project);
   const liveDemo = hasLiveDemo(project);
 
   return (
@@ -140,7 +143,7 @@ export function ProjectDetailPage() {
         </header>
 
         {/* GitHub Stats */}
-        {repo && (
+        {repo && githubOn && (
           <section className="project-section">
             <h2 className="section-title">Repository Stats</h2>
             <ErrorBoundary compact>
@@ -173,7 +176,7 @@ export function ProjectDetailPage() {
         )}
 
         {/* GitHub README */}
-        {repo && (
+        {repo && githubOn && (
           <section className="project-section">
             <h2 className="section-title">Documentation</h2>
             <ErrorBoundary compact>

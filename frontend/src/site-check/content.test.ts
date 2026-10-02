@@ -22,12 +22,16 @@ describe("the site's About copy", () => {
     expect(paragraphs.length).toBeGreaterThan(0);
   });
 
-  it("ends on the sign-off that names the button", () => {
+  // With features.regenerate: off there's no button to name (#191 item 9).
+  it.skipIf(site.features?.regenerate === "off")("ends on the sign-off that names the button", () => {
     // The last line tells the reader which control to press, so losing it is a
     // product regression rather than a copy edit. The regeneration prompt is
     // told to leave it alone; this pins the source it starts from. On the last
     // paragraph, not the file: the label sitting in a comment or halfway up
     // the copy would satisfy a whole-file check.
-    expect(paragraphs.at(-1)).toContain(site.regenerate.labels.button);
+    expect(
+      paragraphs.at(-1),
+      "the About text's last paragraph names the button: add that line, or set features.regenerate: off",
+    ).toContain(site.regenerate.labels.button);
   });
 });

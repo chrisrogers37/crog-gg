@@ -1,4 +1,5 @@
-import { test, expect, type APIRequestContext } from "@playwright/test";
+import type { APIRequestContext } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { readProjects } from "../src/utils/projectLoader";
 import { site, TABS_PATH } from "./site";
 

@@ -104,11 +104,13 @@ describe("parseSiteConfig", () => {
     at(raw, "github").username = "not/a name";
     at(raw, "regenerate.persona").name_variants = [];
     at(raw, "site").aliases = ["https://example.com/path"];
+    raw.features = { regenerate: "sometimes" };
     const message = problems(raw);
     expect(message).toContain("regenerate.persona.pronouns: expected one of he, she, they");
     expect(message).toContain("github.username: expected a GitHub username");
     expect(message).toContain("regenerate.persona.name_variants: expected at least 1");
     expect(message).toContain("site.aliases.0: expected an https origin");
+    expect(message).toContain("features.regenerate: expected one of auto, on, off");
   });
 
   it("needs {artist} in the music intro, once", () => {

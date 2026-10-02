@@ -141,6 +141,13 @@ export type Home = (typeof HOMES)[number];
 /** The forms the API can write a persona in (api/_lib/site_config.py). */
 const PRONOUNS = ["he", "she", "they"] as const;
 
+/**
+ * What `features` takes (#189): `auto` shows a feature when the deployment
+ * can serve it (GET /api/features), `on` and `off` decide.
+ */
+export const FEATURE_MODES = ["auto", "on", "off"] as const;
+export type FeatureMode = (typeof FEATURE_MODES)[number];
+
 /** /about's sections; each id is a component, so the list is fixed. */
 export const SECTION_IDS = ["about", "journey", "projects", "music"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -175,6 +182,13 @@ const siteShape = object({
     allowed_owners: optional(list(githubName)),
   }),
   home: oneOf(HOMES),
+  /** Whether SUMMON and the GitHub panels show; each `auto` if left out. */
+  features: optional(
+    object({
+      regenerate: optional(oneOf(FEATURE_MODES)),
+      github: optional(oneOf(FEATURE_MODES)),
+    }),
+  ),
   seo: object({
     /** Appended to every page title. */
     site_name: text,

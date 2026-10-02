@@ -218,3 +218,54 @@ def test_a_usable_github_reply_reports_the_quota(client):
         r = client.get("/api/health")
     assert r.status_code == 200
     assert r.get_json()["checks"]["github_core_remaining"] == 4321
+
+
+# --- what the deployment serves (#189 M21) ----------------------------------
+
+
+def _with_modes(stack, **modes):
+    import dataclasses
+
+    stack.enter_context(patch.object(index, "CONFIG", dataclasses.replace(index.CONFIG, **modes)))
+
+
+def test_a_fork_with_neither_key_nor_upstash_is_healthy(client):
+    # SUMMON isn't served there, by design, so its parts aren't missing.
+    with ExitStack() as stack:
+        _deps(stack, openai_key=False, ping=RuntimeError("no Upstash"))
+        stack.enter_context(patch("api.index.redis_client.is_configured", return_value=False))
+        r = client.get("/api/health")
+    assert r.status_code == 200
+    assert r.get_json()["ok"] is True
+
+
+def test_regenerate_off_skips_its_checks(client):
+    with ExitStack() as stack:
+        _deps(stack, openai_key=False, ping=RuntimeError("down"))
+        _with_modes(stack, regenerate_mode="off")
+        assert client.get("/api/health").status_code == 200
+
+
+def test_upstash_without_a_key_is_still_a_failure(client):
+    # Half set up: the owner meant to serve it.
+    with ExitStack() as stack:
+        _deps(stack, openai_key=False)
+        assert client.get("/api/health").status_code == 503
+
+
+def test_regenerate_on_needs_its_parts_even_with_neither_set(client):
+    with ExitStack() as stack:
+        _deps(stack, openai_key=False, ping=RuntimeError("no Upstash"))
+        stack.enter_context(patch("api.index.redis_client.is_configured", return_value=False))
+        _with_modes(stack, regenerate_mode="on")
+        assert client.get("/api/health").status_code == 503
+
+
+def test_github_off_skips_the_github_check_and_its_call(client):
+    with ExitStack() as stack:
+        _fake_openai, _command, get = _deps(stack, github=_rate_limit(status=401))
+        _with_modes(stack, github_mode="off")
+        r = client.get("/api/health")
+    assert r.status_code == 200
+    assert r.get_json()["checks"]["github_core_remaining"] is None
+    get.assert_not_called()

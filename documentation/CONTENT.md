@@ -87,13 +87,14 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`site.url`:** the canonical origin, `https://` with no path or trailing slash. Every absolute link to the site is built from it.
 - **`site.aliases`** (optional): other origins that serve the site, such as the apex that redirects to `www`. The API accepts calls from them and from `site.url` (CORS).
 - **`github.username`:** whose public repos the project pages' stats and READMEs come from. The API serves no one else's, unless `github.allowed_owners` (optional) names them.
+- **`features`** (optional): whether SUMMON NEW LORE (`regenerate`) and the project pages' GitHub panels (`github`) show. `auto`, the default, shows each where the deployment can serve it, as `GET /api/features` reports (SUMMON needs an OpenAI key and Upstash). `on` shows it regardless; `off` hides it, and the API refuses it too (#189).
 - **`home`:** what `/` is. `landing` is the Claudlobby landing page, with the personal page at `/about`. `profile` makes the personal page `/`, and drops the landing page and every Claudlobby link.
 - **`seo`:** `site_name` (appended to every title), `image` (the social card: `path`, `width`, `height`, and `alt`, which must match the card's text in `site/og-image.html`), and the `description` of `about` and `projects`.
 - **`socials`:** each has an `id`, a `label` (the link's text and its name to a screen reader), an `icon` (`github`, `linkedin`, `telegram`, `instagram`, `spotify`, `hoobe` or `link`), an `https` `url`, and `show_in`: any of `footer`, `menu`, `contact`, `music` and `schema` (the Person schema's `sameAs`). They show in the order listed.
 - **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source", at the commit the site was built from when Vercel names it (`VERCEL_GIT_COMMIT_SHA`).
 - **`sections`:** the personal page's tabs (at `/about`, or `/` with `home: profile`), in order: `about`, `journey`, `projects` and `music`, each with a `label`. `about` is required, since the collapsed preview is About's; leave another out to hide it.
 - **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the header types out).
-- **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189).
+- **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189). It stays required with `features.regenerate: off`.
   - `labels`: the button's words, idle (`button`), while it works (`busy`), and the undo (`reset`). The rewrite is told to leave `button` as it is, since the About text's last line names it.
   - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`, the default).
   - `style_rules` (optional): sentences asked of every rewrite, word for word. A request, not a check. Keep them narrow: casing, formality and voice are the register's to choose, so a rule such as "write in lowercase" fights every register the button picks. A mark that is wrong in every register (the owner's em-dash rule) is the kind that works.
@@ -111,7 +112,7 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
   - the music player's origin is in the CSP;
   - none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code;
   - the projects: at least one, each in a category, one emoji icon, repos of the site's owner, and a `frame-src` entry for an embedded demo;
-  - the About copy is at least one paragraph and ends on the sign-off that names the button (`regenerate.labels.button`);
+  - the About copy is at least one paragraph and, unless `features.regenerate` is `off`, ends on the sign-off that names the button (`regenerate.labels.button`);
   - the card's text matches `seo.image.alt`, the Person schema's role matches the timeline's current one, and with `home: landing` the card keeps the landing page's rules.
 - **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A project id that can't be a page's URL fails the build and `npm run site:check` (`utils/projectLoader.ts`).
 - **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site with no landing page.

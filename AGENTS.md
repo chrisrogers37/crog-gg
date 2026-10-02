@@ -8,13 +8,13 @@ This is crog.gg: a Vite/React frontend in `frontend/` and a Flask backend in `ap
 
 ### Services and how to run them
 
-- Frontend (Vite dev server, port 5173): `cd frontend && npm run dev`. `/` renders from `frontend/src/content/claudlobby.ts` and the portfolio from the YAML in `site/public/content/`, so the site works with no backend or secrets; only SUMMON NEW LORE and the GitHub panels need the backend.
+- Frontend (Vite dev server, port 5173): `cd frontend && npm run dev`. `/` renders from `frontend/src/content/claudlobby.ts` and the portfolio from the YAML in `site/public/content/`, so the site works with no backend or secrets; only SUMMON NEW LORE and the GitHub panels need the backend, and without it they don't show (`GET /api/features`).
 - Backend (Flask, port 5001): from the repo root, `python3 -m api.index`. `python api/index.py` fails with `ModuleNotFoundError: No module named 'api'`: run as a file, the repo root isn't on `sys.path`.
 - The Vite dev server proxies `/api/*` to the backend on `:5001` (see `frontend/vite.config.ts`), so the frontend calls same-origin `/api`: leave `VITE_API_URL` unset.
 
 ### Secrets (none required to boot)
 
-The README's [environment variables table](README.md#environment-variables) lists them, and `.env.example` is a template. Without `OPENAI_API_KEY`, `/api/regenerate` answers 500; with a key but no Upstash, it answers 503, because the paid endpoint fails closed (#113). Without `GITHUB_TOKEN` the GitHub panels degrade. The rest of the site (the sections, the projects, search and filter) works either way.
+The README's [environment variables table](README.md#environment-variables) lists them, and `.env.example` is a template. Without `OPENAI_API_KEY`, `/api/regenerate` answers 503 `regeneration_disabled`; with a key but no Upstash, it answers 503 too, because the paid endpoint fails closed (#113). Either way `GET /api/features` says so, and the page hides the button. Without `GITHUB_TOKEN` the GitHub panels degrade. The rest of the site (the sections, the projects, search and filter) works either way.
 
 ### Lint / test / build
 

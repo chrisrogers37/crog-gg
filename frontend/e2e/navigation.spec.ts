@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { ABOUT, OTHER_TABS, TABS_PATH, named, withLongAbout } from "./site";
+import { test, expect } from "./fixtures";
+import { ABOUT, OTHER_TABS, SUMMON, TABS_PATH, named, withLongAbout } from "./site";
 
 /**
  * Navigation E2E Tests
@@ -309,7 +309,9 @@ test.describe("see more survives a collapse (#165)", () => {
     // would also pass on a page where "see more" never worked at all.
     await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
     await page.click(".section-fade-btn");
-    await expect(page.locator(".generate-btn")).toBeVisible({ timeout: 10000 });
+    // Expanded: the open section's panel, which the preview isn't.
+    await expect(page.locator(".content-section")).toBeVisible({ timeout: 10000 });
+    if (SUMMON) await expect(page.locator(".generate-btn")).toBeVisible();
 
     // Collapse the way a reader does -- clicking the tab that is already
     // open. SectionNav reports the clicked id, and AboutPage turns a click on
@@ -324,8 +326,9 @@ test.describe("see more survives a collapse (#165)", () => {
     // both halves are asserted -- the control has to work AND has to put the
     // reader back somewhere that has the primary action on it.
     await page.click(".section-fade-btn");
-    await expect(page.locator(".generate-btn")).toBeVisible({ timeout: 10000 });
-    await expect(page.locator(".section-content")).toBeVisible();
+    await expect(page.locator(".content-section")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(".section-fade-btn")).toHaveCount(0);
+    if (SUMMON) await expect(page.locator(".generate-btn")).toBeVisible();
   });
 });
 
