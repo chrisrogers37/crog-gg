@@ -23,7 +23,7 @@ Give Claude verification loops for 2-3x quality improvement:
 
 ## Git Hooks
 
-Husky pre-commit and pre-push hooks enforce quality locally:
+Husky pre-commit and pre-push hooks enforce quality locally, once installed: run `npm install` at the repo root (husky's `prepare` sets git's `core.hooksPath`). Without that, git runs neither hook, and CI is the only gate.
 
 - **Pre-commit**: `lint-staged` runs ESLint on staged `.ts`/`.tsx` files
 - **Pre-push**: Runs `npm run build` and `npm run test:run` when `frontend/` changed, and CI's API Lint and API Tests commands when the Python side changed (exact paths and commands in `.husky/pre-push`)
