@@ -20,6 +20,11 @@ export function site(): Plugin {
     name: "crog:site",
     config: () => ({
       publicDir: path.join(SITE_DIR, "public"),
+      // The commit this build is from, when Vercel names it, so "view source"
+      // can link to exactly the code that's live (#188).
+      define: {
+        __SITE_COMMIT__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA ?? ""),
+      },
       resolve: { alias: { "@site": SITE_DIR } },
       // An allow list set here replaces Vite's default, so it names the
       // workspace too.
