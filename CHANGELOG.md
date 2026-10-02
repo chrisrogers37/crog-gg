@@ -20,6 +20,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The unit tests and e2e are type-checked, in CI and before a push (#238).
 - The contact card's labels are lowercase, like the footer's and the menu's (#239).
 - "view source" opens the repo at the commit the site was built from (#240).
+- The unit tests read a fictional site, `site.example/`, so a fork's edits can't turn them red; `npm run site:check` holds a site's own content to its rules, and CI runs the e2e tests on both sites (#241).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).
