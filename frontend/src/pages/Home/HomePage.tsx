@@ -4,6 +4,7 @@ import {
   DarkFactory,
   Hero,
   Quickstart,
+  Roadmap,
   WhyClaudlobby,
 } from "../../components/sections/Claudlobby";
 import "../../components/sections/Claudlobby/Claudlobby.css";
@@ -24,6 +25,7 @@ export function HomePage() {
         <DarkFactory />
         <WhyClaudlobby />
         <Quickstart />
+        <Roadmap />
       </div>
     </>
   );

@@ -117,7 +117,7 @@ const AUTHOR = {
 } as const;
 
 const HOME_DESCRIPTION =
-  "Claudlobby composes a fleet of always-on Claude Code agents from one fleet.yaml, on hardware you own: a dark factory for software. By Chris Rogers.";
+  "Claudlobby composes a fleet of always-on Claude Code agents from one fleet.yaml, on hardware you own: an open-source dark factory for software. By Chris Rogers.";
 
 /** The front door for Claudlobby (#173). */
 export const HOME_META: LandingPage = {
@@ -131,6 +131,7 @@ export const HOME_META: LandingPage = {
       name: "Claudlobby",
       description: HOME_DESCRIPTION,
       codeRepository: CLAUDLOBBY_REPO,
+      license: "https://www.apache.org/licenses/LICENSE-2.0",
       programmingLanguage: "Python",
       runtimePlatform: "Claude Code",
       author: AUTHOR,
@@ -150,7 +151,12 @@ export const ABOUT_META: LandingPage = {
       "@context": "https://schema.org",
       ...AUTHOR,
       image: absoluteUrl("/profile-photo.jpg"),
-      jobTitle: "Builder of Things That Sometimes Work",
+      jobTitle: "Data Platform Lead",
+      worksFor: {
+        "@type": "Organization",
+        name: "Artemis",
+        url: "https://artemis.ai",
+      },
       sameAs: Object.values(PROFILE_URLS),
       knowsAbout: [
         "Software Development",

@@ -6,10 +6,14 @@
  * build's type check instead of reaching visitors. Shared URLs live in
  * links.ts. Wrap code terms in backticks; they render as <code>.
  *
+ * Platform voice (#179): plain and specific, no jokes. The personal voice
+ * lives on /about.
+ *
  * Say only what the Claudlobby repo backs up (claudlobby.test.ts checks the
  * mechanical parts):
- * - no "open source" until the repo has a LICENSE (#179, Claudfather/Claudlobby#1996)
- * - Claude Code only today; nothing about other model providers except as roadmap
+ * - it's open source: Apache-2.0 since 2026-09-30 (Claudfather/Claudlobby#2013)
+ * - Claude Code only today; other model providers appear only in
+ *   `maturity.planned` and `roadmap.next`, where they read as plans
  * - every number keeps its source and as-of date, and matches that source
  */
 
@@ -23,12 +27,22 @@ export const claudlobby = {
   hero: {
     eyebrow: "Claudlobby · by Chris Rogers",
     headline: "i build things that build things.",
-    sub: "Claudlobby is my agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
+    sub: "Claudlobby is my open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
     credibility:
       "Data platform lead by day. Before that, Citadel and Meta, and chemical engineering at Cornell.",
     aboutLink: "More about me",
     ctaStar: "Star on GitHub",
     ctaQuickstart: "Quickstart",
+  },
+
+  maturity: {
+    label: "Early alpha",
+    // Split so the test can hold `today` to Claude Code; only `planned` may
+    // name other providers.
+    today: "Runs on Claude Code today.",
+    planned:
+      "Other model providers (OpenAI, Gemini, local models) are on the roadmap.",
+    link: "What's next",
   },
 
   darkFactory: {
@@ -101,7 +115,32 @@ export const claudlobby = {
       "Claude Code's Telegram plugin and a @BotFather token for each bot, if your fleet uses Telegram",
       "A GitHub token for the bots (`GITHUB_PAT`)",
     ],
+    alphaNote: "Claudlobby is early alpha, so expect rough edges in setup.",
+    issuesLink: "Report a setup problem",
     readmeLink: "Quickstart in the README",
     docsLink: "Full setup guide",
+  },
+
+  roadmap: {
+    heading: "Today, and what's next",
+    intro: "Today is what the repo does now. Next is planned, not shipped.",
+    // From the README and PROJECT_MISSION.md.
+    today: {
+      heading: "Today",
+      items: [
+        "Claude Code agents, composed from one `fleet.yaml`",
+        "macOS (launchd) and Linux (systemd) hosts, each fleet on a single host",
+        "Steered from Telegram, watched in the operator plane",
+        "An optional GitHub App identity per fleet, so bot commits and PRs show up as bots",
+      ],
+    },
+    // Chris's stated plans: #179, #180 and #181 (G1 and the cold-start gate).
+    next: {
+      heading: "Next",
+      items: [
+        "Other model providers from the same `fleet.yaml`: OpenAI's Codex CLI, Gemini and local models",
+        "A first run that needs fewer accounts and tokens between cloning and a working bot",
+      ],
+    },
   },
 };

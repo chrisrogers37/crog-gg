@@ -4,6 +4,8 @@
  */
 export const CLAUDLOBBY_REPO = "https://github.com/Claudfather/Claudlobby";
 
+export const CLAUDLOBBY_ISSUES = `${CLAUDLOBBY_REPO}/issues`;
+
 export const CLAUDLOBBY_README_QUICKSTART = `${CLAUDLOBBY_REPO}#quick-start`;
 
 export const CLAUDLOBBY_GETTING_STARTED = `${CLAUDLOBBY_REPO}/blob/main/documentation/getting-started.md`;

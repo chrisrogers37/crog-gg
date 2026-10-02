@@ -16,7 +16,7 @@ const VIEWPORTS = [
 ] as const;
 
 for (const [label, viewport] of VIEWPORTS) {
-  test(`the first screen names Claudlobby and shows both CTAs (${label})`, async ({
+  test(`the first screen names Claudlobby, shows both CTAs and its maturity (${label})`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
@@ -24,9 +24,14 @@ for (const [label, viewport] of VIEWPORTS) {
 
     await expect(page.locator(".cl-hero h1")).toBeVisible();
     await expect(page.locator(".cl-hero")).toContainText(/claudlobby/i);
-    // Wholly on screen, without scrolling.
-    for (const cta of [`.cl-hero a[href="${REPO}"]`, '.cl-hero a[href="#quickstart"]']) {
-      await expect(page.locator(cta)).toBeInViewport({ ratio: 1 });
+    // Wholly on screen, without scrolling: both CTAs, and the maturity note
+    // that qualifies them (#179).
+    for (const selector of [
+      `.cl-hero a[href="${REPO}"]`,
+      '.cl-hero a[href="#quickstart"]',
+      ".cl-hero .cl-maturity",
+    ]) {
+      await expect(page.locator(selector)).toBeInViewport({ ratio: 1 });
     }
   });
 }

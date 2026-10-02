@@ -154,7 +154,7 @@ await expect(welcomeArea).toBeVisible();
 ### Content Files
 
 - Content lives in `frontend/public/content/` as YAML files
-- Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules: no "open source" until the Claudlobby repo has a LICENSE, no em-dashes, and every number carries a commit-pinned source and an `asOf` date
+- Exception: the homepage's Claudlobby copy is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched) so the hero renders immediately; its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules, on the copy and on `/`'s title, meta description, share card and JSON-LD: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number carries a commit-pinned source and an `asOf` date. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `frontend/public/content/projects/` directory
 - Loading chain: `data/resume.ts` → `utils/*Loader.ts` → YAML files at runtime
@@ -218,6 +218,12 @@ Chris prefers a **casual, lowercase tone** in content:
 - **NEVER use em-dashes** (—) - use regular dashes or ellipses instead
 - Keep it conversational, not corporate
 - Example: "alright, here goes..." not "Here's what makes me tick—"
+
+The site has two voices (#179), one per page:
+
+- **`/` (Claudlobby): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case, apart from the "i build things that build things." line. Copy is `frontend/src/content/claudlobby.ts`.
+- **`/about` (and the rest of the portfolio): personal voice.** Lowercase, casual, jokes welcome, SUMMON NEW LORE included. Copy is `frontend/public/content/*.yaml`.
+- **Claims on `/` stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
 
 ## Image Handling
 

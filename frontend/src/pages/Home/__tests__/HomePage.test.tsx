@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renderWithProviders, screen } from "../../../test/utils";
+import { renderWithProviders, screen, within } from "../../../test/utils";
 import { HomePage } from "../HomePage";
 import { claudlobby } from "../../../content/claudlobby";
 import {
@@ -8,7 +8,7 @@ import {
   CLAUDLOBBY_REPO,
 } from "../../../content/links";
 
-const { hero, quickstart } = claudlobby;
+const { hero, maturity, quickstart, roadmap } = claudlobby;
 
 describe("HomePage", () => {
   it("leads with one heading and both next steps", () => {
@@ -25,6 +25,36 @@ describe("HomePage", () => {
       "href",
       "/about",
     );
+  });
+
+  it("states its maturity with the CTAs and points at the roadmap", () => {
+    const { container } = renderWithProviders(<HomePage />);
+    const note = container.querySelector<HTMLElement>(".cl-hero .cl-maturity")!;
+    expect(note).toHaveTextContent(maturity.label);
+    expect(
+      within(note).getByRole("link", { name: maturity.link }),
+    ).toHaveAttribute("href", "#roadmap");
+  });
+
+  it("points every in-page link at a section on the page", () => {
+    const { container } = renderWithProviders(<HomePage />);
+    const anchors = [...container.querySelectorAll('a[href^="#"]')];
+    expect(anchors.length).toBeGreaterThan(0);
+    for (const anchor of anchors) {
+      const id = anchor.getAttribute("href")!.slice(1);
+      expect(document.getElementById(id), anchor.textContent!).not.toBeNull();
+    }
+  });
+
+  it("keeps today and next in separate lists", () => {
+    renderWithProviders(<HomePage />);
+    for (const column of [roadmap.today, roadmap.next]) {
+      const card = screen.getByRole("heading", { name: column.heading })
+        .parentElement!;
+      expect(within(card).getAllByRole("listitem")).toHaveLength(
+        column.items.length,
+      );
+    }
   });
 
   it("never skips a heading level", () => {

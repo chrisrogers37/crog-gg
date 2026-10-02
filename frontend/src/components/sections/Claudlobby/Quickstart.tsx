@@ -1,6 +1,7 @@
 import { claudlobby } from "../../../content/claudlobby";
 import {
   CLAUDLOBBY_GETTING_STARTED,
+  CLAUDLOBBY_ISSUES,
   CLAUDLOBBY_README_QUICKSTART,
 } from "../../../content/links";
 import { InlineCode } from "./InlineCode";
@@ -20,7 +21,7 @@ export function Quickstart() {
       intro={quickstart.intro}
     >
       <h3>{quickstart.prerequisitesHeading}</h3>
-      <ul className="cl-prereqs">
+      <ul className="cl-list">
         {quickstart.prerequisites.map((item) => (
           <li key={item}>
             <InlineCode text={item} />
@@ -41,6 +42,12 @@ export function Quickstart() {
           rel="noopener noreferrer"
         >
           {quickstart.docsLink}
+        </a>
+      </p>
+      <p className="cl-note cl-quickstart-note">
+        {quickstart.alphaNote}{" "}
+        <a href={CLAUDLOBBY_ISSUES} target="_blank" rel="noopener noreferrer">
+          {quickstart.issuesLink}
         </a>
       </p>
     </Section>

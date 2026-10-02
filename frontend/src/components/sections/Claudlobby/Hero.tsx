@@ -15,11 +15,11 @@ function StarIcon() {
 }
 
 /**
- * Who built it, what it is, and the two next steps, all above the fold on a
- * phone (#173, #181 G2/G9).
+ * Who built it, what it is, how mature it is, and the two next steps, all
+ * above the fold on a phone (#173, #179, #181 G2/G9).
  */
 export function Hero() {
-  const { hero } = claudlobby;
+  const { hero, maturity } = claudlobby;
   return (
     <section className="cl-hero" aria-labelledby="cl-hero-heading">
       <p className="cl-eyebrow">{hero.eyebrow}</p>
@@ -46,6 +46,11 @@ export function Hero() {
           {hero.ctaQuickstart}
         </a>
       </div>
+      <p className="cl-maturity cl-note">
+        <span className="cl-badge">{maturity.label}</span> {maturity.today}{" "}
+        {maturity.planned}{" "}
+        <a href="#roadmap">{maturity.link}</a>
+      </p>
     </section>
   );
 }
