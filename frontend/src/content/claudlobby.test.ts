@@ -20,14 +20,17 @@ const strings = (value: unknown): string[] =>
 
 const copy = strings(claudlobby);
 
-/** The share card's own words, as rendered into og-image.png. */
+/**
+ * The share card's own words, as rendered into og-image.png. One string with
+ * the whitespace collapsed, so a phrase the HTML wraps across lines (say,
+ * "local models") still reads as one.
+ */
 const cardText = (
   new DOMParser().parseFromString(ogImageHtml, "text/html").body.textContent ??
   ""
 )
-  .split("\n")
-  .map((line) => line.trim())
-  .filter(Boolean);
+  .replace(/\s+/g, " ")
+  .trim();
 
 /**
  * What `/` says about Claudlobby off the page: the tab and share title, the
@@ -37,7 +40,7 @@ const homeHead = [
   pageTitle(HOME_META),
   HOME_META.description,
   OG_IMAGE.alt,
-  ...cardText,
+  cardText,
   ...strings(HOME_META.schemas),
 ];
 
@@ -75,7 +78,8 @@ describe("homepage copy", () => {
   });
 
   it("keeps the employer out of the hero (Chris, 2026-09-30)", () => {
-    for (const text of strings(claudlobby.hero)) {
+    // The hero renders the maturity note too (Hero.tsx).
+    for (const text of strings([claudlobby.hero, claudlobby.maturity])) {
       expect(text).not.toMatch(/artemis/i);
     }
   });

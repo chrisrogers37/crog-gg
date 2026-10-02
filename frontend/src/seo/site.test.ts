@@ -91,7 +91,10 @@ describe("ABOUT_META", () => {
     expect(current).toBeDefined();
     expect(person).toMatchObject({
       jobTitle: current?.title,
-      worksFor: { name: current?.organization },
+      worksFor: {
+        name: current?.organization,
+        url: `https://${current?.domain}`,
+      },
     });
   });
 });
