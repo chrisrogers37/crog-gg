@@ -1,6 +1,6 @@
-# Projects Index
-# This file lists all available project YAML files
-# Add new projects by adding their YAML filenames to this list
+# The projects the site shows. A file not listed here is shown nowhere, but it
+# is still served, like everything in public/. Each file's `order` sets where it
+# shows. See documentation/CONTENT.md, and the add-project skill.
 
 projects:
   - storydump.yaml
