@@ -1,6 +1,12 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useProjects } from "../../store";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  useProjects,
+  useIsLoading,
+  useContentError,
+  useContentStore,
+} from "../../store";
 import { Breadcrumbs } from "../../components/common/Breadcrumbs";
+import { LoadError } from "../../components/common/LoadError";
 import { SEO } from "../../components/SEO";
 import { projectBreadcrumbs, projectMeta } from "../../seo/site";
 import {
@@ -10,6 +16,25 @@ import {
 } from "../../components/features";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import "./ProjectDetailPage.css";
+
+function ProjectDetailSkeleton() {
+  return (
+    <div
+      className="project-detail-page project-detail-page--placeholder project-detail-page--loading"
+      role="status"
+      aria-label="Loading project"
+    >
+      <div className="project-header project-detail-skeleton" aria-hidden="true">
+        <div className="project-detail-skeleton__icon" />
+        <div className="project-header-content">
+          <div className="project-detail-skeleton__line project-detail-skeleton__line--title" />
+          <div className="project-detail-skeleton__line" />
+          <div className="project-detail-skeleton__line project-detail-skeleton__line--short" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * ProjectDetailPage (Enhanced with GitHub Integration)
@@ -22,13 +47,30 @@ import "./ProjectDetailPage.css";
 export function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const projects = useProjects();
+  const isLoading = useIsLoading();
+  const error = useContentError();
+  const loadContent = useContentStore((s) => s.loadContent);
 
   // Find the project by slug (id)
   const project = projects.find((p) => p.id === slug);
 
-  // Handle project not found
   if (!project) {
+    // A deep link renders before the content has loaded, and a failed load is
+    // no evidence the project is missing. Only a loaded list without this
+    // slug is "not found" (#196 M41).
+    if (isLoading) return <ProjectDetailSkeleton />;
+    if (error) {
+      return (
+        <div className="project-detail-page project-detail-page--placeholder">
+          <LoadError
+            message="Failed to load this project. Please try again."
+            onRetry={() => loadContent()}
+          />
+        </div>
+      );
+    }
     return (
       <div className="project-not-found">
         <h1>Project Not Found</h1>
@@ -150,7 +192,14 @@ export function ProjectDetailPage() {
 
         {/* Back Button */}
         <div className="project-footer">
-          <button onClick={() => navigate(-1)} className="back-button">
+          {/* Opened directly (a deep link, a new tab), there's no page of
+              ours to go back to, and -1 would leave the site (#196 M67). */}
+          <button
+            onClick={() =>
+              location.key === "default" ? navigate("/projects") : navigate(-1)
+            }
+            className="back-button"
+          >
             Go Back
           </button>
           <Link to="/projects" className="all-projects-link">

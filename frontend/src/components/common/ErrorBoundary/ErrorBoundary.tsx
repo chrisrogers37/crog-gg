@@ -1,5 +1,6 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import "./ErrorBoundary.css";
+import { LoadError } from "../LoadError/LoadError";
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -58,17 +59,11 @@ export class ErrorBoundary extends Component<
 
       if (compact) {
         return (
-          <div className="error-boundary error-boundary--compact" role="alert">
-            <p className="error-boundary__message">
-              Something went wrong loading this section.
-            </p>
-            <button
-              className="error-boundary__retry-btn"
-              onClick={this.handleReset}
-            >
-              Try again
-            </button>
-          </div>
+          <LoadError
+            compact
+            message="Something went wrong loading this section."
+            onRetry={this.handleReset}
+          />
         );
       }
 
