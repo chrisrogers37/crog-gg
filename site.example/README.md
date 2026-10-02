@@ -2,7 +2,9 @@
 
 A fictional site, in the same shape as `site/` (#191). The unit tests read it
 instead of the owner's site, so a fork can change `site/` without turning the
-tests red, and a fork can copy it as a starting point.
+tests red, and a fork starts from it: `npm run site:init` (at the repo root)
+makes `site/` a copy of this folder, without this README and the LICENSE
+(FORKING.md).
 
 Nothing here is real: Ada Example, their projects and their photos are made up,
 and the folder is dedicated to the public domain ([LICENSE](LICENSE)).

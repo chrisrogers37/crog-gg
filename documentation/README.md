@@ -10,7 +10,7 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 ## Working on it
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md): the checks CI runs, writing tests, linking issues, and docs that travel with a change.
-- [FORKING.md](../FORKING.md): making the site yours, until the site config lands (#188).
+- [FORKING.md](../FORKING.md): making the site yours, from `npm run site:init` to a deployed site (#192).
 - [CLAUDE.md](../CLAUDE.md): conventions, the design system and the copy style, for people and coding agents.
 - [AGENTS.md](../AGENTS.md): running the project, for any coding agent.
 - `.claude/skills/add-project/SKILL.md`: adding a project. `.claude/agents/oncall-guide.md`: diagnosing production.

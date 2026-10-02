@@ -50,6 +50,9 @@ npm run test:coverage    # Vitest with coverage
 npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:headed  # E2E tests with visible browser
 
+# Repo root
+npm run site:init        # A fork's first step: site/ becomes a copy of site.example/ (FORKING.md)
+
 # Backend commands (run from repo root)
 python3 -m api.index     # Start Flask dev server on :5001 (Vite proxies /api to it)
 pip install -r requirements-dev.txt  # Install Python deps plus pytest, flake8, black and isort
