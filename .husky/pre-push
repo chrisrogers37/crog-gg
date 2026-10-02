@@ -65,7 +65,9 @@ check() {
 echo ""
 if [ "$FRONTEND_CHANGED" = true ]; then
   echo "=== Frontend checks ==="
-  check "TypeScript + build" npm --prefix frontend run build
+  check "lint" npm --prefix frontend run lint
+  check "type check" npm --prefix frontend run typecheck
+  check "build" npm --prefix frontend run build
   check "tests" npm --prefix frontend run test:run
 else
   echo "=== Frontend: no changes detected, skipping ==="
