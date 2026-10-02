@@ -6,15 +6,11 @@ import { useContentStore } from "../../../store";
 import type { Project } from "../../../types";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
-// The GitHub panels fetch on mount; what they show isn't what's tested here.
-vi.mock("../../../components/features", () => ({
-  GitHubReadme: () => null,
-  RepoStats: () => null,
-  ProjectDemo: () => null,
-}));
-
 // Restored after each test, so a stubbed action can't leak into the next.
 const INITIAL = useContentStore.getState();
+afterEach(() => {
+  useContentStore.setState(INITIAL, true);
+});
 
 const BENZO = {
   id: "benzo",
@@ -42,14 +38,9 @@ const renderAt = (entries: string[]) => {
  * A deep link renders before the content has loaded, so "no such project
  * yet" isn't "no such project" (#196 M41).
  */
-afterEach(() => {
-  useContentStore.setState(INITIAL, true);
-});
-
 describe("ProjectDetailPage before its project is found", () => {
-
   it("shows a skeleton while the content loads, not 'Project Not Found'", () => {
-    useContentStore.setState({ projects: [], isLoading: true, error: null });
+    // The store's own starting state: nothing loaded yet, a load pending.
     renderAt(["/projects/benzo"]);
     expect(screen.getByRole("status", { name: /loading project/i })).toBeInTheDocument();
     expect(screen.queryByText(/project not found/i)).not.toBeInTheDocument();

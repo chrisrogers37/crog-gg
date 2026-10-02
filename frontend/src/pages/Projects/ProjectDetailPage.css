@@ -35,6 +35,18 @@
   width: 100%;
 }
 
+/* Holds the page's height while it loads, so the footer doesn't jump below the
+   fold when the project lands (#196 M41). */
+.project-detail-page--loading {
+  min-height: 100vh;
+}
+
+/* `pulse` is the keyframes RepoStats.css and GitHubReadme.css define; both load
+   with this page. The global reduced-motion rule stops it. */
+.project-detail-skeleton {
+  animation: pulse 2s infinite;
+}
+
 .project-detail-skeleton .project-header-content {
   align-self: stretch;
 }

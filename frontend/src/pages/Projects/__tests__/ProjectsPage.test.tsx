@@ -1,8 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { HelmetProvider } from "react-helmet-async";
-import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useContentStore } from "../../../store";
+import { fireEvent, renderWithProviders, screen } from "../../../test/utils";
 import { ProjectsPage } from "../ProjectsPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -21,13 +19,7 @@ describe("ProjectsPage when the content failed to load", () => {
       error: "Failed to load content.",
       loadContent,
     });
-    render(
-      <HelmetProvider>
-        <MemoryRouter>
-          <ProjectsPage />
-        </MemoryRouter>
-      </HelmetProvider>,
-    );
+    renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     expect(screen.getByRole("alert")).toHaveTextContent(
       /failed to load projects/i,
     );

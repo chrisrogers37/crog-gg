@@ -18,22 +18,18 @@ import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import "./ProjectDetailPage.css";
 
 function ProjectDetailSkeleton() {
-  const line = "project-detail-skeleton__line";
   return (
     <div
-      className="project-detail-page project-detail-page--placeholder"
+      className="project-detail-page project-detail-page--placeholder project-detail-page--loading"
       role="status"
       aria-label="Loading project"
     >
-      <div
-        className="project-header project-detail-skeleton animate-pulse motion-reduce:animate-none"
-        aria-hidden="true"
-      >
+      <div className="project-header project-detail-skeleton" aria-hidden="true">
         <div className="project-detail-skeleton__icon" />
         <div className="project-header-content">
-          <div className={`${line} ${line}--title`} />
-          <div className={line} />
-          <div className={`${line} ${line}--short`} />
+          <div className="project-detail-skeleton__line project-detail-skeleton__line--title" />
+          <div className="project-detail-skeleton__line" />
+          <div className="project-detail-skeleton__line project-detail-skeleton__line--short" />
         </div>
       </div>
     </div>
