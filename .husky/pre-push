@@ -12,7 +12,6 @@ echo "Running pre-push checks..."
 # Compare against the upstream tracking branch or, for a new branch, the
 # remote's main (a local main can be far behind it), then the local main.
 UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "")
-MERGE_BASE=""
 for BASE in $UPSTREAM origin/main main; do
   MERGE_BASE=$(git merge-base HEAD "$BASE" 2>/dev/null || echo "")
   if [ -n "$MERGE_BASE" ]; then
@@ -32,8 +31,7 @@ if [ -n "$MERGE_BASE" ]; then
     FRONTEND_CHANGED=true
   fi
 
-  # The Python lives in api/, tests/ and conftest.py; its dependencies and
-  # version are in the requirements files and .python-version.
+  # Dependency and Python version changes count too.
   if echo "$CHANGED_FILES" | grep -qE "^(api/|tests/|conftest\.py$|requirements|\.python-version$)"; then
     PYTHON_CHANGED=true
   fi
@@ -45,37 +43,36 @@ fi
 
 FAILED=0
 
+# Runs one check, recording a failure without stopping the others.
+check() {
+  label=$1
+  shift
+  echo "-> Running $label..."
+  if "$@"; then
+    echo "   $label passed"
+  else
+    echo "   $label FAILED"
+    FAILED=1
+  fi
+}
+
 # --- Frontend checks ---
+echo ""
 if [ "$FRONTEND_CHANGED" = true ]; then
-  echo ""
   echo "=== Frontend checks ==="
-
-  echo "-> Running TypeScript + build..."
-  if (cd frontend && npm run build); then
-    echo "   Build passed"
-  else
-    echo "   Build FAILED"
-    FAILED=1
-  fi
-
-  echo "-> Running tests..."
-  if (cd frontend && npm run test:run); then
-    echo "   Tests passed"
-  else
-    echo "   Tests FAILED"
-    FAILED=1
-  fi
+  check "TypeScript + build" npm --prefix frontend run build
+  check "tests" npm --prefix frontend run test:run
 else
-  echo ""
   echo "=== Frontend: no changes detected, skipping ==="
 fi
 
 # --- Python checks: the same commands as CI's API Lint and API Tests ---
-if [ "$PYTHON_CHANGED" = true ] && [ "${SKIP_PY_CHECKS:-}" = 1 ]; then
-  echo ""
+echo ""
+if [ "$PYTHON_CHANGED" != true ]; then
+  echo "=== Python: no changes detected, skipping ==="
+elif [ "${SKIP_PY_CHECKS:-}" = 1 ]; then
   echo "=== Python: SKIP_PY_CHECKS=1, skipping (CI still runs these) ==="
-elif [ "$PYTHON_CHANGED" = true ]; then
-  echo ""
+else
   echo "=== Python checks ==="
 
   # A missing tool fails the push rather than skipping silently.
@@ -92,41 +89,11 @@ elif [ "$PYTHON_CHANGED" = true ]; then
     echo "   Or push without the Python checks: SKIP_PY_CHECKS=1 git push"
     FAILED=1
   else
-    echo "-> Running flake8..."
-    if flake8 api --max-line-length=120 --ignore=E501,W503; then
-      echo "   flake8 passed"
-    else
-      echo "   flake8 FAILED"
-      FAILED=1
-    fi
-
-    echo "-> Running black --check..."
-    if black --check --line-length=120 api; then
-      echo "   black passed"
-    else
-      echo "   black FAILED"
-      FAILED=1
-    fi
-
-    echo "-> Running isort --check..."
-    if isort --check-only --profile black api; then
-      echo "   isort passed"
-    else
-      echo "   isort FAILED"
-      FAILED=1
-    fi
-
-    echo "-> Running pytest..."
-    if pytest -q; then
-      echo "   pytest passed"
-    else
-      echo "   pytest FAILED"
-      FAILED=1
-    fi
+    check "flake8" flake8 api --max-line-length=120 --ignore=E501,W503
+    check "black" black --check --line-length=120 api
+    check "isort" isort --check-only --profile black api
+    check "pytest" pytest -q
   fi
-else
-  echo ""
-  echo "=== Python: no changes detected, skipping ==="
 fi
 
 # --- Summary ---
