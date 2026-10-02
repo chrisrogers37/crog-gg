@@ -50,38 +50,10 @@ export function ProjectsPage() {
     });
   }, [projects, searchQuery, selectedCategory]);
 
-  // Loading state
-  if (isLoading && projects.length === 0) {
-    return (
-      <div className="projects-page">
-        <header className="projects-header">
-          <h1 className="projects-title">Projects</h1>
-          <p className="projects-subtitle">
-            A collection of my work, side projects, and experiments.
-          </p>
-        </header>
-        <ProjectSkeletonGrid />
-      </div>
-    );
-  }
-
-  // Error state
-  if (error && projects.length === 0) {
-    return (
-      <div className="projects-page">
-        <header className="projects-header">
-          <h1 className="projects-title">Projects</h1>
-          <p className="projects-subtitle">
-            A collection of my work, side projects, and experiments.
-          </p>
-        </header>
-        <LoadError
-          message="Failed to load projects. Please try again."
-          onRetry={() => loadContent()}
-        />
-      </div>
-    );
-  }
+  // The page's shell, heading and head tags are the same in every state; only
+  // the body switches: a skeleton while loading, an error if that failed.
+  const status =
+    projects.length > 0 ? null : isLoading ? "loading" : error ? "error" : null;
 
   return (
     <>
@@ -94,51 +66,62 @@ export function ProjectsPage() {
           </p>
         </header>
 
-        {/* Filters */}
-        <div className="projects-filters">
-          <input
-            type="search"
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+        {status === "loading" && <ProjectSkeletonGrid />}
+        {status === "error" && (
+          <LoadError
+            message="Failed to load projects. Please try again."
+            onRetry={() => loadContent()}
           />
+        )}
+        {status === null && (
+          <>
+            {/* Filters */}
+            <div className="projects-filters">
+              <input
+                type="search"
+                placeholder="Search projects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
 
-          <div className="category-filters">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`category-button ${
-                  selectedCategory === category ? "active" : ""
-                }`}
-              >
-                {category === "all" ? "All" : category}
-              </button>
-            ))}
-          </div>
-        </div>
+              <div className="category-filters">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`category-button ${
+                      selectedCategory === category ? "active" : ""
+                    }`}
+                  >
+                    {category === "all" ? "All" : category}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Projects Grid */}
-        {filteredProjects.length > 0 ? (
-          <div className="projects-grid">
-            {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        ) : (
-          <div className="no-results">
-            <p>No projects match your search criteria.</p>
-            <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("all");
-              }}
-              className="clear-filters"
-            >
-              Clear filters
-            </button>
-          </div>
+            {/* Projects Grid */}
+            {filteredProjects.length > 0 ? (
+              <div className="projects-grid">
+                {filteredProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            ) : (
+              <div className="no-results">
+                <p>No projects match your search criteria.</p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("all");
+                  }}
+                  className="clear-filters"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </>

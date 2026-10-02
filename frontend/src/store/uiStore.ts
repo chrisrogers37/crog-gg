@@ -91,7 +91,7 @@ export const useUIStore = create<UIStore>()(
         partialize: (state) => ({ theme: state.theme }),
       },
     ),
-    { name: "ui-store" },
+    { name: "ui-store", enabled: import.meta.env.DEV },
   ),
 );
 

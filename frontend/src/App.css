@@ -166,7 +166,7 @@ h1 {
 }
 
 .typewriter-cursor {
-  animation: blink 1s infinite;
+  animation: blink 0.7s infinite;
   color: var(--primary-color);
   font-weight: bold;
 }

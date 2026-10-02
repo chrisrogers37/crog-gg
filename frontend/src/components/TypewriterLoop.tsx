@@ -5,11 +5,18 @@ interface TypewriterLoopProps {
   typeSpeed?: number;
   deleteSpeed?: number;
   pauseTime?: number;
+  /**
+   * The least wait before typing starts; up to INITIAL_DELAY_JITTER_MS more is
+   * added. With 0 (the default), typing starts at once, with no jitter.
+   */
   initialDelay?: number;
   className?: string;
 }
 
 type Phase = "initial" | "typing" | "pausing" | "deleting" | "waiting";
+
+/** Up to this much is added to `initialDelay`, so the start isn't mechanical. */
+const INITIAL_DELAY_JITTER_MS = 3000;
 
 // Add randomness to timing (±40% variance)
 const randomize = (base: number, variance = 0.4): number => {
@@ -31,37 +38,39 @@ export default function TypewriterLoop({
   const [phase, setPhase] = useState<Phase>(
     initialDelay > 0 ? "initial" : "typing",
   );
-  const [charIndex, setCharIndex] = useState(0);
+  // Picked once, at mount, so a re-render never restarts the wait.
+  const [startDelay] = useState(
+    () => initialDelay + Math.floor(Math.random() * INITIAL_DELAY_JITTER_MS),
+  );
 
   const currentMessage = messages[messageIndex];
   const isLastMessage = messageIndex === messages.length - 1;
 
-  // Handle initial delay (random between 1-4 seconds)
+  // The initial delay. (It used to wait 1-4 s whatever positive
+  // `initialDelay` was passed, #193.)
   useEffect(() => {
     if (phase !== "initial") return;
 
-    const randomInitialDelay = Math.floor(Math.random() * 3000) + 1000; // 1000-4000ms
     const timer = setTimeout(() => {
       setPhase("typing");
-    }, randomInitialDelay);
+    }, startDelay);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [phase, startDelay]);
 
   // Handle typing
   useEffect(() => {
     if (phase !== "typing") return;
 
-    if (charIndex < currentMessage.length) {
+    if (displayText.length < currentMessage.length) {
       const timer = setTimeout(() => {
-        setDisplayText(currentMessage.slice(0, charIndex + 1));
-        setCharIndex((prev) => prev + 1);
+        setDisplayText(currentMessage.slice(0, displayText.length + 1));
       }, randomize(typeSpeed));
       return () => clearTimeout(timer);
     } else {
       // Done typing, start pausing
       setPhase("pausing");
     }
-  }, [phase, charIndex, currentMessage, typeSpeed]);
+  }, [phase, displayText, currentMessage, typeSpeed]);
 
   // Handle pausing (blinking cursor)
   useEffect(() => {
@@ -104,18 +113,10 @@ export default function TypewriterLoop({
     const randomWait = Math.floor(Math.random() * 1000) + 1000; // 1000-2000ms
     const timer = setTimeout(() => {
       setMessageIndex((prev) => prev + 1);
-      setCharIndex(0);
       setPhase("typing");
     }, randomWait);
     return () => clearTimeout(timer);
   }, [phase]);
-
-  const showCursor =
-    phase === "initial" ||
-    phase === "typing" ||
-    phase === "pausing" ||
-    phase === "deleting" ||
-    phase === "waiting";
 
   return (
     <div className={`typewriter typewriter-loop ${className}`}>
@@ -147,27 +148,17 @@ export default function TypewriterLoop({
       </div>
       <div className="typewriter-text">
         {displayText}
-        {showCursor && (
-          <span
-            className="typewriter-cursor"
-            style={{
-              animation:
-                phase === "pausing" ||
-                phase === "initial" ||
-                phase === "waiting"
-                  ? "blink 0.7s infinite"
-                  : "none",
-              opacity:
-                phase === "pausing" ||
-                phase === "initial" ||
-                phase === "waiting"
-                  ? undefined
-                  : 1,
-            }}
-          >
-            |
-          </span>
-        )}
+        {/* It blinks (App.css) except while characters are going on or off. */}
+        <span
+          className="typewriter-cursor"
+          style={
+            phase === "typing" || phase === "deleting"
+              ? { animation: "none" }
+              : undefined
+          }
+        >
+          |
+        </span>
       </div>
     </div>
   );
