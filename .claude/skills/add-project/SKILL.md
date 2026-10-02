@@ -5,7 +5,7 @@ description: Use when adding a new project to the portfolio projects page, or wh
 
 # Add Project
 
-Add a project to the choose-your-own-chris portfolio site.
+Add a project to crog.gg's projects page (`/projects`). What each field does, and its gotchas: `documentation/CONTENT.md`.
 
 ## Workflow
 

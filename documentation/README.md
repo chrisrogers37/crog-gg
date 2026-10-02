@@ -4,7 +4,7 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 
 ## How it works
 
-- [ARCHITECTURE.md](ARCHITECTURE.md): the topology, the routes, `/api/regenerate`'s gates in order, the GitHub proxy, metering and failure modes, and the decisions behind them.
+- [ARCHITECTURE.md](ARCHITECTURE.md): how the site and the API fit together, and why.
 - [CONTENT.md](CONTENT.md): each content file, where it shows, its formats and its gotchas.
 
 ## Working on it
@@ -23,4 +23,4 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 ## History
 
 - [CHANGELOG.md](../CHANGELOG.md): notable changes, by date.
-- [archive/](archive/): past plans, reviews and evaluations, kept for their reasoning. Most of what they describe has since been fixed; GitHub issues are the current record.
+- [archive/](archive/): past plans, reviews and evaluations, kept for their reasoning ([catalogue](planning/README.md#completed-initiatives-all-archived)). Most of what they describe has since been fixed; GitHub issues are the current record.

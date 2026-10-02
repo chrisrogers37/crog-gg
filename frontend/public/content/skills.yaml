@@ -1,5 +1,7 @@
-# Technical Skills. Not rendered anywhere: the Journey tab's skills come from
-# timeline.yaml (#159 item 1). See documentation/CONTENT.md.
+# Technical Skills. Nothing renders it (the Journey tab shows
+# timeline.yaml, #159 item 1), but it loads with the rest of the content: a
+# broken, emptied or deleted file takes /about and /projects down. To retire
+# it, leave `skills: []`. See documentation/CONTENT.md.
 skills:
   - name: python
     weight: 7

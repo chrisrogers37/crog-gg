@@ -1,6 +1,6 @@
 ---
 name: build-validator
-description: "Builds and checks crog.gg the way CI does (the frontend's lint, type check, unit and e2e tests and build; the API's flake8, black, isort and pytest) and reports what failed. Use before a PR or a deploy."
+description: "Runs CI's checks locally and reports what failed. Use before a PR or a deploy."
 ---
 
 # Build Validator Agent
@@ -22,56 +22,16 @@ cd frontend && npm ci  # or npm install
 npm run build
 ```
 
-### 2. Type Safety
+### 2. CI's checks
 
-`npm run build` type-checks the app. `npm run typecheck` also covers the unit tests and e2e, as CI does:
+Run every row of the table in CONTRIBUTING.md's "Before you open a PR", from the directory each row names. That table is the one list of what CI runs:
 
-```sh
-cd frontend && npm run typecheck
-```
+- `npm run build` type-checks only the app; the type-check row covers the unit tests and e2e too.
+- The API rows need `pip install -r requirements-dev.txt`. `conftest.py` stubs Redis, so they need no secrets.
 
-- Ensure no TypeScript errors
-- Check for implicit `any` types
-- Verify all imports resolve
+Report each failure with its first error, not only the command that failed.
 
-### 3. Linting
-
-```sh
-cd frontend && npm run lint
-```
-
-- No linting errors
-- No warnings (strict mode)
-
-The API is linted with CI's exact flags, from the repo root:
-
-```sh
-flake8 api --max-line-length=120 --ignore=E501,W503
-black --check --line-length=120 api
-isort --check-only --profile black api
-```
-
-### 4. Tests
-
-```sh
-cd frontend && npm run test:run
-```
-
-- All unit tests pass
-
-```sh
-cd frontend && npm run test:e2e
-```
-
-- All E2E tests pass
-
-```sh
-python3 -m pytest -q
-```
-
-- All API tests pass (from the repo root; `conftest.py` stubs Redis, so no secrets are needed)
-
-### 5. Bundle Analysis (if applicable)
+### 3. Bundle Analysis (if applicable)
 
 - Check bundle size
 - Look for unnecessarily large dependencies

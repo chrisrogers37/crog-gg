@@ -1,13 +1,21 @@
 # Changelog
 
-Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date rather than by version.
+Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
 ## 2026-10-02
 
+### Added
+- A "view source" link in the footer when the build names the repo (`VITE_SOURCE_REPO_URL`), and no rights claim beside it (#236).
+- Docs: how the site works, what each content file does, contributing, forking, this changelog, and PR and issue templates (#237).
+
 ### Changed
+- A SUMMON NEW LORE press rewrites only the About section, the one the page shows, so it uses one daily slot (#234).
 - The e2e tests wait for conditions instead of sleeping, and a flaky test fails CI (#230).
 - The add-project skill matches the code, and a test holds the shipped projects to it (#231).
 - The pre-push hook runs CI's Python checks, and fails when a tool is missing (#232, closes #171).
+- One router package, dev-only type packages, and no dependencies at the root (#233).
+- The prompt pack and the GitHub proxy's helpers moved from `api/index.py` into `api/_lib/` (#235).
+- The unit tests and e2e are type-checked, in CI and before a push (#238).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).
@@ -36,6 +44,10 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - A deep link waits for the content instead of saying "Project Not Found" (#224).
 - The About tab opens on the first click, and project cards open their pages (#225).
 - The site loads with site data blocked, the "system" theme follows the OS, and project stats never show the previous project's (#226).
+- Presentation fixes: the typewriter's start delay, skill colours checked as the timeline loads, and one Projects header (#228).
+
+### Security
+- The frontend's `npm audit` is clean (#227).
 
 ## 2026-09-30
 
@@ -61,20 +73,33 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 - The About text is in paragraphs (#161).
 
+## 2026-08-07
+
+### Changed
+- The lore varies by form, a different register each press, and the prompt states what a rewrite may not move (#144).
+
 ## 2026-08-03
 
 ### Changed
 - SUMMON NEW LORE moved off the deprecated `gpt-3.5-turbo` (#134).
 
 ### Security
-- The paid endpoint fails closed when Redis is unavailable, so it can never run unmetered (#113).
+- The paid endpoint fails closed when Redis is unavailable, so it can never run unmetered (#134, closes #113).
 
 ## 2026-08-01
 
 ### Fixed
 - One request per click, so a full regeneration can't race itself (#131).
 
-## 2026-05-18
+### Security
+- The model can't rewrite the social links or the email address: the server puts them back (#122, #132).
+
+## 2026-07-30
+
+### Security
+- `/api/regenerate` validates its input, fences the content as data in the prompt, and meters before it calls the model (#116).
+
+## 2026-05-27
 
 ### Changed
-- Moved to Vercel: the frontend as static files, and the Flask API as one Python function, with Upstash Redis for rate limits.
+- Moved to Vercel: the frontend as static files, and the Flask API as one Python function, with Upstash Redis for rate limits (#83, #85).

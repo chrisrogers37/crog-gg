@@ -24,23 +24,35 @@ Run what CI runs. None of it needs a secret.
 
 ## Writing tests
 
-- **E2E tests check structure and behaviour, not copy.** See "E2E Test Philosophy" in [CLAUDE.md](CLAUDE.md). Content that ships with the repo is never optional: a page rendering without it is a bug to fail on, not a reason to skip (#120).
+- **E2E tests check structure and behaviour, not copy.** See "E2E Test Philosophy" in [CLAUDE.md](CLAUDE.md).
 - **Break the code a new test guards, and watch the test fail.** A test that passes either way checks nothing.
 
 ## Pressing SUMMON NEW LORE on a preview
 
-Previews use production's Upstash counters and OpenAI key, so a press on a preview spends production's daily slots (#139). Tests stub `/api/regenerate`. Press for real sparingly.
+A press on a preview spends production's site-wide daily slots ([why](README.md#bounding-openai-spend), #139). Tests stub `/api/regenerate`; press for real sparingly.
 
 ## Linking issues from a PR (#169)
 
 - **`Closes #N` only when the PR fully resolves #N.**
-- **For partial work, use `Refs #N`, with no closing keyword in any arrangement, even a negated one.** "Nothing here closes #N" still contains the keyword. The rule is chosen so that no model of GitHub's parser is needed (PR #167 is the precedent).
+- **For partial work, use `Refs #N`, with no closing keyword in any arrangement, even a negated one.** "Nothing here closes #N" still contains the keyword. (Then nobody has to predict GitHub's parser; PR #167 is the precedent.)
 - If a PR resolves one issue and advances another, use both forms, on separate lines.
 - When a PR does partial work, open or update an issue that names what's left.
 
 ## Docs travel with the change
 
-A PR that changes behaviour, an environment variable, a command or a limit also updates the docs that describe it: the README, CLAUDE.md or `documentation/`.
+A PR that changes behaviour, an environment variable, a command or a limit also updates the doc that owns the fact, in the same PR. Each fact has one owner, and the other docs link to it:
+
+| Fact | Owner |
+|---|---|
+| The checks CI runs | the table above (`.github/workflows/ci.yml` is the executable truth) |
+| CI's jobs | the README's [CI/CD](README.md#cicd) |
+| Environment variables | the README's [table](README.md#environment-variables) |
+| `/api/regenerate`'s gates, the fail-closed contract and the GitHub proxy | [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md) |
+| Spend advice | the README's [Bounding OpenAI spend](README.md#bounding-openai-spend) |
+| Content fields and their gotchas | [documentation/CONTENT.md](documentation/CONTENT.md) |
+| Analytics events | the README's [Web Analytics](README.md#web-analytics) |
+
+Add a line to [CHANGELOG.md](CHANGELOG.md) for anything a visitor or a forker would notice.
 
 ## Copy
 
