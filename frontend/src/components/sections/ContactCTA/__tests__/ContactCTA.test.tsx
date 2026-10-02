@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeAll, describe, it, expect, beforeEach } from "vitest";
 import { ContactCTA } from "../ContactCTA";
 import { useContentStore } from "../../../../store";
+import { makeBio } from "../../../../test/builders";
 
 // framer-motion's whileInView requires IntersectionObserver to be a real class
 beforeAll(() => {
@@ -22,11 +23,9 @@ beforeAll(() => {
   };
 });
 
-const mockBio = {
-  display_name: "Test User",
+const mockBio = makeBio({
   email: "test@example.com",
   location: "New York",
-  about_text: "About me",
   social_links: {
     github: "https://github.com/testuser",
     linkedin: "https://linkedin.com/in/testuser",
@@ -36,7 +35,7 @@ const mockBio = {
     instagram_personal: "https://instagram.com/testuser",
     instagram_music: "https://instagram.com/testmusic",
   },
-};
+});
 
 describe("ContactCTA", () => {
   beforeEach(() => {

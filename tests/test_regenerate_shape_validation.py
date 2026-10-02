@@ -76,7 +76,6 @@ _REAL_BIO = {
     "email": "someone@example.com",
     "location": "New York",
     "about_text": "original text",
-    "welcome_message": "hello",
     "social_links": {"github": "chrisrogers37"},
 }
 
@@ -107,7 +106,7 @@ def test_unauthored_key_restore_cannot_rescue_an_unusable_shape(client):
     the model's output. Validating after that graft made an empty object look
     usable -- it had inherited two keys that shared with the original -- so `{}`
     came back as HTTP 200 with `about = {email, social_links}` and the page lost
-    display_name, about_text and welcome_message. A blank section, reported as a
+    display_name and about_text. A blank section, reported as a
     success, through the check written to prevent exactly that.
 
     Pinned separately from the parametrised case above because it only appears

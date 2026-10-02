@@ -35,7 +35,6 @@ def _bio(email=ORIGINAL_EMAIL, social_links=None):
         "display_name": "Christopher Rogers",
         "location": "New York City, New York",
         "about_text": "original bio prose",
-        "welcome_message": "hey there!",
     }
     if email is not None:
         payload["email"] = email

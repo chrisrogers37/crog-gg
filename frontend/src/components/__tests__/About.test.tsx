@@ -28,15 +28,15 @@ import bioYaml from "../../../public/content/bio.yaml?raw";
  * and are cited above.
  */
 
-const bio = (about_text: string) =>
-  makeBio({ location: "New York", about_text, tagline: "" });
-
 const PARAGRAPHS = ["first beat.", "second beat.", "third beat."];
 
 /** Render the blurb and hand back the node the text actually lives in. */
 const renderBio = () => {
   render(
-    <About onRegenerate={() => {}} content={bio(PARAGRAPHS.join("\n\n"))} />,
+    <About
+      onRegenerate={() => {}}
+      content={makeBio({ about_text: PARAGRAPHS.join("\n\n") })}
+    />,
   );
   const node = screen.getByText(/first beat/).closest("div");
   expect(node).not.toBeNull();
