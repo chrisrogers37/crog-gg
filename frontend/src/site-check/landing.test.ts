@@ -1,18 +1,10 @@
 import { describe, expect, it } from "vitest";
 import site from "virtual:site-config";
 import { PLANNED } from "../test/claudlobbyRules";
+import { shareCard, textOf } from "../test/site";
 
-// The card's source, when the site keeps one.
-const [cardHtml] = Object.values(
-  import.meta.glob<string>("@site/og-image.html", { query: "?raw", import: "default", eager: true }),
-);
-
-/** The card's own words, whitespace collapsed, so a wrapped phrase reads as one. */
-const cardText = cardHtml
-  ? (new DOMParser().parseFromString(cardHtml, "text/html").body.textContent ?? "")
-      .replace(/\s+/g, " ")
-      .trim()
-  : "";
+/** The card's own words. */
+const cardText = textOf(shareCard()?.body);
 
 // With home: landing, the share card speaks for Claudlobby's landing page, so
 // it keeps that page's rules (content/claudlobby.test.ts has the copy's own).

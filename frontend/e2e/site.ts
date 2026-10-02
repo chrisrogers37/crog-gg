@@ -1,7 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { Page } from "@playwright/test";
 import yaml from "js-yaml";
 import { aboutPath } from "../src/config/routes";
-import { readSiteConfig } from "../scripts/site-config";
+import type { BioData } from "../src/types/Bio";
+import { readSiteConfig, siteDir } from "../scripts/site-config";
 
 /**
  * The active site (SITE_DIR, else site/), which the dev and preview servers
@@ -10,8 +13,23 @@ import { readSiteConfig } from "../scripts/site-config";
  */
 export const site = readSiteConfig();
 
-/** /about's tabs in order; the first is selected on load. */
+/** /about's tabs, in site.yaml's order. */
 export const SECTIONS = site.sections;
+
+/** The About tab, selected on load wherever it sits (site.yaml must list it). */
+export const ABOUT = SECTIONS.find(({ id }) => id === "about")!;
+
+/** The other tabs, in order: none is selected on load. */
+export const OTHER_TABS = SECTIONS.filter(({ id }) => id !== "about");
+
+/** The tab the section navigator offers after this one ("up next"), if any. */
+export const tabAfter = (tab: (typeof SECTIONS)[number]) =>
+  SECTIONS[SECTIONS.indexOf(tab) + 1];
+
+/** The active site's bio.yaml, for what the page shows only when it's set. */
+export const bio = yaml.load(
+  fs.readFileSync(path.join(siteDir(), "public/content/bio.yaml"), "utf8"),
+) as BioData;
 
 /** Where the tabs live: /about beside the landing page, else /. */
 export const TABS_PATH = aboutPath(site);
@@ -19,8 +37,9 @@ export const TABS_PATH = aboutPath(site);
 /** Whether / is the Claudlobby landing page. */
 export const LANDING = site.home === "landing";
 
-/** A tab's or panel's name, matched whole. */
-export const named = (label: string) => new RegExp(`^${label}$`, "i");
+/** A tab's or panel's name, matched whole, whatever characters it has. */
+export const named = (label: string) =>
+  new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
 
 /** Paragraphs enough to overflow the About preview at any width the specs use. */
 const FILLER = Array.from(

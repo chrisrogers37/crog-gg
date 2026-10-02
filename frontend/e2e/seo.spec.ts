@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { LANDING, site } from "./site";
+import { TABS_PATH, site } from "./site";
 
 /**
  * Page head E2E tests (#174)
@@ -45,15 +45,15 @@ test.describe("Page head", () => {
   test("the about page, reached in the app, replaces the entry page's tags", async ({
     page,
   }) => {
-    test.skip(!LANDING, "with home: profile, the about page is the entry page");
-    await page.goto("/");
-    await page.locator('footer a[href="/about"]').click();
-    await expect(page).toHaveURL(/\/about$/);
+    // Entered at /projects, which every site has, whatever its home.
+    await page.goto("/projects");
+    await page.locator(`header a[href="${TABS_PATH}"]`).first().click();
+    await expect(page).toHaveURL((url) => url.pathname === TABS_PATH);
     await expect(page.locator(".profile-photo")).toBeVisible();
 
     await expect
       .poll(async () => (await headTags(page)).canonical)
-      .toEqual(["/about"]);
+      .toEqual([TABS_PATH]);
     expect((await headTags(page)).ogTitle).toBe(1);
   });
 

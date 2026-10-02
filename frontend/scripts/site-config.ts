@@ -23,18 +23,21 @@ export const REPO_ROOT = path.resolve(HERE, "../..");
 export const siteDir = (dir = process.env.SITE_DIR || "site") =>
   path.resolve(REPO_ROOT, dir);
 
-/** A site's site.yaml as YAML gives it, unchecked. A syntax error names the file. */
-export function readSiteYaml(dir = siteDir()): unknown {
-  const file = path.join(dir, "site.yaml");
+/**
+ * A site's site.yaml as YAML gives it, unchecked. A syntax error names the
+ * file. `root` is the folder's absolute path, as siteDir() gives it.
+ */
+export function readSiteYaml(root = siteDir()): unknown {
+  const file = path.join(root, "site.yaml");
   return yaml.load(fs.readFileSync(file, "utf8"), {
     filename: path.relative(process.cwd(), file),
   });
 }
 
 /** A site's site.yaml, checked; a SiteConfigError names every problem. */
-export function readSiteConfig(dir = siteDir()): SiteConfig {
-  const source = path.relative(process.cwd(), path.join(dir, "site.yaml"));
-  return parseSiteConfig(readSiteYaml(dir), source);
+export function readSiteConfig(root = siteDir()): SiteConfig {
+  const source = path.relative(process.cwd(), path.join(root, "site.yaml"));
+  return parseSiteConfig(readSiteYaml(root), source);
 }
 
 const cache = new Map<string, SiteConfig>();
@@ -45,12 +48,12 @@ const cache = new Map<string, SiteConfig>();
  * reads it here, since code vite.config.ts imports can't import
  * `virtual:site-config`: the config loads before any plugin can resolve it.
  */
-export function siteConfig(dir = siteDir()): SiteConfig {
-  let config = cache.get(dir);
-  if (!config) cache.set(dir, (config = readSiteConfig(dir)));
+export function siteConfig(root = siteDir()): SiteConfig {
+  let config = cache.get(root);
+  if (!config) cache.set(root, (config = readSiteConfig(root)));
   return config;
 }
 
-export const forgetSiteConfig = (dir = siteDir()) => {
-  cache.delete(dir);
+export const forgetSiteConfig = (root = siteDir()) => {
+  cache.delete(root);
 };

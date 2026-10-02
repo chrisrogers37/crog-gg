@@ -39,8 +39,8 @@ describe("headTags", () => {
     const image = `${SITE_URL}${OG_IMAGE.path}`;
     expect(tagValue(HOME_META, "og:image")).toBe(image);
     expect(tagValue(HOME_META, "twitter:image")).toBe(image);
-    expect(tagValue(HOME_META, "og:image:width")).toBe("1200");
-    expect(tagValue(HOME_META, "og:image:height")).toBe("630");
+    expect(tagValue(HOME_META, "og:image:width")).toBe(String(site.seo.image.width));
+    expect(tagValue(HOME_META, "og:image:height")).toBe(String(site.seo.image.height));
   });
 
   it("names the page first, then the site", () => {
@@ -65,15 +65,15 @@ describe("headTags", () => {
 
 describe("projectMeta", () => {
   const project = {
-    id: "storydump",
-    title: "Storydump",
-    description: "a telegram bot for managing\ninstagram stories.\n",
-    url: "https://storydump.app",
+    id: "example-app",
+    title: "Example App",
+    description: "a bot for managing\nexample stories.\n",
+    url: "https://app.example.com",
   };
 
   it("folds a YAML block description onto one line", () => {
     expect(projectMeta(project).description).toBe(
-      "a telegram bot for managing instagram stories.",
+      "a bot for managing example stories.",
     );
   });
 
@@ -86,7 +86,7 @@ describe("projectMeta", () => {
     expect(breadcrumbs.itemListElement.map((crumb) => crumb.item)).toEqual([
       `${SITE_URL}/`,
       `${SITE_URL}/projects`,
-      `${SITE_URL}/projects/storydump`,
+      `${SITE_URL}/projects/example-app`,
     ]);
   });
 });
@@ -97,6 +97,21 @@ describe("jsonLd", () => {
     const serialized = jsonLd(schema);
     expect(serialized).not.toContain("</script");
     expect(JSON.parse(serialized)).toEqual(schema);
+  });
+});
+
+describe("the Person schema's role", () => {
+  it("is site.yaml's job_title and works_for", () => {
+    // site:check holds those to timeline.yaml's current role; this holds the
+    // schema to them.
+    const employed = createSeo({
+      ...site,
+      owner: { ...site.owner, works_for: { name: "Example Co", url: "https://example.com" } },
+    });
+    expect(employed.ABOUT_META.schemas?.[0]).toMatchObject({
+      jobTitle: site.owner.job_title,
+      worksFor: { "@type": "Organization", name: "Example Co", url: "https://example.com" },
+    });
   });
 });
 

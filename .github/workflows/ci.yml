@@ -163,13 +163,14 @@ jobs:
           retention-days: 7
 
       # The fictional site a fork starts from (#191) checks out and builds too.
-      # After the upload: this build replaces dist/.
+      # After the upload: this build replaces dist/. Vite alone: the type
+      # checks above don't depend on the site.
       - name: Check and build site.example
         env:
           SITE_DIR: site.example
         run: |
           npm run site:check
-          npm run build
+          npx vite build
 
   api-lint:
     name: API Lint

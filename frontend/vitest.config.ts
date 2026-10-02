@@ -39,7 +39,7 @@ export default defineConfig({
         plugins: [site()],
         test: {
           name: "site",
-          include: ["src/site-check/**/*.test.ts"],
+          include: ["src/site-check/**/*.{test,spec}.{js,ts,jsx,tsx}"],
         },
       },
     ],

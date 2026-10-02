@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { LANDING, SECTIONS, TABS_PATH, named, withLongAbout } from "./site";
+import { ABOUT, OTHER_TABS, TABS_PATH, named, withLongAbout } from "./site";
 
 /**
  * Navigation E2E Tests
@@ -127,8 +127,9 @@ test.describe("External Links", () => {
   test("social links open in new tab", async ({ page }) => {
     await page.goto("/");
 
-    // Home ships external links (the Claudlobby repo, in the header, hero and
-    // footer), so a count-gate here would be inconsistent with the suite.
+    // Home ships external links (with home: landing, the Claudlobby repo in
+    // the header, hero and footer; with home: profile, the owner's socials),
+    // so a count-gate here would be inconsistent with the suite.
     // Worse, this is a security assertion: under the gate, removing every
     // target="_blank" made the rel="noopener" check silently stop running
     // instead of failing, which is the one outcome it exists to prevent.
@@ -162,8 +163,9 @@ test.describe("Mobile Menu", () => {
   });
 
   test("mobile menu section navigation works", async ({ page }) => {
-    const [first, second] = SECTIONS;
-    test.skip(!second, "needs a second tab");
+    // A tab that isn't About, which is selected on load.
+    const [second] = OTHER_TABS;
+    test.skip(!second, "needs a tab other than About");
     await page.setViewportSize({ width: 375, height: 812 });
     // The section links live on the personal page's menu.
     await page.goto(TABS_PATH);
@@ -189,7 +191,7 @@ test.describe("Mobile Menu", () => {
     await page.locator(".nav-hamburger").click();
     await expect(journeyBtn).toHaveClass(/active/);
     await expect(
-      page.locator(".mobile-menu-section-btn", { hasText: named(first.label) }),
+      page.locator(".mobile-menu-section-btn", { hasText: named(ABOUT.label) }),
     ).not.toHaveClass(/active/);
 
     // Choosing the open section again keeps it open: only a tab click
@@ -204,14 +206,14 @@ test.describe("Mobile Menu", () => {
   test("leaving the personal page takes its sections out of the menu", async ({
     page,
   }) => {
-    test.skip(!LANDING, "with home: profile, the personal page is home");
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(TABS_PATH);
     await page.locator(".nav-hamburger").click();
     await expect(page.locator(".mobile-menu-section-btn").first()).toBeVisible();
 
-    await page.locator(".mobile-menu-link", { hasText: "home" }).click();
-    await expect(page).toHaveURL(/\/$/);
+    // To /projects, which every site has, whatever its home.
+    await page.locator(".mobile-menu-link", { hasText: "all projects" }).click();
+    await expect(page).toHaveURL(/\/projects$/);
     await page.locator(".nav-hamburger").click();
     await expect(page.locator(".mobile-menu")).toBeVisible();
     await expect(page.locator(".mobile-menu-section-btn")).toHaveCount(0);

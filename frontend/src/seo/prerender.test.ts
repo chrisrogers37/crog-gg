@@ -65,7 +65,7 @@ describe("fileFor", () => {
   it("names the file cleanUrls serves at each path", () => {
     expect(fileFor("/")).toBe("index.html");
     expect(fileFor("/projects")).toBe("projects.html");
-    expect(fileFor("/projects/storydump")).toBe("projects/storydump.html");
+    expect(fileFor("/projects/example-app")).toBe("projects/example-app.html");
   });
 });
 

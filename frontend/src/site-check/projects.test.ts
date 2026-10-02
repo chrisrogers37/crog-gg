@@ -32,25 +32,26 @@ describe("the shipped projects", () => {
     }
   });
 
-  it("only link GitHub repos of the site's owner", () => {
+  it("only link GitHub repos of the site's owner", (ctx) => {
+    const linked = projects.filter((project) => githubRepo(project));
+    if (linked.length === 0) ctx.skip(); // no project links a repo
     // The API looks a repo's name up under this owner, so another owner's repo
     // would show the owner's same-named repo, or no README. site.yaml's github
     // social stands in for the API's GITHUB_USERNAME until #189 reads it too.
     const github = site.socials.find((social) => social.icon === "github");
     expect(github, "a github social in site.yaml").toBeDefined();
     const owner = new URL(github!.url).pathname.split("/")[1];
-    for (const project of projects) {
-      const repo = githubRepo(project);
-      if (repo) expect(repo.owner, project.id).toBe(owner);
+    for (const project of linked) {
+      expect(githubRepo(project)?.owner, project.id).toBe(owner);
     }
   });
 
-  it("only embed demos from hosts the CSP lets the page frame", () => {
+  it("only embed demos from hosts the CSP lets the page frame", (ctx) => {
+    const embedded = projects.filter(hasLiveDemo);
+    if (embedded.length === 0) ctx.skip(); // no project embeds a demo
     const frame = frameSrc();
-    for (const project of projects) {
-      if (hasLiveDemo(project)) {
-        expect(frame, project.id).toContain(new URL(project.demo!).origin);
-      }
+    for (const project of embedded) {
+      expect(frame, project.id).toContain(new URL(project.demo!).origin);
     }
   });
 });

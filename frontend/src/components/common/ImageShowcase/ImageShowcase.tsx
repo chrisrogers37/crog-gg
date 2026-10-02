@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import site from "virtual:site-config";
 import { loadShowcase } from "../../../utils/showcaseLoader";
 import type { ShowcaseImage } from "../../../types/Showcase";
 import { photoSrc, photoSrcSet } from "../../../utils/photos";
@@ -33,7 +34,7 @@ export function ImageShowcase({ images: propImages }: ImageShowcaseProps) {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       role="group"
-      aria-label="Photos of Chris"
+      aria-label={`Photos of ${site.owner.name}`}
     >
       <div
         className="image-showcase-track"

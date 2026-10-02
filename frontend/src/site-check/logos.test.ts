@@ -10,13 +10,15 @@ const logoFiles = import.meta.glob("@site/public/logos/*.png", {
   eager: true,
 });
 
+const { entries } = yaml.load(timelineYaml) as TimelineData;
+const domains = new Set(entries.flatMap((entry) => entry.domain ?? []));
+
 describe("the timeline's logos", () => {
-  it("has a logo for every organisation that names a domain", () => {
+  // A timeline with no domains has nothing to check.
+  it.skipIf(domains.size === 0)("has a logo for every organisation that names a domain", () => {
     // A new timeline entry with a new domain would show a placeholder until
     // its logo is added to public/logos/, so the gap is caught here instead.
-    // A timeline with no domains has nothing to check.
-    const { entries } = yaml.load(timelineYaml) as TimelineData;
-    for (const domain of new Set(entries.flatMap((entry) => entry.domain ?? []))) {
+    for (const domain of domains) {
       expect(inSite(logoFiles, `/public${logoUrl(domain)}`), `public${logoUrl(domain)}`).toBeDefined();
     }
   });

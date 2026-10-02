@@ -107,5 +107,5 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
   - the projects: at least one, each in a category, one emoji icon, repos of the site's owner, and a `frame-src` entry for an embedded demo;
   - the About copy is at least one paragraph and ends on the sign-off that names SUMMON NEW LORE;
   - the card's text matches `seo.image.alt`, the Person schema's role matches the timeline's current one, and with `home: landing` the card keeps the landing page's rules.
-- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content; a project id the router can't serve still fails `router.test.tsx`.
+- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A project id that can't be a page's URL fails the build and `npm run site:check` (`utils/projectLoader.ts`).
 - **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site with no landing page.

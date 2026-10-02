@@ -9,7 +9,7 @@ This is the interim guide. Most of the owner's identity lives in one folder, `si
 
 ## What to replace
 
-**Start from `site.example/`**, a fictional site in the same shape: copy it over `site/`, then make it yours. The tests already pass on it, since CI runs them on both.
+**Start from `site.example/`**, a fictional site in the same shape: replace `site/` with a copy of it (delete the copy's `LICENSE` and `README.md`, which are the fixture's), then make it yours. Keep `site.example/` itself: the unit tests read it. The tests already pass on it, since CI runs them on both.
 
 **`site/site.yaml`**: who the site is. The build checks it and names any key that's wrong; [documentation/CONTENT.md](documentation/CONTENT.md#sitesiteyaml) describes every field.
 
