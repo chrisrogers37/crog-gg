@@ -9,8 +9,8 @@ import { useContentStore } from "../contentStore";
  * client required every response to succeed, and the whole regeneration was
  * discarded -- including the section that had worked.
  *
- * These tests pin what came out of that: one click is one request, a partial
- * failure keeps the sections that worked, and a failure never lands in `error`,
+ * These tests pin what came out of that: one click is one request, and a
+ * failure never lands in `error`,
  * which drives AboutPage's full-page fatal screen and unmounts a page that still
  * has content to show.
  */
@@ -277,7 +277,7 @@ describe("regenerateContent", () => {
     it("keeps the prior bio when about comes back null", async () => {
       respondWith({
         success: true,
-        content: { about: null, portfolio: null },
+        content: { about: null },
         failed_sections: [],
       });
 
@@ -325,12 +325,13 @@ describe("regenerateContent", () => {
     });
 
     /**
-     * The three below were `it.fails` until the gap closed. The markers are
-     * gone because they had done their job: they reported the day the fix
-     * landed, and leaving them would have asserted a bug that no longer
-     * exists. The assertions themselves are unchanged.
+     * The two below were `it.fails` until the gap closed, with a third for
+     * an empty experience list, which went when only `about` was sent
+     * (#190). The markers are gone because they had done their job: they
+     * reported the day the fix landed, and leaving them would have asserted
+     * a bug that no longer exists. The assertions themselves are unchanged.
      *
-     * One cause for all three. The store guarded the applied content with `??`,
+     * One cause for all of them. The store guarded the applied content with `??`,
      * which only catches null and undefined. An empty object, an empty array
      * and a bare string are all non-nullish, so each one replaced the content
      * the visitor was reading -- a blank section from an HTTP 200 the server
@@ -369,7 +370,7 @@ describe("regenerateContent", () => {
 
         await useContentStore.getState().regenerateContent(true);
 
-        // Asserted as its two siblings are -- the prior bio intact, not merely
+        // Asserted as its sibling is -- the prior bio intact, not merely
         // "not a string", which any other wrong non-object would also satisfy
         // while the visitor's bio was still gone.
         expect(useContentStore.getState().bio).toEqual(BIO);

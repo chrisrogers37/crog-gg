@@ -330,7 +330,7 @@ export const useContentStore = create<ContentStore>()(
 
           // The flag claims "your content was modified", and the reset button
           // offers to undo that. Reaching the success path is a different
-          // claim: every section can be refused by the validation above, in
+          // claim: the section can be refused by the validation above, in
           // which case `about` is undefined, the `??` fallback below
           // deliberately keeps what was already on screen, and nothing
           // changed. Deriving the flag from what was applied rather
