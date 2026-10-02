@@ -69,7 +69,28 @@ const READ = () => {
  *  these tests time out waiting for one. `about_text` is a key of the real bio
  *  being replaced, which is what the store's validation requires before it will
  *  apply a section. */
-const stubRegenerate = (page: import("@playwright/test").Page) =>
+type Page = import("@playwright/test").Page;
+
+/** /about, collapsed, once the preview's entry animation has finished. */
+const openAbout = async (page: Page) => {
+  await page.goto("/about");
+  await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
+  await expect(page.locator("#section-panel")).toHaveCSS("opacity", "1");
+};
+
+/**
+ * /about with About expanded, once its entry animation has finished. The
+ * expanded panel is told apart by its class: it shares the preview's id, and
+ * the preview is still at opacity 1 when its exit starts.
+ */
+const expandAbout = async (page: Page) => {
+  await openAbout(page);
+  await page.click(".section-fade-btn");
+  await page.waitForSelector(".generate-btn", { timeout: 10000 });
+  await expect(page.locator(".content-section")).toHaveCSS("opacity", "1");
+};
+
+const stubRegenerate = (page: Page) =>
   page.route("**/api/regenerate", (route) =>
     route.fulfill({
       status: 200,
@@ -91,10 +112,7 @@ test.describe("action button layout stability", () => {
   test("expanding About does not displace the regenerate button", async ({
     page,
   }) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    // the preview's entry animation has finished
-    await expect(page.locator("#section-panel")).toHaveCSS("opacity", "1");
+    await openAbout(page);
 
     await page.evaluate(ARM);
     await page.click(".section-fade-btn");
@@ -117,12 +135,7 @@ test.describe("action button layout stability", () => {
   }) => {
     await stubRegenerate(page);
 
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    // the expanded section's entry animation has finished
-    await expect(page.locator(".content-section")).toHaveCSS("opacity", "1");
+    await expandAbout(page);
 
     await page.evaluate(ARM);
     await page.click(".generate-btn");
@@ -162,11 +175,8 @@ test.describe("action button layout stability", () => {
  * because the desktop grid hides the second cause entirely.
  */
 test.describe("journey section post-mount stability", () => {
-  const openJourney = async (page: import("@playwright/test").Page) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    // the preview's entry animation has finished
-    await expect(page.locator("#section-panel")).toHaveCSS("opacity", "1");
+  const openJourney = async (page: Page) => {
+    await openAbout(page);
     await page.evaluate(ARM);
     await page
       .locator(".section-nav-button", { hasText: /^journey$/i })
@@ -212,11 +222,7 @@ test.describe("undoing a regeneration", () => {
     page,
   }) => {
     await stubRegenerate(page);
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    await expect(page.locator(".content-section")).toHaveCSS("opacity", "1");
+    await expandAbout(page);
 
     await page.click(".generate-btn");
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
@@ -248,10 +254,7 @@ test.describe("undoing a regeneration", () => {
   // of *source*: the restore now comes from the originals held in the store, and
   // this asserts that produces the same result the file read did.
   test("restores the original content", async ({ page }) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
+    await expandAbout(page);
     const original = await page.locator(".about-content").innerText();
 
     // A regeneration that genuinely changes the rendered bio, so the restore
@@ -279,10 +282,10 @@ test.describe("undoing a regeneration", () => {
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
     // the About section applies a regeneration behind its own ~600ms transition
     const aboutText = () => page.locator(".about-content").innerText();
-    await expect.poll(aboutText).not.toBe(original);
+    await expect.poll(aboutText, { intervals: [100] }).not.toBe(original);
 
     await page.click(".reset-btn");
-    await expect.poll(aboutText).toBe(original);
+    await expect.poll(aboutText, { intervals: [100] }).toBe(original);
   });
 });
 
@@ -340,10 +343,7 @@ test.describe("idle typewriter does not reflow the page (#148)", () => {
   }) => {
     test.setTimeout(120000);
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/about");
-    await page.waitForSelector(".section-nav", { timeout: 15000 });
-    // past the entry animation
-    await expect(page.locator("#section-panel")).toHaveCSS("opacity", "1");
+    await openAbout(page);
 
     await page.evaluate(ARM_IDLE);
     // observation window: nothing is clicked; the loop runs alone
@@ -395,12 +395,7 @@ test.describe("collapsing a section moves the page once (#149)", () => {
   test("the button card unmounts in the same frame the content moves", async ({
     page,
   }) => {
-    await page.goto("/about");
-    await page.waitForSelector(".section-fade-btn", { timeout: 15000 });
-    await page.click(".section-fade-btn");
-    await page.waitForSelector(".generate-btn", { timeout: 10000 });
-    // the expansion has settled
-    await expect(page.locator(".content-section")).toHaveCSS("opacity", "1");
+    await expandAbout(page);
 
     await page.evaluate(ARM_COLLAPSE);
     await page.locator(".section-nav-button.active").first().click(); // collapse back to the preview

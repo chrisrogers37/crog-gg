@@ -83,23 +83,18 @@ test.describe("About Page", () => {
 
 test.describe("Section Navigation", () => {
   test("clicking a section tab shows that section's panel", async ({ page }) => {
-    // Not the default tab, so the panel has to change. (The collapsed preview
-    // is already a panel, labelled by the About tab, so "a panel is visible"
-    // would pass even if the click did nothing.)
-    const tab = page.locator('[role="tab"][data-section="journey"]');
-    const tabName = (await tab.textContent())?.trim() ?? "";
-    expect(tabName).not.toBe("");
-    await tab.click();
-
-    const panel = page.getByRole("tabpanel");
-    await expect(panel).toHaveAccessibleName(tabName, { timeout: 5000 });
-    await expect(panel).toBeVisible();
+    // Not the default tab: the collapsed preview is already a panel (About's),
+    // so only a panel named for the clicked tab proves the switch.
+    await page.getByRole("tab", { name: /^journey$/i }).click();
+    await expect(
+      page.getByRole("tabpanel", { name: /^journey$/i }),
+    ).toBeVisible();
   });
 
   test("clicking same section twice toggles it off", async ({ page }) => {
     const journeyButton = page.locator('button[data-section="journey"]');
 
-    // Click journey to activate it (toHaveClass waits for the change)
+    // Click journey to activate it
     await journeyButton.click();
     await expect(journeyButton).toHaveClass(/active/);
 

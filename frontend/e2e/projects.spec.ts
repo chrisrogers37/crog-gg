@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import yaml from "js-yaml";
+import { readProjects } from "../src/utils/projectLoader";
 
 /**
  * Projects Page E2E Tests
@@ -157,15 +157,14 @@ test.describe("Project Detail Page", () => {
     request,
   }) => {
     // The first listed project, from the content that ships with the repo.
-    const index = yaml.load(
-      await (await request.get("/content/projects/index.yaml")).text(),
-    ) as { projects: string[] };
-    const project = yaml.load(
-      await (await request.get(`/content/projects/${index.projects[0]}`)).text(),
-    ) as { id: string; title: string };
+    const [project] = await readProjects(async (file) =>
+      (await request.get(`/content/projects/${file}`)).text(),
+    );
 
     // Content arrives late, as on a slow network: "Project Not Found" must
-    // never show while it loads (#196 M41).
+    // never show while it loads (#196 M41). Holding the project index holds
+    // all of it, since the store sets every field from one Promise.all; a
+    // wider glob also caught the dev server's own /src/content/ modules.
     await page.addInitScript(() => {
       const w = window as unknown as { __sawNotFound: boolean };
       w.__sawNotFound = false;
@@ -175,7 +174,7 @@ test.describe("Project Detail Page", () => {
         }
       }).observe(document, { subtree: true, childList: true, characterData: true });
     });
-    await page.route("**/content/**", async (route) => {
+    await page.route("**/content/projects/index.yaml", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       await route.continue();
     });
