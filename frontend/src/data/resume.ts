@@ -11,12 +11,6 @@ export interface ResumeData {
   education: Education[];
   skills: Skill[];
   projects: Project[];
-  // Legacy fields for backwards compatibility
-  about: BioData;
-  portfolio: {
-    experience: Employment[];
-    education: Education[];
-  };
 }
 
 // Create a function to load all resume data dynamically
@@ -33,18 +27,11 @@ export const loadResumeData = async (): Promise<ResumeData> => {
       ]);
 
     const result: ResumeData = {
-      // New flat structure
       bio: bioData,
       experience: experienceData.experience,
       education: educationData.education,
       skills: skillsData.skills,
       projects: projectsData,
-      // Legacy fields for backwards compatibility
-      about: bioData,
-      portfolio: {
-        experience: experienceData.experience,
-        education: educationData.education,
-      },
     };
 
     return result;
@@ -52,19 +39,4 @@ export const loadResumeData = async (): Promise<ResumeData> => {
     console.error("Error in loadResumeData:", error);
     throw error;
   }
-};
-
-// Helper function to get a random transition effect
-export const transitions = [
-  "fade",
-  "slide-up",
-  "slide-down",
-  "slide-left",
-  "slide-right",
-  "rotate",
-  "scale",
-] as const;
-
-export const getRandomTransition = () => {
-  return transitions[Math.floor(Math.random() * transitions.length)];
 };

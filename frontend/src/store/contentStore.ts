@@ -57,11 +57,6 @@ interface ContentActions {
 
   // Restore the content captured at load, undoing a regeneration
   resetContent: () => void;
-
-  // Update specific content (for compatibility with existing components)
-  updateBio: (bio: BioData) => void;
-  updateExperience: (experience: Employment[]) => void;
-  updateEducation: (education: Education[]) => void;
 }
 
 type ContentStore = ContentState & ContentActions;
@@ -498,30 +493,6 @@ export const useContentStore = create<ContentStore>()(
           }),
         );
       },
-
-      /**
-       * Clear the current error message.
-       */
-      /**
-       * Update bio content directly.
-       */
-      updateBio: (bio: BioData) => {
-        set({ bio, hasModifiedContent: true });
-      },
-
-      /**
-       * Update experience content directly.
-       */
-      updateExperience: (experience: Employment[]) => {
-        set({ experience, hasModifiedContent: true });
-      },
-
-      /**
-       * Update education content directly.
-       */
-      updateEducation: (education: Education[]) => {
-        set({ education, hasModifiedContent: true });
-      },
     }),
     { name: "content-store", enabled: import.meta.env.DEV },
   ),
@@ -537,16 +508,9 @@ export const useContentStore = create<ContentStore>()(
  */
 
 export const useBio = () => useContentStore((state) => state.bio);
-export const useExperience = () => useContentStore((state) => state.experience);
-export const useEducation = () => useContentStore((state) => state.education);
-export const useSkills = () => useContentStore((state) => state.skills);
 export const useProjects = () => useContentStore((state) => state.projects);
 export const useIsLoading = () => useContentStore((state) => state.isLoading);
-export const useIsRegenerating = () =>
-  useContentStore((state) => state.isRegenerating);
 export const useContentError = () => useContentStore((state) => state.error);
 export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
-export const useHasModifiedContent = () =>
-  useContentStore((state) => state.hasModifiedContent);
 export const useTimeline = () => useContentStore((state) => state.timeline);
