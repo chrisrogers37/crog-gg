@@ -9,6 +9,8 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 
 ## Working on it
 
+- [CONTRIBUTING.md](../CONTRIBUTING.md): the checks CI runs, writing tests, linking issues, and docs that travel with a change.
+- [FORKING.md](../FORKING.md): making the site yours, until the site config lands (#188).
 - [CLAUDE.md](../CLAUDE.md): conventions, the design system and the copy style, for people and coding agents.
 - [AGENTS.md](../AGENTS.md): running the project, for any coding agent.
 - `.claude/skills/add-project/SKILL.md`: adding a project. `.claude/agents/oncall-guide.md`: diagnosing production.
@@ -20,4 +22,5 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 
 ## History
 
+- [CHANGELOG.md](../CHANGELOG.md): notable changes, by date.
 - [archive/](archive/): past plans, reviews and evaluations, kept for their reasoning. Most of what they describe has since been fixed; GitHub issues are the current record.
