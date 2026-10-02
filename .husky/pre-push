@@ -9,12 +9,15 @@ set -e
 echo "Running pre-push checks..."
 
 # --- Determine changed files ---
-# Compare against the upstream tracking branch or, for a new branch, the
-# remote's main (a local main can be far behind it), then the local main.
+# Compare the whole branch against the remote's main, as CI's PR checks do, so
+# commits pushed earlier with --no-verify are still covered. Without it, fall
+# back to the upstream tracking branch, then the local main (which can be far
+# behind the remote's).
 UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "")
-for BASE in $UPSTREAM origin/main main; do
+for BASE in origin/main $UPSTREAM main; do
   MERGE_BASE=$(git merge-base HEAD "$BASE" 2>/dev/null || echo "")
   if [ -n "$MERGE_BASE" ]; then
+    echo "Comparing against $BASE"
     break
   fi
 done
@@ -23,16 +26,18 @@ FRONTEND_CHANGED=false
 PYTHON_CHANGED=false
 
 if [ -n "$MERGE_BASE" ]; then
-  # Diffing the merge base against the working tree covers both what's
-  # committed and what isn't yet.
-  CHANGED_FILES=$(git diff --name-only "$MERGE_BASE")
+  # The net change from the merge base to the working tree: what's committed
+  # and what isn't yet. --no-renames lists a moved file's old path too (a file
+  # moved out of api/ is still a Python change), and quotePath=false keeps
+  # non-ASCII paths unquoted, so the patterns below match them.
+  CHANGED_FILES=$(git -c core.quotePath=false diff --name-only --no-renames "$MERGE_BASE")
 
   if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
     FRONTEND_CHANGED=true
   fi
 
-  # Dependency and Python version changes count too.
-  if echo "$CHANGED_FILES" | grep -qE "^(api/|tests/|conftest\.py$|requirements|\.python-version$)"; then
+  # Dependency, Python version and tool config changes count too.
+  if echo "$CHANGED_FILES" | grep -qE "^(api/|tests/|conftest\.py$|requirements|\.python-version$|setup\.cfg$|pyproject\.toml$|\.flake8$|pytest\.ini$)"; then
     PYTHON_CHANGED=true
   fi
 else
