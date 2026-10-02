@@ -1,7 +1,5 @@
 """The /api/regenerate prompt pack (#198 M47): each section's prompt and the
 standing constraints added to every one, moved verbatim from api/index.py.
-
-index.py imports these names, so they can still be read there.
 """
 
 

@@ -15,6 +15,7 @@ from flask import Response, jsonify
 from api._lib import rate_limit
 from api._lib.request_utils import (
     GITHUB_API,
+    GITHUB_TIMEOUT_SECONDS,
     GITHUB_USERNAME,
     Visitor,
     current_visitor,
@@ -23,9 +24,6 @@ from api._lib.request_utils import (
 )
 
 logger = logging.getLogger("crog")
-
-# How long any GitHub call may take, in seconds.
-GITHUB_TIMEOUT_S = 10
 
 GH_RATE_LIMIT_MAX = 30
 GH_RATE_LIMIT_WINDOW = 60
@@ -107,7 +105,7 @@ def _fetch_public_repo(repo_name: str, endpoint: str):
         r = requests.get(
             f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}",
             headers=github_headers(),
-            timeout=GITHUB_TIMEOUT_S,
+            timeout=GITHUB_TIMEOUT_SECONDS,
         )
     except requests.RequestException as e:
         return None, _github_unavailable(endpoint, repo_name, exc=e)
@@ -155,7 +153,7 @@ def _proxy_sub_resource(
             r = requests.get(
                 f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo_name}{candidate}",
                 headers=github_headers(),
-                timeout=GITHUB_TIMEOUT_S,
+                timeout=GITHUB_TIMEOUT_SECONDS,
             )
         except requests.RequestException as e:
             return _github_unavailable(endpoint, repo_name, exc=e)

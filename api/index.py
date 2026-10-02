@@ -28,7 +28,6 @@ from flask_cors import CORS
 
 from api._lib import cache, rate_limit, redis_client
 from api._lib.github_proxy import (
-    GITHUB_TIMEOUT_S,
     _cdn_cached,
     _fetch_public_repo,
     _gh_rate_limit_or_429,
@@ -51,6 +50,7 @@ from api._lib.prompts import (
 )
 from api._lib.request_utils import (
     GITHUB_API,
+    GITHUB_TIMEOUT_SECONDS,
     GITHUB_TOKEN,
     GITHUB_USERNAME,
     Visitor,
@@ -920,7 +920,7 @@ def get_all_languages_v1():
         repos_response = requests.get(
             f"{GITHUB_API}/users/{GITHUB_USERNAME}/repos?per_page=100",
             headers=github_headers(),
-            timeout=GITHUB_TIMEOUT_S,
+            timeout=GITHUB_TIMEOUT_SECONDS,
         )
         repos_response.raise_for_status()
         repos = repos_response.json()
@@ -934,7 +934,7 @@ def get_all_languages_v1():
             lang_response = requests.get(
                 f"{GITHUB_API}/repos/{GITHUB_USERNAME}/{repo['name']}/languages",
                 headers=github_headers(),
-                timeout=GITHUB_TIMEOUT_S,
+                timeout=GITHUB_TIMEOUT_SECONDS,
             )
             if lang_response.ok:
                 for lang, bytes_count in lang_response.json().items():
@@ -985,7 +985,7 @@ def get_contributions():
                 "Content-Type": "application/json",
             },
             json={"query": query, "variables": {"username": GITHUB_USERNAME}},
-            timeout=GITHUB_TIMEOUT_S,
+            timeout=GITHUB_TIMEOUT_SECONDS,
         )
         response.raise_for_status()
         data = response.json()
