@@ -4,12 +4,12 @@ import "./Projects.css";
 
 type ProjectCardProps = {
   project: Project;
-  linkTo?: string;
 };
 
-export function ProjectCard({ project, linkTo }: ProjectCardProps) {
-  const content = (
-    <>
+/** A project's tile. It opens the project's page on the site (#196 M43). */
+export function ProjectCard({ project }: ProjectCardProps) {
+  return (
+    <Link to={`/projects/${project.id}`} className="project-tile">
       <div
         className="project-tile-header"
         style={{
@@ -38,25 +38,6 @@ export function ProjectCard({ project, linkTo }: ProjectCardProps) {
           </div>
         )}
       </div>
-    </>
-  );
-
-  if (linkTo) {
-    return (
-      <Link to={linkTo} className="project-tile">
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <a
-      href={project.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="project-tile"
-    >
-      {content}
-    </a>
+    </Link>
   );
 }

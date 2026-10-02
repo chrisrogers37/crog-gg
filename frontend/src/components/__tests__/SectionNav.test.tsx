@@ -4,7 +4,7 @@ import SectionNav from "../SectionNav";
 
 describe("SectionNav", () => {
   it("renders all section buttons", () => {
-    render(<SectionNav activeSection="" onSectionChange={vi.fn()} />);
+    render(<SectionNav activeSection="about" onSelect={vi.fn()} />);
     expect(screen.getByRole("tab", { name: "About" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Journey" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Projects" })).toBeInTheDocument();
@@ -12,7 +12,7 @@ describe("SectionNav", () => {
   });
 
   it("points every tab at the one section panel", () => {
-    render(<SectionNav activeSection="" onSectionChange={() => {}} />);
+    render(<SectionNav activeSection="about" onSelect={() => {}} />);
     for (const tab of screen.getAllByRole("tab")) {
       expect(tab).toHaveAttribute("aria-controls", "section-panel");
       expect(tab.id).toMatch(/^section-tab-/);
@@ -20,38 +20,41 @@ describe("SectionNav", () => {
   });
 
   it("marks active section button as selected", () => {
-    render(<SectionNav activeSection="projects" onSectionChange={vi.fn()} />);
+    render(<SectionNav activeSection="projects" onSelect={vi.fn()} />);
     const projectsBtn = screen.getByRole("tab", { name: "Projects" });
     expect(projectsBtn).toHaveAttribute("aria-selected", "true");
     expect(projectsBtn).toHaveClass("active");
   });
 
-  it("calls onSectionChange when button clicked", () => {
-    const onChange = vi.fn();
-    render(<SectionNav activeSection="" onSectionChange={onChange} />);
+  it("reports the clicked tab, highlighted or not, and leaves the rest to the page", () => {
+    const onSelect = vi.fn();
+    render(<SectionNav activeSection="about" onSelect={onSelect} />);
     fireEvent.click(screen.getByRole("tab", { name: "Journey" }));
-    expect(onChange).toHaveBeenCalledWith("journey");
+    fireEvent.click(screen.getByRole("tab", { name: "About" }));
+    expect(onSelect.mock.calls).toEqual([["journey"], ["about"]]);
   });
 
-  it("calls onSectionChange with empty string when active section clicked", () => {
-    const onChange = vi.fn();
-    render(<SectionNav activeSection="journey" onSectionChange={onChange} />);
-    fireEvent.click(screen.getByRole("tab", { name: "Journey" }));
-    expect(onChange).toHaveBeenCalledWith("");
+  it("makes the highlighted tab the one tab stop", () => {
+    render(<SectionNav activeSection="projects" onSelect={vi.fn()} />);
+    const stops = screen
+      .getAllByRole("tab")
+      .filter((tab) => tab.tabIndex === 0)
+      .map((tab) => tab.textContent);
+    expect(stops).toEqual(["Projects"]);
   });
 
   it("does not scroll on initial render", () => {
-    render(<SectionNav activeSection="about" onSectionChange={vi.fn()} />);
+    render(<SectionNav activeSection="about" onSelect={vi.fn()} />);
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
   it("scrolls active button into view when activeSection changes", () => {
     const { rerender } = render(
-      <SectionNav activeSection="about" onSectionChange={vi.fn()} />,
+      <SectionNav activeSection="about" onSelect={vi.fn()} />,
     );
     vi.mocked(Element.prototype.scrollIntoView).mockClear();
 
-    rerender(<SectionNav activeSection="music" onSectionChange={vi.fn()} />);
+    rerender(<SectionNav activeSection="music" onSelect={vi.fn()} />);
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",
       inline: "nearest",
@@ -60,7 +63,7 @@ describe("SectionNav", () => {
   });
 
   it("supports keyboard navigation between tabs", () => {
-    render(<SectionNav activeSection="about" onSectionChange={vi.fn()} />);
+    render(<SectionNav activeSection="about" onSelect={vi.fn()} />);
     const aboutBtn = screen.getByRole("tab", { name: "About" });
     aboutBtn.focus();
 

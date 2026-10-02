@@ -188,6 +188,14 @@ test.describe("Mobile Menu", () => {
       page.locator(".mobile-menu-section-btn", { hasText: "about" }),
     ).not.toHaveClass(/active/);
 
+    // Choosing the open section again keeps it open: only a tab click
+    // closes a section. (Read from the menu's marking, which follows the
+    // page's state, not from an animation still running.)
+    await journeyBtn.click();
+    await expect(page.locator(".mobile-menu")).not.toBeVisible();
+    await page.locator(".nav-hamburger").click();
+    await expect(journeyBtn).toHaveClass(/active/);
+
     // Leaving /about takes its sections out of the menu.
     await page.locator(".mobile-menu-link", { hasText: "home" }).click();
     await expect(page).toHaveURL(/\/$/);
@@ -278,7 +286,8 @@ test.describe("see more survives a collapse (#165)", () => {
     await expect(page.locator(".generate-btn")).toBeVisible({ timeout: 10000 });
 
     // Collapse the way a reader does -- clicking the tab that is already
-    // active. SectionNav reports that as an empty section id.
+    // open. SectionNav reports the clicked id, and AboutPage turns a click on
+    // the open tab back into About's preview.
     await page.locator(".section-nav-button.active").first().click();
     await expect(page.locator(".section-fade-btn")).toBeVisible({
       timeout: 10000,

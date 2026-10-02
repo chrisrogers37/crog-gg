@@ -1,15 +1,14 @@
 import { useRef, useCallback, useEffect } from "react";
 import { SECTIONS, SECTION_PANEL_ID, sectionTabId } from "./sectionTabs";
 
-interface SectionNavProps {
+type SectionNavProps = {
+  /** The highlighted tab: the open section, or About while it's previewed. */
   activeSection: string;
-  onSectionChange: (section: string) => void;
-}
+  /** A tab was clicked. The page decides what that opens or closes. */
+  onSelect: (section: string) => void;
+};
 
-export default function SectionNav({
-  activeSection,
-  onSectionChange,
-}: SectionNavProps) {
+export default function SectionNav({ activeSection, onSelect }: SectionNavProps) {
   const navRef = useRef<HTMLElement>(null);
   const isFirstRender = useRef(true);
 
@@ -20,7 +19,7 @@ export default function SectionNav({
       return;
     }
 
-    if (!activeSection || !navRef.current) return;
+    if (!navRef.current) return;
 
     const activeButton = navRef.current.querySelector<HTMLButtonElement>(
       `[data-section="${activeSection}"]`,
@@ -31,14 +30,6 @@ export default function SectionNav({
       block: "nearest",
     });
   }, [activeSection]);
-
-  const handleClick = (sectionId: string) => {
-    if (activeSection === sectionId) {
-      onSectionChange("");
-    } else {
-      onSectionChange(sectionId);
-    }
-  };
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -81,14 +72,9 @@ export default function SectionNav({
             aria-controls={SECTION_PANEL_ID}
             aria-selected={activeSection === section.id}
             data-section={section.id}
-            tabIndex={
-              activeSection === section.id ||
-              (!activeSection && section.id === SECTIONS[0].id)
-                ? 0
-                : -1
-            }
+            tabIndex={activeSection === section.id ? 0 : -1}
             className={`section-nav-button ${activeSection === section.id ? "active" : ""}`}
-            onClick={() => handleClick(section.id)}
+            onClick={() => onSelect(section.id)}
           >
             {section.label}
           </button>
