@@ -130,6 +130,9 @@ npm run test
 # Run tests once (CI mode)
 npm run test:run
 
+# Type-check the app, the unit tests and e2e (CI runs this too)
+npm run typecheck
+
 # Run tests with coverage report
 npm run test:coverage
 

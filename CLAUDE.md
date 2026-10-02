@@ -16,7 +16,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 Give Claude verification loops for 2-3x quality improvement:
 
 1. Make changes
-2. Run typecheck: `cd frontend && npm run build` (tsc is part of build)
+2. Run typecheck: `cd frontend && npm run typecheck` (the app, unit tests and e2e; `npm run build` checks only the app)
 3. Run tests: `cd frontend && npm run test:run`
 4. Lint before committing: `cd frontend && npm run lint`
 5. Before creating PR: run full lint and test suite
@@ -37,6 +37,7 @@ Husky pre-commit and pre-push hooks enforce quality locally, once installed: run
 npm run dev              # Start dev server (localhost:5173)
 npm run build            # TypeScript check + Vite build
 npm run lint             # ESLint
+npm run typecheck        # tsc over the app, unit tests and e2e (tsconfig.test.json)
 npm run test             # Vitest in watch mode
 npm run test:run         # Vitest single run
 npm run test:coverage    # Vitest with coverage

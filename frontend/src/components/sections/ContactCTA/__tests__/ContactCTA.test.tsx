@@ -27,7 +27,6 @@ const mockBio = {
   email: "test@example.com",
   location: "New York",
   about_text: "About me",
-  welcome_message: "Hello",
   social_links: {
     github: "https://github.com/testuser",
     linkedin: "https://linkedin.com/in/testuser",

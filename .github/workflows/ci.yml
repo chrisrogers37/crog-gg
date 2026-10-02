@@ -37,6 +37,11 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      # tsconfig.json leaves the tests out of the build; this config puts them
+      # (and e2e) back in, so a test can't drift from the types it exercises.
+      - name: Type-check the app, unit tests and e2e
+        run: npm run typecheck
+
   frontend-unit-tests:
     name: Frontend Unit Tests
     runs-on: ubuntu-latest
