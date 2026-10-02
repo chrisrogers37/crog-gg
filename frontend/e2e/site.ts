@@ -35,7 +35,7 @@ export const CLAUDLOBBY = projects.some(({ id }) => id === "claudlobby");
 
 /** The link-preview card a page shows: a project's own where its file names one, else the site's. */
 export const cardOf = (path: string) =>
-  projects.find(({ id }) => path === `/projects/${id}`)?.card ?? site.seo.image;
+  projects.find(({ id }) => path === `/projects/${id}`)?.share_card ?? site.seo.image;
 
 /** The featured project's id, if index.yaml features one. */
 export const FEATURED = projectIndex.featured && project(projectIndex.featured).id;

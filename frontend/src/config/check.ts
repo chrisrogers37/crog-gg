@@ -150,7 +150,7 @@ export const describeProblems = (source: string, issues: string[]) =>
 /**
  * A link-preview card (#174): a PNG in the site's public folder, its size,
  * and its words as the alt. The site's (seo.image in site.yaml), and a
- * project's own (`card` in its file).
+ * project's own (`share_card` in its file).
  */
 export const shareImage = object({
   path: sitePath,

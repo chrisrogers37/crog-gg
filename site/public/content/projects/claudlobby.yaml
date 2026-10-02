@@ -19,7 +19,7 @@ github: https://github.com/Claudfather/Claudlobby
 status: experimental
 # Its own link preview, in its org Claudfather's colours: the PNG is rendered
 # from site/claudlobby-card.html, and the alt is the card's words.
-card:
+share_card:
   path: /claudlobby-card.png
   width: 1200
   height: 630

@@ -16,8 +16,28 @@ function StarIcon() {
   );
 }
 
-/** The mark's widths, as Claudlobby.css draws it at each breakpoint. */
-export const MARK_SIZES = "(max-width: 480px) 44px, (max-width: 768px) 56px, 220px";
+/**
+ * Claudfather's avatar, the page's mark. One element for the hero and its
+ * loading stand-in, so both ask for the same image and the hero reuses the
+ * stand-in's download. Its sizes are Claudlobby.css's at each breakpoint.
+ */
+export function ClaudfatherMark({ alt }: { alt: string }) {
+  const { photo } = claudlobby.mark;
+  return (
+    // src goes last: Safari fetches it the moment it's set, before srcset
+    // can choose.
+    <img
+      className="cl-mark"
+      alt={alt}
+      width={220}
+      height={220}
+      loading="eager"
+      sizes="(max-width: 480px) 44px, (max-width: 768px) 56px, 220px"
+      srcSet={photoSrcSet(photo)}
+      src={photoSrc(photo)}
+    />
+  );
+}
 
 /**
  * What it is, how mature it is, and the two next steps, all above the fold on
@@ -60,18 +80,8 @@ export function Hero({ project }: { project: Project }) {
         </p>
       </div>
       {/* Last, so it's read after the words; the grid draws it beside them
-          (a corner of the eyebrow's row, on a phone). src goes last: Safari
-          fetches src the moment it's set, before srcset can choose. */}
-      <img
-        className="cl-mark"
-        alt={mark.alt}
-        width={220}
-        height={220}
-        loading="eager"
-        sizes={MARK_SIZES}
-        srcSet={photoSrcSet(mark.photo)}
-        src={photoSrc(mark.photo)}
-      />
+          (a corner of the eyebrow's row, on a phone). */}
+      <ClaudfatherMark alt={mark.alt} />
     </section>
   );
 }

@@ -1,8 +1,9 @@
 // Renders the site's link-preview cards at 1200x630 (#188): every
 // site/<name>.html to site/public/<name>.png. The site's card (og-image), and
-// a project's own (`card` in its file), such as claudlobby-card.
+// a project's own (`share_card` in its file), such as claudlobby-card.
 //
-// Run from frontend/ after changing a card's text or colours:
+// Run from frontend/ after changing a card's text or colours (SITE_DIR picks
+// another site folder, as for the build):
 //   node scripts/og-image/render.mjs
 // It needs Playwright's Chromium (npx playwright install chromium), which the
 // E2E suite already uses. The PNGs are committed; the build does not run this.
@@ -12,7 +13,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const site = path.resolve(here, "../../../site");
+// The active site, as scripts/site-config.ts finds it: SITE_DIR, else site/.
+const site = path.resolve(here, "../../..", process.env.SITE_DIR || "site");
 const cards = fs
   .readdirSync(site)
   .filter((file) => file.endsWith(".html"))
@@ -28,6 +30,11 @@ try {
   for (const card of cards) {
     const out = path.join(site, "public", `${card}.png`);
     await page.goto(pathToFileURL(path.join(site, `${card}.html`)).href);
+    // A card whose image didn't load would still render, without it.
+    const broken = await page.$$eval("img", (images) =>
+      images.filter((image) => !image.complete || image.naturalWidth === 0).map((image) => image.src),
+    );
+    if (broken.length > 0) throw new Error(`${card}.html: images didn't load: ${broken.join(", ")}`);
     await page.screenshot({ path: out, type: "png" });
     console.log(`wrote ${path.relative(process.cwd(), out)}`);
   }

@@ -32,7 +32,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - `site.yaml` and the project index (#247): `home` and `about` (which held only `preview_height`) are gone, so a `site.yaml` that still has either fails, naming the key; `sections` is the home page's, in order; `featured` in `projects/index.yaml` names the project shown first. The About text renders from the store, so the store's events for the old About component and `react-transition-group` are gone (#198 PR 2).
 - The 404 and error pages, and a section that fails to load, are in the same look, with the site's one radius and its buttons; so is the photo strip (#247).
 - Only the standard project page loads the README renderer, so Claudlobby's page doesn't, and the music section loads Spotify's player once it's near the screen rather than with the page (#247).
-- Claudlobby's page wears its GitHub org's look, Claudfather's: the org's avatar as its mark, its charcoal, cream and orange, and its own link-preview card. A project file can name a card of its own (`card`), and `npm run site:check` holds every card to its size and words. Claudlobby's head describes it as source code, with its repository and license (#249).
+- Claudlobby's page wears its GitHub org's look, Claudfather's: the org's avatar as its mark, its charcoal, cream and orange, and its own link-preview card. A project file can name a link-preview card of its own (`share_card`), and `npm run site:check` holds every card to its size, and to its source's words where the site keeps one. Claudlobby's head describes it as source code, with its repository and license (#249).
 
 ### Fixed
 - A project page fits a phone: a README's wide table scrolls in a box of its own, and a long URL wraps. Pages take their width from the layout, not from their content, so `/projects` no longer widens as its projects arrive (#246).
@@ -40,6 +40,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The project stats and the `/projects` tiles keep their size when they load, and `/projects` shows its filters while it loads (#246).
 - A link followed while an in-page link's smooth scroll is still moving opens the next page at the top; in Chromium the scroll carried on down the new page (#247).
 - On a phone, the journey's skills follow the timeline. Above it, the cloud grew as entries scrolled in and pushed the one being read down (#247).
+- A project page's skeleton holds the breadcrumbs' row, so the hero lands where its stand-in stood; and the "Project not found" view has the page's top padding, as the 404 page does (#249).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).

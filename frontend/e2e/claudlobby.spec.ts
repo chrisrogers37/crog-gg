@@ -52,7 +52,7 @@ for (const [label, viewport] of [...VIEWPORTS, ["small phone", SMALL_PHONE] as c
       const panel = (await hero.boundingBox())!;
       expect(panel.x).toBe(0);
       expect(panel.width).toBe(viewport.width);
-      await expect(maturity).toBeInViewport();
+      await expect(maturity.locator(".badge")).toBeInViewport({ ratio: 1 });
     } else {
       // The maturity note that qualifies them (#179), wholly.
       await expect(maturity).toBeInViewport({ ratio: 1 });
@@ -78,20 +78,13 @@ test.describe("Claudlobby's page", () => {
     await expect(page.locator(`footer a[href^="${REPO}"]`)).toHaveCount(0);
   });
 
-  test("wears Claudfather's mark, loaded, and points link previews at its own card", async ({
-    page,
-  }) => {
-    // The mark is a real image, not a broken one, once its bytes are in.
+  test("wears Claudfather's mark, loaded", async ({ page }) => {
+    // A real image, not a broken one, once its bytes are in.
     const mark = page.locator(".page-hero img.cl-mark");
     await expect(mark).toBeVisible();
     await expect
       .poll(() => mark.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
       .toBe(true);
-    // In the app's head as in the prerendered one (prerender.spec.ts).
-    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
-      "content",
-      `${site.site.url}${cardOf(PAGE).path}`,
-    );
   });
 
   test("keeps its hero Claudfather's night in both themes; its links take each theme's orange", async ({
@@ -158,6 +151,20 @@ test.describe("Claudlobby's page", () => {
       expect(value).toMatch(/^\d+$/);
     }
     await expect(page.locator(`.cl-source a[href^="${REPO}/blob/"]`)).toBeVisible();
+  });
+});
+
+test.describe("Reached in the app", () => {
+  test("the page's head points link previews at its own card", async ({ page }) => {
+    // From /projects, whose head names the site's card, so only the app's own
+    // update can name this page's (prerender.spec.ts holds the built head).
+    await page.goto("/projects");
+    await page.locator(`a[href="${PAGE}"]`).first().click();
+    await expect(page).toHaveURL(new RegExp(`${PAGE}$`));
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      `${site.site.url}${cardOf(PAGE).path}`,
+    );
   });
 });
 

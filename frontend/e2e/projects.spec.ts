@@ -300,6 +300,48 @@ test.describe("/projects while the projects load (final UI review)", () => {
   });
 });
 
+test.describe("A project page while the projects load", () => {
+  test("its hero lands where its stand-in stood, in the stand-in's colours", async ({
+    page,
+    request,
+  }) => {
+    // The first project: on this site Claudlobby, on the example a standard page.
+    const [project] = await servedProjects(request);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/content/projects/index.yaml", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto(`/projects/${project.id}`);
+
+    const standIn = page.getByRole("status", { name: "Loading project" }).locator(".page-hero");
+    await expect(standIn).toBeVisible();
+    const before = (await standIn.boundingBox())!;
+    const background = await standIn.evaluate((el) => getComputedStyle(el).backgroundColor);
+    release();
+
+    const hero = page.locator(".page-hero").filter({ has: page.locator("h1") });
+    await expect(hero).toBeVisible();
+    const after = (await hero.boundingBox())!;
+    for (const key of ["x", "y", "width"] as const) {
+      expect(after[key], key).toBeCloseTo(before[key], 0);
+    }
+    await expect(hero).toHaveCSS("background-color", background);
+  });
+
+  test("a standard project's hero sits close under its breadcrumbs", async ({
+    page,
+    request,
+  }) => {
+    const project = (await servedProjects(request)).find(({ id }) => !hasOwnPage(id));
+    expect(project, "index.yaml lists a project on the standard page").toBeDefined();
+    await page.goto(`/projects/${project!.id}`);
+    await expect(page.locator(".page-hero h1")).toBeVisible();
+    await expect(page.locator(".page-hero")).toHaveCSS("padding-top", "0px");
+  });
+});
+
 test.describe("Projects that won't load (#190 M23)", () => {
   test("the page says which file, and offers a retry", async ({ page }) => {
     await page.route("**/content/projects/index.yaml", (route) => route.fulfill({ status: 500 }));

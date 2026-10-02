@@ -41,6 +41,12 @@ describe("a project file", () => {
     [{ status: "done" }, "status: expected one of active, archived, experimental"],
     [{ demo: "http://a.example" }, "demo: expected an https URL"],
     [{ technologies: undefined }, ""],
+    [{ share_card: { path: "/c.png", width: 1200, height: 630, alt: "a" } }, ""],
+    [
+      { share_card: { path: "c.png", width: 1200, height: 630, alt: "a" } },
+      'share_card.path: expected a path that starts with one "/"',
+    ],
+    [{ share_card: { path: "/c.png", width: 0, height: 630, alt: "a" } }, "share_card.width"],
   ])("%j", (fields, problem) => {
     expect(problems(projectShape, { ...PROJECT, ...fields })).toContain(problem);
   });

@@ -107,7 +107,7 @@ describe("a project's own head", () => {
   };
 
   it("points link previews at the project's own card, where its file names one", () => {
-    const meta = projectMeta({ ...claudlobbyPage, id: "benzo", title: "Benzo", card });
+    const meta = projectMeta({ ...claudlobbyPage, id: "benzo", title: "Benzo", share_card: card });
     const image = `${SITE_URL}${card.path}`;
     expect(tagValue(meta, "og:image")).toBe(image);
     expect(tagValue(meta, "twitter:image")).toBe(image);

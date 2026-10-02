@@ -110,7 +110,7 @@ export const projectShape = object({
   gradient: optional(text),
   status: optional(oneOf(PROJECT_STATUSES)),
   /** The project's own link preview, where it isn't the site's card. */
-  card: optional(shareImage),
+  share_card: optional(shareImage),
 });
 
 /** A project file's fields, as checked. */

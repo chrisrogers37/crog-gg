@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import site from "virtual:site-config";
@@ -7,7 +7,7 @@ import { cardSource, cardWords, textOf } from "../test/site";
 
 /**
  * The site's link-preview cards (#174): its own (seo.image in site.yaml), and
- * any project's (`card` in its file), each a PNG the head points crawlers at.
+ * any project's (`share_card` in its file), each a PNG the head points crawlers at.
  * Each is there at the size the head declares, says in its alt what the card
  * says where the site keeps its source (rendered by scripts/og-image/
  * render.mjs), and keeps the copy's rules.
@@ -31,7 +31,9 @@ describe("the link-preview cards", () => {
     const projects = await shippedProjects();
     cards = [
       ["the site's card", site.seo.image],
-      ...projects.flatMap(({ id, card }): [string, Card][] => (card ? [[`${id}'s card`, card]] : [])),
+      ...projects.flatMap(({ id, share_card: card }): [string, Card][] =>
+        card ? [[`${id}'s card`, card]] : [],
+      ),
     ];
   });
 
@@ -43,11 +45,27 @@ describe("the link-preview cards", () => {
     }
   });
 
-  it("say in their alt what the card says, where the site keeps its source", () => {
-    // Words edited in one place and not the other fail here.
-    for (const [name, card] of cards) {
+  it("say in their alt what the card says, where the site keeps their sources", (ctx) => {
+    const sourced = cards.flatMap(([name, card]) => {
       const source = cardSource(card.path);
-      if (source) expect(cardWords(source), name).toBe(card.alt);
+      return source ? [{ name, card, source }] : [];
+    });
+    if (sourced.length === 0) ctx.skip(); // the site keeps no card source
+    // A site that renders its cards renders each one: a source renamed away
+    // from its card fails here.
+    expect(sourced.map(({ name }) => name)).toEqual(cards.map(([name]) => name));
+    // Words edited in one place and not the other fail here.
+    for (const { name, card, source } of sourced) expect(cardWords(source), name).toBe(card.alt);
+  });
+
+  it("are what each site/<name>.html renders to (render.mjs)", (ctx) => {
+    // So a card dropped from its file, or a stray source, fails rather than
+    // leaving a PNG nothing points at.
+    const sources = readdirSync(__SITE_DIR__).filter((file) => file.endsWith(".html"));
+    if (sources.length === 0) ctx.skip(); // the site keeps no card source
+    const paths = cards.map(([, card]) => card.path);
+    for (const file of sources) {
+      expect(paths, `site/${file}`).toContain(`/${file.replace(/\.html$/, ".png")}`);
     }
   });
 

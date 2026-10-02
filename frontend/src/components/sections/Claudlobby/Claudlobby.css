@@ -264,8 +264,8 @@
   /* Edge to edge on a small phone: the page's gutters go to the words, so the
      CTAs and the maturity note stay on even a 375x667 phone's first screen. */
   .page-hero.cl-hero {
-    margin-inline: calc(-1 * var(--page-gutter));
-    padding: 1.25rem var(--page-gutter);
+    margin-inline: calc(-1 * var(--page-gutter, 1rem));
+    padding: 1.25rem var(--page-gutter, 1rem);
     border-radius: 0;
     border-inline-width: 0;
   }

@@ -67,8 +67,12 @@ describe("ProjectDetailPage before its project is found", () => {
     // lines, so a direct visit doesn't flash from the light bars to it.
     renderAt(["/projects/claudlobby"]);
     const loading = screen.getByRole("status", { name: /loading project/i });
+    expect(loading.querySelector(":scope > .breadcrumbs")).not.toBeNull();
     const hero = loading.querySelector(".cl-hero--loading");
     expect(hero).not.toBeNull();
+    // In .cl-page, as on the page: its colours, and not the breadcrumbs' next
+    // sibling, whose top padding ProjectDetailPage.css takes away.
+    expect(hero!.parentElement).toHaveClass("cl-page");
     expect(hero!.querySelector(".page-skeleton--headline")).not.toBeNull();
     expect(hero!.querySelector("img.cl-mark")).not.toBeNull();
   });

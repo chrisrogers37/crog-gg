@@ -116,7 +116,7 @@ test.describe("Prerendered heads", () => {
       ["/apple-touch-icon.png", "image/png"],
       ["/manifest.json", "application/json"],
       // Each project's own card.
-      ...(await servedProjects(request)).flatMap(({ card }) =>
+      ...(await servedProjects(request)).flatMap(({ share_card: card }) =>
         card ? [[card.path, "image/png"]] : [],
       ),
     ]) {

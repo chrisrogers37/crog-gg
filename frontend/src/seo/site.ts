@@ -71,7 +71,10 @@ const property = (property: string, content: string): HeadTag => ({
 export const jsonLd = (schema: object) =>
   JSON.stringify(schema).replace(/</g, "\\u003c");
 
-export type ProjectSummary = Pick<Project, "id" | "title" | "description" | "url" | "card">;
+export type ProjectSummary = Pick<
+  Project,
+  "id" | "title" | "description" | "url" | "share_card"
+>;
 
 /** The trail ProjectDetailPage shows, and the BreadcrumbList describing it. */
 export const projectBreadcrumbs = (project: ProjectSummary) => [
@@ -204,7 +207,7 @@ export function createSeo(site: SiteConfig) {
       title: project.title,
       description,
       // A project's own link preview, where its file names one.
-      ...(project.card && { image: project.card }),
+      ...(project.share_card && { image: project.share_card }),
       schemas: [
         hasOwnPage(project.id)
           ? OWN_PAGE_SCHEMAS[project.id](project, description, absoluteUrl(path))
