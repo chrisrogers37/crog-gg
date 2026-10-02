@@ -20,14 +20,18 @@ describe("Footer", () => {
     expect(container.querySelector(".footer-links a:last-child")).toBe(link);
   });
 
-  it.each(["", "   "])("shows no source link when the repo is %j", (value) => {
-    vi.stubEnv("VITE_SOURCE_REPO_URL", value);
-    renderWithProviders(<Footer />);
+  // Unset is every fork's default; stubbing undefined deletes the variable.
+  it.each([undefined, "", "   "])(
+    "shows no source link when the repo is %j",
+    (value) => {
+      vi.stubEnv("VITE_SOURCE_REPO_URL", value);
+      renderWithProviders(<Footer />);
 
-    // By text, not role: an <a> React renders without an href isn't a link,
-    // but its words would still show.
-    expect(screen.queryByText(/view source/i)).toBeNull();
-  });
+      // By text, not role: Testing Library doesn't count an <a href=""> as a
+      // link, but a browser shows its words all the same.
+      expect(screen.queryByText(/view source/i)).toBeNull();
+    },
+  );
 
   it("claims no rights over the code beside the source link", () => {
     vi.stubEnv("VITE_SOURCE_REPO_URL", REPO);
