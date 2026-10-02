@@ -1,8 +1,10 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { site } from "./scripts/vite-site";
 
 export default defineConfig({
-  plugins: [react()],
+  // site() also lets tests read the site's files as @site/... (#188).
+  plugins: [react(), site()],
   resolve: {
     // Node's own resolution includes "module-sync"; vitest's doesn't, and
     // react-router's Node exports give ESM only under it. Without it, a test

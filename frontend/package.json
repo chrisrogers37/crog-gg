@@ -11,6 +11,7 @@
     "build": "tsc && tsc -p tsconfig.node.json && vite build",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc -p tsconfig.test.json",
+    "site:check": "vitest run src/config",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",

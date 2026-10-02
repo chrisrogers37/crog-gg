@@ -30,7 +30,7 @@ ORIGINAL_SOCIAL_LINKS = {
 
 
 def _bio(social_links=None):
-    """A realistic ``about`` payload, shaped like frontend/public/content/bio.yaml."""
+    """A realistic ``about`` payload, shaped like site/public/content/bio.yaml."""
     payload = {
         "display_name": "Christopher Rogers",
         "email": "someone@example.com",

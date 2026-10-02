@@ -5,8 +5,9 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ## 2026-10-02
 
 ### Added
-- A "view source" link in the footer when the build names the repo (`VITE_SOURCE_REPO_URL`), and no rights claim beside it (#236).
+- A "view source" link in the footer, and no rights claim beside it (#236).
 - Docs: how the site works, what each content file does, contributing, forking, this changelog, and PR and issue templates (#237).
+- The owner's identity lives in one folder, `site/`: `site/site.yaml`, checked at build time, and `site/public/`. The footer's source link comes from it (#239).
 
 ### Changed
 - A SUMMON NEW LORE press rewrites only the About section, the one the page shows, so it uses one daily slot (#234).
@@ -16,6 +17,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - One router package, dev-only type packages, and no dependencies at the root (#233).
 - The prompt pack and the GitHub proxy's helpers moved from `api/index.py` into `api/_lib/` (#235).
 - The unit tests and e2e are type-checked, in CI and before a push (#238).
+- The contact card's labels are lowercase, like the footer's and the menu's (#239).
 
 ### Removed
 - 96 dead App.css rules, seven unused files and the symbols nothing used (#229).

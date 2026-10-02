@@ -4,9 +4,10 @@ import yaml from "js-yaml";
 import { LogoImage } from "../LogoImage";
 import { logoUrl } from "../../../utils/logos";
 import type { TimelineData } from "../../../types/Timeline";
-import timelineYaml from "../../../../public/content/timeline.yaml?raw";
+import timelineYaml from "@site/public/content/timeline.yaml?raw";
+import { inSite } from "../../../test/site";
 
-const logoFiles = import.meta.glob("../../../../public/logos/*.png", {
+const logoFiles = import.meta.glob("@site/public/logos/*.png", {
   query: "?url",
   eager: true,
 });
@@ -35,13 +36,13 @@ describe("LogoImage", () => {
 
   it("has a logo for every organisation on the timeline", () => {
     // A new timeline entry with a new domain would show a placeholder until
-    // its logo is added to public/logos/, so the gap is caught here instead.
+    // its logo is added to site/public/logos/, so the gap is caught here instead.
     const { entries } = yaml.load(timelineYaml) as TimelineData;
     const domains = new Set(entries.flatMap((entry) => entry.domain ?? []));
     expect(domains.size).toBeGreaterThan(0);
     for (const domain of domains) {
       expect(
-        logoFiles[`../../../../public${logoUrl(domain)}`],
+        inSite(logoFiles, `/public${logoUrl(domain)}`),
         `public${logoUrl(domain)}`,
       ).toBeDefined();
     }

@@ -23,6 +23,8 @@ import "./GitHubReadme.css";
 import "highlight.js/styles/github.css";
 
 interface GitHubReadmeProps {
+  /** The repo's owner, from the project's own GitHub URL. */
+  owner: string;
   repoName: string;
   className?: string;
 }
@@ -36,7 +38,11 @@ interface GitHubReadmeProps {
  * - Responsive images
  * - Task lists and tables
  */
-export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
+export function GitHubReadme({
+  owner,
+  repoName,
+  className = "",
+}: GitHubReadmeProps) {
   const [readme, setReadme] = useState<Readme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +99,7 @@ export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
           {error || "No README available for this repository."}
         </p>
         <a
-          href={`https://github.com/chrisrogers37/${repoName}`}
+          href={`https://github.com/${owner}/${repoName}`}
           target="_blank"
           rel="noopener noreferrer"
           className="readme-github-link"
@@ -112,7 +118,7 @@ export function GitHubReadme({ repoName, className = "" }: GitHubReadmeProps) {
           rehypePlugins={[rehypeHighlight]}
           components={{
             // Relative links and images resolve against the README on GitHub,
-            // not against crog.gg (utils/readmeLinks.ts).
+            // not against this site (utils/readmeLinks.ts).
             a: ({ href, children }) => {
               if (isLocalDevUrl(href)) return <span>{children}</span>;
               const target = readmeHref(href, readme);

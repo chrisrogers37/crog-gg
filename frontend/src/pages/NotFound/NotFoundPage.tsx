@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { SEO } from "../../components/SEO";
-import { NOT_FOUND_META } from "../../seo/site";
+import { NOT_FOUND_META } from "../../seo";
 import "./NotFoundPage.css";
 
 /**

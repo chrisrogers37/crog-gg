@@ -7,8 +7,9 @@ import {
   PROJECTS_META,
   SITE_URL,
   pageTitle,
+  seo,
   type PageMeta,
-} from "../../../seo/site";
+} from "../../../seo";
 
 /**
  * The page arrives with its head already in the HTML, and SEO renders the same
@@ -17,7 +18,7 @@ import {
  */
 
 const serveHead = (meta: PageMeta) => {
-  document.head.innerHTML = renderHead(meta);
+  document.head.innerHTML = renderHead(seo, meta);
   return Array.from(document.head.querySelectorAll("[data-rh]"));
 };
 

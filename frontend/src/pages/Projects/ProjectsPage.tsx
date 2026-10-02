@@ -9,7 +9,7 @@ import { LoadError } from "../../components/common/LoadError";
 import { ProjectCard } from "../../components/sections/Projects/ProjectCard";
 import { ProjectSkeletonGrid } from "../../components/sections/Projects/Projects";
 import { SEO } from "../../components/SEO";
-import { PROJECTS_META } from "../../seo/site";
+import { PROJECTS_META } from "../../seo";
 import "./ProjectsPage.css";
 
 /**

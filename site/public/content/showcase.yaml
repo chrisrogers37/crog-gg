@@ -1,8 +1,8 @@
 # Showcase images for the marquee strip
 # Add or remove entries to change what appears in the photo strip.
 # `src` is a photo's base path; its resized WebP variants live next to it in
-# public/profile-photos/ (naming: src/utils/photos.ts; to add one, run
-# scripts/photos/make-variants.py).
+# site/public/profile-photos/ (naming: frontend/src/utils/photos.ts; to add
+# one, run frontend/scripts/photos/make-variants.py).
 images:
   - src: /profile-photos/photo-1
     alt: photo of chris

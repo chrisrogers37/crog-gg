@@ -1,11 +1,11 @@
 import type { Readme } from "../services/githubService";
 
 /**
- * Links and images inside a GitHub README, re-pointed for rendering on a
- * crog.gg project page (#178).
+ * Links and images inside a GitHub README, re-pointed for rendering on one of
+ * this site's project pages (#178).
  *
  * A README's relative links are relative to where it sits on GitHub. Rendered
- * on /projects/<slug> they resolved against crog.gg instead and landed on the
+ * on /projects/<slug> they resolved against this site instead and landed on the
  * 404 page (/projects/AGENTS.md, /projects/LICENSE, /projects/.claude/), so
  * they are resolved against the README's own GitHub URLs.
  */

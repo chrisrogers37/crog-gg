@@ -30,7 +30,7 @@ ORIGINAL_SOCIAL_LINKS = {
 
 
 def _bio(email=ORIGINAL_EMAIL, social_links=None):
-    """A realistic ``about`` payload, shaped like frontend/public/content/bio.yaml."""
+    """A realistic ``about`` payload, shaped like site/public/content/bio.yaml."""
     payload = {
         "display_name": "Christopher Rogers",
         "location": "New York City, New York",

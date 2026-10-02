@@ -1,16 +1,9 @@
 import {
-  ABOUT_META,
-  HOME_META,
-  NOT_FOUND_META,
-  PROJECTS_META,
-  absoluteUrl,
-  headTags,
   jsonLd,
-  pageTitle,
-  projectMeta,
   type LandingPage,
   type PageMeta,
   type ProjectSummary,
+  type Seo,
 } from "./site";
 
 /**
@@ -27,6 +20,9 @@ import {
 /** Where index.html asks for the page head to be written. */
 export const HEAD_MARKER = "<!--seo-head-->";
 
+/** What the build writes beside the pages, so the public folder mustn't. */
+export const GENERATED_FILES = ["404.html", "sitemap.xml", "robots.txt"];
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -35,9 +31,9 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;");
 
 /** The page's <head> tags, marked so react-helmet-async adopts them. */
-export function renderHead(meta: PageMeta): string {
-  const lines = [`<title>${escapeHtml(pageTitle(meta))}</title>`];
-  for (const { tag, attrs } of headTags(meta)) {
+export function renderHead(seo: Seo, meta: PageMeta): string {
+  const lines = [`<title>${escapeHtml(seo.pageTitle(meta))}</title>`];
+  for (const { tag, attrs } of seo.headTags(meta)) {
     const rendered = Object.entries(attrs)
       .map(([key, value]) => `${key}="${escapeHtml(value)}"`)
       .join(" ");
@@ -52,25 +48,28 @@ export function renderHead(meta: PageMeta): string {
 }
 
 /** index.html with the marker replaced by `meta`'s head. */
-export function renderPage(template: string, meta: PageMeta): string {
+export function renderPage(seo: Seo, template: string, meta: PageMeta): string {
   if (!template.includes(HEAD_MARKER)) {
     throw new Error(
       `index.html has no ${HEAD_MARKER} marker, so there is nowhere to write the page head`,
     );
   }
   // A replacer function, so a `$` in the head is never read as a pattern.
-  return template.replace(HEAD_MARKER, () => renderHead(meta));
+  return template.replace(HEAD_MARKER, () => renderHead(seo, meta));
 }
 
 /**
  * Every page a visitor can land on directly. 404.html is written besides
  * these, from NOT_FOUND_META, and answers every other path.
  */
-export const landingPages = (projects: ProjectSummary[]): LandingPage[] => [
-  HOME_META,
-  ABOUT_META,
-  PROJECTS_META,
-  ...projects.map(projectMeta),
+export const landingPages = (
+  seo: Seo,
+  projects: ProjectSummary[],
+): LandingPage[] => [
+  seo.HOME_META,
+  seo.ABOUT_META,
+  seo.PROJECTS_META,
+  ...projects.map(seo.projectMeta),
 ];
 
 /** The file `cleanUrls` serves at a path: "/" is index.html, "/a/b" is a/b.html. */
@@ -78,24 +77,32 @@ export const fileFor = (path: string) =>
   path === "/" ? "index.html" : `${path.slice(1)}.html`;
 
 /** The head the dev server gives a URL: its landing page's, else the 404's. */
-export const pageFor = (pathname: string, projects: ProjectSummary[]) =>
-  landingPages(projects).find((page) => page.path === pathname) ??
-  NOT_FOUND_META;
+export const pageFor = (
+  seo: Seo,
+  pathname: string,
+  projects: ProjectSummary[],
+) =>
+  landingPages(seo, projects).find((page) => page.path === pathname) ??
+  seo.NOT_FOUND_META;
 
 /**
  * sitemap.xml for the landing pages, which are exactly the indexable ones, so
  * it cannot list a page the build did not write (#178: the hand-kept file had
  * drifted to two dead slugs and missed four live ones).
  */
-export function renderSitemap(pages: LandingPage[], lastmod: string): string {
+export function renderSitemap(
+  seo: Seo,
+  pages: LandingPage[],
+  lastmod: string,
+): string {
   const urls = pages
     .map(
       (page) =>
-        `  <url>\n    <loc>${escapeHtml(absoluteUrl(page.path))}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`,
+        `  <url>\n    <loc>${escapeHtml(seo.absoluteUrl(page.path))}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`,
     )
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 
-export const renderRobots = () =>
-  `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl("/sitemap.xml")}\n`;
+export const renderRobots = (seo: Seo) =>
+  `User-agent: *\nAllow: /\n\nSitemap: ${seo.absoluteUrl("/sitemap.xml")}\n`;

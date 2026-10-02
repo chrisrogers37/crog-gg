@@ -12,10 +12,12 @@ import {
   pageTitle,
   projectMeta,
   type PageMeta,
-} from "./site";
+} from ".";
+import site from "virtual:site-config";
 import type { TimelineData } from "../types";
-import ogImageHtml from "../../scripts/og-image/og-image.html?raw";
-import timelineYaml from "../../public/content/timeline.yaml?raw";
+import { createSeo } from "./site";
+import ogImageHtml from "@site/og-image.html?raw";
+import timelineYaml from "@site/public/content/timeline.yaml?raw";
 
 const tagValue = (meta: PageMeta, key: string) => {
   const found = headTags(meta).find(
@@ -78,8 +80,9 @@ describe("OG_IMAGE", () => {
 
 describe("ABOUT_META", () => {
   it("gives the Person schema the current role from timeline.yaml", () => {
-    // The head is prerendered before any YAML loads, so the role is written
-    // out in site.ts too; a job change edited in one place fails here.
+    // The head is prerendered before any content loads, so the role is written
+    // out in site.yaml too (owner.job_title, owner.works_for); a job change
+    // edited in one place fails here.
     // timeline.yaml is the career history /about renders.
     const { entries } = yaml.load(timelineYaml) as TimelineData;
     const current = entries.find(
@@ -133,5 +136,45 @@ describe("jsonLd", () => {
     const serialized = jsonLd(schema);
     expect(serialized).not.toContain("</script");
     expect(JSON.parse(serialized)).toEqual(schema);
+  });
+});
+
+describe("the Person schema's sameAs", () => {
+  it("lists exactly the schema socials, in order", () => {
+    const person = ABOUT_META.schemas?.[0] as { sameAs: string[] };
+    expect(person.sameAs).toEqual(
+      site.socials
+        .filter((social) => social.show_in.includes("schema"))
+        .map((social) => social.url),
+    );
+  });
+});
+
+describe("createSeo, on a made-up site", () => {
+  // Branches the shipped site.yaml doesn't take: no employer, and a social the
+  // schema leaves out.
+  const madeUp = createSeo({
+    ...site,
+    site: { url: "https://www.example.org" },
+    owner: { ...site.owner, name: "Ada Example", works_for: undefined },
+    socials: [
+      { id: "a", label: "a", icon: "link", url: "https://a.example", show_in: ["schema"] },
+      { id: "b", label: "b", icon: "link", url: "https://b.example", show_in: ["footer"] },
+    ],
+  });
+
+  it("names the host without www. in the 404 copy", () => {
+    expect(madeUp.NOT_FOUND_META.description).toContain("Head back to example.org to");
+  });
+
+  it("leaves worksFor out, and the footer-only social out of sameAs", () => {
+    const person = madeUp.ABOUT_META.schemas?.[0] as Record<string, unknown>;
+    expect(person).not.toHaveProperty("worksFor");
+    expect(person.sameAs).toEqual(["https://a.example"]);
+    expect(person.name).toBe("Ada Example");
+  });
+
+  it("builds every absolute URL on its own origin", () => {
+    expect(madeUp.absoluteUrl("/projects")).toBe("https://www.example.org/projects");
   });
 });

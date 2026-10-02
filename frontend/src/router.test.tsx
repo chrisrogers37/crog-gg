@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { beforeAll, describe, it, expect } from "vitest";
 import { matchPath, matchRoutes, type RouteObject } from "react-router";
 import { routes } from "./router";
+import { seo } from "./seo";
 import { landingPages } from "./seo/prerender";
 import { NotFoundPage } from "./pages/NotFound";
 import { RouteError } from "./pages/RouteError";
@@ -63,7 +64,7 @@ describe("routes and prerendered pages", () => {
   // with a slash, say) fails here instead of shipping a 200 that shows a 404.
   let pages: ReturnType<typeof landingPages>;
   beforeAll(async () => {
-    pages = landingPages(await shippedProjects());
+    pages = landingPages(seo, await shippedProjects());
   });
 
   it("prerenders a page for every route a visitor can land on", () => {

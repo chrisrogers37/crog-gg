@@ -5,7 +5,7 @@ import { readProjects } from "../src/utils/projectLoader";
  * Projects Page E2E Tests
  *
  * Philosophy: Test page structure and behavior, not content.
- * Project data ships in the repo (frontend/public/content/projects/) and is
+ * Project data ships in the repo (site/public/content/projects/) and is
  * loaded on every route, so it is never optional: a page that renders without
  * it is a failure these tests must report, not an environment condition to
  * skip around (#120 - the skip idiom hid a live production bug).

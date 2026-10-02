@@ -1,6 +1,10 @@
 # Content
 
-Everything the site says about its owner lives in `frontend/public/content/` as YAML. It ships with the repo and loads at run time: the browser fetches each file through a loader in `frontend/src/utils/`. The build also reads the project files, to prerender each project's page (`frontend/scripts/vite-prerender.ts`).
+The owner's files live in `site/`, at the repo root:
+- **`site/site.yaml`** is who the site is: the name, the URLs, the socials, the page descriptions, the photos and the copy around the content. The build reads and checks it, and bakes it in ([below](#sitesiteyaml)).
+- **`site/public/content/`** is the content, as YAML. It ships with the repo and loads at run time: the browser fetches each file through a loader in `frontend/src/utils/`. The build also reads the project files, to prerender each project's page (`frontend/scripts/vite-prerender.ts`).
+
+Everything else in `site/public/` (the photos, the logos, the social card, the icons) is served as is, at the site's root.
 
 The content belongs to the site's owner and isn't covered by the code's MIT licence; see [CONTENT-TERMS.md](../CONTENT-TERMS.md). A fork replaces it.
 
@@ -8,7 +12,8 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 
 | File | Shows on |
 |---|---|
-| `bio.yaml` | `/about`: the name and tagline at the top, the About text, the contact card and the Music links |
+| `site/site.yaml` | every page: who the site is ([below](#sitesiteyaml)) |
+| `bio.yaml` | `/about`: the name and tagline at the top, the About text, and the location on the contact card |
 | `timeline.yaml` | `/about`, Journey tab |
 | `projects/index.yaml` and `projects/*.yaml` | `/projects`, each `/projects/<id>`, and `/about`'s Projects tab |
 | `showcase.yaml` | `/about`: the photo strip |
@@ -18,10 +23,10 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 
 - **`display_name` and `tagline`:** the top of `/about`.
 - **`about_text`:** the About section, as paragraphs separated by blank lines in one block string (`|`). The page keeps the breaks with `white-space: pre-line`, so write each paragraph on one line: a line break inside a paragraph shows on the page.
-  - The collapsed About preview is cut at a fixed height, tuned to today's text (`ABOUT_CLAMP_NARROW` and `ABOUT_CLAMP_WIDE` in `frontend/src/pages/About/AboutPage.tsx`). After editing `about_text`, re-measure them (#162), or the fade can fall mid-line, or hide most of the text.
-- **`email` and `location`:** the contact card.
-- **`social_links`:** `github`, `hoobe`, `spotify` and `linkedin` are typed as required, and `telegram`, `instagram_personal` and `instagram_music` as optional; nothing checks them at run time. The contact card links them. The Music tab links `spotify`, `hoobe` and `instagram_music`, falling back to the owner's own URLs when one is missing; its Spotify player is hardcoded (`Music.tsx`).
-- **Never written by the model.** SUMMON NEW LORE rewrites the bio's text (the name, the tagline, the About text and the location), but the server puts `email` and `social_links` back after every rewrite (`_UNAUTHORED_KEYS` in `api/index.py`), because the page turns them straight into links.
+  - The collapsed About preview is cut at a fixed height, tuned to today's text (`about.preview_height` in `site/site.yaml`). After editing `about_text`, re-measure it (#162), or the fade can fall mid-line, or hide most of the text.
+- **`location`:** the contact card.
+- **`email` and `social_links`:** no longer read by the page, which takes the email address and the links from `site/site.yaml` (#188); #190 removes them from here. The server still puts them back after every rewrite (`_UNAUTHORED_KEYS` in `api/index.py`), so the model can't write them.
+- SUMMON NEW LORE rewrites the bio's text: the name, the tagline, the About text and the location.
 - `role` is typed but nothing reads it.
 
 ## timeline.yaml
@@ -30,7 +35,7 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 - `type`: `role`, `education` or `milestone`;
 - `title`, `organization` and `one_liner`;
 - `start_date` and `end_date`. A date is "Mon YYYY" (a three-letter month, e.g. "Nov 2025"), "YYYY", or `present`, in lowercase. Quote a bare year (`"2021"`): unquoted, YAML reads a number, and the date parser expects text.
-- `domain` (optional): picks the organisation's logo, `frontend/public/logos/<domain>.png`, a self-hosted 64 px PNG (#178). With no file, there's no logo.
+- `domain` (optional): picks the organisation's logo, `site/public/logos/<domain>.png`, a self-hosted 64 px PNG (#178). With no file, there's no logo.
 - `skills`: these light up as bubbles while the entry is on screen. Required, even if empty (`skills: []`): an entry without it breaks the Journey tab.
 
 **`skill_categories`**, each with a `color` and the `skills` in it.
@@ -44,7 +49,7 @@ If `timeline.yaml` won't load or parse, the Journey tab says "Loading journey...
 
 **`index.yaml`** lists which project files the site shows.
 - A file it doesn't list is shown nowhere.
-- But it's still public: everything in `frontend/public/` is served as is.
+- But it's still public: everything in `site/public/` is served as is.
 
 **Each project file:**
 - **`id`:** a lowercase slug (`my-project`). It's the page's URL, `/projects/<id>`, and the name of its prerendered file.
@@ -65,7 +70,7 @@ The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through addi
 ## showcase.yaml
 
 **`images`**, each with:
-- `src`: the photo's base path in `frontend/public/profile-photos/`. To add or change one, see CLAUDE.md's Image Handling.
+- `src`: the photo's base path in `site/public/profile-photos/`. To add or change one, see CLAUDE.md's Image Handling.
 - `alt`: the image's description.
 
 The strip needs at least three images. With fewer, it doesn't show.
@@ -74,8 +79,26 @@ The strip needs at least three images. With fewer, it doesn't show.
 
 They're loaded at start-up with the rest of the content, but nothing renders them: the Journey tab renders `timeline.yaml`. A valid edit changes nothing on the site, but a broken, blank or deleted file takes `/about` and `/projects` down (#190 M23). To retire one, leave its list empty (`experience: []`). #159's item 1 decides whether they're deleted, or rendered on `/about`.
 
+## site/site.yaml
+
+Read when the dev server, the build or the tests start, checked, and served to the app as `virtual:site-config` (`frontend/scripts/vite-site.ts`). A mistake stops the build with every problem by key, such as `socials.0.url: expected an https URL`; an unknown key is a mistake too.
+
+- **`owner`:** `name` (the header, the footer, the Person schema and the landing page's byline), `email` (the contact card), `job_title`, `works_for` (optional: `name`, `url`), `image` (a path in `site/public/`) and `knows_about`, for the Person schema.
+- **`site.url`:** the canonical origin, `https://` with no path or trailing slash. Every absolute link to the site is built from it.
+- **`seo`:** `site_name` (appended to every title), `image` (the social card: `path`, `width`, `height`, and `alt`, which must match the card's text in `site/og-image.html`), and the `description` of `about` and `projects`.
+- **`socials`:** each has an `id`, a `label` (the link's text and its name to a screen reader), an `icon` (`github`, `linkedin`, `telegram`, `instagram`, `spotify`, `hoobe` or `link`), an `https` `url`, and `show_in`: any of `footer`, `menu`, `contact`, `music` and `schema` (the Person schema's `sameAs`). They show in the order listed.
+- **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source".
+- **`sections`:** `/about`'s tabs, in order: `about`, `journey`, `projects` and `music`, each with a `label`. `about` is required, since the collapsed preview is About's; leave another out to hide it.
+- **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the header types out).
+- **`about.preview_height`:** `narrow` and `wide`, in px: where the collapsed About text fades, tuned to `bio.yaml`'s `about_text` (#162).
+- **`contact`:** the card's `heading` and `text`.
+- **`music`:** the tab's `intro`, with `{artist}` where the `artist` name goes; `embed` (optional), the player's URL, whose origin must be in `frame-src` in `vercel.json`; and `embed_title` (optional), the player's name to a screen reader, "music player" if left out.
+
+The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules, and a fork replaces it ([FORKING.md](../FORKING.md)).
+
 ## What catches a mistake
 
-- **`npm run build`** parses every project file `index.yaml` lists, so a broken one fails the build.
+- **`npm run build`** checks `site/site.yaml`, and parses every project file `index.yaml` lists, so a mistake in either fails the build.
+- **`npm run site:check`** (in `frontend/`) checks what the shape can't: the files `site.yaml` and `index.html` name exist (the header photos at every size too), the music player's origin is in the CSP, and none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code.
 - **The unit tests** read the shipped content with the site's own loaders. `shippedContent.test.ts` holds each project to the rules above (one emoji icon, repos of the site's owner, a `frame-src` entry for an embedded demo), `photos.test.ts` checks every photo's variants exist, and a project id the router can't serve fails `router.test.tsx`.
 - **The e2e tests** run against the shipped content, and fail rather than skip when it's missing (#120).

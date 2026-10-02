@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { prerender } from "./scripts/vite-prerender";
+import { site } from "./scripts/vite-site";
 
 /**
  * `vite preview` stands in for a Vercel deployment with Web Analytics enabled
@@ -40,7 +41,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), prerender(), insightsPreview],
+  plugins: [react(), site(), prerender(), insightsPreview],
   server: {
     proxy: {
       "/api": {

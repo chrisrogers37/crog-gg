@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import site from "virtual:site-config";
+import type { SectionId } from "../../config/schema";
 
 // Hooks
 import { useMediaQuery, useRegeneration } from "../../hooks";
@@ -14,7 +16,7 @@ import {
 
 // SEO
 import { SEO } from "../../components/SEO";
-import { ABOUT_META } from "../../seo/site";
+import { ABOUT_META } from "../../seo";
 
 // Components
 import About from "../../components/About";
@@ -33,7 +35,7 @@ import { SectionNavigator } from "../../components/common/SectionNavigator";
 import { ImageShowcase } from "../../components/common/ImageShowcase";
 import { LoadError } from "../../components/common/LoadError";
 import { useSectionMenu } from "../../components/layout/MobileMenu/sectionMenu";
-import { PROFILE_PHOTOS, photoSrc, photoSrcSet } from "../../utils/photos";
+import { photoSrc, photoSrcSet } from "../../utils/photos";
 import {
   SECTIONS,
   SECTION_PANEL_ID,
@@ -62,10 +64,11 @@ import "./AboutPage.css";
 // of the fade on a desktop, which puts the cut on a finished paragraph instead.
 //
 // Both were solved as maxHeight = (phraseTop - contentTop) + overlayHeight and
-// verified to a 0px offset against the rendered page. Re-measure both if the
-// About copy changes.
-const ABOUT_CLAMP_NARROW = 449;
-const ABOUT_CLAMP_WIDE = 329;
+// verified to a 0px offset against the rendered page. They're
+// about.preview_height in site/site.yaml (#188): re-measure both if the About
+// copy changes.
+const { narrow: ABOUT_CLAMP_NARROW, wide: ABOUT_CLAMP_WIDE } =
+  site.about.preview_height;
 
 // The breakpoint the rest of the site already parts on, including
 // SectionFadePreview.css.
@@ -86,8 +89,8 @@ export function AboutPage() {
 function AboutContent() {
   // Random profile photo (selected once on mount)
   const profilePhoto = useMemo(() => {
-    const randomIndex = Math.floor(Math.random() * PROFILE_PHOTOS.length);
-    return PROFILE_PHOTOS[randomIndex];
+    const { photos } = site.hero;
+    return photos[Math.floor(Math.random() * photos.length)];
   }, []);
 
   // Get state from stores
@@ -147,30 +150,28 @@ function AboutContent() {
   // "see more" opens About: the preview is always About's.
   const handlePreviewExpand = () => setOpenSection("about");
 
+  // One renderer per section id site.yaml can name, so an id with no
+  // component fails the type check rather than rendering nothing.
+  const sectionContent: Record<SectionId, () => React.ReactNode> = {
+    about: () => (
+      <section className="section-content about-section">
+        <div className="about-content">
+          <About onRegenerate={() => {}} content={bio ?? undefined} />
+        </div>
+      </section>
+    ),
+    journey: () => <Timeline data={timeline} />,
+    projects: () => <Projects />,
+    music: () => <Music />,
+  };
+
   const renderOpenSection = (section: string) => {
-    let content: React.ReactNode;
-    switch (section) {
-      case "about":
-        content = (
-          <section className="section-content about-section">
-            <div className="about-content">
-              <About onRegenerate={() => {}} content={bio ?? undefined} />
-            </div>
-          </section>
-        );
-        break;
-      case "journey":
-        content = <Timeline data={timeline} />;
-        break;
-      case "projects":
-        content = <Projects />;
-        break;
-      case "music":
-        content = <Music />;
-        break;
-      default:
-        return null;
-    }
+    // The menu and the tabs hand over a plain string.
+    const render = (sectionContent as Partial<Record<string, () => React.ReactNode>>)[
+      section
+    ];
+    if (!render) return null;
+    const content = render();
 
     const nextSection =
       SECTIONS[SECTIONS.findIndex(({ id }) => id === section) + 1]?.id ??
@@ -249,17 +250,7 @@ function AboutContent() {
             {bio?.tagline && <p className="header-tagline">{bio.tagline}</p>}
             <div className="welcome-message">
               <TypewriterLoop
-                messages={[
-                  "hey there!",
-                  "welcome to my website",
-                  "i use this as a bit of a portfolio / digital resume / hobby page",
-                  "it's crazy, you can just make #$%@ in 2026!!!",
-                  "anyways, take a look around at what ive been up to",
-                  "i try to keep this relatively up to date...",
-                  "there are some easter eggs if you go exploring",
-                  "hope you enjoy!",
-                  "have a nice day =)",
-                ]}
+                messages={site.hero.typewriter}
                 typeSpeed={25}
                 deleteSpeed={15}
                 pauseTime={2000}

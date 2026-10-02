@@ -1,16 +1,17 @@
 import { describe, it, expect } from "vitest";
 import yaml from "js-yaml";
+import site from "virtual:site-config";
 import {
   PHOTO_WIDTHS,
-  PROFILE_PHOTOS,
   photoSrc,
   photoSrcSet,
   photoVariant,
 } from "./photos";
 import type { ShowcaseImage } from "../types/Showcase";
-import showcaseYaml from "../../public/content/showcase.yaml?raw";
+import showcaseYaml from "@site/public/content/showcase.yaml?raw";
+import { inSite } from "../test/site";
 
-const variants = import.meta.glob("../../public/profile-photos/*.webp", {
+const variants = import.meta.glob("@site/public/profile-photos/*.webp", {
   query: "?url",
   eager: true,
 });
@@ -20,12 +21,12 @@ const showcase = (
 ).images.map((image) => image.src);
 
 describe("photos", () => {
-  it.each([...new Set([...PROFILE_PHOTOS, ...showcase])])(
+  it.each([...new Set([...site.hero.photos, ...showcase])])(
     "%s ships every width it is served at",
     (base) => {
       for (const width of PHOTO_WIDTHS) {
         const file = photoVariant(base, width);
-        expect(variants[`../../public${file}`], `public${file}`).toBeDefined();
+        expect(inSite(variants, `/public${file}`), `public${file}`).toBeDefined();
       }
     },
   );
