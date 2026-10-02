@@ -4,15 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore, useIsMobileMenuOpen } from "../../../store";
 import { ThemeToggle } from "../../common/ThemeToggle";
 import site from "virtual:site-config";
+import type { Home } from "../../../config/schema";
 import { socialsIn } from "../../../config/socials";
 import { RepoLink } from "../../common/RepoLink";
 import type { SectionMenu } from "./sectionMenu";
 import "./MobileMenu.css";
 
-// "about me", so it can't be mistaken for /about's own About section.
-const PAGE_LINKS = [
+// "about me", so it can't be mistaken for /about's own About section. With
+// `home: profile`, the personal page is home (#188).
+const pageLinks = (home: Home) => [
   { to: "/", label: "home" },
-  { to: "/about", label: "about me" },
+  ...(home === "landing" ? [{ to: "/about", label: "about me" }] : []),
   { to: "/projects", label: "all projects" },
 ];
 
@@ -98,7 +100,7 @@ export function MobileMenu({
             <div className="mobile-menu-content">
               {/* Page links */}
               <div className="mobile-menu-section">
-                {PAGE_LINKS.map((page) => (
+                {pageLinks(site.home).map((page) => (
                   <Link
                     key={page.to}
                     to={page.to}
@@ -131,13 +133,15 @@ export function MobileMenu({
               {/* Social links */}
               <div className="mobile-menu-section">
                 <span className="mobile-menu-section-label">connect</span>
-                <RepoLink
-                  location="menu"
-                  className="mobile-menu-link"
-                  onClick={handleLinkClick}
-                >
-                  claudlobby on github
-                </RepoLink>
+                {site.home === "landing" && (
+                  <RepoLink
+                    location="menu"
+                    className="mobile-menu-link"
+                    onClick={handleLinkClick}
+                  >
+                    claudlobby on github
+                  </RepoLink>
+                )}
                 {CONNECT_LINKS.map((link) => (
                   <a
                     key={link.id}

@@ -65,12 +65,7 @@ export function renderPage(seo: Seo, template: string, meta: PageMeta): string {
 export const landingPages = (
   seo: Seo,
   projects: ProjectSummary[],
-): LandingPage[] => [
-  seo.HOME_META,
-  seo.ABOUT_META,
-  seo.PROJECTS_META,
-  ...projects.map(seo.projectMeta),
-];
+): LandingPage[] => [...seo.PAGES, ...projects.map(seo.projectMeta)];
 
 /** The file `cleanUrls` serves at a path: "/" is index.html, "/a/b" is a/b.html. */
 export const fileFor = (path: string) =>

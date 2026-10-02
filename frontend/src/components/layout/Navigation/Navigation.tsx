@@ -16,9 +16,15 @@ export function Navigation() {
   const location = useLocation();
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
 
+  // With `home: profile`, the personal page is / (#188).
+  const landing = site.home === "landing";
   const navItems = [
-    { path: "/", label: "Home" },
-    { path: "/about", label: "About" },
+    ...(landing
+      ? [
+          { path: "/", label: "Home" },
+          { path: "/about", label: "About" },
+        ]
+      : [{ path: "/", label: "About" }]),
     { path: "/projects", label: "Projects" },
   ];
 
@@ -46,10 +52,12 @@ export function Navigation() {
             </li>
           ))}
         </ul>
-        <RepoLink location="header" className="btn btn-ghost btn-sm nav-repo">
-          <GitHubMark />
-          <span>Claudlobby</span>
-        </RepoLink>
+        {landing && (
+          <RepoLink location="header" className="btn btn-ghost btn-sm nav-repo">
+            <GitHubMark />
+            <span>Claudlobby</span>
+          </RepoLink>
+        )}
         <ThemeToggle />
 
         {/* Hamburger button - visible on mobile only */}

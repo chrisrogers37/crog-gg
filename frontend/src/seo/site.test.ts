@@ -178,3 +178,21 @@ describe("createSeo, on a made-up site", () => {
     expect(madeUp.absoluteUrl("/projects")).toBe("https://www.example.org/projects");
   });
 });
+
+describe("home: profile (#188)", () => {
+  const profile = createSeo({ ...site, home: "profile" });
+
+  it("puts the personal page, and its Person schema, at /", () => {
+    expect(profile.ABOUT_META.path).toBe("/");
+    expect(profile.ABOUT_META.schemas?.[0]).toMatchObject({ "@type": "Person" });
+  });
+
+  it("drops the landing page from the pages the build writes", () => {
+    expect(profile.PAGES.map((page) => page.path)).toEqual(["/", "/projects"]);
+  });
+
+  it("keeps the landing page first when home is landing", () => {
+    const landing = createSeo({ ...site, home: "landing" });
+    expect(landing.PAGES.map((page) => page.path)).toEqual(["/", "/about", "/projects"]);
+  });
+});

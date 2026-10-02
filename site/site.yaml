@@ -24,6 +24,11 @@ site:
   # The canonical origin: every absolute link to the site is built from it.
   url: https://www.crog.gg
 
+# What / shows. landing: the Claudlobby landing page, with the personal page at
+# /about. profile: the personal page itself, and no landing page or Claudlobby
+# links.
+home: landing
+
 seo:
   # Appended to every page's title.
   site_name: Chris Rogers - i build things that build things

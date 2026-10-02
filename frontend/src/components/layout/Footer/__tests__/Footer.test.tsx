@@ -9,8 +9,24 @@ const REPO = "https://github.com/example/site";
 
 describe("Footer", () => {
   const configured = site.footer.source_repo_url;
+  const home = site.home;
   afterEach(() => {
     site.footer.source_repo_url = configured;
+    site.home = home;
+  });
+
+  it("links Claudlobby and the personal page beside the landing page", () => {
+    site.home = "landing";
+    renderWithProviders(<Footer />);
+    expect(screen.getByRole("link", { name: "claudlobby" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "about" })).toHaveAttribute("href", "/about");
+  });
+
+  it("drops both with home: profile, where the personal page is home (#188)", () => {
+    site.home = "profile";
+    renderWithProviders(<Footer />);
+    expect(screen.queryByRole("link", { name: "claudlobby" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "about" })).toBeNull();
   });
 
   it("names the owner, then links Claudlobby, the personal page, exactly the footer socials in order, and the source", () => {
