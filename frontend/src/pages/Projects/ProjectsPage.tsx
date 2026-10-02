@@ -18,6 +18,18 @@ import "./ProjectsPage.css";
  * Displays all projects in a tile grid with filtering capabilities.
  * Each project tile links to its detail page.
  */
+/** The page's heading, the same while it loads, if it fails, and once loaded. */
+function ProjectsHeader() {
+  return (
+    <header className="projects-header">
+      <h1 className="projects-title">Projects</h1>
+      <p className="projects-subtitle">
+        A collection of my work, side projects, and experiments.
+      </p>
+    </header>
+  );
+}
+
 export function ProjectsPage() {
   const projects = useProjects();
   const isLoading = useIsLoading();
@@ -54,12 +66,7 @@ export function ProjectsPage() {
   if (isLoading && projects.length === 0) {
     return (
       <div className="projects-page">
-        <header className="projects-header">
-          <h1 className="projects-title">Projects</h1>
-          <p className="projects-subtitle">
-            A collection of my work, side projects, and experiments.
-          </p>
-        </header>
+        <ProjectsHeader />
         <ProjectSkeletonGrid />
       </div>
     );
@@ -69,12 +76,7 @@ export function ProjectsPage() {
   if (error && projects.length === 0) {
     return (
       <div className="projects-page">
-        <header className="projects-header">
-          <h1 className="projects-title">Projects</h1>
-          <p className="projects-subtitle">
-            A collection of my work, side projects, and experiments.
-          </p>
-        </header>
+        <ProjectsHeader />
         <LoadError
           message="Failed to load projects. Please try again."
           onRetry={() => loadContent()}
@@ -87,12 +89,7 @@ export function ProjectsPage() {
     <>
       <SEO {...PROJECTS_META} />
       <div className="projects-page">
-        <header className="projects-header">
-          <h1 className="projects-title">Projects</h1>
-          <p className="projects-subtitle">
-            A collection of my work, side projects, and experiments.
-          </p>
-        </header>
+        <ProjectsHeader />
 
         {/* Filters */}
         <div className="projects-filters">

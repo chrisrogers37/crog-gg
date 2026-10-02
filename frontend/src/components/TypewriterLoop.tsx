@@ -11,6 +11,9 @@ interface TypewriterLoopProps {
 
 type Phase = "initial" | "typing" | "pausing" | "deleting" | "waiting";
 
+/** Up to this much is added to `initialDelay`, so the start isn't mechanical. */
+const INITIAL_DELAY_JITTER_MS = 3000;
+
 // Add randomness to timing (±40% variance)
 const randomize = (base: number, variance = 0.4): number => {
   const min = base * (1 - variance);
@@ -36,16 +39,18 @@ export default function TypewriterLoop({
   const currentMessage = messages[messageIndex];
   const isLastMessage = messageIndex === messages.length - 1;
 
-  // Handle initial delay (random between 1-4 seconds)
+  // The initial delay: `initialDelay`, plus up to INITIAL_DELAY_JITTER_MS.
+  // (It used to ignore the prop and wait 1-4 s whatever was passed, #193.)
   useEffect(() => {
     if (phase !== "initial") return;
 
-    const randomInitialDelay = Math.floor(Math.random() * 3000) + 1000; // 1000-4000ms
+    const delay =
+      initialDelay + Math.floor(Math.random() * INITIAL_DELAY_JITTER_MS);
     const timer = setTimeout(() => {
       setPhase("typing");
-    }, randomInitialDelay);
+    }, delay);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [phase, initialDelay]);
 
   // Handle typing
   useEffect(() => {
@@ -110,13 +115,6 @@ export default function TypewriterLoop({
     return () => clearTimeout(timer);
   }, [phase]);
 
-  const showCursor =
-    phase === "initial" ||
-    phase === "typing" ||
-    phase === "pausing" ||
-    phase === "deleting" ||
-    phase === "waiting";
-
   return (
     <div className={`typewriter typewriter-loop ${className}`}>
       {/*
@@ -147,27 +145,25 @@ export default function TypewriterLoop({
       </div>
       <div className="typewriter-text">
         {displayText}
-        {showCursor && (
-          <span
-            className="typewriter-cursor"
-            style={{
-              animation:
-                phase === "pausing" ||
-                phase === "initial" ||
-                phase === "waiting"
-                  ? "blink 0.7s infinite"
-                  : "none",
-              opacity:
-                phase === "pausing" ||
-                phase === "initial" ||
-                phase === "waiting"
-                  ? undefined
-                  : 1,
-            }}
-          >
-            |
-          </span>
-        )}
+        <span
+          className="typewriter-cursor"
+          style={{
+            animation:
+              phase === "pausing" ||
+              phase === "initial" ||
+              phase === "waiting"
+                ? "blink 0.7s infinite"
+                : "none",
+            opacity:
+              phase === "pausing" ||
+              phase === "initial" ||
+              phase === "waiting"
+                ? undefined
+                : 1,
+          }}
+        >
+          |
+        </span>
       </div>
     </div>
   );

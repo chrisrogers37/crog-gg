@@ -149,7 +149,8 @@ entries:
     one_liner: where it all started. go big red
     skills: []
 
-# All skills with metadata for the bubble display
+# All skills with metadata for the bubble display. Each category's color is a
+# hex colour, "#rrggbb" or "#rgb"; anything else shows in the default grey.
 skill_categories:
   languages:
     color: "#3178C6"

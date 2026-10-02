@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { SkillCategory } from "../../../types/Timeline";
+import { skillColor } from "../../../utils/skillColor";
 
 type SkillBubblesProps = {
   activeSkills: string[];
@@ -21,23 +22,27 @@ export function SkillBubbles({
   return (
     <div className="skill-bubbles">
       <AnimatePresence>
-        {activeSkills.map((skill) => (
-          <motion.span
-            key={skill}
-            className="skill-bubble"
-            style={{
-              backgroundColor: `${skillColorMap[skill] || "#6B7280"}20`,
-              color: skillColorMap[skill] || "#6B7280",
-              borderColor: `${skillColorMap[skill] || "#6B7280"}40`,
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.3 }}
-          >
-            {skill}
-          </motion.span>
-        ))}
+        {activeSkills.map((skill) => {
+          const color = skillColor(skillColorMap[skill]);
+          return (
+            <motion.span
+              key={skill}
+              className="skill-bubble"
+              // 20 and 40 are alpha pairs: a light tint, and a stronger border.
+              style={{
+                backgroundColor: `${color}20`,
+                color,
+                borderColor: `${color}40`,
+              }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+            >
+              {skill}
+            </motion.span>
+          );
+        })}
       </AnimatePresence>
     </div>
   );

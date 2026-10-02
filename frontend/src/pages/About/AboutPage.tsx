@@ -319,7 +319,6 @@ function AboutContent() {
                   maxHeight={
                     isNarrowViewport ? ABOUT_CLAMP_NARROW : ABOUT_CLAMP_WIDE
                   }
-                  index={0}
                 >
                   <section className="section-content about-section">
                     <div className="about-content">

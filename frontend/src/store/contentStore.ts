@@ -523,7 +523,7 @@ export const useContentStore = create<ContentStore>()(
         set({ education, hasModifiedContent: true });
       },
     }),
-    { name: "content-store" },
+    { name: "content-store", enabled: import.meta.env.DEV },
   ),
 );
 
