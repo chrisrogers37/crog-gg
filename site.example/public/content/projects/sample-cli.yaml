@@ -1,0 +1,10 @@
+id: sample-cli
+title: Sample CLI
+description: a command line tool that prints a sample, and then another.
+url: https://example.com/projects/sample-cli
+icon: "\U0001F4BB"
+category: cli
+technologies:
+  - Python
+order: 3
+status: archived

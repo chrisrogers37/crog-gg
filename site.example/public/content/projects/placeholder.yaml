@@ -1,0 +1,10 @@
+id: placeholder
+title: Placeholder
+description: a service that answers every request with a placeholder.
+url: https://example.com/projects/placeholder
+icon: "\U0001F4E6"
+category: web-app
+technologies:
+  - Python
+order: 2
+status: experimental

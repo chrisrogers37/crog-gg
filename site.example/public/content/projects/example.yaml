@@ -1,0 +1,14 @@
+id: example
+title: Example
+description: |
+  a web app that shows an example of itself.
+  made up for the tests.
+url: https://example.com/projects/example
+icon: "\U0001F9EA"
+category: web-app
+technologies:
+  - TypeScript
+  - React
+order: 1
+status: active
+gradient: "linear-gradient(135deg, #4f46e5 0%, #0f172a 100%)"

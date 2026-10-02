@@ -1,0 +1,5 @@
+# The example projects, in display order (site.example, #191).
+projects:
+  - example.yaml
+  - placeholder.yaml
+  - sample-cli.yaml
