@@ -42,14 +42,12 @@ test.describe("About Page", () => {
   });
 
   test("displays section navigation buttons", async ({ page }) => {
-    // Test that section nav buttons exist
-    const sectionButtons = page.locator(
-      ".section-nav button, .section-buttons button",
-    );
-    await expect(sectionButtons.first()).toBeVisible();
+    // The section nav is a tablist with a tab per section
+    const sectionTabs = page.getByRole("tablist").getByRole("tab");
+    await expect(sectionTabs.first()).toBeVisible();
 
-    // Should have multiple section buttons
-    const count = await sectionButtons.count();
+    // Should have multiple section tabs
+    const count = await sectionTabs.count();
     expect(count).toBeGreaterThan(3);
   });
 
@@ -84,18 +82,18 @@ test.describe("About Page", () => {
 });
 
 test.describe("Section Navigation", () => {
-  test("clicking a section button reveals content", async ({ page }) => {
-    // Find any section button and click it
-    const sectionButton = page
-      .locator(".section-nav button, .section-buttons button")
-      .first();
-    await sectionButton.click();
+  test("clicking a section tab shows that section's panel", async ({ page }) => {
+    // Not the default tab, so the panel has to change. (The collapsed preview
+    // is already a panel, labelled by the About tab, so "a panel is visible"
+    // would pass even if the click did nothing.)
+    const tab = page.locator('[role="tab"][data-section="journey"]');
+    const tabName = (await tab.textContent())?.trim() ?? "";
+    expect(tabName).not.toBe("");
+    await tab.click();
 
-    // Some content area should become visible
-    const contentArea = page
-      .locator('.section-content, [class*="section"]')
-      .first();
-    await expect(contentArea).toBeVisible({ timeout: 5000 });
+    const panel = page.getByRole("tabpanel");
+    await expect(panel).toHaveAccessibleName(tabName, { timeout: 5000 });
+    await expect(panel).toBeVisible();
   });
 
   test("clicking same section twice toggles it off", async ({ page }) => {
