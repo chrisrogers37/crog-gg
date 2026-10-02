@@ -30,6 +30,7 @@ describe("Footer", () => {
   });
 
   it("names the owner, then links Claudlobby, the personal page, exactly the footer socials in order, and the source", () => {
+    site.home = "landing";
     site.footer.source_repo_url = REPO;
     const { container } = renderWithProviders(<Footer />);
 
@@ -44,7 +45,7 @@ describe("Footer", () => {
       ["claudlobby", CLAUDLOBBY_REPO],
       ["about", "/about"],
       ...footerSocials.map((social) => [social.label, social.url]),
-      ["view source", REPO],
+      ["view source", `${REPO}/tree/c0ffee`],
     ]);
   });
 
@@ -53,7 +54,8 @@ describe("Footer", () => {
     const { container } = renderWithProviders(<Footer />);
 
     const link = screen.getByRole("link", { name: "view source" });
-    expect(link).toHaveAttribute("href", REPO);
+    // At the commit the build is from (vitest.config.ts's).
+    expect(link).toHaveAttribute("href", `${REPO}/tree/c0ffee`);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
     expect(container.querySelector(".footer-links a:last-child")).toBe(link);

@@ -24,7 +24,7 @@ export function Navigation() {
           { path: "/", label: "Home" },
           { path: "/about", label: "About" },
         ]
-      : [{ path: "/", label: "About" }]),
+      : [{ path: "/", label: "Home" }]),
     { path: "/projects", label: "Projects" },
   ];
 

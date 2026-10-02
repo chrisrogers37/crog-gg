@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { beforeAll, describe, it, expect } from "vitest";
 import { matchPath, matchRoutes, type RouteObject } from "react-router";
 import site from "virtual:site-config";
+import { aboutPath } from "./config/routes";
 import { HOMES } from "./config/schema";
 import { routesFor } from "./router";
 import { landingPages } from "./seo/prerender";
@@ -70,6 +71,12 @@ describe.each(HOMES)("routes and prerendered pages, with home: %s", (home) => {
   let pages: ReturnType<typeof landingPages>;
   beforeAll(async () => {
     pages = landingPages(createSeo({ ...site, home }), await shippedProjects());
+  });
+
+  it("puts the personal page where site.yaml's home says", () => {
+    // AboutPage's route is the one that draws its own full-width card.
+    const matches = matchRoutes(routes, aboutPath({ home })) ?? [];
+    expect(matches.at(-1)?.route.handle).toEqual({ fullBleed: true });
   });
 
   it("prerenders a page for every route a visitor can land on", () => {

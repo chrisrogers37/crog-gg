@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router";
 import site from "virtual:site-config";
 import { socialsIn } from "../../../../config/socials";
@@ -19,6 +19,15 @@ vi.mock("../../../../store", () => ({
 }));
 
 describe("MobileMenu", () => {
+  // These name the landing's links; "with home: profile" below covers the other.
+  const configuredHome = site.home;
+  beforeEach(() => {
+    site.home = "landing";
+  });
+  afterEach(() => {
+    site.home = configuredHome;
+  });
+
   const sections = [
     { id: "about", label: "About" },
     { id: "journey", label: "Journey" },

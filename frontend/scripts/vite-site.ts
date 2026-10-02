@@ -15,16 +15,16 @@ const RESOLVED = `\0${ID}`;
  * build fails on a bad site.yaml before it bundles anything; the dev server
  * reloads the page when the file changes.
  */
-export function site(): Plugin {
+export function site({
+  // The commit this build is from, when Vercel names it, so "view source" can
+  // link to exactly the code that's live (#188). Tests pass their own.
+  commit = process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+}: { commit?: string } = {}): Plugin {
   return {
     name: "crog:site",
     config: () => ({
       publicDir: path.join(SITE_DIR, "public"),
-      // The commit this build is from, when Vercel names it, so "view source"
-      // can link to exactly the code that's live (#188).
-      define: {
-        __SITE_COMMIT__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA ?? ""),
-      },
+      define: { __SITE_COMMIT__: JSON.stringify(commit) },
       resolve: { alias: { "@site": SITE_DIR } },
       // An allow list set here replaces Vite's default, so it names the
       // workspace too.

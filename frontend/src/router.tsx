@@ -14,7 +14,9 @@ import { NotFoundPage } from "./pages/NotFound";
 import { RouteError } from "./pages/RouteError";
 import { lazyPage } from "./utils/lazyPage";
 
-// HomePage is the likely first visit, so it is eager and kept light
+// HomePage is the likely first visit with home: landing, so it is eager and
+// kept light. With home: profile, / is the lazy AboutPage, whose chunk loads
+// beside the content fetch.
 import { HomePage } from "./pages/Home";
 
 // Lazy-loaded pages: /about carries the personal page's sections and motion,

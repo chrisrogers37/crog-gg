@@ -11,6 +11,15 @@ describe("sourceUrl", () => {
     );
   });
 
+  it("leaves a URL it can't pin as it is: another host, or a path inside a repo", () => {
+    expect(sourceUrl("https://gitlab.com/you/site", "abc123")).toBe(
+      "https://gitlab.com/you/site",
+    );
+    expect(sourceUrl("https://github.com/you/mono/tree/main/site", "abc123")).toBe(
+      "https://github.com/you/mono/tree/main/site",
+    );
+  });
+
   it("links the repo itself when the build doesn't know its commit", () => {
     expect(sourceUrl("https://github.com/you/site", "")).toBe(
       "https://github.com/you/site",
