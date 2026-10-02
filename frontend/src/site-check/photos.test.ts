@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import yaml from "js-yaml";
 import site from "virtual:site-config";
 import showcaseYaml from "@site/public/content/showcase.yaml?raw";
+import { showcaseShape } from "../config/contentSchema";
 import { inSite } from "../test/site";
-import type { ShowcaseImage } from "../types/Showcase";
+import { parseYaml } from "../utils/contentFile";
 import { PHOTO_WIDTHS, photoVariant } from "../utils/photos";
 
 const variants = import.meta.glob("@site/public/profile-photos/*.webp", {
@@ -11,7 +11,9 @@ const variants = import.meta.glob("@site/public/profile-photos/*.webp", {
   eager: true,
 });
 
-const showcase = (yaml.load(showcaseYaml) as { images: ShowcaseImage[] }).images.map(
+// Held to its shape, as the page holds it (#190): a file that doesn't fit
+// fails here, naming the field, not in a visitor's browser.
+const showcase = parseYaml(showcaseShape, showcaseYaml, "content/showcase.yaml").images.map(
   (image) => image.src,
 );
 

@@ -10,8 +10,6 @@ export const loadSkills = async (): Promise<SkillsData> => {
     }
     const content = await response.text();
     const skillsData = yaml.load(content) as SkillsData;
-
-    console.log("Skills data loaded from YAML:", skillsData);
     return skillsData;
   } catch (error) {
     console.error("Error loading skills from YAML:", error);

@@ -51,6 +51,8 @@ export const readProjects = async (
   read: (file: string) => Promise<string>,
 ): Promise<Project[]> => {
   const index = parseYaml(projectIndexShape, await read("index.yaml"), "content/projects/index.yaml");
+  const twice = index.projects.find((file, i) => index.projects.indexOf(file) !== i);
+  if (twice) throw new Error(`content/projects/index.yaml lists ${twice} twice`);
   return Promise.all(
     index.projects.map(async (file) =>
       toProject(parseYaml(projectShape, await read(file), `content/projects/${file}`)),

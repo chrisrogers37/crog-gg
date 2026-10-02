@@ -64,7 +64,7 @@ export function ProjectDetailPage() {
       return (
         <div className="project-detail-page project-detail-page--placeholder">
           <LoadError
-            message={`This project didn't load: ${load.error}.`}
+            message={`The projects didn't load: ${load.error}.`}
             onRetry={() => reloadProjects()}
           />
         </div>

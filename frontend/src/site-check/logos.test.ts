@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import yaml from "js-yaml";
 import timelineYaml from "@site/public/content/timeline.yaml?raw";
+import { timelineShape } from "../config/contentSchema";
 import { inSite } from "../test/site";
-import type { TimelineData } from "../types/Timeline";
+import { parseYaml } from "../utils/contentFile";
 import { logoUrl } from "../utils/logos";
 
 const logoFiles = import.meta.glob("@site/public/logos/*.png", {
@@ -10,7 +10,8 @@ const logoFiles = import.meta.glob("@site/public/logos/*.png", {
   eager: true,
 });
 
-const { entries } = yaml.load(timelineYaml) as TimelineData;
+// Held to its shape, as the page holds it (#190).
+const { entries } = parseYaml(timelineShape, timelineYaml, "content/timeline.yaml");
 const domains = new Set(entries.flatMap((entry) => entry.domain ?? []));
 
 describe("the timeline's logos", () => {

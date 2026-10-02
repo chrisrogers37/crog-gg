@@ -1,6 +1,6 @@
 /**
  * Small checks that hold YAML to a shape: site.yaml (schema.ts, #188) and the
- * content files (content/schemas.ts, #190).
+ * content files (contentSchema.ts, #190), which the browser checks too.
  *
  * Each field is a check that records "path: problem" and carries on, so one
  * run reports every mistake rather than the first. A key the shape doesn't
@@ -37,12 +37,23 @@ export const matching =
       ? value
       : fail(issues, path, value, expected);
 
-export const httpsUrl: Check<string> = (value, path, issues) => {
-  if (typeof value === "string" && URL.canParse(value)) {
-    if (new URL(value).protocol === "https:") return value;
+/**
+ * `value` as a URL, or null. Not URL.canParse: these checks run in the
+ * browser too, and Safari 16, Chrome 107 and Firefox 104, inside the build's
+ * target, don't have it.
+ */
+export const parseUrl = (value: string): URL | null => {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
   }
-  return fail(issues, path, value, "an https URL");
 };
+
+export const httpsUrl: Check<string> = (value, path, issues) =>
+  typeof value === "string" && parseUrl(value)?.protocol === "https:"
+    ? value
+    : fail(issues, path, value, "an https URL");
 
 /** A path the site serves, from site/public: "/og-image.png". Not "//host/x". */
 export const sitePath = matching(/^\/(?!\/)\S+$/, 'a path that starts with one "/"');

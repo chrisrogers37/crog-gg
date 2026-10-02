@@ -68,7 +68,7 @@ export function ProjectsPage() {
         </header>
 
         {status === "loading" && <ProjectSkeletonGrid />}
-        {status === "error" && typeof load === "object" && (
+        {typeof load === "object" && status === "error" && (
           <LoadError
             message={`The projects didn't load: ${load.error}.`}
             onRetry={() => reloadProjects()}

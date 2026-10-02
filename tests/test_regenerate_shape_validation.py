@@ -67,10 +67,10 @@ def _client_returning(payload):
     return fake
 
 
-# The payload the store actually sends is a full BioData, social_links and email
-# included (contentStore.ts posts `state.bio`). Testing with a thinner object
-# hides the interaction below, because the unauthored-key restore has nothing to
-# graft when those keys are absent -- so these end-to-end tests use the real one.
+# A client may still send social_links and email: the page did until #190, and
+# the API keeps guarding them. Testing with a thinner object hides the
+# interaction below, because the unauthored-key restore has nothing to graft
+# when those keys are absent -- so these end-to-end tests use a bio that has them.
 _REAL_BIO = {
     "display_name": "Christopher Rogers",
     "email": "someone@example.com",

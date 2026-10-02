@@ -41,11 +41,11 @@ const period: Check<string> = (value, path, issues) => {
 
 /**
  * A skill category's colour: "#rrggbb" or "#rgb", as timeline.yaml's header
- * says, kept as #rrggbb. Any other text gets the default colour, as
+ * says, kept as #rrggbb. Anything else, or none, gets the default grey, as
  * skillColor gives it (#193), rather than failing the Journey tab.
  */
-const skillCategoryColor: Check<string> = (value, path, issues) =>
-  typeof value === "string" ? skillColor(value) : fail(issues, path, value, "a colour, as text");
+const skillCategoryColor: Check<string> = (value) =>
+  skillColor(typeof value === "string" ? value : undefined);
 
 /** A host name, as a logo is looked up by: "example.com". */
 const domain = matching(/^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$/i, 'a domain, like "example.com"');
@@ -77,7 +77,7 @@ export const timelineShape = object({
   skill_categories: withDefault(
     record(
       object({
-        color: withDefault(skillCategoryColor, () => skillColor()),
+        color: skillCategoryColor,
         skills: withDefault(list(text), noSkills),
       }),
     ),

@@ -14,6 +14,7 @@ import {
   object,
   oneOf,
   optional,
+  parseUrl,
   positiveInteger,
   sitePath,
   slug,
@@ -21,13 +22,12 @@ import {
 } from "./check";
 
 /** An https origin with no path, so `${url}/about` is a URL. */
-const origin: Check<string> = (value, path, issues) =>
-  typeof value === "string" &&
-  URL.canParse(value) &&
-  new URL(value).protocol === "https:" &&
-  new URL(value).origin === value
-    ? value
+const origin: Check<string> = (value, path, issues) => {
+  const url = typeof value === "string" ? parseUrl(value) : null;
+  return url?.protocol === "https:" && url.origin === value
+    ? (value as string)
     : fail(issues, path, value, "an https origin with no path or trailing slash");
+};
 
 const email = matching(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "an email address");
 

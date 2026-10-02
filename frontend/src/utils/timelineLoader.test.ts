@@ -72,6 +72,18 @@ describe("loadTimeline", () => {
 
   it("rejects a file that won't load, naming it", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 404 })));
-    await expect(loadTimeline()).rejects.toThrow("content/timeline.yaml didn't load (404)");
+    await expect(loadTimeline()).rejects.toThrow("content/timeline.yaml answered 404");
+  });
+
+  it("names the file when the fetch itself fails (offline, blocked)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+    await expect(loadTimeline()).rejects.toThrow(
+      "content/timeline.yaml couldn't be fetched (Failed to fetch)",
+    );
+  });
+
+  it("names the file in a YAML syntax error", async () => {
+    serving(["entries:", "  - type: role", "   title: misaligned"]);
+    await expect(loadTimeline()).rejects.toThrow(/in "content\/timeline\.yaml"/);
   });
 });

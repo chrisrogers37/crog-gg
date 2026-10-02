@@ -22,12 +22,12 @@ describe("ProjectsPage when the content failed to load", () => {
     const reloadProjects = vi.fn();
     useContentStore.setState({
       projects: [],
-      loads: { ...INITIAL.loads, projects: { error: "content/projects/index.yaml didn't load (500)" } },
+      loads: { ...INITIAL.loads, projects: { error: "content/projects/index.yaml answered 500" } },
       reloadProjects,
     });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "The projects didn't load: content/projects/index.yaml didn't load (500).",
+      "The projects didn't load: content/projects/index.yaml answered 500.",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(reloadProjects).toHaveBeenCalled();

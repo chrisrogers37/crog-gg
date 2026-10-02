@@ -85,9 +85,7 @@ describe("loadProjects", () => {
       text: () => Promise.resolve(""),
     });
 
-    await expect(loadProjects()).rejects.toThrow(
-      "content/projects/index.yaml didn't load (500)",
-    );
+    await expect(loadProjects()).rejects.toThrow("content/projects/index.yaml answered 500");
   });
 
   it("does not invent projects the index omits", async () => {
@@ -136,11 +134,32 @@ describe("readProjects", () => {
   });
 
   it("falls back from url to the demo, then the repo", async () => {
-    const [project] = await readOne(`${VALID}github: https://github.com/a/b\n`);
-    expect(project.url).toBe("https://github.com/a/b");
+    const [repoOnly] = await readOne(`${VALID}github: https://github.com/a/b\n`);
+    expect(repoOnly.url).toBe("https://github.com/a/b");
+    const [both] = await readOne(`${VALID}demo: https://d.example\ngithub: https://github.com/a/b\n`);
+    expect(both.url).toBe("https://d.example");
   });
 
-  it("keeps index.yaml's order, whatever the files hold (#190 M24)", async () => {
+  it("checks links where the browser has no URL.canParse (Safari 16)", async () => {
+    const canParse = URL.canParse;
+    Object.defineProperty(URL, "canParse", { value: undefined, configurable: true });
+    try {
+      const [project] = await readOne(`${VALID}url: https://a.example\n`);
+      expect(project.url).toBe("https://a.example");
+    } finally {
+      Object.defineProperty(URL, "canParse", { value: canParse, configurable: true });
+    }
+  });
+
+  it("refuses an index that lists a file twice", async () => {
+    await expect(
+      readProjects(async (file) =>
+        file === "index.yaml" ? "projects:\n  - a.yaml\n  - a.yaml\n" : VALID,
+      ),
+    ).rejects.toThrow("content/projects/index.yaml lists a.yaml twice");
+  });
+
+  it("keeps index.yaml's order", async () => {
     const files: Record<string, string> = {
       "index.yaml": "projects:\n  - zeta.yaml\n  - alpha.yaml\n  - mid.yaml\n",
       "zeta.yaml": VALID.replace("a-b", "zeta"),

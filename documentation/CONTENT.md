@@ -19,15 +19,14 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 | `showcase.yaml` | `/about`: the photo strip |
 | `experience.yaml`, `education.yaml`, `skills.yaml` | nowhere ([below](#experienceyaml-educationyaml-and-skillsyaml)) |
 
-Every file below is checked as it loads (`frontend/src/config/contentSchema.ts`, #190): a field that's missing or the wrong kind, or a key the file shouldn't have, fails with the file and the field named. A file that fails takes only its own part of the site with it, which says so and offers a retry; `bio.yaml` is the About page's.
+The files the site renders (`bio.yaml`, `timeline.yaml`, the projects and `showcase.yaml`) are held to a shape (`frontend/src/config/contentSchema.ts`, #190): by `npm run build`, by `npm run site:check`, and by the page as it loads them. A field that's missing or the wrong kind, or a key the file shouldn't have, fails with the file and the field named. On the page, a file that fails takes only its own part of the site with it, which says so and offers a retry: `bio.yaml` is the About page's, and a broken `showcase.yaml` only hides the photo strip. The résumé files nothing renders aren't checked ([below](#experienceyaml-educationyaml-and-skillsyaml)).
 
 ## bio.yaml
 
 - **`display_name` and `tagline`:** the top of `/about`.
 - **`about_text`:** the About section, as paragraphs separated by blank lines in one block string (`|`). The page keeps the breaks with `white-space: pre-line`, so write each paragraph on one line: a line break inside a paragraph shows on the page.
   - The collapsed About preview is cut at a fixed height, tuned to today's text (`about.preview_height` in `site/site.yaml`). After editing `about_text`, re-measure it (#162), or the fade can fall mid-line, or hide most of the text.
-- **`location`:** the contact card.
-- **`location`** (optional) and **`tagline`** (optional) show only when set.
+- **`location`** (optional): the contact card. It and `tagline` (optional) show only when set.
 - The email address and the links are in `site/site.yaml` (#188), not here.
 - SUMMON NEW LORE rewrites the bio's text: the name, the tagline, the About text and the location.
 
@@ -49,7 +48,7 @@ If `timeline.yaml` won't load or doesn't fit, the Journey tab says so, naming th
 
 ## projects/
 
-**`index.yaml`** lists which project files the site shows, in the order it shows them (#190).
+**`index.yaml`** lists which project files the site shows, in the order it shows them (#190), each as a lowercase file name (`my-project.yaml`), once.
 - A file it doesn't list is shown nowhere.
 - But it's still public: everything in `site/public/` is served as is.
 
@@ -107,7 +106,7 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
 
 ## What catches a mistake
 
-- **`npm run build`** checks `site/site.yaml`, and parses every project file `index.yaml` lists, so a mistake in either fails the build.
+- **`npm run build`** checks `site/site.yaml`, and holds `bio.yaml`, `timeline.yaml`, `showcase.yaml` and every project file `index.yaml` lists to their shapes, so a mistake in any fails the build, naming the file and the field.
 - **`npm run site:check`** (in `frontend/`, part of `npm run test:run` too) holds the active site to the rules its content must meet (#191):
   - the files `site.yaml` and `index.html` name exist, and every photo at every size, and a logo for each timeline domain;
   - the music player's origin is in the CSP;
@@ -115,5 +114,5 @@ The Claudlobby landing page's copy isn't here: it's a typed module (`frontend/sr
   - the projects: at least one, each in a category, one emoji icon, repos of the site's owner, and a `frame-src` entry for an embedded demo;
   - the About copy is at least one paragraph and, unless `features.regenerate` is `off`, ends on the sign-off that names the button (`regenerate.labels.button`);
   - the card's text matches `seo.image.alt`, the Person schema's role matches the timeline's current one, and with `home: landing` the card keeps the landing page's rules.
-- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A project id that can't be a page's URL fails the build and `npm run site:check` (`utils/projectLoader.ts`).
+- **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A content file that doesn't fit its shape, a project id that can't be a page's URL among them, fails the build and `npm run site:check` (`config/contentSchema.ts`).
 - **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site with no landing page.

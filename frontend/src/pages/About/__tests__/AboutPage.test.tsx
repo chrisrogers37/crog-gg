@@ -19,13 +19,13 @@ describe("AboutPage before its content arrives", () => {
   it("says a failed load failed, naming the file, and Retry reloads the content rather than the page", () => {
     const loadContent = vi.fn();
     useContentStore.setState({
-      loads: { ...INITIAL.loads, bio: { error: "content/bio.yaml didn't load (404)" } },
+      loads: { ...INITIAL.loads, bio: { error: "content/bio.yaml answered 404" } },
       loadContent,
     });
     renderWithProviders(<AboutPage />, { initialRoute: "/about" });
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "This page didn't load: content/bio.yaml didn't load (404).",
+      "This page didn't load: content/bio.yaml answered 404.",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(loadContent).toHaveBeenCalled();

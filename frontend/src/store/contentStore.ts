@@ -105,7 +105,7 @@ const initialState: ContentState = {
 // ===========================================
 
 /** A failed load, as the page says it: the error's first line, naming the file. */
-const failed = (error: unknown): Load => {
+const loadFailure = (error: unknown): Load => {
   console.error(error);
   const message = error instanceof Error ? error.message : String(error);
   return { error: message.split("\n")[0].replace(/:$/, "") };
@@ -148,10 +148,6 @@ const cooldownFrom = (
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-// The bio keys the model never writes (api/index.py's _UNAUTHORED_KEYS). They
-// are rendered into links, so the page keeps its own copy whatever comes back.
-const UNAUTHORED_BIO_KEYS: ReadonlySet<string> = new Set(["email", "social_links"]);
-
 /**
  * A rewritten bio merged over the one it rewrites, or undefined if it brings
  * nothing usable (#196 M16). The server fills in what a rewrite leaves out;
@@ -163,7 +159,6 @@ const mergeBio = (prior: BioData, incoming: unknown): BioData | undefined => {
   if (!isPlainObject(incoming)) return undefined;
   const accepted: Record<string, string> = {};
   for (const [key, value] of Object.entries(prior)) {
-    if (UNAUTHORED_BIO_KEYS.has(key)) continue;
     const next = incoming[key];
     if (typeof value === "string" && typeof next === "string" && next.trim()) {
       accepted[key] = next;
@@ -191,7 +186,7 @@ export const useContentStore = create<ContentStore>()(
         const value = await load();
         set((state) => ({ ...apply(value), loads: { ...state.loads, [part]: "ready" } }));
       } catch (error) {
-        set((state) => ({ loads: { ...state.loads, [part]: failed(error) } }));
+        set((state) => ({ loads: { ...state.loads, [part]: loadFailure(error) } }));
       }
     };
 
@@ -204,42 +199,30 @@ export const useContentStore = create<ContentStore>()(
       // ===========================================
 
       /**
-       * Load all content from YAML files, each on its own (#190 M23): one
-       * that fails leaves the others' sections up.
+       * Load all content from YAML files, each on its own (#190 M23): each
+       * part shows as soon as its own file is in, and one that fails leaves
+       * the others' sections up.
        * Called once on app initialization, and by the About page's retry.
        */
       loadContent: async () => {
-        set({ loads: { bio: "loading", timeline: "loading", projects: "loading" } });
-
-        const [bio, timeline, projects, resume] = await Promise.allSettled([
-          loadBio(),
-          loadTimeline(),
-          loadProjects(),
-          loadResume(),
+        // Nothing renders the résumé files (#159), so a failure there is
+        // logged, not shown.
+        const resume = loadResume().then(
+          (value) =>
+            set({
+              ...value,
+              originalExperience: value.experience,
+              originalEducation: value.education,
+            }),
+          (error: unknown) => console.error(error),
+        );
+        await Promise.all([
+          // Stored for reset, too
+          reload("bio", loadBio, (bio) => ({ bio, originalBio: bio })),
+          reload("timeline", loadTimeline, (timeline) => ({ timeline })),
+          reload("projects", loadProjects, (projects) => ({ projects })),
+          resume,
         ]);
-
-        // Nothing renders the résumé files, so a failure there is logged, not shown.
-        if (resume.status === "rejected") console.error(resume.reason);
-
-        set({
-          ...(bio.status === "fulfilled" && {
-            bio: bio.value,
-            // Stored for reset
-            originalBio: bio.value,
-          }),
-          ...(timeline.status === "fulfilled" && { timeline: timeline.value }),
-          ...(projects.status === "fulfilled" && { projects: projects.value }),
-          ...(resume.status === "fulfilled" && {
-            ...resume.value,
-            originalExperience: resume.value.experience,
-            originalEducation: resume.value.education,
-          }),
-          loads: {
-            bio: bio.status === "fulfilled" ? "ready" : failed(bio.reason),
-            timeline: timeline.status === "fulfilled" ? "ready" : failed(timeline.reason),
-            projects: projects.status === "fulfilled" ? "ready" : failed(projects.reason),
-          },
-        });
       },
 
       reloadTimeline: () => reload("timeline", loadTimeline, (timeline) => ({ timeline })),
@@ -446,9 +429,9 @@ export const useContentStore = create<ContentStore>()(
        * Restore the content captured at load, undoing a regeneration.
        *
        * Restores from the originals already held in the store rather than
-       * re-reading them. The re-read ran behind the same `isLoading` flag the
-       * first page load uses, and the page renders a loading skeleton whenever
-       * that flag is set -- so undoing a regeneration replaced the entire page,
+       * re-reading them. The re-read ran behind the same loading state the
+       * first page load uses, and the page renders a loading skeleton while
+       * it lasts -- so undoing a regeneration replaced the entire page,
        * header and nav and the button that was just clicked included, in order
        * to fetch files whose contents were already in memory.
        *

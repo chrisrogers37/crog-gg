@@ -7,10 +7,12 @@ import { parseContent } from "../config/contentSchema";
  * file, so a failed section can say which one.
  */
 export async function fetchContent(file: string): Promise<string> {
-  const response = await fetch(`/content/${file}`);
-  if (!response.ok) {
-    throw new Error(`content/${file} didn't load (${response.status})`);
-  }
+  const response = await fetch(`/content/${file}`).catch((error: unknown) => {
+    throw new Error(
+      `content/${file} couldn't be fetched (${error instanceof Error ? error.message : String(error)})`,
+    );
+  });
+  if (!response.ok) throw new Error(`content/${file} answered ${response.status}`);
   return response.text();
 }
 

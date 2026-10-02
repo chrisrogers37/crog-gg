@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
-import yaml from "js-yaml";
 import site from "virtual:site-config";
 import bioYaml from "@site/public/content/bio.yaml?raw";
-import type { BioData } from "../types/Bio";
+import { bioShape } from "../config/contentSchema";
+import { parseYaml } from "../utils/contentFile";
 
-/** The site's About copy, read the way the app reads it. */
-const aboutText = (yaml.load(bioYaml) as BioData).about_text ?? "";
+/**
+ * The site's About copy, read the way the app reads it: held to bio.yaml's
+ * shape (#190), so a file that doesn't fit fails here, naming the field.
+ */
+const aboutText = parseYaml(bioShape, bioYaml, "content/bio.yaml").about_text;
 
 const paragraphs = aboutText
   .split(/\n\s*\n/)

@@ -12,8 +12,6 @@ export const loadExperience = async (): Promise<ExperienceData> => {
     }
     const content = await response.text();
     const experienceData = yaml.load(content) as ExperienceData;
-
-    console.log("Experience data loaded from YAML:", experienceData);
     return experienceData;
   } catch (error) {
     console.error("Error loading experience from YAML:", error);

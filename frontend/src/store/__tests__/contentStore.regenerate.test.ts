@@ -536,7 +536,7 @@ describe("a rewritten bio is merged, not swapped in", () => {
     expect(useContentStore.getState().bio).toEqual({ ...FULL, about_text: "lore" });
   });
 
-  it("ignores a non-string field and the fields the model doesn't write", async () => {
+  it("ignores a non-string field and the fields the bio doesn't have", async () => {
     respondWith({
       success: true,
       content: {

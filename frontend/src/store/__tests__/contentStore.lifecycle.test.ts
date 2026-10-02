@@ -93,7 +93,7 @@ describe("loadContent", () => {
   it("makes a failed bio the page's failure, naming the file, and leaves no half page", async () => {
     // Unlike a regeneration failure, this one SHOULD reach the page: there is
     // no content to show, so the full-page error screen is the right outcome.
-    loadBio.mockRejectedValue(new Error("content/bio.yaml didn't load (404)"));
+    loadBio.mockRejectedValue(new Error("content/bio.yaml answered 404"));
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockResolvedValue(PROJECTS);
     loadResume.mockResolvedValue(RESUME);
@@ -101,7 +101,7 @@ describe("loadContent", () => {
     await useContentStore.getState().loadContent();
 
     const s = useContentStore.getState();
-    expect(s.loads.bio).toEqual({ error: "content/bio.yaml didn't load (404)" });
+    expect(s.loads.bio).toEqual({ error: "content/bio.yaml answered 404" });
     expect(s.bio).toBeNull();
     expect(s.originalBio).toBeNull();
   });
@@ -130,7 +130,7 @@ describe("loadContent", () => {
   it("keeps the rest when the projects fail", async () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
-    loadProjects.mockRejectedValue(new Error("content/projects/index.yaml didn't load (500)"));
+    loadProjects.mockRejectedValue(new Error("content/projects/index.yaml answered 500"));
     loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
@@ -138,15 +138,28 @@ describe("loadContent", () => {
     expect(useContentStore.getState().loads).toEqual({
       bio: "ready",
       timeline: "ready",
-      projects: { error: "content/projects/index.yaml didn't load (500)" },
+      projects: { error: "content/projects/index.yaml answered 500" },
     });
+  });
+
+  it("shows each part as soon as its own file is in", async () => {
+    loadBio.mockResolvedValue(BIO);
+    loadTimeline.mockResolvedValue(TIMELINE);
+    loadProjects.mockReturnValue(new Promise(() => {})); // never answers
+    loadResume.mockResolvedValue(RESUME);
+
+    void useContentStore.getState().loadContent();
+    await vi.waitFor(() => expect(useContentStore.getState().loads.bio).toBe("ready"));
+
+    expect(useContentStore.getState().bio).toEqual(BIO);
+    expect(useContentStore.getState().loads.projects).toBe("loading");
   });
 
   it("takes nothing down when a résumé file no page renders fails (#159)", async () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockRejectedValue(new Error("content/skills.yaml didn't load (404)"));
+    loadResume.mockRejectedValue(new Error("content/skills.yaml answered 404"));
 
     await useContentStore.getState().loadContent();
 
@@ -177,6 +190,18 @@ describe("reloading one part (#190 M23)", () => {
     expect(useContentStore.getState().timeline).toEqual(TIMELINE);
     expect(useContentStore.getState().loads).toEqual({ bio: "ready", timeline: "ready", projects: "ready" });
     expect(loadBio).not.toHaveBeenCalled();
+  });
+
+  it("brings the projects back alone", async () => {
+    useContentStore.setState({ loads: { bio: "ready", timeline: "ready", projects: { error: "x" } } });
+    loadProjects.mockResolvedValue(PROJECTS);
+
+    await useContentStore.getState().reloadProjects();
+
+    expect(useContentStore.getState().projects).toEqual(PROJECTS);
+    expect(useContentStore.getState().loads.projects).toBe("ready");
+    expect(loadBio).not.toHaveBeenCalled();
+    expect(loadTimeline).not.toHaveBeenCalled();
   });
 
   it("says when the projects fail again", async () => {
