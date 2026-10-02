@@ -43,7 +43,15 @@ describe("analytics", () => {
     };
     expect(keepCampaignParams(event)).toEqual({
       type: "pageview",
-      url: "https://www.crog.gg/?utm_source=hn&utm_medium=post#quickstart",
+      url: "https://www.crog.gg/?utm_source=hn&utm_medium=post",
     });
+  });
+
+  it("never reports the fragment, which can carry a token or an address", () => {
+    const event = {
+      type: "pageview" as const,
+      url: "https://www.crog.gg/about#access_token=SECRET&email=jane%40x.example",
+    };
+    expect(keepCampaignParams(event).url).toBe("https://www.crog.gg/about");
   });
 });

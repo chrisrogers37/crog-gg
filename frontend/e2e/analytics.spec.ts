@@ -32,15 +32,23 @@ test("reports each CTA click once, with where it was", async ({ page }) => {
   await page.locator('.cl-hero a[href="#quickstart"]').click();
   await page.locator(`footer a[href="${REPO}"]`).click();
 
-  const queued = await page.evaluate(() =>
-    (window.vaq ?? []).map(([type, value]) =>
-      type === "beforeSend" ? [type, typeof value] : [type, value],
-    ),
-  );
-  // The filter that strips non-campaign query parameters is registered...
-  expect(queued).toContainEqual(["beforeSend", "function"]);
+  // The filter the real script is handed keeps utm_* tags and drops every
+  // other query parameter and the fragment...
+  const reported = await page.evaluate(() => {
+    const filter = (window.vaq ?? []).find(([type]) => type === "beforeSend")?.[1] as
+      | ((event: { type: "pageview"; url: string }) => { url: string })
+      | undefined;
+    return filter?.({
+      type: "pageview",
+      url: `${location.origin}/?email=a&utm_source=x#token=1`,
+    }).url;
+  });
+  expect(reported).toBe(`${new URL(page.url()).origin}/?utm_source=x`);
   // ...and each click is reported once.
-  expect(queued.filter(([type]) => type === "event")).toEqual([
+  const events = await page.evaluate(() =>
+    (window.vaq ?? []).filter(([type]) => type === "event"),
+  );
+  expect(events).toEqual([
     ["event", { name: "repo_click", data: { location: "hero" } }],
     ["event", { name: "quickstart_click", data: {} }],
     ["event", { name: "repo_click", data: { location: "footer" } }],

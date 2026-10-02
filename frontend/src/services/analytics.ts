@@ -27,15 +27,17 @@ export type AnalyticsEvent =
   | { name: "quickstart_click" };
 
 /**
- * What reaches Vercel keeps its path and any utm_* campaign tags, and drops
- * every other query parameter, so no link built with a personal detail in it
- * (a confirmation link, say) is ever reported.
+ * What reaches Vercel keeps its path and any utm_* campaign tags. Every other
+ * query parameter goes, and so does the fragment, so nothing personal a link
+ * carries (an address in its query, a token after its #) is ever reported.
+ * Browsers never send a fragment to a server; without this, the script would.
  */
 export function keepCampaignParams(event: BeforeSendEvent): BeforeSendEvent {
   const url = new URL(event.url);
   for (const key of [...url.searchParams.keys()]) {
     if (!key.startsWith("utm_")) url.searchParams.delete(key);
   }
+  url.hash = "";
   return { ...event, url: url.toString() };
 }
 
