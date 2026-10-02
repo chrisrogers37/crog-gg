@@ -21,7 +21,7 @@ from api._lib.request_utils import (
     github_headers,
     validate_repo_name,
 )
-from api._lib.site_config import CONFIG
+from api._lib.site_config import CONFIG, GITHUB_NAME
 
 logger = logging.getLogger("crog")
 
@@ -51,10 +51,11 @@ def _gh_rate_limit_or_429(endpoint: str):
 
 
 def _allowed_owner(owner: str) -> bool:
-    """Whether the proxy serves this owner's repos: site.yaml's github.username
-    (or GITHUB_OWNER) and its allowed_owners, compared case-insensitively.
-    site_config checked each is a GitHub name, so a match is one too."""
-    return owner.lower() in CONFIG.allowed_owners
+    """Whether the proxy serves this owner's repos: a GitHub name that is
+    site.yaml's github.username (or GITHUB_OWNER) or one of its allowed_owners,
+    in any case. GitHub names are ASCII, so a look-alike that lower-cases into
+    an allowed name (the Kelvin sign into "k") is refused."""
+    return bool(GITHUB_NAME.fullmatch(owner)) and owner.lower() in CONFIG.allowed_owners
 
 
 def _guard_repo_request(owner: str, repo_name: str, endpoint: str):

@@ -201,7 +201,8 @@ const siteShape = object({
     persona: object({
       /** The rewritten name keeps one of these. */
       name_variants: list(text, { min: 1 }),
-      pronouns: oneOf(PRONOUNS),
+      /** "they" if left out. */
+      pronouns: optional(oneOf(PRONOUNS)),
     }),
     /** Asked of every rewrite, word for word. */
     style_rules: optional(list(text)),

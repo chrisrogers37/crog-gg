@@ -7,6 +7,7 @@ rather than a KeyError somewhere later.
 """
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -32,8 +33,11 @@ PRONOUN_FORMS = {
     },
 }
 
-# What GitHub accepts as a username or organisation.
-GITHUB_NAME_LENGTH = 39
+# What GitHub accepts as a username or organisation, as schema.ts's githubName.
+# ASCII only, so nothing else lower-cases into an allowed owner's name.
+GITHUB_NAME = re.compile(r"[A-Za-z0-9-]{1,39}")
+
+_REQUIRED = object()
 
 
 class SiteConfigError(RuntimeError):
@@ -58,11 +62,13 @@ class SiteConfig:
     style_rules: tuple[str, ...]
 
 
-def _at(data: Any, key: str, source: Path) -> Any:
+def _at(data: Any, key: str, source: Path, default: Any = _REQUIRED) -> Any:
     node = data
     for part in key.split("."):
         if not isinstance(node, dict) or part not in node:
-            raise SiteConfigError(f"{source}: {key} is missing")
+            if default is _REQUIRED:
+                raise SiteConfigError(f"{source}: {key} is missing")
+            return default
         node = node[part]
     return node
 
@@ -75,13 +81,9 @@ def _text(data: Any, key: str, source: Path) -> str:
 
 
 def _texts(data: Any, key: str, source: Path, *, required: bool) -> tuple[str, ...]:
-    try:
-        value = _at(data, key, source)
-    except SiteConfigError:
-        if required:
-            raise
-        return ()
-    if value is None and not required:
+    # Optional means absent, null or "", as schema.ts's optional() reads it.
+    value = _at(data, key, source) if required else _at(data, key, source, None)
+    if not required and value in (None, ""):
         return ()
     if not isinstance(value, list) or not all(isinstance(v, str) and v.strip() for v in value):
         raise SiteConfigError(f"{source}: {key} must be a list of text")
@@ -91,11 +93,7 @@ def _texts(data: Any, key: str, source: Path, *, required: bool) -> tuple[str, .
 
 
 def _github_name(value: Any, key: str, source: Path) -> str:
-    if (
-        not isinstance(value, str)
-        or not 0 < len(value) <= GITHUB_NAME_LENGTH
-        or not all(c.isalnum() or c == "-" for c in value)
-    ):
+    if not isinstance(value, str) or not GITHUB_NAME.fullmatch(value):
         raise SiteConfigError(f"{source}: {key} must be a GitHub username")
     return value
 
@@ -118,7 +116,7 @@ def load(path: Path = PATH) -> SiteConfig:
     for index, extra in enumerate(allowed):
         _github_name(extra, f"github.allowed_owners.{index}", path)
 
-    pronouns = _at(data, "regenerate.persona.pronouns", path)
+    pronouns = _at(data, "regenerate.persona.pronouns", path, None) or "they"
     if pronouns not in PRONOUN_FORMS:
         raise SiteConfigError(f"{path}: regenerate.persona.pronouns must be one of {', '.join(PRONOUN_FORMS)}")
 

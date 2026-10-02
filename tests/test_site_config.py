@@ -81,10 +81,16 @@ def test_pronouns_are_ones_the_prompt_can_write(tmp_path):
         load(path)
 
 
+def test_pronouns_default_to_they(tmp_path):
+    path = _with(OWNER_SITE, tmp_path, "    pronouns: he\n", "")
+    assert load(path).pronouns["subj"] == "they"
+
+
 def test_the_owner_must_be_a_github_name(tmp_path):
-    path = _with(OWNER_SITE, tmp_path, "  username: chrisrogers37\n", "  username: not/a name\n")
-    with pytest.raises(SiteConfigError, match=r"github\.username must be a GitHub username"):
-        load(path)
+    for name in ("not/a name", "jos\u00e9", "x" * 40):
+        path = _with(OWNER_SITE, tmp_path, "  username: chrisrogers37\n", f"  username: {name}\n")
+        with pytest.raises(SiteConfigError, match=r"github\.username must be a GitHub username"):
+            load(path)
 
 
 def test_github_owner_env_wins(monkeypatch):

@@ -95,7 +95,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the header types out).
 - **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189).
   - `labels`: the button's words, idle (`button`), while it works (`busy`), and the undo (`reset`). The rewrite is told to leave `button` as it is, since the About text's last line names it.
-  - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`).
+  - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`, the default).
   - `style_rules` (optional): sentences asked of every rewrite, word for word. A request, not a check.
 - **`about.preview_height`:** `narrow` and `wide`, in px: where the collapsed About text fades, tuned to `bio.yaml`'s `about_text` (#162).
 - **`contact`:** the card's `heading` and `text`.

@@ -27,6 +27,21 @@ describe("githubRepo", () => {
       { url: "https://github.com/b/two" },
       { owner: "b", name: "two" },
     ],
+    [
+      "keeps a dotted name",
+      { github: "https://github.com/a/one.github.io" },
+      { owner: "a", name: "one.github.io" },
+    ],
+    [
+      "drops a trailing .git",
+      { github: "https://github.com/a/one.git" },
+      { owner: "a", name: "one" },
+    ],
+    [
+      "stops at a path, query or fragment",
+      { github: "https://github.com/a/one/tree/main?x=1#readme" },
+      { owner: "a", name: "one" },
+    ],
     ["is null for a `url` that isn't GitHub", {}, null],
     ["is null for a profile `url`", { url: "https://github.com/b" }, null],
   ])("%s", (_, fields, expected) => {

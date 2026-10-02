@@ -527,6 +527,24 @@ def test_another_owner_gets_the_generic_404_without_a_github_call(client, owner)
     get.assert_not_called()
 
 
+def test_a_look_alike_of_an_allowed_owner_is_refused(client, monkeypatch):
+    # The Kelvin sign lower-cases to "k": only the ASCII rule keeps
+    # "\u212aelvin" from passing as an allowed "kelvin".
+    import dataclasses
+
+    from api._lib import github_proxy
+
+    allowed = dataclasses.replace(github_proxy.CONFIG, allowed_owners=frozenset({"kelvin"}))
+    monkeypatch.setattr(github_proxy, "CONFIG", allowed)
+    payload = {"name": "shuffify", "private": False}
+    with patch("api.index.requests.get", return_value=_make_response(200, payload)) as get:
+        assert client.get("/api/v1/github/repo/kelvin/shuffify").status_code == 200
+        get.reset_mock()
+        r = client.get("/api/v1/github/repo/\u212aelvin/shuffify")
+    assert r.status_code == 404
+    get.assert_not_called()
+
+
 def test_a_private_repo_of_an_allowed_owner_is_still_hidden(client):
     from api._lib.site_config import CONFIG
 
