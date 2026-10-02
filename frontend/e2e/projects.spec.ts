@@ -160,6 +160,7 @@ test.describe("Project Detail Page", () => {
     const [project] = await readProjects(async (file) =>
       (await request.get(`/content/projects/${file}`)).text(),
     );
+    expect(project, "index.yaml lists a project").toBeDefined();
 
     // Content arrives late, as on a slow network: "Project Not Found" must
     // never show while it loads (#196 M41). Holding the project index holds
@@ -180,9 +181,14 @@ test.describe("Project Detail Page", () => {
     });
 
     await page.goto(`/projects/${project.id}`);
+    // The loading skeleton shows while the index is held, which also proves
+    // the hold landed.
+    await expect(
+      page.getByRole("status", { name: "Loading project" }),
+    ).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 1, name: project.title }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10_000 });
     expect(
       await page.evaluate(
         () => (window as unknown as { __sawNotFound: boolean }).__sawNotFound,

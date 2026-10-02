@@ -31,10 +31,10 @@ export default defineConfig({
     // Base URL for the dev server
     baseURL: "http://localhost:5173",
 
-    // Trace the first attempt and keep it only if it fails. With flaky tests
-    // failing CI, a flake's trace is then the failing run, not the retry that
-    // passed (#198 M72).
-    trace: "retain-on-first-failure",
+    // On CI, trace the first attempt and keep it only if it fails. With flaky
+    // tests failing CI, a flake's trace is then the failing run, not the retry
+    // that passed (#198 M72). Locally, nothing is traced, as before.
+    trace: process.env.CI ? "retain-on-first-failure" : "off",
 
     // Take screenshot on failure
     screenshot: "only-on-failure",

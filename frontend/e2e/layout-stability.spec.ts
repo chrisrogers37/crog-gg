@@ -59,16 +59,6 @@ const READ = () => {
   }[];
 };
 
-/** Regeneration answered without calling the model, returning one section the
- *  store will accept so the reset button mounts.
- *
- *  The payload used to be an empty `content: {}`, which worked only while
- *  hasModifiedContent was set for reaching the success path at all. It is now
- *  derived from what was actually applied (#142), and an empty content object
- *  is precisely the all-refused case — nothing applied, no reset button, and
- *  these tests time out waiting for one. `about_text` is a key of the real bio
- *  being replaced, which is what the store's validation requires before it will
- *  apply a section. */
 type Page = import("@playwright/test").Page;
 
 /** /about, collapsed, once the preview's entry animation has finished. */
@@ -79,9 +69,9 @@ const openAbout = async (page: Page) => {
 };
 
 /**
- * /about with About expanded, once its entry animation has finished. The
- * expanded panel is told apart by its class: it shares the preview's id, and
- * the preview is still at opacity 1 when its exit starts.
+ * /about with About expanded, once its entry animation has finished. It waits
+ * on the expanded panel's class rather than the shared panel id: defensive,
+ * since by the time `.generate-btn` exists the preview has already gone.
  */
 const expandAbout = async (page: Page) => {
   await openAbout(page);
@@ -90,6 +80,16 @@ const expandAbout = async (page: Page) => {
   await expect(page.locator(".content-section")).toHaveCSS("opacity", "1");
 };
 
+/** Regeneration answered without calling the model, returning one section the
+ *  store will accept so the reset button mounts.
+ *
+ *  The payload used to be an empty `content: {}`, which worked only while
+ *  hasModifiedContent was set for reaching the success path at all. It is now
+ *  derived from what was actually applied (#142), and an empty content object
+ *  is precisely the all-refused case — nothing applied, no reset button, and
+ *  these tests time out waiting for one. `about_text` is a key of the real bio
+ *  being replaced, which is what the store's validation requires before it will
+ *  apply a section. */
 const stubRegenerate = (page: Page) =>
   page.route("**/api/regenerate", (route) =>
     route.fulfill({
@@ -226,10 +226,12 @@ test.describe("undoing a regeneration", () => {
 
     await page.click(".generate-btn");
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
-    // the regeneration has been applied, behind About's own transition
+    // The regeneration lands through About's prop at once, then again through
+    // About's own replay, which shows a spinner for its ~600 ms; wait for both.
     await expect(page.locator(".about-content")).toContainText(
       "stubbed regeneration",
     );
+    await expect(page.locator(".about-content .loading-overlay")).toHaveCount(0);
 
     await page.evaluate(ARM);
     await page.click(".reset-btn");
@@ -280,12 +282,19 @@ test.describe("undoing a regeneration", () => {
     });
     await page.click(".generate-btn");
     await page.waitForSelector(".reset-btn", { timeout: 10000 });
-    // the About section applies a regeneration behind its own ~600ms transition
-    const aboutText = () => page.locator(".about-content").innerText();
-    await expect.poll(aboutText, { intervals: [100] }).not.toBe(original);
+    // The regeneration lands through About's prop at once, then again through
+    // About's own replay, which shows a spinner for its ~600 ms; wait for both.
+    const about = page.locator(".about-content");
+    const replaying = about.locator(".loading-overlay");
+    await expect(about).toContainText(
+      "an arcane placeholder, woven for the test suite",
+    );
+    await expect(replaying).toHaveCount(0);
 
     await page.click(".reset-btn");
-    await expect.poll(aboutText, { intervals: [100] }).toBe(original);
+    await expect(page.locator(".reset-btn")).toHaveCount(0); // the reset committed
+    await expect(replaying).toHaveCount(0); // and About's replay of it landed
+    expect(await about.innerText()).toBe(original);
   });
 });
 
