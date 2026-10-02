@@ -69,7 +69,8 @@
   line-height: 1.55;
 }
 
-/* The early-alpha caveat, in the hero and again by the quickstart. */
+/* A quieter line: the early-alpha caveat in the hero and by the quickstart,
+   and a section's closing note (Updates). */
 .cl-note {
   font-size: 0.9rem;
   color: var(--text-color-secondary);

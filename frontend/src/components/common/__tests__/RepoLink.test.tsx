@@ -51,8 +51,7 @@ describe("RepoLink", () => {
         event.name === "repo_click" ? [event.location] : [],
       );
     expect(repoClicks).toHaveLength(frontPage.length);
-    const locations = repoClicks;
-    expect(locations.sort()).toEqual([
+    expect(repoClicks.sort()).toEqual([
       "footer",
       "header",
       "hero",
