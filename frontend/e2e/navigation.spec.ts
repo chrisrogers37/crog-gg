@@ -302,3 +302,39 @@ test.describe("see more survives a collapse (#165)", () => {
     await expect(page.locator(".section-content")).toBeVisible();
   });
 });
+
+test.describe("With site data blocked (#196 M70)", () => {
+  test("the pages still render, and the theme still switches", async ({
+    page,
+  }) => {
+    // A browser that blocks site data throws on any localStorage access.
+    await page.addInitScript(() => {
+      Object.defineProperty(window, "localStorage", {
+        get() {
+          throw new DOMException("The operation is insecure.", "SecurityError");
+        },
+      });
+    });
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+
+    await page.goto("/");
+    await expect(page.locator(".cl-hero h1")).toBeVisible();
+
+    // The toggle still cycles the theme, kept in memory for the visit.
+    const toggle = page.getByRole("button", { name: /current theme/i }).first();
+    const before = await page.evaluate(() =>
+      document.documentElement.classList.contains("dark"),
+    );
+    await toggle.click();
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.classList.contains("dark")),
+      )
+      .not.toBe(before);
+
+    await page.goto("/about");
+    await expect(page.locator(".about-page h1")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+});

@@ -1,11 +1,10 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
+import { applyTheme, type Theme, UI_STORAGE_KEY } from "./theme";
 
 // ===========================================
 // TYPES
 // ===========================================
-
-type Theme = "light" | "dark" | "system";
 
 interface UIState {
   // Theme
@@ -55,20 +54,7 @@ export const useUIStore = create<UIStore>()(
          */
         setTheme: (theme: Theme) => {
           set({ theme });
-
-          // Apply theme to document
-          const root = document.documentElement;
-          if (theme === "dark") {
-            root.classList.add("dark");
-          } else if (theme === "light") {
-            root.classList.remove("dark");
-          } else {
-            // System preference
-            const prefersDark = window.matchMedia(
-              "(prefers-color-scheme: dark)",
-            ).matches;
-            root.classList.toggle("dark", prefersDark);
-          }
+          applyTheme(theme);
         },
 
         // ===========================================
@@ -90,7 +76,7 @@ export const useUIStore = create<UIStore>()(
         },
       }),
       {
-        name: "ui-storage",
+        name: UI_STORAGE_KEY,
         // Only persist theme preference
         partialize: (state) => ({ theme: state.theme }),
       },
