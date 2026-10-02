@@ -186,10 +186,18 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`                        | yes               | `/api/regenerate` won't work without it                                                                                                                                                         |
 | `GITHUB_TOKEN`                          | yes (effectively) | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints                                                                                    |
-| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). Client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks. |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` | recommended       | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
+| `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
 | `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 | `VITE_SOURCE_REPO_URL`                  | optional          | The repo this site is built from. When set, the footer links to it as "view source"; left empty, there's no link. It's read at build time, so redeploy after changing it.                       |
+
+### Bounding OpenAI spend
+
+- `/api/regenerate` charges its caps before it calls OpenAI, and fails closed: if Redis can't be reached, it answers 503 rather than make an unmetered call (#113).
+- The per-visitor cap (30 rewrites a day) bounds one address. The site-wide cap (`REGEN_GLOBAL_DAILY_MAX`, 300 a day) bounds everyone together, so many addresses can't multiply the spend past it.
+- Both caps live in Redis. The only limit that holds whatever happens here (a cap raised by mistake, say) is a **hard monthly budget in the OpenAI billing dashboard**, which sits outside this infrastructure entirely. Set one.
+- Previews use production's Upstash counters and OpenAI key, so a press on a preview spends production's daily slots (#139).
 
 ### Provisioning Upstash Redis
 

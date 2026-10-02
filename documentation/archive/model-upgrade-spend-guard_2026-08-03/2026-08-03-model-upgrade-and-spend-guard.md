@@ -1,6 +1,6 @@
 # Model upgrade + denial-of-wallet guard (#113)
 
-**Status:** implemented, one verification outstanding (see Bounds)
+**Status:** complete (verified in production, #160/#162). Owner action: a hard budget cap in the OpenAI billing dashboard; the README's "Bounding OpenAI spend" carries the advice now, and ARCHITECTURE.md the fail-closed contract.
 **Scope:** `OPENAI_MODEL` modernisation (requested 2026-08-01) + issue #113 fail-open
 
 These are one job. A model change moves cost-per-call, and the only cost control
