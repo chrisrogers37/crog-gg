@@ -537,16 +537,9 @@ export const useContentStore = create<ContentStore>()(
  */
 
 export const useBio = () => useContentStore((state) => state.bio);
-export const useExperience = () => useContentStore((state) => state.experience);
-export const useEducation = () => useContentStore((state) => state.education);
-export const useSkills = () => useContentStore((state) => state.skills);
 export const useProjects = () => useContentStore((state) => state.projects);
 export const useIsLoading = () => useContentStore((state) => state.isLoading);
-export const useIsRegenerating = () =>
-  useContentStore((state) => state.isRegenerating);
 export const useContentError = () => useContentStore((state) => state.error);
 export const useRegenerationError = () =>
   useContentStore((state) => state.regenerationError);
-export const useHasModifiedContent = () =>
-  useContentStore((state) => state.hasModifiedContent);
 export const useTimeline = () => useContentStore((state) => state.timeline);

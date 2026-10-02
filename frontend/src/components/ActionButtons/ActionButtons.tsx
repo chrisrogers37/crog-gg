@@ -1,6 +1,12 @@
 import { useCooldown } from "../../hooks/useCooldown";
-import { ActionButtonsProps } from "../../types";
 import "./ActionButtons.css";
+
+type ActionButtonsProps = {
+  onRegenerate: () => void;
+  onReset: () => void;
+  isRegenerating: boolean;
+  hasModifiedContent: boolean;
+};
 
 /**
  * ActionButtons Component

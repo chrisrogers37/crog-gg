@@ -4,14 +4,7 @@ export type { Employment, ExperienceData } from "./Experience";
 export type { Education, EducationData } from "./Education";
 export type { Skill, SkillsData } from "./Skills";
 export type { Project } from "./Project";
-export type {
-  ContentState,
-  PartialContentState,
-  ContentProps,
-  PortfolioContent,
-  SectionId,
-  ActionButtonsProps,
-} from "./content";
+export type { ContentState, PortfolioContent } from "./content";
 export type {
   TimelineData,
   TimelineEntry,

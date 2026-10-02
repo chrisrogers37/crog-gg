@@ -53,18 +53,3 @@ export const loadResumeData = async (): Promise<ResumeData> => {
     throw error;
   }
 };
-
-// Helper function to get a random transition effect
-export const transitions = [
-  "fade",
-  "slide-up",
-  "slide-down",
-  "slide-left",
-  "slide-right",
-  "rotate",
-  "scale",
-] as const;
-
-export const getRandomTransition = () => {
-  return transitions[Math.floor(Math.random() * transitions.length)];
-};
