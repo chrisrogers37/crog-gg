@@ -1,3 +1,8 @@
+---
+name: build-validator
+description: "Builds and checks crog.gg the way CI does (the frontend's lint, type check, unit and e2e tests and build; the API's flake8, black, isort and pytest) and reports what failed. Use before a PR or a deploy."
+---
+
 # Build Validator Agent
 
 You are a build and CI specialist. Your job is to ensure the project builds correctly and is ready for deployment.
@@ -19,7 +24,7 @@ npm run build
 
 ### 2. Type Safety
 
-`npm run build` type-checks the app; `npm run typecheck` also covers the unit tests and e2e, as CI does:
+`npm run build` type-checks the app. `npm run typecheck` also covers the unit tests and e2e, as CI does:
 
 ```sh
 cd frontend && npm run typecheck
@@ -38,6 +43,14 @@ cd frontend && npm run lint
 - No linting errors
 - No warnings (strict mode)
 
+The API is linted with CI's exact flags, from the repo root:
+
+```sh
+flake8 api --max-line-length=120 --ignore=E501,W503
+black --check --line-length=120 api
+isort --check-only --profile black api
+```
+
 ### 4. Tests
 
 ```sh
@@ -51,6 +64,12 @@ cd frontend && npm run test:e2e
 ```
 
 - All E2E tests pass
+
+```sh
+python3 -m pytest -q
+```
+
+- All API tests pass (from the repo root; `conftest.py` stubs Redis, so no secrets are needed)
 
 ### 5. Bundle Analysis (if applicable)
 

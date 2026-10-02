@@ -213,12 +213,12 @@ Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robo
 - **CI** (`ci.yml`): Runs automatically on push — lint, test, build
 - No separate deploy workflow; Vercel handles deploys directly from the Git integration
 
-## Tone & Content Style
+## Site copy style (crog.gg instance; forks replace this)
 
-Chris prefers a **casual, lowercase tone** in content:
+The copy uses a **casual, lowercase tone**:
 
 - Use lowercase for casual/friendly copy
-- **NEVER use em-dashes** (—) - use regular dashes or ellipses instead
+- **NEVER use em-dashes** (—) - use regular dashes or ellipses instead. The regenerate prompt's tone anchor (`_TONE_ANCHOR`) holds the model's rewrites to the same rule
 - Keep it conversational, not corporate
 - Example: "alright, here goes..." not "Here's what makes me tick—"
 
