@@ -641,6 +641,8 @@ describe("the cooldown follows the server", () => {
     expect(useContentStore.getState().regenerationError).toBe(
       `${site.regenerate.labels.button} isn't set up on this site.`,
     );
+    // No countdown for a button that can't work.
+    expect(useContentStore.getState().cooldownEndsAt).toBeNull();
   });
 
   it("keeps the button off after the daily cap", async () => {

@@ -1,5 +1,7 @@
 import { test, expect } from "./fixtures";
 import { readProjects } from "../src/utils/projectLoader";
+import { githubRepo, isServedOwner } from "../src/utils/projectLinks";
+import { site } from "./site";
 
 /**
  * Projects Page E2E Tests
@@ -194,5 +196,48 @@ test.describe("Project Detail Page", () => {
         () => (window as unknown as { __sawNotFound: boolean }).__sawNotFound,
       ),
     ).toBe(false);
+  });
+});
+
+test.describe("A deep-linked project page while /api/features answers (#189 M21)", () => {
+  test("doesn't shift when the answer lands", async ({ page, request }) => {
+    const projects = await readProjects(async (file) =>
+      (await request.get(`/content/projects/${file}`)).text(),
+    );
+    const linked = projects.find((project) => {
+      const repo = githubRepo(project);
+      return repo && isServedOwner(site, repo.owner);
+    });
+    test.skip(!linked, "no project links a repo the API serves");
+    test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
+
+    // The answer takes two seconds, and GitHub never answers, so the panels'
+    // skeletons stay put and only the answer could move anything.
+    let answered = false;
+    await page.route("**/api/features", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      answered = true;
+      await route.fulfill({ json: { regenerate: true, github: true } });
+    });
+    await page.route("**/api/v1/github/**", () => new Promise(() => {}));
+    await page.goto(`/projects/${linked!.id}`);
+    await expect(page.locator(".project-footer")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    expect(answered, "the answer was still on its way when sampling began").toBe(false);
+
+    const tops = await page.evaluate(
+      () =>
+        new Promise<number[]>((resolve) => {
+          const seen: number[] = [];
+          const start = performance.now();
+          const sample = () => {
+            seen.push(document.querySelector<HTMLElement>(".project-footer")!.offsetTop);
+            if (performance.now() - start < 2500) requestAnimationFrame(sample);
+            else resolve(seen);
+          };
+          requestAnimationFrame(sample);
+        }),
+    );
+    expect(new Set(tops).size, `the footer's offsets: ${[...new Set(tops)].join(", ")}`).toBe(1);
   });
 });

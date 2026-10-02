@@ -73,14 +73,14 @@ Each section costs the visitor a daily slot, so send only what the page shows (#
 - Each is limited to 30 requests a minute per visitor (failing open), and a 200 is cached at Vercel's edge for an hour.
 - The `/languages` aggregate is cached in Redis for an hour. When that cache can't be read, it answers 503 rather than make 1 + N uncached GitHub calls (#194 M33).
 - `/contributions` asks GitHub's GraphQL API, which needs `GITHUB_TOKEN`.
-- With `features.github: off` in `site.yaml`, every GitHub route answers 404 without calling GitHub (#189).
+- With `features.github: off` in `site.yaml`, every GitHub route answers 404, before its rate limiter and without calling GitHub (`_github_off`, an app-level gate, #189).
 
 ### Metering, identity and failures
 
 - **A visitor** is the client address Vercel reports (`x-real-ip`), with an IPv6 /64 counted as one. With `IP_HASH_SALT` set, it's hashed before it reaches a key or a log line; without it, keys and logs name the address, and the function warns once per cold start.
-- **`/api/features`** says what this deployment can serve, so the page hides the rest: `regenerate` (an OpenAI key and Upstash, and not `off` in `site.yaml`) and `github` (not `off`). It reads no Redis and calls no GitHub, so a fork with neither still gets an answer; browsers cache it for 5 minutes, and the page asks once per visit, giving up after 3 s (#189).
+- **`/api/features`** says what this deployment can serve, so the page hides the rest: `regenerate` (an OpenAI key and Upstash's settings, and not `off` in `site.yaml`; the same rule as `/api/regenerate`'s `regeneration_disabled` exit, plus Upstash) and `github` (not `off`). It reads no Redis and calls no GitHub, so a fork with neither still gets an answer. Vercel's edge keeps it for 5 minutes, and the page asks once per visit, giving up after 3 s. Until it answers, the GitHub panels show (as they will where they're served, so a deep link doesn't shift) and SUMMON doesn't (#189).
 - **`/api/limits`** reports the cooldown, so the page can count it down. `metering_available: false` means Redis is down. A 200 from it is not a health signal (#162).
-- **`/api/health`** answers 200 when the OpenAI key is set, Redis answers a ping, and (when there's a `GITHUB_TOKEN`) GitHub accepts the token and its quota isn't spent; otherwise 503. It caches its answer for 30 s, and uptime monitors use it.
+- **`/api/health`** answers 200 when what the deployment serves works: for SUMMON, the OpenAI key is set and Redis answers a ping; for the GitHub panels, when there's a `GITHUB_TOKEN`, GitHub accepts it and its quota isn't spent. Otherwise 503. A feature the deployment doesn't serve is skipped: one `site.yaml` turns off, or SUMMON in `auto` with neither its key nor Upstash set, as on a fork that hasn't added them (one without the other fails). It caches its answer for 30 s, and uptime monitors use it.
 
 ## Decisions
 

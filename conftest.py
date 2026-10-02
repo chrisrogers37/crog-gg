@@ -69,6 +69,8 @@ def _no_real_openai():
     client.chat.completions.create.side_effect = AssertionError("unexpected OpenAI call")
     with patch("api.index.openai_client", client):
         yield
+    # A press the handler turned into a failed section still fails the test.
+    client.chat.completions.create.assert_not_called()
 
 
 @pytest.fixture

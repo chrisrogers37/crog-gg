@@ -1,3 +1,4 @@
+import type { SiteConfig } from "../config/schema";
 import type { Project } from "../types/Project";
 
 /**
@@ -26,3 +27,13 @@ export const hasLiveDemo = (project: Project): boolean =>
   !!project.demo &&
   !project.demo.includes("github.com") &&
   project.demo.replace(/\/$/, "") !== project.url?.replace(/\/$/, "");
+
+/**
+ * Whether the API serves this GitHub owner's repos: site.yaml's
+ * github.username or one of its allowed_owners, in any case (#189). Any
+ * other owner's repo gets the API's 404.
+ */
+export const isServedOwner = (site: Pick<SiteConfig, "github">, owner: string): boolean =>
+  [site.github.username, ...(site.github.allowed_owners ?? [])].some(
+    (name) => name.toLowerCase() === owner.toLowerCase(),
+  );

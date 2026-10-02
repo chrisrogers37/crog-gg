@@ -122,7 +122,9 @@ def _github_name(value: Any, key: str, source: Path) -> str:
 
 
 def _mode(data: Any, key: str, source: Path) -> str:
-    mode = _at(data, key, source, None) or "auto"
+    mode = _at(data, key, source, None)
+    if mode is None or mode == "":
+        return "auto"
     if mode not in FEATURE_MODES:
         raise SiteConfigError(f"{source}: {key} must be one of {', '.join(FEATURE_MODES)}")
     return mode

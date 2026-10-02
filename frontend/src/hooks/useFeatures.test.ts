@@ -10,10 +10,13 @@ const SERVED = { regenerate: true, github: true };
 
 const INITIAL_UI = useUIStore.getState();
 const SITE_FEATURES = site.features;
+const SITE_GITHUB = site.github;
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   useUIStore.setState(INITIAL_UI, true);
   site.features = SITE_FEATURES;
+  site.github = SITE_GITHUB;
 });
 
 const answering = (response: () => Promise<Response>) => {
@@ -23,12 +26,14 @@ const answering = (response: () => Promise<Response>) => {
 };
 
 describe("fetchFeatures", () => {
-  it("asks GET /api/features, and gives up after a while", async () => {
+  it("asks GET /api/features, and gives up after 3 s", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
     const fetchMock = answering(async () => Response.json(ANSWER));
     expect(await fetchFeatures()).toEqual(SERVED);
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toMatch(/\/api\/features$/);
-    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(timeout).toHaveBeenCalledWith(3000);
+    expect(init.signal).toBe(timeout.mock.results[0].value);
   });
 
   it.each([
@@ -51,9 +56,10 @@ describe("useFeatures", () => {
 });
 
 describe("what shows, by site.yaml's mode and the API's answer", () => {
-  const set = (mode: "auto" | "on" | "off" | undefined, served: boolean) => {
+  /** `served`: what the API answered, or null before it has. */
+  const set = (mode: "auto" | "on" | "off" | undefined, served: boolean | null) => {
     site.features = { regenerate: mode, github: mode };
-    useUIStore.setState({ features: served ? SERVED : NO_FEATURES });
+    useUIStore.setState({ features: served === null ? null : served ? SERVED : NO_FEATURES });
   };
 
   it.each([
@@ -64,6 +70,9 @@ describe("what shows, by site.yaml's mode and the API's answer", () => {
     ["auto", false, false],
     [undefined, true, true],
     [undefined, false, false],
+    // Before the answer: the buttons need a click first, by which time it's in.
+    ["auto", null, false],
+    ["on", null, true],
   ] as const)("SUMMON with %s, served %s: %s", (mode, served, shown) => {
     set(mode, served);
     expect(renderHook(() => useRegenerateOn()).result.current).toBe(shown);
@@ -77,9 +86,21 @@ describe("what shows, by site.yaml's mode and the API's answer", () => {
     ["auto", true, "OctoCat", true],
     ["auto", true, "someone-else", false],
     ["auto", false, "octocat", false],
+    // Before the answer they show, so a deep link doesn't shift when it lands.
+    ["auto", null, "octocat", true],
+    ["off", null, "octocat", false],
+    ["auto", null, "someone-else", false],
   ] as const)("GitHub with %s, served %s, for %s: %s", (mode, served, owner, shown) => {
     set(mode, served);
     expect(renderHook(() => useGithubOn(owner)).result.current).toBe(shown);
+  });
+
+  it("reads site.yaml's owners as they are when asked, in any case", () => {
+    set("auto", true);
+    site.github = { username: "OctoCat", allowed_owners: ["Other-Org"] };
+    expect(renderHook(() => useGithubOn("other-org")).result.current).toBe(true);
+    expect(renderHook(() => useGithubOn("OCTOCAT")).result.current).toBe(true);
+    expect(renderHook(() => useGithubOn("someone-else")).result.current).toBe(false);
   });
 
   it("shows no GitHub panels without a repo", () => {

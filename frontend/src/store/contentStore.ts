@@ -1,7 +1,7 @@
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import site from "virtual:site-config";
 import { API_URL } from "../config/api";
-import { devtools } from "zustand/middleware";
 import { BioData, Employment, Education, Skill, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
 import { loadResumeData } from "../data/resume";
@@ -91,7 +91,6 @@ const initialState: ContentState = {
 // ===========================================
 // API HELPERS
 // ===========================================
-
 
 // Just above the 60 s the API function is allowed (#195 M37), so the server
 // always gets to answer first.

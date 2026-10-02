@@ -553,6 +553,23 @@ def _metering_unavailable(_exc):
     )
 
 
+def _rewrite_enabled() -> bool:
+    """Whether this deployment may rewrite: it has an OpenAI key, and site.yaml
+    doesn't turn regeneration off (#189 M21). Metering is #113's question,
+    asked later: without Upstash a press still gets that 503."""
+    return openai_client is not None and CONFIG.regenerate_mode != "off"
+
+
+@app.before_request
+def _github_off():
+    """With features.github: off in site.yaml, every GitHub route is a 404,
+    before its rate limiter and without a GitHub call (#189 M21). Registered
+    at the app level, so a GitHub route added later is covered too."""
+    if CONFIG.github_mode == "off" and request.path.startswith("/api/v1/github/"):
+        return jsonify({"error": "Not found"}), 404
+    return None
+
+
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
     deadline = time.monotonic() + REGEN_DEADLINE_SECONDS
@@ -603,7 +620,7 @@ def regenerate_content():
     # Nothing to meter or spend when this deployment can't rewrite: no key, or
     # site.yaml turns it off (#189 M21). Before the cooldown, so it reads no
     # Redis; the page says the button isn't set up here.
-    if openai_client is None or CONFIG.regenerate_mode == "off":
+    if not _rewrite_enabled():
         return (
             jsonify(
                 {
@@ -738,18 +755,20 @@ def regenerate_content():
 @app.route("/api/features", methods=["GET"])
 def get_features():
     """What this deployment can serve, so the page hides what it can't (#189
-    M21): SUMMON needs an OpenAI key and Upstash, and neither is off in
-    site.yaml. Free to call: no Redis or GitHub request, so a fork with
-    neither still gets an answer."""
+    M21): SUMMON needs an OpenAI key and Upstash's settings, and site.yaml
+    not to turn it off; the GitHub panels only that. Free to call: no Redis or
+    GitHub request, so a fork with neither still gets an answer.
+
+    Vercel's edge keeps the answer for five minutes, so a visit seldom waits
+    on the function; a deploy, which is what changes the answer, starts the
+    cache afresh."""
     resp = jsonify(
         {
-            "regenerate": CONFIG.regenerate_mode != "off"
-            and openai_client is not None
-            and redis_client.is_configured(),
+            "regenerate": _rewrite_enabled() and redis_client.is_configured(),
             "github": CONFIG.github_mode != "off",
         }
     )
-    resp.headers["Cache-Control"] = "public, max-age=300"
+    resp.headers["Cache-Control"] = "public, max-age=300, s-maxage=300, stale-while-revalidate=86400"
     return resp
 
 
@@ -825,21 +844,28 @@ def _github_core_remaining():
 
 def _run_health_checks():
     """Run every check, the two network calls side by side, and stamp the result
-    with the time it finished, so a slow refresh still counts its full 30 s."""
+    with the time it finished, so a slow refresh still counts its full 30 s.
+
+    A feature this deployment doesn't serve isn't a failure of it (#189 M21):
+    site.yaml turns it off, or, for SUMMON in `auto`, neither its key nor
+    Upstash is set, as on a fork that hasn't added them. One of the two
+    without the other is a misconfiguration, and fails."""
+    github_served = CONFIG.github_mode != "off"
     with ThreadPoolExecutor(max_workers=2) as pool:
         ping = pool.submit(_redis_ping)
-        remaining = pool.submit(_github_core_remaining)
+        remaining = pool.submit(_github_core_remaining) if github_served else None
         checks = {
             "openai_key": openai_client is not None,
             "redis_configured": redis_client.is_configured(),
             "redis_ping": ping.result(),
             "github_token": bool(GITHUB_TOKEN),
-            "github_core_remaining": remaining.result(),
+            "github_core_remaining": remaining.result() if remaining else None,
         }
-    ok = (
-        checks["openai_key"]
-        and checks["redis_ping"]
-        and (not checks["github_token"] or bool(checks["github_core_remaining"]))
+    rewrite_expected = CONFIG.regenerate_mode == "on" or (
+        CONFIG.regenerate_mode == "auto" and (checks["openai_key"] or checks["redis_configured"])
+    )
+    ok = (not rewrite_expected or (checks["openai_key"] and checks["redis_ping"])) and (
+        not github_served or not checks["github_token"] or bool(checks["github_core_remaining"])
     )
     return time.monotonic(), {"ok": ok, "checks": checks}, 200 if ok else 503
 
@@ -852,8 +878,10 @@ def _is_fresh(entry) -> bool:
 def health():
     """Whether this deployment can serve its features, for an uptime monitor (#195).
 
-    200 when the OpenAI key is set, Redis answers a PING, and the GitHub token
-    (if one is set) still works and has quota left; 503 otherwise. The body
+    200 when what it serves works: for SUMMON, the OpenAI key is set and Redis
+    answers a PING; for the GitHub panels, the token (if one is set) still
+    works and has quota left. 503 otherwise. A feature it doesn't serve is
+    skipped (see _run_health_checks). The body
     always lists every check, so a 503 says which one failed. It never calls
     OpenAI, which would spend money on every poll. /api/limits isn't a health
     check either: it answers null on purpose during an outage.
@@ -930,9 +958,6 @@ def get_repo_languages(repo_name):
 def get_all_languages_v1():
     if (resp := _gh_rate_limit_or_429("languages_all")) is not None:
         return resp
-    if CONFIG.github_mode == "off":
-        return jsonify({"error": "Not found"}), 404
-
     # A cache that can't be read is a refusal, not a miss: a miss fans out to
     # GitHub (1 + N calls), and during an Upstash outage every request would,
     # spending the token's quota for every project page (#194 M33).
@@ -980,9 +1005,6 @@ def get_all_languages_v1():
 def get_contributions():
     if (resp := _gh_rate_limit_or_429("contributions")) is not None:
         return resp
-    if CONFIG.github_mode == "off":
-        return jsonify({"error": "Not found"}), 404
-
     github_token = os.environ.get("GITHUB_TOKEN")
     if not github_token:
         return jsonify({"error": "GitHub token required for contribution data"}), 500

@@ -94,7 +94,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source", at the commit the site was built from when Vercel names it (`VERCEL_GIT_COMMIT_SHA`).
 - **`sections`:** the personal page's tabs (at `/about`, or `/` with `home: profile`), in order: `about`, `journey`, `projects` and `music`, each with a `label`. `about` is required, since the collapsed preview is About's; leave another out to hide it.
 - **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the header types out).
-- **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189).
+- **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189). It stays required with `features.regenerate: off`.
   - `labels`: the button's words, idle (`button`), while it works (`busy`), and the undo (`reset`). The rewrite is told to leave `button` as it is, since the About text's last line names it.
   - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`, the default).
   - `style_rules` (optional): sentences asked of every rewrite, word for word. A request, not a check. Keep them narrow: casing, formality and voice are the register's to choose, so a rule such as "write in lowercase" fights every register the button picks. A mark that is wrong in every register (the owner's em-dash rule) is the kind that works.

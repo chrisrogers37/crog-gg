@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, devtools, createJSONStorage } from "zustand/middleware";
 import { applyTheme, type Theme } from "./theme";
-import { NO_FEATURES, type Features } from "../config/features";
+import type { Features } from "../config/features";
 
 // ===========================================
 // TYPES
@@ -14,9 +14,9 @@ interface UIState {
   // Mobile
   isMobileMenuOpen: boolean;
 
-  // What this deployment serves (GET /api/features). Not persisted: each
-  // visit asks again.
-  features: Features;
+  // What this deployment serves (GET /api/features), or null until it
+  // answers. Not persisted: each visit asks again.
+  features: Features | null;
 }
 
 interface UIActions {
@@ -39,7 +39,7 @@ type UIStore = UIState & UIActions;
 const initialState: UIState = {
   theme: "light", // Default to light as per user preference
   isMobileMenuOpen: false,
-  features: NO_FEATURES,
+  features: null,
 };
 
 // ===========================================

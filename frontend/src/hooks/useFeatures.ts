@@ -3,6 +3,7 @@ import site from "virtual:site-config";
 import { API_URL } from "../config/api";
 import { NO_FEATURES, isOn, parseFeatures, type Features } from "../config/features";
 import { useUIStore } from "../store/uiStore";
+import { isServedOwner } from "../utils/projectLinks";
 
 /** How long the page waits for the API's answer before showing nothing. */
 const FEATURES_TIMEOUT_MS = 3000;
@@ -28,34 +29,28 @@ export async function fetchFeatures(): Promise<Features> {
 export function useFeatures() {
   const setFeatures = useUIStore((state) => state.setFeatures);
   useEffect(() => {
-    let current = true;
-    void fetchFeatures().then((features) => {
-      if (current) setFeatures(features);
-    });
-    return () => {
-      current = false;
-    };
+    void fetchFeatures().then(setFeatures);
   }, [setFeatures]);
 }
 
-/** Whether SUMMON shows: site.yaml's features.regenerate, else the API's answer. */
+/**
+ * Whether SUMMON shows: site.yaml's features.regenerate, else the API's
+ * answer. Not before it answers: the buttons need a click first, by which
+ * time it has.
+ */
 export function useRegenerateOn(): boolean {
-  const served = useUIStore((state) => state.features.regenerate);
+  const served = useUIStore((state) => state.features?.regenerate ?? false);
   return isOn(site.features?.regenerate, served);
 }
 
-/** The owners whose public repos the API serves, as site.yaml names them. */
-const SERVED_OWNERS = new Set(
-  [site.github.username, ...(site.github.allowed_owners ?? [])].map((name) => name.toLowerCase()),
-);
-
 /**
  * Whether a repo's stats and README show: site.yaml's features.github, else
- * the API's answer, and only for an owner the API serves (any other gets its
- * 404). No repo, nothing to show.
+ * the API's answer, and only for an owner the API serves. While the answer is
+ * on its way they show, as they will on a deployment that serves them, so a
+ * deep link doesn't shift when it lands. No repo, nothing to show.
  */
 export function useGithubOn(owner: string | undefined): boolean {
-  const served = useUIStore((state) => state.features.github);
-  if (owner === undefined || !SERVED_OWNERS.has(owner.toLowerCase())) return false;
+  const served = useUIStore((state) => state.features?.github ?? true);
+  if (owner === undefined || !isServedOwner(site, owner)) return false;
   return isOn(site.features?.github, served);
 }

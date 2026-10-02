@@ -587,13 +587,16 @@ def test_github_off_in_site_yaml_is_a_404_without_a_github_call(client, monkeypa
     import dataclasses
 
     import api.index as index
-    from api._lib import github_proxy
 
-    off = dataclasses.replace(index.CONFIG, github_mode="off")
-    monkeypatch.setattr(index, "CONFIG", off)
-    monkeypatch.setattr(github_proxy, "CONFIG", off)
-    with patch("api.index.requests.get") as get, patch("api.index.requests.post") as post:
+    monkeypatch.setattr(index, "CONFIG", dataclasses.replace(index.CONFIG, github_mode="off"))
+    with (
+        patch("api.index.requests.get") as get,
+        patch("api.index.requests.post") as post,
+        patch("api.index.rate_limit.check_and_consume") as consume,
+    ):
         r = client.get(path)
     assert r.status_code == 404
     get.assert_not_called()
     post.assert_not_called()
+    # Before the rate limiter, so not even Redis is asked.
+    consume.assert_not_called()

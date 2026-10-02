@@ -139,3 +139,10 @@ def test_off_and_on_set_a_feature_as_written(tmp_path):
     path = _with(tmp_path, "\nregenerate:\n", "\nfeatures:\n  regenerate: off\n  github: on\nregenerate:\n")
     config = load(path)
     assert (config.regenerate_mode, config.github_mode) == ("off", "on")
+
+
+def test_a_mode_of_false_is_a_mistake_not_auto(tmp_path):
+    # schema.ts rejects it too: "off" is the word (#243's review).
+    path = _with(tmp_path, "\nregenerate:\n", "\nfeatures:\n  regenerate: false\nregenerate:\n")
+    with pytest.raises(SiteConfigError, match=r"features\.regenerate must be one of auto, on, off"):
+        load(path)

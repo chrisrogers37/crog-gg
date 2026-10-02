@@ -26,10 +26,13 @@ def no_metering():
 
 def _disabled(r):
     assert r.status_code == 503
-    body = r.get_json()
-    assert body["success"] is False
-    assert body["code"] == "regeneration_disabled"
-    assert body["error"] == "Regeneration isn't set up on this site"
+    # Exactly this: no cooldown_total, so the page starts no 30 s countdown
+    # for a button that can't work (#189 M21).
+    assert r.get_json() == {
+        "success": False,
+        "code": "regeneration_disabled",
+        "error": "Regeneration isn't set up on this site",
+    }
 
 
 def test_no_key_is_disabled_before_any_metering(client, no_metering):

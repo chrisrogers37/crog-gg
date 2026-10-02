@@ -178,7 +178,13 @@ describe("ProjectDetailPage's GitHub panels", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it.each([
-    ["the API hasn't answered, or couldn't", () => {}, false],
+    // As on a deployment that serves them, so a deep link doesn't shift.
+    ["the API hasn't answered yet", () => {}, true],
+    [
+      "the API couldn't answer",
+      () => useUIStore.setState({ features: { regenerate: false, github: false } }),
+      false,
+    ],
     ["the API serves GitHub (the owner in any case)", githubServed, true],
     [
       "site.yaml turns GitHub off",

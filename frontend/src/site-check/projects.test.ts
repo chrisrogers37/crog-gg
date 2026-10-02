@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import site from "virtual:site-config";
 import type { Project } from "../types/Project";
-import { githubRepo, hasLiveDemo } from "../utils/projectLinks";
+import { githubRepo, hasLiveDemo, isServedOwner } from "../utils/projectLinks";
 import { shippedProjects } from "../test/content";
 import { frameSrc } from "../test/csp";
 
@@ -37,11 +37,9 @@ describe("the shipped projects", () => {
     if (linked.length === 0) ctx.skip(); // no project links a repo
     // The API serves the public repos of github.username (and any
     // allowed_owners), so another owner's repo would show no stats or README.
-    const owners = [site.github.username, ...(site.github.allowed_owners ?? [])].map(
-      (name) => name.toLowerCase(),
-    );
     for (const project of linked) {
-      expect(owners, project.id).toContain(githubRepo(project)?.owner.toLowerCase());
+      const owner = githubRepo(project)!.owner;
+      expect(isServedOwner(site, owner), `${project.id}: ${owner}`).toBe(true);
     }
   });
 

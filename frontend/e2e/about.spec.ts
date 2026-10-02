@@ -275,15 +275,14 @@ test.describe("Contact CTA", () => {
 
 test.describe("Where SUMMON isn't served (#189 M21)", () => {
   // What a deployment with no OpenAI key or no Upstash answers.
-  test.use({ features: { regenerate: false, github: false } });
+  test.use({ features: { regenerate: false, github: true } });
 
   test("the page offers no regenerate button", async ({ page }) => {
     test.skip(site.features?.regenerate === "on", "site.yaml shows it whatever the API says");
-    test.skip(!SECOND, "needs a tab other than About");
-    // The panel is the node whose mount brings the buttons, so once it's in,
-    // they would be too.
-    await page.locator(`button[data-section="${SECOND.id}"]`).click();
-    await expect(page.getByRole("tabpanel", { name: named(SECOND.label) })).toBeVisible();
+    // Expanding About mounts the panel whose mount brings the buttons, so
+    // once it's in, they would be too.
+    await page.getByRole("tab", { name: named(ABOUT.label) }).click();
+    await expect(page.locator(".content-section")).toBeVisible();
     await expect(page.locator(".generate-btn")).toHaveCount(0);
   });
 });
