@@ -15,6 +15,7 @@ import {
   ProjectDemo,
 } from "../../components/features";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
+import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
 import "./ProjectDetailPage.css";
 
 function ProjectDetailSkeleton() {
@@ -82,19 +83,8 @@ export function ProjectDetailPage() {
     );
   }
 
-  // Extract GitHub repo name. Prefer the explicit `github` field; fall back to
-  // `url` for entries whose primary link is the repo itself. Reading only `url`
-  // meant a declared `github` was silently ignored, so any project pointing at a
-  // live app got no repo stats and no docs.
-  const githubSource = project.github || project.url;
-  const githubRepoMatch = githubSource?.match(/github\.com\/[\w-]+\/([\w-]+)/);
-  const githubRepoName = githubRepoMatch ? githubRepoMatch[1] : null;
-
-  // A demo only earns its own button when it goes somewhere `url` doesn't.
-  const hasLiveDemo =
-    project.demo &&
-    !project.demo.includes("github.com") &&
-    project.demo.replace(/\/$/, "") !== project.url?.replace(/\/$/, "");
+  const githubRepoName = githubRepo(project)?.name ?? null;
+  const liveDemo = hasLiveDemo(project);
 
   return (
     <>
@@ -135,7 +125,7 @@ export function ProjectDetailPage() {
                     : "View Project"}
                 </a>
               )}
-              {hasLiveDemo && (
+              {liveDemo && (
                 <a
                   href={project.demo}
                   target="_blank"
@@ -174,7 +164,7 @@ export function ProjectDetailPage() {
         )}
 
         {/* Live Demo */}
-        {hasLiveDemo && (
+        {liveDemo && (
           <section className="project-section">
             <ErrorBoundary compact>
               <ProjectDemo url={project.demo!} title={project.title} />

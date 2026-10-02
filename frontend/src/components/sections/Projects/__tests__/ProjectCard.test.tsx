@@ -8,7 +8,7 @@ const mockProject: Project = {
   title: "Test Project",
   description: "A test project description",
   url: "https://example.com",
-  icon: "fas fa-code",
+  icon: "\u{1F680}",
   category: "web-app",
   technologies: ["React", "TypeScript"],
   featured: false,
@@ -26,6 +26,13 @@ describe("ProjectCard", () => {
     renderCard(mockProject);
     expect(screen.getByText("Test Project")).toBeInTheDocument();
     expect(screen.getByText("A test project description")).toBeInTheDocument();
+  });
+
+  it("renders the icon as the emoji it is", () => {
+    const { container } = renderCard(mockProject);
+    expect(container.querySelector(".project-tile-icon")).toHaveTextContent(
+      "\u{1F680}",
+    );
   });
 
   it("renders technology pills", () => {
