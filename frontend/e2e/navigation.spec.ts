@@ -304,17 +304,20 @@ test.describe("see more survives a collapse (#165)", () => {
 });
 
 test.describe("With site data blocked (#196 M70)", () => {
-  test("the pages still render, and the theme still switches", async ({
+  // A browser that blocks site data throws on any localStorage access; Firefox
+  // with storage turned off returns null instead.
+  for (const blocked of ["throws", "is null"] as const) {
+  test(`the pages still render, and the theme still switches (localStorage ${blocked})`, async ({
     page,
   }) => {
-    // A browser that blocks site data throws on any localStorage access.
-    await page.addInitScript(() => {
+    await page.addInitScript((mode) => {
       Object.defineProperty(window, "localStorage", {
         get() {
+          if (mode === "is null") return null;
           throw new DOMException("The operation is insecure.", "SecurityError");
         },
       });
-    });
+    }, blocked);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
 
@@ -337,6 +340,7 @@ test.describe("With site data blocked (#196 M70)", () => {
     await expect(page.locator(".about-page h1")).toBeVisible();
     expect(errors).toEqual([]);
   });
+  }
 });
 
 test.describe("The system theme (#196 M70)", () => {

@@ -26,8 +26,8 @@ export function RepoStats({ repoName }: RepoStatsProps) {
     async function fetchRepo() {
       // Another repo starts from nothing, and a late answer for the last one
       // is ignored, so its figures never show on this one's page (#196 M68).
-      // The detail page also keys this by project; this keeps RepoStats right
-      // for a caller that doesn't.
+      // The detail page also keys this by project. For a caller that doesn't,
+      // this still clears the last repo's figures, a frame after the change.
       setRepo(null);
       setIsLoading(true);
       try {

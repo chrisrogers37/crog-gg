@@ -8,9 +8,10 @@ import { useUIStore } from "./store/uiStore";
 import { applyTheme, DARK_QUERY } from "./store/theme";
 
 // The store has already loaded the saved theme, or kept the default when site
-// data is blocked (#196 M70). It goes on <html> before React renders, so the
-// first paint is in it, and again whenever the OS theme switches, which shows
-// under "system".
+// data is blocked (#196 M70). It goes on <html> before React renders, so
+// React's first paint is in it, and again whenever the OS theme switches, which
+// shows under "system". (The HTML shell can still paint light before the
+// scripts run; an inline script would need a CSP hash.)
 const applyCurrentTheme = () => applyTheme(useUIStore.getState().theme);
 applyCurrentTheme();
 window.matchMedia(DARK_QUERY).addEventListener("change", applyCurrentTheme);

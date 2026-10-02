@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist, devtools } from "zustand/middleware";
+import { persist, devtools, createJSONStorage } from "zustand/middleware";
 import { applyTheme, type Theme } from "./theme";
 
 // ===========================================
@@ -53,8 +53,10 @@ export const useUIStore = create<UIStore>()(
          * Set the theme preference.
          */
         setTheme: (theme: Theme) => {
-          set({ theme });
+          // Applied before it's stored: a storage write that throws (a full
+          // quota, say) mustn't leave the page and the toggle disagreeing.
           applyTheme(theme);
+          set({ theme });
         },
 
         // ===========================================
@@ -77,6 +79,14 @@ export const useUIStore = create<UIStore>()(
       }),
       {
         name: "ui-storage",
+        // A null localStorage (Firefox with storage turned off) counts as
+        // unavailable, like one that throws, so the store runs in memory. Then
+        // useUIStore.persist is undefined: nothing may call rehydrate() at
+        // startup.
+        storage: createJSONStorage(() => {
+          if (!window.localStorage) throw new Error("localStorage is unavailable");
+          return window.localStorage;
+        }),
         // Only persist theme preference
         partialize: (state) => ({ theme: state.theme }),
       },
