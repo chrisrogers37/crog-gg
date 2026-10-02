@@ -16,9 +16,10 @@ The frontend and the API share one origin, so production needs no CORS. `vercel.
 
 ## Frontend
 
-- **Routes** (`frontend/src/router.tsx`):
+- **Routes** (`frontend/src/router.tsx`), with `home: landing` in `site/site.yaml`:
   - `/` is the Claudlobby landing page, in the main bundle.
   - `/about`, `/projects` and `/projects/:slug` load as their own chunks.
+  - With `home: profile`, the personal page is `/` and there's no `/about`; the sitemap and the prerendered pages follow.
   - Anything else is the 404 page.
 - **Prerendering:** the build (`frontend/scripts/vite-prerender.ts`) writes each landing page's `<head>` (title, description, social card) into its own HTML file. So `/projects/<id>` is served from `projects/<id>.html`, and a crawler sees the right tags without running JavaScript. An unknown path gets `404.html` with a real 404 status (#174). The sitemap is generated from the same page list, and robots.txt points to it.
 - **The owner's identity:** `site/site.yaml`, checked and baked in at build time. The `site()` plugin (`frontend/scripts/vite-site.ts`) serves it to the app as `virtual:site-config` and makes `site/public` the public folder. The build's own code (the prerender) can't import the virtual module, because `vite.config.ts` loads before any plugin; it calls `siteConfig()` (`frontend/scripts/site-config.ts`), and `createSeo(site)` (`frontend/src/seo/site.ts`) builds the heads from either (#188).
