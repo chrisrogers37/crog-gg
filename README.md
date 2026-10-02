@@ -2,46 +2,33 @@
 
 [![CI](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml)
 
-An interactive portfolio website featuring dynamic content generation using OpenAI's GPT-3.5. The site showcases professional experience, projects, and musical endeavors with a unique twist - content can be regenerated on demand for a fresh perspective!
+crog.gg is two sites in one:
+- **`/` is the front door for [Claudlobby](https://github.com/Claudfather/Claudlobby)**, Chris Rogers's agent-fleet compositor for software "dark factories": what it is, a quickstart, the roadmap, and how to follow releases.
+- **`/about` is Choose Your Own Chris**, the personal portfolio. Its About text can be rewritten on demand by an AI model, as lore in a different register each time.
 
 ## Features
 
-### Dynamic Content Generation
+### The Claudlobby landing page (`/`)
 
-- **AI-Powered Regeneration**: Uses OpenAI's GPT-3.5 to create unique variations of content while maintaining factual accuracy
-- **Fantasy Mode**: Transform professional experiences into epic fantasy narratives
-- **Section-Specific Updates**: Ability to regenerate individual sections or the entire portfolio
-- **Smooth Transitions**: Elegant animations when content changes
+- A hero with the quickstart and a star call to action, then the dark-factory picture, why it exists, the quickstart, the roadmap, and release updates.
+- Links to the repo's front page all go through one `RepoLink`, so Vercel Web Analytics counts each click and where it was (`repo_click`). It also counts `quickstart_click` and `updates_click`.
 
-### Professional Sections
+### Choose Your Own Chris (`/about`)
 
-- **About Me**: Dynamic biography and professional summary
-- **Experience**: Interactive work history with achievements
-- **Education**: Academic background and qualifications
-- **Skills**: Comprehensive list of technical and professional skills
+- **Four tabs:** About, Journey (a career timeline whose skill bubbles light up as you scroll), Projects, and Music (a Spotify embed and links).
+- **SUMMON NEW LORE** rewrites the About text with OpenAI's `gpt-5.6-luna` (`OPENAI_MODEL` in `api/index.py`), told in a randomly picked register each press: a tavern song, a bestiary entry, sworn testimony. The model is told to keep the facts and numbers, and the email and links are put back after every rewrite. **DISPEL ENCHANTMENT** restores the original.
+- **Rate limits** on `/api/regenerate`: a 30 s cooldown, plus daily caps of 30 section rewrites per visitor and 300 site-wide. An IPv6 /64 counts as one visitor. They're backed by Upstash Redis, and the paid endpoint refuses to run without it (see [Troubleshooting](#troubleshooting)).
 
-### Portfolio Integration
+### Projects (`/projects`)
 
-- **Technical Projects**: Showcase of development work and side projects
-- **Music Portfolio**: Integration with Spotify artist profile
-- **Social Links**: Connected profiles and professional networks
+- A searchable grid, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only (30 requests a minute per visitor).
 
-### Technical Features
+### Under the hood
 
-- **Modern Stack**: React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function
-- **Responsive Design**: Mobile-friendly layout with CSS Grid and Flexbox
-- **Same-Origin API**: Frontend and `/api/*` served from the same Vercel domain — no CORS in production
-- **Error Handling**: Robust error management for API interactions
-- **Rate Limiting**: on `/api/regenerate`, a 30s cooldown plus daily caps of 30 section rewrites per visitor and 300 site-wide; a sliding-window limiter (30/min) on GitHub endpoints. An IPv6 /64 counts as one visitor. Backed by Upstash Redis
-- **Smooth Animations**: Framer Motion transitions for content updates
-
-### Testing & CI/CD
-
-- **Unit Testing**: Vitest with React Testing Library
-- **E2E Testing**: Playwright for browser automation
-- **Continuous Integration**: GitHub Actions for automated testing
-- **Code Quality**: ESLint + TypeScript strict mode; flake8 / black / isort for Python (`api/`)
-- **Git Hooks**: Husky pre-commit (lint-staged) + pre-push (the frontend's lint, type check, build and tests when `frontend/` changed; CI's Python lint and pytest when the Python side changed)
+- **One origin:** the static frontend and the Flask API (`/api/*`) are served from the same Vercel domain, so there's no CORS in production.
+- **Prerendered heads:** each landing page ships its own title, description and social card, and the sitemap and robots.txt are generated from the same page list at build time.
+- **Light and dark themes**, following the OS unless you pick one.
+- **Quality gates:** ESLint and TypeScript strict mode for the frontend; flake8, black and isort for `api/`; Vitest, Playwright and pytest; Husky hooks locally (see CLAUDE.md), and CI on every PR.
 
 ## Tech Stack
 
@@ -52,11 +39,12 @@ An interactive portfolio website featuring dynamic content generation using Open
 - Vite
 - Tailwind CSS + CSS Variables for theming
 - Framer Motion for animations
+- Zustand for state, react-router for routing
 
 ### Backend
 
 - Flask (`api/index.py`) deployed as a single Vercel Python Function under Fluid Compute
-- OpenAI API
+- OpenAI API (`gpt-5.6-luna`)
 - Python 3.12 (`.python-version`). `requirements.in` lists `flask`, `flask-cors`, `openai` and `requests`; `requirements.txt` is the hash-pinned lock generated from it
 - Upstash Redis (via Vercel Marketplace) for rate-limit and cooldown state
 
@@ -135,9 +123,14 @@ npm run typecheck
 
 # Run tests with coverage report
 npm run test:coverage
+```
 
-# Run tests with UI
-npm run test:ui
+### Running the API Tests
+
+`conftest.py` stubs Redis, so pytest needs no secrets. From the repo root, with `requirements-dev.txt` installed:
+
+```bash
+python3 -m pytest -q
 ```
 
 ### Running E2E Tests
@@ -160,13 +153,17 @@ npm run test:e2e:headed
 
 ### CI/CD
 
-The project uses GitHub Actions for continuous integration. On every push to `main` and on pull requests:
+GitHub Actions runs CI (`.github/workflows/ci.yml`) on every push to `main` and every pull request into it. It needs no secrets.
 
-1. **Frontend Lint**: Runs ESLint to check code quality
-2. **Frontend Unit Tests**: Runs Vitest with coverage reporting
-3. **Frontend E2E Tests**: Runs Playwright browser tests
-4. **Frontend Build**: Verifies production build succeeds
-5. **API Lint**: Runs flake8, black, and isort against `api/`
+1. **Frontend Lint**: ESLint.
+2. **Frontend Unit Tests**: Vitest, with a coverage report.
+3. **Frontend E2E Tests**: Playwright.
+4. **Frontend Build**: the production build, including the prerendered heads.
+5. **API Lint**: flake8, black and isort on `api/`.
+6. **API Tests**: pytest.
+7. **CI Success**: passes only when all of the above do.
+
+**Post-deploy smoke** (`.github/workflows/smoke.yml`) runs on each successful Vercel deployment, previews included, and checks the deployed site responds as it should.
 
 There is no manually-triggered deploy workflow. Vercel deploys directly from the Git integration.
 
