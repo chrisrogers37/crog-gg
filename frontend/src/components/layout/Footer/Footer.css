@@ -46,4 +46,11 @@
     flex-direction: column;
     text-align: center;
   }
+
+  /* Five links (with "view source") are wider than a 375px phone. */
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.5rem;
+  }
 }

@@ -205,6 +205,7 @@ Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robo
 - `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data: a classic PAT with **no scopes**, or a fine-grained token set to "Public repositories (read-only)". Any authenticated token gets the 5000/hr REST quota and can run the GraphQL contributions query, so no scope is needed. Don't use `public_repo` (it can push to your public repos) or `repo`. The per-repo proxy endpoints (`repo` / `readme` / `languages`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
 - `KV_REST_API_URL` / `KV_REST_API_TOKEN` — auto-injected by the Upstash Marketplace integration; client also accepts `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as fallbacks
 - `VITE_API_URL` — leave empty/unset so the frontend defaults to same-origin `/api/*`
+- `VITE_SOURCE_REPO_URL`: the repo the footer's "view source" links to; unset, there's no link. Read at build time, so redeploy after changing it
 
 ### CI
 
