@@ -340,7 +340,7 @@ export const useContentStore = create<ContentStore>()(
                   ? `${site.regenerate.labels.button} isn't set up on this site.`
                   : typeof result.error === "string" && result.error
                     ? result.error
-                    : "Failed to regenerate content. Please try again.",
+                    : "failed to regenerate content. please try again.",
               isRegenerating: false,
               ...cooldown,
               ...(dailyCap && { dailyCapReached: true }),
@@ -378,7 +378,7 @@ export const useContentStore = create<ContentStore>()(
             hasModifiedContent: state.hasModifiedContent || Boolean(about),
             isRegenerating: false,
             regenerationError: failed
-              ? "That one didn't come through. Press it again."
+              ? "that one didn't come through. press it again."
               : null,
             ...cooldown,
           });
@@ -387,8 +387,8 @@ export const useContentStore = create<ContentStore>()(
           if (!timedOut) console.error("Regeneration failed:", error);
           set({
             regenerationError: timedOut
-              ? "This is taking too long. Try again in a minute."
-              : "Failed to regenerate content. Please try again.",
+              ? "this is taking too long. try again in a minute."
+              : "failed to regenerate content. please try again.",
             isRegenerating: false,
           });
           // No answer to read the cooldown from, though the server may well

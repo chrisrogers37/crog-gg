@@ -2,7 +2,7 @@
 id: storydump
 title: Storydump
 description: |
-  a telegram bot for managing instagram story posting from a content
+  a Telegram bot for managing Instagram story posting from a content
   repository - smart scheduling, team collaboration, and automated
   publishing with category-based content distribution.
 url: https://storydump.app

@@ -545,7 +545,7 @@ def _metering_unavailable(_exc):
         jsonify(
             {
                 "success": False,
-                "error": "Regeneration temporarily unavailable",
+                "error": "regeneration temporarily unavailable",
                 "message": "Rate limiting is unavailable, so this endpoint is paused. Try again shortly.",
             }
         ),
@@ -640,7 +640,7 @@ def regenerate_content():
             jsonify(
                 {
                     "success": False,
-                    "error": "Ability on cooldown",
+                    "error": "ability on cooldown",
                     "limit": "cooldown",
                     "cooldown_remaining": remaining,
                     "cooldown_total": COOLDOWN_SECONDS,
@@ -668,7 +668,7 @@ def regenerate_content():
             jsonify(
                 {
                     "success": False,
-                    "error": "Daily regeneration budget reached",
+                    "error": "daily regeneration budget reached",
                     "limit": "budget",
                     "cooldown_total": COOLDOWN_SECONDS,
                 }
@@ -681,7 +681,7 @@ def regenerate_content():
             jsonify(
                 {
                     "success": False,
-                    "error": "Daily limit reached",
+                    "error": "daily limit reached",
                     "limit": "daily",
                     "message": f"Max {REGEN_DAILY_MAX} regenerations per day",
                     "cooldown_total": COOLDOWN_SECONDS,
@@ -731,7 +731,7 @@ def regenerate_content():
                 {
                     "success": False,
                     # Shown to the visitor as it is, like every refusal here.
-                    "error": "That one didn't come through. Press it again.",
+                    "error": "that one didn't come through. press it again.",
                     "failed_sections": failed,
                     "failures": failures,
                     # Metered already, so the cooldown is running (#196 M44).

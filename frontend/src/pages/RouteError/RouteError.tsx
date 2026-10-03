@@ -13,9 +13,9 @@ export function RouteError() {
     <div className="page">
       <div className="error-boundary" role="alert">
         <div className="error-boundary__icon">!</div>
-        <h2 className="error-boundary__title">Something went wrong</h2>
+        <h2 className="error-boundary__title">something went wrong</h2>
         <p className="error-boundary__message">
-          This page failed to load. Reloading usually fixes it, or you can go{" "}
+          this page failed to load. reloading usually fixes it, or you can go{" "}
           <Link to="/">home</Link>.
         </p>
         <div className="error-boundary__actions">
@@ -23,12 +23,12 @@ export function RouteError() {
             className="btn btn-primary"
             onClick={() => window.location.reload()}
           >
-            Reload page
+            reload page
           </button>
         </div>
         {import.meta.env.DEV && error instanceof Error && (
           <details className="error-boundary__details">
-            <summary>Error details</summary>
+            <summary>error details</summary>
             <pre>{error.message}</pre>
             <pre>{error.stack}</pre>
           </details>

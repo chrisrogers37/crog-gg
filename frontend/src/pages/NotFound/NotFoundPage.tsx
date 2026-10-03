@@ -12,11 +12,11 @@ export function NotFoundPage() {
       <SEO {...NOT_FOUND_META} />
       <header className="page-hero">
         <p className="page-eyebrow">404</p>
-        <h1 className="page-headline">Page Not Found</h1>
-        <p className="page-sub">The scroll you seek has been lost to the ages, adventurer.</p>
+        <h1 className="page-headline">page not found</h1>
+        <p className="page-sub">the scroll you seek has been lost to the ages, adventurer.</p>
         <div className="page-ctas">
           <Link to="/" className="btn btn-primary">
-            Return to the Realm
+            return to the realm
           </Link>
         </div>
       </header>

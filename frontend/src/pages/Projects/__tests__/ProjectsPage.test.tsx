@@ -28,7 +28,7 @@ describe("ProjectsPage when the content failed to load", () => {
     });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "The projects didn't load: content/projects/index.yaml answered 500.",
+      "the projects didn't load: content/projects/index.yaml answered 500.",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(reloadProjects).toHaveBeenCalled();
@@ -37,7 +37,7 @@ describe("ProjectsPage when the content failed to load", () => {
   it("says when there's nothing to show, rather than loading forever (#190 M23)", () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "ready" } });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
-    expect(screen.getByText("No projects yet.")).toBeInTheDocument();
+    expect(screen.getByText("no projects yet.")).toBeInTheDocument();
     expect(screen.queryByRole("status", { name: /loading projects/i })).toBeNull();
   });
 
@@ -69,6 +69,6 @@ describe("ProjectsPage when the content failed to load", () => {
   it("names the page in the tab while it loads, not only once it has", async () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "loading" } });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
-    await waitFor(() => expect(document.title).toMatch(/^Projects \|/));
+    await waitFor(() => expect(document.title).toMatch(/^projects \|/));
   });
 });

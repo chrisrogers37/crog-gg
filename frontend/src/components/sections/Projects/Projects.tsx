@@ -99,7 +99,7 @@ export function ProjectList({ limit, headingLevel = 3, compact = false }: Projec
         {shown.length > 0 && <ProjectGrid projects={shown} headingLevel={headingLevel} />}
         {limit !== undefined && (
           <p className="page-links">
-            <Link to="/projects">All projects</Link>
+            <Link to="/projects">all projects</Link>
           </p>
         )}
       </>
@@ -110,10 +110,10 @@ export function ProjectList({ limit, headingLevel = 3, compact = false }: Projec
     return (
       <LoadError
         compact={compact}
-        message={`The projects didn't load: ${load.error}.`}
+        message={`the projects didn't load: ${load.error}.`}
         onRetry={() => reloadProjects()}
       />
     );
   }
-  return <p>No projects yet.</p>;
+  return <p>no projects yet.</p>;
 }

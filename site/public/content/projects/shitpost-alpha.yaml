@@ -1,7 +1,7 @@
 # Shitpost Alpha - Financial Social Media Analysis
 id: shitpost-alpha
 title: "Shitpost Alpha"
-description: "Real-time financial analysis of social media posts using LLMs to predict market movements and send trading alerts. Harvesting the President's SHITPOSTS to generate ALPHA."
+description: "real-time financial analysis of social media posts using LLMs to predict market movements and send trading alerts. harvesting the president's SHITPOSTS to generate ALPHA."
 url: "https://shitpost-alpha-web-production.up.railway.app/"
 icon: "\U0001F4C8"
 category: data-science

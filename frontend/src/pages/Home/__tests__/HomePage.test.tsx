@@ -48,7 +48,7 @@ describe("HomePage before its content arrives", () => {
     renderWithProviders(<HomePage />, { initialRoute: "/" });
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "This page didn't load: content/bio.yaml answered 404.",
+      "this page didn't load: content/bio.yaml answered 404.",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(loadContent).toHaveBeenCalled();
@@ -77,8 +77,8 @@ describe("HomePage", () => {
     expect(screen.getByText("and some bigger ones.")).toBeInTheDocument();
     expect(screen.getAllByText("Ada Example").length).toBeGreaterThan(0);
     expect(screen.getByRole("img", { name: "Ada Example's profile photo" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Projects" })).toHaveAttribute("href", "/projects");
-    expect(screen.getByRole("link", { name: "Connect" })).toHaveAttribute("href", "#contact");
+    expect(screen.getByRole("link", { name: "projects" })).toHaveAttribute("href", "/projects");
+    expect(screen.getByRole("link", { name: "connect" })).toHaveAttribute("href", "#contact");
   });
 
   it("titles itself with the owner's name when there's no tagline", () => {
@@ -132,7 +132,7 @@ describe("HomePage", () => {
       card.getAttribute("href"),
     );
     expect(cards).toEqual(["/projects/one", "/projects/two", "/projects/four"]);
-    expect(within(section).getByRole("link", { name: "All projects" })).toHaveAttribute(
+    expect(within(section).getByRole("link", { name: "all projects" })).toHaveAttribute(
       "href",
       "/projects",
     );
@@ -193,7 +193,7 @@ describe("HomePage", () => {
 
     const journey = within(document.getElementById("journey")!);
     expect(journey.getByRole("alert")).toHaveTextContent(
-      "The journey didn't load: content/timeline.yaml has 1 problem(s).",
+      "the journey didn't load: content/timeline.yaml has 1 problem(s).",
     );
     fireEvent.click(journey.getByRole("button", { name: /retry/i }));
     expect(reloadTimeline).toHaveBeenCalled();

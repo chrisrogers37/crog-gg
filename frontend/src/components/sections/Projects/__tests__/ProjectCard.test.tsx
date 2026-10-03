@@ -102,7 +102,7 @@ describe("FeaturedProject", () => {
 
   it("says it's featured, and titles itself", () => {
     renderWithProviders(<FeaturedProject project={featured} />);
-    expect(screen.getByText("Featured project")).toBeInTheDocument();
+    expect(screen.getByText("featured project")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 3, name: /Test Project/ })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: /Test Project/ })).toBeInTheDocument();
   });
@@ -119,7 +119,7 @@ describe("FeaturedProject", () => {
 
   it("opens the project's page, and its repo in a new tab", () => {
     renderWithProviders(<FeaturedProject project={featured} />);
-    expect(screen.getByRole("link", { name: "View project" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "view project" })).toHaveAttribute(
       "href",
       "/projects/test",
     );

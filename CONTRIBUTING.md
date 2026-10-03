@@ -57,7 +57,7 @@ Add a line to [CHANGELOG.md](CHANGELOG.md) for anything a visitor or a forker wo
 
 ## Copy
 
-Site copy follows CLAUDE.md's "Site copy style": plain on Claudlobby's page, lowercase and casual everywhere else, and never an em dash.
+Site copy follows CLAUDE.md's "Site copy style": plain on Claudlobby's page, lowercase and casual everywhere else (names keep their capitals), and never an em dash.
 
 ## Security
 

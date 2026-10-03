@@ -130,7 +130,7 @@ regenerate:
   # since the About text's last line names it.
   labels:
     button: SUMMON NEW LORE
-    busy: Weaving Epic Saga...
+    busy: WEAVING EPIC SAGA...
     reset: DISPEL ENCHANTMENT
   persona:
     # The rewritten name keeps one of these.

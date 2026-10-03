@@ -46,7 +46,7 @@ export function ActionButtons({
     : isOnCooldown
       ? ""
       : dailyCapReached
-        ? "Daily limit reached"
+        ? "DAILY LIMIT REACHED"
         : labels.button;
 
   return (

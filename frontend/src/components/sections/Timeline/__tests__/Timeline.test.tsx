@@ -87,7 +87,7 @@ describe("Timeline", () => {
 
   it("says there's nothing yet when the file has no entries, rather than loading forever (#190 M23)", () => {
     render(<Timeline data={{ entries: [], skill_categories: {} }} />);
-    expect(screen.getByText("Nothing on the journey yet.")).toBeInTheDocument();
+    expect(screen.getByText("nothing on the journey yet.")).toBeInTheDocument();
     expect(screen.queryByText(/loading/i)).toBeNull();
   });
 

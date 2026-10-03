@@ -28,7 +28,7 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
   return (
     <div className={`project-demo ${isFullscreen ? "fullscreen" : ""}`}>
       <div className="demo-header">
-        <h3 className="demo-title">Live Demo</h3>
+        <h3 className="demo-title">live demo</h3>
         <div className="demo-actions">
           <a
             href={url}
@@ -36,13 +36,13 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
             rel="noopener noreferrer"
             className="demo-link"
           >
-            Open in new tab
+            open in new tab
           </a>
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="demo-fullscreen-btn"
           >
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            {isFullscreen ? "exit fullscreen" : "fullscreen"}
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
         {isLoading && (
           <div className="demo-loading">
             <div className="spinner" />
-            <p>Loading demo...</p>
+            <p>loading demo...</p>
           </div>
         )}
         <iframe

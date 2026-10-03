@@ -16,7 +16,7 @@ export function ProjectsPage() {
       <SEO {...PROJECTS_META} />
       <div className="page projects-page">
         <header className="page-hero">
-          <p className="page-eyebrow">Projects</p>
+          <p className="page-eyebrow">projects</p>
           <h1 className="page-headline">things i've built.</h1>
         </header>
         <section aria-label="Projects">

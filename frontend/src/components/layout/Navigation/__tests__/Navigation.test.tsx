@@ -19,8 +19,8 @@ describe("Navigation", () => {
       .getAllByRole("link")
       .filter((link) => link.classList.contains("nav-link"));
     expect(pages.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
-      ["About", "/"],
-      ["Projects", "/projects"],
+      ["about", "/"],
+      ["projects", "/projects"],
     ]);
     expect(screen.queryByRole("link", { name: /claudlobby/i })).toBeNull();
   });

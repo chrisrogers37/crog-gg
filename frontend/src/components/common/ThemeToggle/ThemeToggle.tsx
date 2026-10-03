@@ -76,11 +76,11 @@ export function ThemeToggle() {
   const getLabel = () => {
     switch (theme) {
       case "light":
-        return "Light mode";
+        return "light mode";
       case "dark":
-        return "Dark mode";
+        return "dark mode";
       case "system":
-        return "System preference";
+        return "system preference";
     }
   };
 

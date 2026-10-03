@@ -124,7 +124,7 @@ function HomeContent() {
       return (
         <div className="page">
           <LoadError
-            message={`This page didn't load: ${bioLoad.error}.`}
+            message={`this page didn't load: ${bioLoad.error}.`}
             onRetry={() => loadContent()}
           />
         </div>
@@ -144,7 +144,7 @@ function HomeContent() {
       typeof timelineLoad === "object" ? (
         <LoadError
           compact
-          message={`The journey didn't load: ${timelineLoad.error}.`}
+          message={`the journey didn't load: ${timelineLoad.error}.`}
           onRetry={() => reloadTimeline()}
         />
       ) : (
@@ -196,10 +196,10 @@ function HomeContent() {
           </div>
           <div className="page-ctas">
             <Link to="/projects" className="btn btn-primary">
-              Projects
+              projects
             </Link>
             <a href={`#${CONTACT_ID}`} className="btn btn-ghost">
-              Connect
+              connect
             </a>
           </div>
         </div>

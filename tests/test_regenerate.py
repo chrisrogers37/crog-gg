@@ -218,7 +218,7 @@ def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
     assert r.status_code == 429
     assert r.get_json() == {
         "success": False,
-        "error": "Ability on cooldown",
+        "error": "ability on cooldown",
         "limit": "cooldown",
         "cooldown_remaining": 12,
         "cooldown_total": 30,
@@ -255,7 +255,7 @@ def test_daily_limit_reached_returns_429(client):
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 429
     body = r.get_json()
-    assert (body["error"], body["limit"], body["cooldown_total"]) == ("Daily limit reached", "daily", 30)
+    assert (body["error"], body["limit"], body["cooldown_total"]) == ("daily limit reached", "daily", 30)
 
 
 def test_global_ceiling_returns_503(client, caplog):
@@ -269,7 +269,7 @@ def test_global_ceiling_returns_503(client, caplog):
     assert r.status_code == 503
     assert r.get_json() == {
         "success": False,
-        "error": "Daily regeneration budget reached",
+        "error": "daily regeneration budget reached",
         "limit": "budget",
         "cooldown_total": 30,
     }

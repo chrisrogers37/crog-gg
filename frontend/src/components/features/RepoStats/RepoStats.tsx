@@ -86,10 +86,10 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
   const shown = repo ?? PLACEHOLDER;
 
   const stats = [
-    { label: "Stars", value: shown.stargazers_count, icon: "⭐" },
-    { label: "Forks", value: shown.forks_count, icon: "🍴" },
-    { label: "Watchers", value: shown.watchers_count, icon: "👀" },
-    { label: "Issues", value: shown.open_issues_count, icon: "🐛" },
+    { label: "stars", value: shown.stargazers_count, icon: "⭐" },
+    { label: "forks", value: shown.forks_count, icon: "🍴" },
+    { label: "watchers", value: shown.watchers_count, icon: "👀" },
+    { label: "issues", value: shown.open_issues_count, icon: "🐛" },
   ];
 
   const lastUpdated = new Date(shown.pushed_at).toLocaleDateString("en-US", {
@@ -134,7 +134,7 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
           </span>
         )}
         <span className="meta-item">
-          <span className="meta-icon">🕐</span> Updated {lastUpdated}
+          <span className="meta-icon">🕐</span> updated {lastUpdated}
         </span>
       </div>
 

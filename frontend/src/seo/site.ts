@@ -78,8 +78,8 @@ export type ProjectSummary = Pick<
 
 /** The trail ProjectDetailPage shows, and the BreadcrumbList describing it. */
 export const projectBreadcrumbs = (project: ProjectSummary) => [
-  { label: "Home", path: "/" },
-  { label: "Projects", path: "/projects" },
+  { label: "home", path: "/" },
+  { label: "projects", path: "/projects" },
   { label: project.title, path: `/projects/${project.id}` },
 ];
 
@@ -166,12 +166,12 @@ export function createSeo(site: SiteConfig) {
 
   const PROJECTS_META: LandingPage = {
     path: "/projects",
-    title: "Projects",
+    title: "projects",
     description: site.seo.projects.description,
   };
 
   const NOT_FOUND_META: PageMeta = {
-    title: "Page not found",
+    title: "page not found",
     description: `This page doesn't exist. Head back to ${new URL(SITE_URL).host.replace(/^www\./, "")} to find your way.`,
     noIndex: true,
   };

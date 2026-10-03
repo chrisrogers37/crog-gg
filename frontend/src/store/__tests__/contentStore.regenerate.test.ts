@@ -25,7 +25,7 @@ const realFetch = globalThis.fetch;
 // The server's real cooldown refusal (api/index.py), sent with a 429.
 const ON_COOLDOWN = {
   success: false,
-  error: "Ability on cooldown",
+  error: "ability on cooldown",
   cooldown_remaining: 12,
   cooldown_total: 30,
 };
@@ -114,7 +114,7 @@ describe("regenerateContent", () => {
     // A fresh record, so an in-place edit of the seeded array would fail too.
     expect(state.experience).toEqual([makeEmployment({ title: "Engineer" })]);
     expect(state.hasModifiedContent).toBe(false);
-    expect(state.regenerationError).toBe("That one didn't come through. Press it again.");
+    expect(state.regenerationError).toBe("that one didn't come through. press it again.");
   });
 
   it("keeps the about when its section failed, and says so", async () => {
@@ -124,7 +124,7 @@ describe("regenerateContent", () => {
 
     expect(useContentStore.getState().bio).toEqual(BIO);
     // The press reached the success path and said so, rather than throwing.
-    expect(useContentStore.getState().regenerationError).toBe("That one didn't come through. Press it again.");
+    expect(useContentStore.getState().regenerationError).toBe("that one didn't come through. press it again.");
   });
 
   it("says so when a success reply carries no about at all", async () => {
@@ -134,7 +134,7 @@ describe("regenerateContent", () => {
     await useContentStore.getState().regenerateContent(true);
 
     expect(useContentStore.getState().bio).toEqual(BIO);
-    expect(useContentStore.getState().regenerationError).toBe("That one didn't come through. Press it again.");
+    expect(useContentStore.getState().regenerationError).toBe("that one didn't come through. press it again.");
   });
 
   it("applies a good rewrite even if failed_sections is malformed", async () => {
@@ -631,7 +631,7 @@ describe("the cooldown follows the server", () => {
     respondWith(
       {
         success: false,
-        error: "Daily limit reached",
+        error: "daily limit reached",
         limit: "daily",
         message: "Max 30",
         cooldown_total: 30,
@@ -680,7 +680,7 @@ describe("the cooldown follows the server", () => {
     respondWith(
       {
         success: false,
-        error: "That one didn't come through. Press it again.",
+        error: "that one didn't come through. press it again.",
         failed_sections: ["about"],
         cooldown_total: 30,
       },
@@ -694,7 +694,7 @@ describe("the cooldown follows the server", () => {
 
   it.each([
     [400, { success: false, error: "Invalid section: nope" }],
-    [503, { success: false, error: "Regeneration temporarily unavailable" }],
+    [503, { success: false, error: "regeneration temporarily unavailable" }],
   ])("starts nothing on a %i", async (status, body) => {
     respondWith(body, status);
 
@@ -738,7 +738,7 @@ describe("the cooldown follows the server", () => {
     await press;
 
     const s = useContentStore.getState();
-    expect(s.regenerationError).toBe("This is taking too long. Try again in a minute.");
+    expect(s.regenerationError).toBe("this is taking too long. try again in a minute.");
     expect(s.isRegenerating).toBe(false);
     expect(fetchMock.mock.calls.some(([url]) => url.endsWith("/api/limits"))).toBe(true);
   });
