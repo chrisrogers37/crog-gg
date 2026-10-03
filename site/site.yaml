@@ -33,13 +33,13 @@ github:
 
 seo:
   # Appended to every page's title.
-  site_name: Chris Rogers - i build things that build things
+  site_name: Chris Rogers - building things that build things
   # The link-preview card, rendered from site/og-image.html.
   image:
     path: /og-image.png
     width: 1200
     height: 630
-    alt: i build things that build things. data, agent fleets and music.
+    alt: building things that build things. data, agent fleets and music.
   about:
     description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
   projects:
