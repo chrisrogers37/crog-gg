@@ -55,7 +55,7 @@ describe("ProjectList, as the home page's section", () => {
     expect(screen.getByRole("article", { name: /Project star/ })).toBeInTheDocument();
     const cards = screen
       .getAllByRole("link")
-      .filter((link) => link.classList.contains("project-card"))
+      .filter((link) => link.classList.contains("project-row-link"))
       .map((link) => link.getAttribute("href"));
     expect(cards).toEqual(["/projects/a", "/projects/b", "/projects/c"]);
     expect(screen.getByRole("link", { name: "all projects" })).toHaveAttribute(

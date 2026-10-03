@@ -128,7 +128,7 @@ describe("HomePage", () => {
 
     const section = document.getElementById("projects")!;
     expect(within(section).getByRole("article", { name: /three/ })).toBeInTheDocument();
-    const cards = [...section.querySelectorAll("a.project-card")].map((card) =>
+    const cards = [...section.querySelectorAll("a.project-row-link")].map((card) =>
       card.getAttribute("href"),
     );
     expect(cards).toEqual(["/projects/one", "/projects/two", "/projects/four"]);

@@ -91,7 +91,7 @@ test.describe("Moving between pages", () => {
     // /projects first, so it renders at once later, as it does for anyone
     // who's been there.
     await page.goto("/projects");
-    await expect(page.locator("a.project-card").first()).toBeVisible();
+    await expect(page.locator("a.project-row-link").first()).toBeVisible();
     await page.locator('header a[href="/"]').first().click();
     await expect(page).toHaveURL(/\/$/);
     // The home page's own: /projects, on its way out, has a footer too.
@@ -105,7 +105,7 @@ test.describe("Moving between pages", () => {
     await expect(page).toHaveURL(/\/projects$/);
     // /projects' own cards: the home page has cards too, and stays up for a
     // moment after the URL changes.
-    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
+    await expect(page.locator(".projects-page a.project-row-link").first()).toBeVisible();
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 
@@ -121,7 +121,7 @@ test.describe("Moving between pages", () => {
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
     await page.locator('header a.nav-link[href="/projects"]').click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
+    await expect(page.locator(".projects-page a.project-row-link").first()).toBeVisible();
     // Observation window: past where the old page's scroll would have ended.
     await page.waitForTimeout(1200);
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -272,7 +272,7 @@ test.describe("Responsive Design", () => {
 
     // Projects ship with the repo, so a card is required rather than
     // conditional, and the page stays inside the phone's width.
-    await expect(page.locator("a.project-card").first()).toBeVisible();
+    await expect(page.locator("a.project-row-link").first()).toBeVisible();
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(375);

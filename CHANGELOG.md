@@ -9,6 +9,11 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The music section's intro is plainer, and points at Spotify (#250).
 - The tagline is "building things that build things", where it was "i build things that build things": the home page's headline, every page's title and the link-preview card (#250).
 - The About text names artemis without its domain (#250).
+- The owner's pages are lowercase, and names keep their capitals: the nav, the buttons and labels, the error, loading and empty states, the project descriptions, the journey and the About text (#251). Claudlobby's page stays in sentence case, and the SUMMON button in its all-caps.
+- `/projects` and the home page's projects section list the projects after the featured card as rows: a name, the whole description and what it's built with, where they were cards with emoji tiles, two-line descriptions and pills (#251). The GitHub card is now a "more on GitHub" link closing the list.
+
+### Removed
+- `gradient` in project files: nothing shows it since the cards went (#251).
 
 ## 2026-10-02
 

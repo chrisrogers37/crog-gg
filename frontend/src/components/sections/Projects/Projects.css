@@ -1,72 +1,70 @@
-/* Project cards: the site's .card (index.css), in a grid, and the featured
-   project's larger one. */
+/* The featured project's card (the site's .card, index.css), then the rest
+   as a list of rows: a name, the whole description and what it's built with,
+   with a hairline between rows (Chris, 2026-10-03: the cards read as
+   generated). */
 
-.projects-grid {
+.project-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Below the featured card, whitespace first. */
+.project-featured + .project-rows,
+.projects-skeleton .project-rows {
+  margin-top: 2rem;
+}
+
+.project-row {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  column-gap: 2rem;
+  padding: 1.25rem 0;
 }
 
-/* The featured card sits above the grid. */
-.project-featured + .projects-grid,
-.projects-skeleton .projects-grid {
-  margin-top: 1rem;
+.project-row + .project-row {
+  border-top: 1px solid var(--border-color);
 }
 
-.project-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.25rem;
+.project-row-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.project-row-link {
   color: var(--text-color);
   text-decoration: none;
-  transition: border-color 0.15s;
 }
 
-.project-card:hover {
-  border-color: var(--primary-color);
+/* The whole row takes the click; the link is still named by the title. */
+.project-row-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
-/* A chip in the project's own colour (its file's gradient), else grey. */
-.project-card-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 8px;
-  background: var(--border-color);
-  font-size: 1.4rem;
-  line-height: 1;
+.project-row:hover .project-row-link {
+  color: var(--primary-color);
 }
 
-.project-card-title {
+.project-row-status {
+  margin-top: 0.4rem;
+}
+
+.project-row-description {
+  max-width: 40rem;
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.project-card-status {
-  align-self: flex-start;
-}
-
-/* Two lines: the full description is on the project's page. */
-.project-card-description {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--text-color-secondary);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-/* The pills close the card, level across a row. */
-.project-card-tech {
-  margin-top: auto;
-  padding-top: 0.5rem;
+.project-row-tech {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
 }
 
 .project-featured {
@@ -96,8 +94,9 @@
   margin-top: 1.5rem;
 }
 
-/* Loading: the real cards' boxes, blank and pulsing. */
-.skeleton-card {
+/* Loading: the real boxes, blank and pulsing. */
+.skeleton-card,
+.skeleton-row {
   animation: pulse 2s infinite;
   pointer-events: none;
 }
@@ -105,20 +104,17 @@
 .skeleton-card .page-eyebrow,
 .skeleton-card .project-featured-title,
 .skeleton-card .project-featured-description,
-.skeleton-card .project-card-title,
-.skeleton-card .project-card-description {
+.skeleton-row .project-row-title,
+.skeleton-row .project-row-description,
+.skeleton-row .project-row-tech {
   width: 60%;
   border-radius: 8px;
   background: var(--border-color);
 }
 
 .skeleton-card .project-featured-description,
-.skeleton-card .project-card-description {
+.skeleton-row .project-row-description {
   width: 90%;
-}
-
-.skeleton-card .project-card-icon {
-  background: var(--border-color);
 }
 
 .skeleton-card .pills > li {
@@ -129,17 +125,15 @@
   width: 8rem;
 }
 
-@media (max-width: 768px) {
-  .projects-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* On a phone the name sits over its description. */
+@media (max-width: 640px) {
+  .project-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.35rem;
   }
 }
 
 @media (max-width: 480px) {
-  .projects-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .project-featured {
     padding: 1.25rem;
   }

@@ -56,12 +56,11 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 - **`id`:** a lowercase slug (`my-project`). It's the page's URL, `/projects/<id>`, and the name of its prerendered file.
 - **`title`, `description`, `icon` and `category`:** required.
 - **`url`** (optional): the main link, `https`. Without one, the project page's link falls back to `demo`, then `github`.
-- **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The card prints it as text, and no icon font is loaded.
-- **`technologies`** (optional): the card shows the first three.
+- **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The featured card and the project's page print it as text, and no icon font is loaded.
+- **`technologies`** (optional): the list shows them all, in order.
 - **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails, unless the project has a page of its own (below), which shows neither. Without `github`, a `url` that is a GitHub repo is used instead.
 - **`demo`** (optional): when it differs from `url` and isn't on github.com, the page embeds it. Its exact origin must then be in `frame-src` in `vercel.json`, or the frame is blocked.
-- **`gradient`** (optional): the project's colour, behind its icon on its card. Without one, it's grey.
-- **`status`** (optional): `active`, `archived` or `experimental`, on the project's page; its card names it when it isn't `active`.
+- **`status`** (optional): `active`, `archived` or `experimental`, on the project's page; its row in the list names it when it isn't `active`.
 - **`share_card`** (optional): the project page's own link preview, where it isn't the site's card: `path` (a PNG in `site/public/`), `width`, `height`, and `alt`, the card's words. Like the site's card, the PNG at `/<name>.png` is rendered from `site/<name>.html` by `node scripts/og-image/render.mjs` (from `frontend/`). `npm run site:check` holds the PNG to its size and, where the site keeps the source, the alt to the source's headline and the line under it (its `h1`, then its `.sub`), and fails on a source that renders a card nothing names.
 - **`category`:** on the project's page, beside its status; the raw value is shown.
 - Nothing else: `order`, `featured`, `tags` and `image` were never shown and are gone (#190), so a file that still has one fails, naming it. (Which project is featured is `index.yaml`'s call.)

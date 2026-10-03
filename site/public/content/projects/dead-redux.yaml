@@ -9,7 +9,6 @@ technologies:
   - TypeScript
   - React
   - Vercel
-gradient: "linear-gradient(135deg, #991B1B 0%, #1a1a2e 100%)"
 github: https://github.com/chrisrogers37/dead-redux
 demo: https://dead-redux.vercel.app
 status: active

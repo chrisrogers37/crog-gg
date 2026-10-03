@@ -29,32 +29,50 @@ test.describe("Projects page", () => {
     const featured = page.locator("article.project-featured");
     await expect(featured).toBeVisible();
     await expect(featured.locator(`a[href="/projects/${FEATURED}"]`)).toBeVisible();
-    // Above every other card.
+    // Above every other project.
     const featuredBox = await featured.boundingBox();
-    const firstCard = await page.locator("a.project-card").first().boundingBox();
-    expect(featuredBox!.y).toBeLessThan(firstCard!.y);
+    const firstRow = await page.locator("a.project-row-link").first().boundingBox();
+    expect(featuredBox!.y).toBeLessThan(firstRow!.y);
   });
 
-  test("project cards link to detail pages", async ({ page }) => {
-    const projectCards = page.locator("a.project-card");
-    await expect(projectCards.first()).toBeVisible();
-    await expect(projectCards.first()).toHaveAttribute("href", /\/projects\/.+/);
+  test("project rows link to detail pages", async ({ page }) => {
+    const projectRows = page.locator("a.project-row-link");
+    await expect(projectRows.first()).toBeVisible();
+    await expect(projectRows.first()).toHaveAttribute("href", /\/projects\/.+/);
   });
 
-  test("clicking project card navigates to detail", async ({ page }) => {
-    const projectCards = page.locator("a.project-card");
-    await expect(projectCards.first()).toBeVisible();
-    await projectCards.first().click();
+  test("clicking a project's name navigates to detail", async ({ page }) => {
+    const projectRows = page.locator("a.project-row-link");
+    await expect(projectRows.first()).toBeVisible();
+    await projectRows.first().click();
     await expect(page).toHaveURL(/\/projects\/.+/);
   });
 
-  test("lists every project once: the featured one, and a card for each other", async ({
+  test("a row opens its project wherever it's clicked, its description included", async ({
+    page,
+  }) => {
+    // The name's link stretches over its row (Projects.css), so the click
+    // goes to wherever the description is, and the browser decides what takes
+    // it: locator.click() would refuse, seeing the link on top, which is the
+    // point.
+    const row = page.locator(".projects-page .project-row").first();
+    const href = await row.locator("a.project-row-link").getAttribute("href");
+    await row.scrollIntoViewIfNeeded();
+    const description = (await row.locator(".project-row-description").boundingBox())!;
+    await page.mouse.click(
+      description.x + description.width / 2,
+      description.y + description.height / 2,
+    );
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+  });
+
+  test("lists every project once: the featured one, and a row for each other", async ({
     page,
     request,
   }) => {
     const projects = await servedProjects(request);
-    await expect(page.locator("a.project-card").first()).toBeVisible();
-    const cards = await page.locator("a.project-card").evaluateAll((links) =>
+    await expect(page.locator("a.project-row-link").first()).toBeVisible();
+    const cards = await page.locator("a.project-row-link").evaluateAll((links) =>
       links.map((link) => link.getAttribute("href")),
     );
     expect(cards).toEqual(
@@ -68,7 +86,7 @@ test.describe("Project Detail Page", () => {
     await page.goto("/projects");
     await page.waitForLoadState("networkidle");
 
-    const projectCards = page.locator("a.project-card");
+    const projectCards = page.locator("a.project-row-link");
     await expect(projectCards.first()).toBeVisible();
     await projectCards.first().click();
     await expect(page).toHaveURL(/\/projects\/.+/);
@@ -265,7 +283,7 @@ test.describe("A project page on a phone (final UI review)", () => {
 });
 
 test.describe("/projects while the projects load (final UI review)", () => {
-  test("the grid stays where the skeleton stood", async ({ page }) => {
+  test("the rows stay where the skeleton stood", async ({ page }) => {
     let release!: () => void;
     const held = new Promise<void>((resolve) => (release = resolve));
     await page.route("**/content/projects/index.yaml", async (route) => {
@@ -279,9 +297,9 @@ test.describe("/projects while the projects load (final UI review)", () => {
     const box = async (locator: import("@playwright/test").Locator) =>
       (await locator.boundingBox())!;
     const featuredStandIn = await box(skeleton.locator(".project-featured"));
-    const cardStandIn = await box(skeleton.locator(".projects-grid > *").first());
+    const rowStandIn = await box(skeleton.locator(".project-rows > *").first());
     release();
-    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
+    await expect(page.locator(".projects-page a.project-row-link").first()).toBeVisible();
 
     // The featured card lands where its stand-in stood, at its width; the
     // page's width doesn't follow its content.
@@ -291,12 +309,12 @@ test.describe("/projects while the projects load (final UI review)", () => {
       expect(featured.x).toBeCloseTo(featuredStandIn.x, 0);
       expect(featured.width).toBeCloseTo(featuredStandIn.width, 0);
     }
-    // And the cards in their stand-ins' column, at their width. (Not their
+    // And the rows in their stand-ins' column, at their width. (Not their
     // top: the featured card's description wraps to as many lines as the fonts
     // make it, which the skeleton can't know.)
-    const card = await box(page.locator(".projects-page .projects-grid a.project-card").first());
-    expect(card.x).toBeCloseTo(cardStandIn.x, 0);
-    expect(card.width).toBeCloseTo(cardStandIn.width, 0);
+    const row = await box(page.locator(".projects-page .project-rows > .project-row").first());
+    expect(row.x).toBeCloseTo(rowStandIn.x, 0);
+    expect(row.width).toBeCloseTo(rowStandIn.width, 0);
   });
 });
 

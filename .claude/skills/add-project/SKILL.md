@@ -28,8 +28,8 @@ Gather project details WITHOUT adding bloat. Be surgical:
 - **Do NOT** recursively explore every directory, read every file, or run the project locally. Get what you need and move on.
 
 Collect:
-- Project name and short description (casual, lowercase tone per CLAUDE.md)
-- Technologies used (pick the 3-4 most important - only first 3 render on the card)
+- Project name and short description (casual, lowercase tone per CLAUDE.md; names keep their capitals)
+- Technologies used (the few that matter most, in order: the list shows every one)
 - Primary URL (the live app or landing page)
 - GitHub URL (if available)
 - Category: `web-app`, `ai-tools`, `native-app`, `data-science`, or `open-source`
@@ -40,25 +40,13 @@ Ask the user: **"Which position should this go in? Currently: [list the projects
 
 Do NOT assume position. Always ask.
 
-### 3. Extract Colors and Theme
+### 3. Pick an Icon
 
-Pull the project's visual identity for the card gradient:
-
-- **If the project has a landing page**: Use browser tools or read the source CSS/config to find the primary brand color.
-- **If the project has a repo**: Check for tailwind config, CSS variables, theme files, or prominent hex colors in the source.
-- **Fallback**: Ask the user for a color, or pick something that fits the project's vibe.
-
-Build a gradient: `"linear-gradient(135deg, <primary> 0%, <dark-variant> 100%)"`
-
-The dark variant is usually a much darker shade or `#1a1a2e` for good contrast.
-
-### 4. Pick an Icon
-
-Pick one emoji, written as a YAML escape (e.g. `icon: "\U0001F680"` for a rocket). The card renders `icon` as plain text and no icon font is loaded, so an icon-font class name would print as literal text. The existing project YAMLs all use this form.
+Pick one emoji, written as a YAML escape (e.g. `icon: "\U0001F680"` for a rocket). The featured card and the project's page render `icon` as plain text and no icon font is loaded, so an icon-font class name would print as literal text. The existing project YAMLs all use this form.
 
 Match the icon to the project's core function, not its tech stack.
 
-### 5. Create YAML and Update Index
+### 4. Create YAML and Update Index
 
 **Project YAML** at `site/public/content/projects/<id>.yaml`:
 
@@ -67,8 +55,8 @@ Match the icon to the project's core function, not its tech stack.
 id: project-id
 title: Project Name
 description: |
-  lowercase casual description of what the project does.
-  keep it to 2-3 lines max - card clamps to 2 lines anyway.
+  lowercase casual description of what the project does, names
+  capitalized. a sentence or two: the list shows all of it.
 url: https://example.com
 icon: "\U0001F680"
 category: web-app
@@ -77,10 +65,9 @@ technologies:
   - Tech2
   - Tech3
 status: active
-gradient: "linear-gradient(135deg, #color1 0%, #color2 100%)"
 ```
 
-The site checks every project file as it loads (#190): a field it doesn't know (`order`, `featured`, `tags` and `image` are gone) fails the build, naming the file and the key. Which project is featured is `index.yaml`'s call (below).
+The site checks every project file as it loads (#190): a field it doesn't know (`order`, `featured`, `tags`, `image` and `gradient` are gone) fails the build, naming the file and the key. Which project is featured is `index.yaml`'s call (below).
 
 Optional fields (add only if available):
 - `github: https://github.com/<owner>/<repo>`: only for a public repo owned by the site's GitHub owner (`github.username` in `site/site.yaml`) or one of its `allowed_owners`; leave it out for anyone else's repo, since the API serves no one else's. The same goes for a `url` on github.com: without `github`, the page reads `url` as the repo, so point another owner's project at its site, not its repo.
@@ -91,7 +78,7 @@ Optional fields (add only if available):
 - Insert the new filename at the chosen position: the list's order is the order the site shows them in, and nothing else sets it.
 - Leave `featured` alone unless the user asks to feature the new project: it names the one file shown first and larger on `/` and `/projects`, so featuring this one unfeatures the current one.
 
-### 6. Verify
+### 5. Verify
 
 Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 
@@ -101,21 +88,19 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 |-------|----------|-------|
 | id | Yes | Lowercase kebab-case |
 | title | Yes | Display name |
-| description | Yes | Casual, lowercase, 2-3 lines |
+| description | Yes | Casual, lowercase (names keep their capitals), a sentence or two |
 | url | No | Primary link, https (fallback: url > demo > github) |
 | icon | Yes | One emoji, as a YAML escape (shown as plain text) |
 | category | Yes | web-app, ai-tools, native-app, data-science, open-source |
-| technologies | No | Top 3-4 (only 3 shown on card) |
-| gradient | No | CSS gradient behind the card's icon, defaults to gray |
-| share_card | No | The page's own link preview: path, width, height, alt (see step 5) |
+| technologies | No | The few that matter most, in order (all shown) |
+| share_card | No | The page's own link preview: path, width, height, alt (see step 4) |
 | status | No | active, archived, experimental |
-| github | No | A public repo of the configured GitHub owner (see step 5) |
-| demo | No | Only if it differs from `url`; needs a `frame-src` entry (see step 5) |
+| github | No | A public repo of the configured GitHub owner (see step 4) |
+| demo | No | Only if it differs from `url`; needs a `frame-src` entry (see step 4) |
 
 ## Common Mistakes
 
-- **Overexploring the repo**: You need name, description, tech, colors. Don't read every file.
+- **Overexploring the repo**: You need name, description, tech. Don't read every file.
 - **Leaving it out of `index.yaml`**: a file the index doesn't list is shown nowhere.
 - **Corporate tone in description**: Keep it lowercase and casual. No em-dashes.
-- **Too many technologies**: Card only renders 3. Pick the most important ones first.
-- **Skipping the gradient**: A gray icon chip looks lazy. Always try to pull a color.
+- **Too many technologies**: The list shows every one, so a long list buries the ones that matter. Pick a few, most important first.

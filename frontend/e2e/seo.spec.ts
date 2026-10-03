@@ -73,7 +73,7 @@ test.describe("Page head", () => {
       .locator('a[href="/projects"]')
       .click();
     await expect(page).toHaveURL(/\/projects$/);
-    await expect(page.locator(".projects-page a.project-card").first()).toBeVisible();
+    await expect(page.locator(".projects-page a.project-row-link").first()).toBeVisible();
 
     await expect
       .poll(async () => (await headTags(page)).canonical)
@@ -85,7 +85,7 @@ test.describe("Page head", () => {
 
   test("a project page's canonical names that project", async ({ page }) => {
     await page.goto("/projects");
-    const firstCard = page.locator("a.project-card").first();
+    const firstCard = page.locator("a.project-row-link").first();
     await expect(firstCard).toBeVisible();
     await firstCard.click();
     await expect(page).toHaveURL(/\/projects\/.+/);
