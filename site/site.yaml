@@ -149,7 +149,7 @@ contact:
 
 music:
   # {artist} marks where the artist's name goes.
-  intro: "i make electronic music under the name {artist}. here's some of what i've been working on."
+  intro: "i make music under the name {artist}. here's some of what's on Spotify."
   artist: crog
   # The player. Its origin must be in vercel.json's frame-src. Leave it empty
   # for no player.
