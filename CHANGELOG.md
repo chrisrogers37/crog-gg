@@ -6,6 +6,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Changed
 - Claudlobby's page is for solo founders and small teams running a fleet of AI workers, not only a software dark factory (#250). After its hero come the jobs its workers do (engineer, product strategist, SEO optimizer, Shopify manager, content and ads, customer service), each from Claudlobby's library, which the section cites at a pinned commit; the dark factory is the example under "How it works". Its project card and link-preview card say the same.
+- The music section's intro is plainer, and points at Spotify (#250).
 
 ## 2026-10-02
 

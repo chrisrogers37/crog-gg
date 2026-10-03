@@ -9,6 +9,7 @@ import {
 import { makeProject } from "../../../../test/builders";
 import { ClaudlobbyPage } from "../ClaudlobbyPage";
 import { claudlobby } from "../../../../content/claudlobby";
+import { strings } from "../../../../test/claudlobbyRules";
 import { photoSrc, photoSrcSet } from "../../../../utils/photos";
 import {
   CLAUDLOBBY_GETTING_STARTED,
@@ -144,11 +145,15 @@ describe("ClaudlobbyPage", () => {
     });
   });
 
-  it("renders backticked terms in the copy as code", () => {
+  it("renders every backticked term in the copy as code, and no backtick", () => {
     const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
-    expect(container.querySelector(".page-sub code")?.textContent).toBe(
-      "fleet.yaml",
+    const terms = strings(claudlobby).flatMap((text) =>
+      [...text.matchAll(/`([^`]+)`/g)].map((match) => match[1]),
     );
+    expect(terms.length).toBeGreaterThan(0);
+    const code = [...container.querySelectorAll("code")].map((element) => element.textContent);
+    for (const term of terms) expect(code, term).toContain(term);
+    expect(container.textContent).not.toContain("`");
   });
 
   it("sends the quickstart to the README's own steps", () => {

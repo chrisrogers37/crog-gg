@@ -12,7 +12,9 @@
  *
  * Who it's for (Chris, 2026-10-02): solo founders and small teams running a
  * fleet of AI workers, engineering and the rest of a business, not only a
- * software "dark factory", which the page keeps as one example.
+ * software "dark factory", which the page keeps as one example. The top of
+ * the page is in plain words ("Design your team", not "one fleet.yaml",
+ * Chris 2026-10-03); file names and commands wait for how it works.
  *
  * Say only what the Claudlobby repo backs up (claudlobby.test.ts checks the
  * mechanical parts):
@@ -40,7 +42,7 @@ export const claudlobby = {
 
   hero: {
     headline: "Run a fleet of AI workers.",
-    sub: "Open-source agents for solo founders and small teams: engineers, product strategists, SEO optimizers and Shopify managers, from one `fleet.yaml`, working 24/7 on a Mac mini or a Raspberry Pi.",
+    sub: "Design your team: engineers, product strategists, SEO optimizers and Shopify managers. They work 24/7 on your own Mac mini or Raspberry Pi. Open source, for solo founders and small teams.",
     ctaStar: "Star on GitHub",
     ctaQuickstart: "Quickstart",
   },
@@ -59,7 +61,7 @@ export const claudlobby = {
   workers: {
     heading: "A worker for each job",
     intro:
-      "Each worker is a Claude Code agent with a role from the library. It knows the job, has the tools for it, and keeps at it while you set the goals and the guardrails.",
+      "Each worker is a Claude Code agent with a ready-made role from Claudlobby's library. It knows the job, has the tools for it, and keeps at it while you set the goals and the guardrails.",
     // The library at 69f2fa0 (2026-10-02): software-engineering, with the
     // code-review profile's reviewer bot; product-strategy; seo (read only on
     // repos: it drafts the fix, an engineer ships it); business-operations
@@ -81,7 +83,7 @@ export const claudlobby = {
       },
       {
         title: "Shopify manager",
-        body: "Watches orders, fulfillment, discounts and the catalog through the Shopify Admin API, and flags a stuck order before a customer does.",
+        body: "Watches orders, fulfillment, discounts and the catalog in your Shopify store, and flags a stuck order before a customer does.",
       },
       {
         title: "Content and ads",
@@ -103,7 +105,7 @@ export const claudlobby = {
       "One file describes the fleet, and Claudlobby builds each bot from the library and keeps it running. For a software team, that's a dark factory: agents plan the work, write the code and review each other while the lights are off.",
     steps: [
       {
-        title: "Declare the fleet",
+        title: "Design your team",
         code: "fleet.yaml",
         body: "Name each bot and the pieces it's built from: a persona, skills, MCP servers, guardrails and protocols, all from one shared library.",
       },
@@ -124,10 +126,10 @@ export const claudlobby = {
     heading: "Why Claudlobby",
     points: [
       {
-        // The MCP fragments the README lists at 69f2fa0 (library.source):
-        // Google Workspace (gws) is Gmail and Calendar.
+        // The MCP fragments the README lists at 69f2fa0 (library.source), one
+        // per tool: Google Workspace (gws) is Gmail and Calendar.
         title: "Plugged into your tools",
-        body: "Shopify, Printify, Google Search Console and Analytics, Meta Ads, Google Workspace, Notion, Linear, Slack and GitHub, each one MCP fragment in the library.",
+        body: "Shopify, Printify, Google Search Console and Analytics, Meta Ads, Google Workspace, Notion, Linear, Slack and GitHub, each ready to connect from the library.",
       },
       {
         title: "Runs on hardware you own",
