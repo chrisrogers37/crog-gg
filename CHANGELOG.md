@@ -8,6 +8,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - Claudlobby's page is for solo founders and small teams running a fleet of AI workers, not only a software dark factory (#250). After its hero come the jobs its workers do (engineer, product strategist, SEO optimizer, Shopify manager, content and ads, customer service), each from Claudlobby's library, which the section cites at a pinned commit; the dark factory is the example under "How it works". Its project card and link-preview card say the same.
 - The music section's intro is plainer, and points at Spotify (#250).
 - The tagline is "building things that build things", where it was "i build things that build things": the home page's headline, every page's title and the link-preview card (#250).
+- The About text names artemis without its domain (#250).
 
 ## 2026-10-02
 
