@@ -1,10 +1,11 @@
 import type { Project } from "../../../types";
-import { DarkFactory } from "./DarkFactory";
 import { Hero } from "./Hero";
+import { HowItWorks } from "./HowItWorks";
 import { Quickstart } from "./Quickstart";
 import { Roadmap } from "./Roadmap";
 import { Updates } from "./Updates";
 import { WhyClaudlobby } from "./WhyClaudlobby";
+import { Workers } from "./Workers";
 import "./Claudlobby.css";
 
 /**
@@ -18,7 +19,8 @@ export function ClaudlobbyPage({ project }: { project: Project }) {
   return (
     <div className="cl-page">
       <Hero project={project} />
-      <DarkFactory />
+      <Workers />
+      <HowItWorks />
       <WhyClaudlobby />
       <Quickstart />
       <Roadmap />

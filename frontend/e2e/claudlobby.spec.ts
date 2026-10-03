@@ -47,8 +47,8 @@ for (const [label, viewport] of [...VIEWPORTS, ["small phone", SMALL_PHONE] as c
     if (viewport === SMALL_PHONE) {
       // The panel runs edge to edge there, its gutters given to the words:
       // that keeps the maturity note on a phone's first screen (it ends at
-      // 570 px). CI's fonts wrap wider than a phone's, so here the note is
-      // held to begin on it.
+      // about 610 px). CI's fonts wrap wider than a phone's, so here the
+      // note is held to begin on it.
       const panel = (await hero.boundingBox())!;
       expect(panel.x).toBe(0);
       expect(panel.width).toBe(viewport.width);

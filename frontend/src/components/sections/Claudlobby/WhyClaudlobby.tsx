@@ -1,15 +1,10 @@
 import { claudlobby } from "../../../content/claudlobby";
 import { InlineCode } from "../../common/InlineCode";
 import { PageSection } from "../../common/PageSection";
+import { SourceNote } from "./SourceNote";
 
 const { why } = claudlobby;
 const { library } = why;
-
-/** "2026-09-29" as "Sep 29, 2026", the same in every time zone. */
-const AS_OF = new Date(`${library.asOf}T00:00:00Z`).toLocaleDateString(
-  "en-US",
-  { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" },
-);
 
 /**
  * What sets it apart, and what is in the library today. Every count is shown
@@ -38,13 +33,7 @@ export function WhyClaudlobby() {
             </div>
           ))}
         </dl>
-        <p className="cl-source">
-          Source:{" "}
-          <a href={library.source} target="_blank" rel="noopener noreferrer">
-            {library.sourceLabel}
-          </a>
-          , as of {AS_OF}.
-        </p>
+        <SourceNote lead="Source:" from={library} />
       </div>
     </PageSection>
   );

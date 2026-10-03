@@ -9,6 +9,7 @@ import {
 import { makeProject } from "../../../../test/builders";
 import { ClaudlobbyPage } from "../ClaudlobbyPage";
 import { claudlobby } from "../../../../content/claudlobby";
+import { strings } from "../../../../test/claudlobbyRules";
 import { photoSrc, photoSrcSet } from "../../../../utils/photos";
 import {
   CLAUDLOBBY_GETTING_STARTED,
@@ -19,7 +20,7 @@ import { track } from "../../../../services/analytics";
 
 vi.mock("../../../../services/analytics", () => ({ track: vi.fn() }));
 
-const { hero, maturity, quickstart, roadmap } = claudlobby;
+const { hero, maturity, quickstart, roadmap, workers } = claudlobby;
 
 const CLAUDLOBBY = makeProject({ id: "claudlobby", title: "Claudlobby", featured: true });
 
@@ -67,6 +68,32 @@ describe("ClaudlobbyPage", () => {
     expect(
       screen.queryAllByRole("link").filter((link) => link.getAttribute("href") === "/"),
     ).toEqual([]);
+  });
+
+  it("follows the hero with the roles a fleet fills", () => {
+    const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    // Who it's for comes first (Chris, 2026-10-02): the jobs, then how it works.
+    const section = container.querySelector(".page-hero")!.nextElementSibling as HTMLElement;
+    expect(section).toHaveAttribute("id", "workers");
+    expect(
+      within(section)
+        .getAllByRole("listitem")
+        .map((role) => within(role).getByRole("heading", { level: 3 }).textContent),
+    ).toEqual(workers.roles.map((role) => role.title));
+  });
+
+  it("cites the repo beside what it took from it: the roles, and the library's counts", () => {
+    const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    for (const [id, from] of [
+      ["workers", workers],
+      ["why", claudlobby.why.library],
+    ] as const) {
+      const section = container.querySelector<HTMLElement>(`#${id}`)!;
+      expect(within(section).getByRole("link", { name: from.sourceLabel }), id).toHaveAttribute(
+        "href",
+        from.source,
+      );
+    }
   });
 
   it("reports a Quickstart click once", async () => {
@@ -118,11 +145,15 @@ describe("ClaudlobbyPage", () => {
     });
   });
 
-  it("renders backticked terms in the copy as code", () => {
+  it("renders every backticked term in the copy as code, and no backtick", () => {
     const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
-    expect(container.querySelector(".page-sub code")?.textContent).toBe(
-      "fleet.yaml",
+    const terms = strings(claudlobby).flatMap((text) =>
+      [...text.matchAll(/`([^`]+)`/g)].map((match) => match[1]),
     );
+    expect(terms.length).toBeGreaterThan(0);
+    const code = [...container.querySelectorAll("code")].map((element) => element.textContent);
+    for (const term of terms) expect(code, term).toContain(term);
+    expect(container.textContent).not.toContain("`");
   });
 
   it("sends the quickstart to the README's own steps", () => {

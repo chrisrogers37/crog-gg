@@ -1,12 +1,12 @@
-# Claudlobby - an open-source agent fleet for a software dark factory
+# Claudlobby - an open-source fleet of AI workers for solo founders and small teams
 id: claudlobby
 title: Claudlobby
 description: |
-  an open-source agent fleet for running a software dark factory: one
-  fleet.yaml composes manager, engineer and reviewer agents that work 24/7
-  on a mac mini or a raspberry pi.
+  design a team of ai workers: engineers, product strategists, seo optimizers
+  and shopify managers, working 24/7 on your own mac mini or raspberry pi.
+  open source, for solo founders and small teams.
 url: https://github.com/Claudfather/Claudlobby
-icon: "\U0001F3ED"
+icon: "\U0001F916"
 category: ai-tools
 technologies:
   - Claude Code
@@ -23,4 +23,4 @@ share_card:
   path: /claudlobby-card.png
   width: 1200
   height: 630
-  alt: "Build a dark factory. An open-source agent fleet: manager, engineer and reviewer agents that work 24/7."
+  alt: "Run a fleet of AI workers. Open-source agents for solo founders and small teams: engineers, SEO, Shopify, content and more, working 24/7."

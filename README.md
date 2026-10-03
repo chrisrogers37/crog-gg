@@ -4,7 +4,7 @@
 
 crog.gg is Chris Rogers's site, Choose Your Own Chris:
 - **`/` is his page**: who he is, a career timeline, his projects, his music and how to reach him, in one column. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
-- **`/projects`** lists the projects, with [Claudlobby](https://github.com/Claudfather/Claudlobby), his agent-fleet compositor for software "dark factories", featured. Each has a page; Claudlobby's is its own, in the colours and mark of its GitHub org, Claudfather: what it is, a quickstart, the roadmap, and how to follow releases, with its own link-preview card.
+- **`/projects`** lists the projects, with [Claudlobby](https://github.com/Claudfather/Claudlobby), his agent-fleet compositor for solo founders and small teams, featured. Each has a page; Claudlobby's is its own, in the colours and mark of its GitHub org, Claudfather: what it is, the jobs its workers do, a quickstart, the roadmap, and how to follow releases, with its own link-preview card.
 
 For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
