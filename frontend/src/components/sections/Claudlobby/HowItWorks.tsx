@@ -2,18 +2,14 @@ import { claudlobby } from "../../../content/claudlobby";
 import { InlineCode } from "../../common/InlineCode";
 import { PageSection } from "../../common/PageSection";
 
-/** What a dark factory is, in the three steps it takes to run one. */
-export function DarkFactory() {
-  const { darkFactory } = claudlobby;
+/** How a fleet comes to run, in three steps: declare it, plan it, let it run. */
+export function HowItWorks() {
+  const { howItWorks } = claudlobby;
   return (
-    <PageSection
-      id="dark-factory"
-      heading={darkFactory.heading}
-      intro={darkFactory.intro}
-    >
+    <PageSection id="how-it-works" heading={howItWorks.heading} intro={howItWorks.intro}>
       {/* role="list": Safari drops list semantics under list-style: none. */}
       <ol className="cl-steps" role="list">
-        {darkFactory.steps.map((step, index) => (
+        {howItWorks.steps.map((step, index) => (
           <li key={step.title} className="card cl-step">
             <span className="cl-step-number" aria-hidden="true">
               {index + 1}

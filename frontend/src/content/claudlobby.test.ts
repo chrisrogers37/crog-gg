@@ -38,6 +38,16 @@ describe("Claudlobby's page copy", () => {
     }
   });
 
+  it("gives its roles a source pinned to a commit, and a date", () => {
+    // Each role says what profiles and skills in the library do, so the link
+    // goes to the library as it was read, not to whatever main says now.
+    const { workers } = claudlobby;
+    expect(workers.source).toMatch(
+      /^https:\/\/github\.com\/Claudfather\/Claudlobby\/tree\/[0-9a-f]{40}\/library(\/|$)/,
+    );
+    expect(workers.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
   it("uses no em-dashes (CLAUDE.md tone rule)", () => {
     for (const text of copy) expect(text, text).not.toContain("—");
   });

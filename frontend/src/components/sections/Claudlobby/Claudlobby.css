@@ -116,7 +116,8 @@
 /* minmax(0, ...) throughout: a grid column otherwise grows to its widest
    unbreakable content (a command in <code>, say) and widens the whole page. */
 
-/* What's a dark factory */
+/* A worker for each job, and how it works */
+.cl-roles,
 .cl-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -126,6 +127,7 @@
   list-style: none;
 }
 
+.cl-role,
 .cl-step {
   padding: 1.25rem;
 }
@@ -148,6 +150,7 @@
   color: var(--primary-color);
 }
 
+.cl-role p,
 .cl-step p,
 .cl-points p {
   margin: 0.5rem 0 0;
@@ -249,6 +252,7 @@
     height: 56px;
   }
 
+  .cl-roles,
   .cl-steps,
   .cl-points,
   .cl-roadmap {

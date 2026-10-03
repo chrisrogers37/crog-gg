@@ -10,9 +10,18 @@
  * Platform voice (#179): plain and specific, no jokes, and nothing of the
  * owner's: the personal page and its voice are the rest of the site.
  *
+ * Who it's for (Chris, 2026-10-02): solo founders and small teams running a
+ * fleet of AI workers, engineering and the rest of a business, not only a
+ * software "dark factory", which the page keeps as one example.
+ *
  * Say only what the Claudlobby repo backs up (claudlobby.test.ts checks the
  * mechanical parts):
  * - it's open source: Apache-2.0 since 2026-09-30 (Claudfather/Claudlobby#2013)
+ * - each role says only what its profiles and skills do (`workers.source`); an
+ *   approval step is what a profile tells its bot to do, never a promise: the
+ *   README calls guardrails "instructions, not enforcement"
+ * - in Claudlobby's terms a worker is any bot but the manager, so the page's
+ *   mechanics (how it works, why) say bot
  * - Claude Code only today; other model providers appear only in
  *   `maturity.planned` and `roadmap.next`, where they read as plans
  * - every number keeps its source and as-of date, and matches that source
@@ -30,8 +39,8 @@ export const claudlobby = {
   mark: { photo: "/profile-photos/claudfather", alt: "Claudfather" },
 
   hero: {
-    headline: "Build a dark factory.",
-    sub: "Claudlobby is an open-source agent fleet for running a software dark factory. One `fleet.yaml` composes manager, engineer and reviewer agents that work 24/7 on a Mac mini or a Raspberry Pi.",
+    headline: "Run a fleet of AI workers.",
+    sub: "Open-source agents for solo founders and small teams: engineers, product strategists, SEO optimizers and Shopify managers, from one `fleet.yaml`, working 24/7 on a Mac mini or a Raspberry Pi.",
     ctaStar: "Star on GitHub",
     ctaQuickstart: "Quickstart",
   },
@@ -47,10 +56,51 @@ export const claudlobby = {
     updatesLink: "Get updates",
   },
 
-  darkFactory: {
-    heading: "What's a dark factory?",
+  workers: {
+    heading: "A worker for each job",
     intro:
-      "A factory that runs with the lights off. In software, that means agents plan the work, write the code, open the pull requests and review each other, while you set the goals and the guardrails.",
+      "Each worker is a Claude Code agent with a role from the library. It knows the job, has the tools for it, and keeps at it while you set the goals and the guardrails.",
+    // The library at 69f2fa0 (2026-10-02): software-engineering, with the
+    // code-review profile's reviewer bot; product-strategy; seo (read only on
+    // repos: it drafts the fix, an engineer ships it); business-operations
+    // with the shopify skill (Admin API reads); content-marketing, copywriting
+    // and advertising (read only on ad platforms); customer-service. Content,
+    // ads and customer service bring drafts to a person for approval.
+    roles: [
+      {
+        title: "Engineer",
+        body: "Builds features on a branch, opens pull requests and finds the root cause of a bug. A reviewer bot can review its pull requests.",
+      },
+      {
+        title: "Product strategist",
+        body: "Turns a project into a plan to find its audience and its revenue: who it's for, how they find it, why they'd pay.",
+      },
+      {
+        title: "SEO optimizer",
+        body: "Runs technical audits and keyword research, and drafts the exact on-page and schema fixes for an engineer to ship.",
+      },
+      {
+        title: "Shopify manager",
+        body: "Watches orders, fulfillment, discounts and the catalog through the Shopify Admin API, and flags a stuck order before a customer does.",
+      },
+      {
+        title: "Content and ads",
+        body: "Drafts posts, emails and ad copy in your brand's voice, and designs ad experiments, then brings each draft to you for approval.",
+      },
+      {
+        title: "Customer service",
+        body: "Triages inbound messages, looks up the order and drafts a reply, then sends it once you approve it.",
+      },
+    ] satisfies Point[],
+    source: `${CLAUDLOBBY_REPO}/tree/69f2fa0afe7b44da846593a42543548d0ff74fc3/library`,
+    sourceLabel: "the library's profiles and skills",
+    asOf: "2026-10-02",
+  },
+
+  howItWorks: {
+    heading: "How it works",
+    intro:
+      "One file describes the fleet, and Claudlobby builds each bot from the library and keeps it running. For a software team, that's a dark factory: agents plan the work, write the code and review each other while the lights are off.",
     steps: [
       {
         title: "Declare the fleet",
@@ -65,7 +115,7 @@ export const claudlobby = {
       {
         title: "Let it run",
         code: "24/7",
-        body: "A manager bot hands out work, workers open PRs and report back, and you follow along and steer from Telegram.",
+        body: "A manager bot hands out the work, workers report back, and you follow along and steer from Telegram.",
       },
     ] satisfies Step[],
   },
@@ -74,25 +124,28 @@ export const claudlobby = {
     heading: "Why Claudlobby",
     points: [
       {
-        title: "Write it once, use it everywhere",
-        body: "A guardrail, skill or protocol lives once in the library, and every bot that declares it gets it. Adding a bot is one stanza in `fleet.yaml`.",
+        // The MCP fragments the README lists at 69f2fa0 (library.source):
+        // Google Workspace (gws) is Gmail and Calendar.
+        title: "Plugged into your tools",
+        body: "Shopify, Printify, Google Search Console and Analytics, Meta Ads, Google Workspace, Notion, Linear, Slack and GitHub, each one MCP fragment in the library.",
       },
       {
         title: "Runs on hardware you own",
         body: "No Claudlobby service to sign up for: the fleet runs on your machine. A Mac mini, a Linux box or a Raspberry Pi 5 is enough.",
       },
       {
-        title: "Bots that learn",
-        body: "Skills are shared, so improving one improves every bot that uses it. Bots keep their own memory across rebuilds, and `claudlobby config diff --bot` shows what a bot has changed, so a good change can go back into the library.",
+        title: "Improve one, improve them all",
+        body: "A skill, guardrail or protocol lives once in the library, and every bot that declares it gets it. Bots keep their memory across rebuilds, and `claudlobby config diff --bot` shows what one has changed, so a good change can go back into the library.",
       },
     ] satisfies Point[],
     library: {
       heading: "In the library today",
       // Counted from the README's "What this repo gives you" list, and checked
       // against the repo tree (library/, README.md files excluded) that day.
-      source: `${CLAUDLOBBY_REPO}/blob/c4682f7ace169ae69b2337eaabdfcbc12e64001e/README.md#what-this-repo-gives-you--and-doesnt`,
+      // The same commit as the roles' source, so the page reads one snapshot.
+      source: `${CLAUDLOBBY_REPO}/blob/69f2fa0afe7b44da846593a42543548d0ff74fc3/README.md#what-this-repo-gives-you--and-doesnt`,
       sourceLabel: "Claudlobby README",
-      asOf: "2026-09-30",
+      asOf: "2026-10-02",
       counts: [
         { value: 19, label: "expertise profiles" },
         { value: 55, label: "skills" },

@@ -34,6 +34,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The 404 and error pages, and a section that fails to load, are in the same look, with the site's one radius and its buttons; so is the photo strip (#247).
 - Only the standard project page loads the README renderer, so Claudlobby's page doesn't, and the music section loads Spotify's player once it's near the screen rather than with the page (#247).
 - Claudlobby's page wears its GitHub org's look, Claudfather's: the org's avatar as its mark, its charcoal, cream and orange, and its own link-preview card. A project file can name a link-preview card of its own (`share_card`), and `npm run site:check` holds every card to its size, and to its source's words where the site keeps one. Claudlobby's head describes it as source code, with its repository and license (#249).
+- Claudlobby's page is for solo founders and small teams running a fleet of AI workers, not only a software dark factory (#250). After its hero come the jobs its workers do (engineer, product strategist, SEO optimizer, Shopify manager, content and ads, customer service), each from Claudlobby's library, which the section cites at a pinned commit; the dark factory is the example under "How it works". Its project card and link-preview card say the same.
 
 ### Fixed
 - A project page fits a phone: a README's wide table scrolls in a box of its own, and a long URL wraps. Pages take their width from the layout, not from their content, so `/projects` no longer widens as its projects arrive (#246).

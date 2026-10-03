@@ -19,7 +19,7 @@ import { track } from "../../../../services/analytics";
 
 vi.mock("../../../../services/analytics", () => ({ track: vi.fn() }));
 
-const { hero, maturity, quickstart, roadmap } = claudlobby;
+const { hero, maturity, quickstart, roadmap, workers } = claudlobby;
 
 const CLAUDLOBBY = makeProject({ id: "claudlobby", title: "Claudlobby", featured: true });
 
@@ -67,6 +67,32 @@ describe("ClaudlobbyPage", () => {
     expect(
       screen.queryAllByRole("link").filter((link) => link.getAttribute("href") === "/"),
     ).toEqual([]);
+  });
+
+  it("follows the hero with the roles a fleet fills", () => {
+    const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    // Who it's for comes first (Chris, 2026-10-02): the jobs, then how it works.
+    const section = container.querySelector(".page-hero")!.nextElementSibling as HTMLElement;
+    expect(section).toHaveAttribute("id", "workers");
+    expect(
+      within(section)
+        .getAllByRole("listitem")
+        .map((role) => within(role).getByRole("heading", { level: 3 }).textContent),
+    ).toEqual(workers.roles.map((role) => role.title));
+  });
+
+  it("cites the repo beside what it took from it: the roles, and the library's counts", () => {
+    const { container } = renderWithProviders(<ClaudlobbyPage project={CLAUDLOBBY} />);
+    for (const [id, from] of [
+      ["workers", workers],
+      ["why", claudlobby.why.library],
+    ] as const) {
+      const section = container.querySelector<HTMLElement>(`#${id}`)!;
+      expect(within(section).getByRole("link", { name: from.sourceLabel }), id).toHaveAttribute(
+        "href",
+        from.source,
+      );
+    }
   });
 
   it("reports a Quickstart click once", async () => {
