@@ -73,7 +73,7 @@ export function Timeline({ data }: TimelineProps) {
   if (!data || !sortedEntries.length) {
     return (
       <div className="timeline-container">
-        <p>{data ? "Nothing on the journey yet." : "Loading journey..."}</p>
+        <p>{data ? "nothing on the journey yet." : "loading journey..."}</p>
       </div>
     );
   }

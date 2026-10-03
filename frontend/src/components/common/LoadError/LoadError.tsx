@@ -18,7 +18,7 @@ export function LoadError({ message, onRetry, compact = false }: LoadErrorProps)
     >
       <p className="error-boundary__message">{message}</p>
       <button className="btn btn-primary btn-sm" onClick={onRetry}>
-        Retry
+        retry
       </button>
     </div>
   );

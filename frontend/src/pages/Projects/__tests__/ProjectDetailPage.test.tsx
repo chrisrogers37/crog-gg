@@ -86,7 +86,7 @@ describe("ProjectDetailPage before its project is found", () => {
     });
     renderAt(["/projects/benzo"]);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "The projects didn't load: content/projects/benzo.yaml has 1 problem(s).",
+      "the projects didn't load: content/projects/benzo.yaml has 1 problem(s).",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(reloadProjects).toHaveBeenCalled();

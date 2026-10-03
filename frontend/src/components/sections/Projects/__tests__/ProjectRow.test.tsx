@@ -3,7 +3,7 @@ import { fireEvent, renderWithProviders, screen, within } from "../../../../test
 import { CLAUDLOBBY_REPO } from "../../../../content/links";
 import { track } from "../../../../services/analytics";
 import { FeaturedProject } from "../FeaturedProject";
-import { ProjectCard } from "../ProjectCard";
+import { ProjectRow } from "../ProjectRow";
 import type { Project } from "../../../../types";
 import { makeProject } from "../../../../test/builders";
 
@@ -18,82 +18,58 @@ const mockProject = makeProject({
 
 vi.mock("../../../../services/analytics", () => ({ track: vi.fn() }));
 
-// The card is a router link, so it renders inside the app's providers.
-const renderCard = (project: Project, headingLevel?: 2 | 3) =>
-  renderWithProviders(<ProjectCard project={project} headingLevel={headingLevel} />);
+// The row is a router link in a list, so it renders inside the app's
+// providers, in a list.
+const renderRow = (project: Project, headingLevel?: 2 | 3) =>
+  renderWithProviders(
+    <ul>
+      <ProjectRow project={project} headingLevel={headingLevel} />
+    </ul>,
+  );
 
-describe("ProjectCard", () => {
-  it("renders project title and description", () => {
-    renderCard(mockProject);
-    expect(screen.getByRole("heading", { level: 3, name: "Test Project" })).toBeInTheDocument();
-    expect(screen.getByText("A test project description")).toBeInTheDocument();
+describe("ProjectRow", () => {
+  it("titles itself with a link to the project's page, named by the title alone", () => {
+    renderRow(mockProject);
+    const heading = screen.getByRole("heading", { level: 3, name: "Test Project" });
+    const link = within(heading).getByRole("link", { name: "Test Project" });
+    expect(link).toHaveAttribute("href", "/projects/test");
+    expect(link).not.toHaveAttribute("target");
   });
 
   it("titles itself at the level the page asks for", () => {
-    renderCard(mockProject, 2);
+    renderRow(mockProject, 2);
     expect(screen.getByRole("heading", { level: 2, name: "Test Project" })).toBeInTheDocument();
   });
 
-  it("renders the icon as the emoji it is, hidden from screen readers", () => {
-    const { container } = renderCard(mockProject);
-    const icon = container.querySelector(".project-card-icon");
-    expect(icon).toHaveTextContent("\u{1F680}");
-    expect(icon).toHaveAttribute("aria-hidden", "true");
+  it("gives the whole description", () => {
+    renderRow(mockProject);
+    expect(screen.getByText("A test project description")).toBeInTheDocument();
   });
 
-  it("sets the icon on the project's own colour, or the site's grey without one", () => {
-    const gradient = "linear-gradient(135deg, #000 0%, #333 100%)";
-    const { container, unmount } = renderCard({ ...mockProject, gradient });
-    expect(container.querySelector(".project-card-icon")).toHaveStyle({ background: gradient });
-    unmount();
-
-    const plain = renderCard(mockProject).container.querySelector(".project-card-icon");
-    expect(plain).not.toHaveAttribute("style", expect.stringContaining("gradient"));
-  });
-
-  it("renders technology pills", () => {
-    renderCard(mockProject);
-    const pills = screen.getByRole("list", { name: "Built with" });
-    expect(within(pills).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
-      "React",
-      "TypeScript",
-    ]);
-  });
-
-  it("limits tech pills to 3 with overflow indicator", () => {
-    renderCard({
+  it("says what it's built with, every technology, in one line", () => {
+    const { container } = renderRow({
       ...mockProject,
       technologies: ["React", "TypeScript", "Node", "Python", "Go"],
     });
-    const pills = screen.getByRole("list", { name: "Built with" });
-    expect(within(pills).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
-      "React",
-      "TypeScript",
-      "Node",
-      "+2",
-    ]);
+    expect(container.querySelector(".project-row-tech")).toHaveTextContent(
+      "built with React · TypeScript · Node · Python · Go",
+    );
   });
 
-  it("does not render tech pills when technologies is empty", () => {
-    renderCard({ ...mockProject, technologies: [] });
-    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  it("says nothing of technologies when it lists none", () => {
+    const { container } = renderRow({ ...mockProject, technologies: [] });
+    expect(container.querySelector(".project-row-tech")).not.toBeInTheDocument();
   });
 
   it("names a status only when it isn't active", () => {
-    renderCard(mockProject);
+    renderRow(mockProject);
     expect(screen.queryByText("active")).not.toBeInTheDocument();
   });
 
-  it("names an experimental or archived project's status", () => {
-    renderCard({ ...mockProject, status: "archived" });
+  it("names an experimental or archived project's status, outside its title", () => {
+    renderRow({ ...mockProject, status: "archived" });
     expect(screen.getByText("archived")).toBeInTheDocument();
-  });
-
-  it("opens the project's page on the site", () => {
-    renderCard(mockProject);
-    const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/projects/test");
-    expect(link).not.toHaveAttribute("target");
+    expect(screen.getByRole("heading", { name: "Test Project" })).toBeInTheDocument();
   });
 });
 
@@ -102,7 +78,7 @@ describe("FeaturedProject", () => {
 
   it("says it's featured, and titles itself", () => {
     renderWithProviders(<FeaturedProject project={featured} />);
-    expect(screen.getByText("Featured project")).toBeInTheDocument();
+    expect(screen.getByText("featured project")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 3, name: /Test Project/ })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: /Test Project/ })).toBeInTheDocument();
   });
@@ -119,7 +95,7 @@ describe("FeaturedProject", () => {
 
   it("opens the project's page, and its repo in a new tab", () => {
     renderWithProviders(<FeaturedProject project={featured} />);
-    expect(screen.getByRole("link", { name: "View project" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "view project" })).toHaveAttribute(
       "href",
       "/projects/test",
     );

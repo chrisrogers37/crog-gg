@@ -45,7 +45,7 @@ describe("headTags", () => {
   });
 
   it("names the page first, then the site; home is the site's name alone", () => {
-    expect(pageTitle(PROJECTS_META)).toMatch(/^Projects \| /);
+    expect(pageTitle(PROJECTS_META)).toMatch(/^projects \| /);
     // The owner's page is the home page, and the site name already says who.
     expect(pageTitle(HOME_META)).toBe(site.seo.site_name);
   });

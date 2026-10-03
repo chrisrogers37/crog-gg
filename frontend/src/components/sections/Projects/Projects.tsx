@@ -4,30 +4,31 @@ import type { Project } from "../../../types";
 import { splitFeatured } from "../../../utils/featured";
 import { LoadError } from "../../common/LoadError";
 import { FeaturedProject } from "./FeaturedProject";
-import { ProjectCard } from "./ProjectCard";
+import { ProjectRow } from "./ProjectRow";
 import "./Projects.css";
 
-type ProjectGridProps = {
+type ProjectRowsProps = {
   projects: Project[];
   headingLevel?: 2 | 3;
 };
 
-/** The projects as a grid of cards. */
-export function ProjectGrid({ projects, headingLevel }: ProjectGridProps) {
+/** The projects as a list of rows. */
+export function ProjectRows({ projects, headingLevel }: ProjectRowsProps) {
   return (
-    <div className="projects-grid">
+    // role="list": Safari drops list semantics under list-style: none.
+    <ul className="project-rows" role="list">
       {projects.map((project) => (
-        <ProjectCard key={project.id} project={project} headingLevel={headingLevel} />
+        <ProjectRow key={project.id} project={project} headingLevel={headingLevel} />
       ))}
-    </div>
+    </ul>
   );
 }
 
 /**
- * Blank cards in the real ones' boxes while the projects load, so nothing
- * moves when they land (#246): each line is a blank line of the real card's
- * own type, and the pills wrap as the real ones do. The featured card's box
- * leads, since index.yaml usually names one.
+ * Blank stand-ins in the real ones' boxes while the projects load, so little
+ * moves when they land (#246): each line is a blank line of the real one's
+ * own type. The featured card's box leads, since index.yaml usually names
+ * one; a row stands in with a description of two lines, the usual length.
  */
 export function ProjectSkeleton({ count }: { count: number }) {
   return (
@@ -49,24 +50,23 @@ export function ProjectSkeleton({ count }: { count: number }) {
           <span className="btn btn-ghost">&nbsp;</span>
         </div>
       </div>
-      <div className="projects-grid" aria-hidden="true">
+      <ul className="project-rows" aria-hidden="true">
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="card project-card skeleton-card">
-            <span className="project-card-icon">&nbsp;</span>
-            <div className="project-card-title">&nbsp;</div>
-            <p className="project-card-description">
-              &nbsp;
-              <br />
-              &nbsp;
-            </p>
-            <ul className="pills project-card-tech">
-              {Array.from({ length: 4 }).map((_, j) => (
-                <li key={j}>&nbsp;</li>
-              ))}
-            </ul>
-          </div>
+          <li key={i} className="project-row skeleton-row">
+            <div className="project-row-head">
+              <div className="project-row-title">&nbsp;</div>
+            </div>
+            <div className="project-row-body">
+              <p className="project-row-description">
+                &nbsp;
+                <br />
+                &nbsp;
+              </p>
+              <p className="project-row-tech">&nbsp;</p>
+            </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -82,7 +82,7 @@ type ProjectListProps = {
 
 /**
  * The projects index.yaml lists: the featured one first and larger, then the
- * others as cards, in the index's order. A failure or an empty list says so
+ * others as rows, in the index's order. A failure or an empty list says so
  * in its place, and the rest of the page stays up (#190 M23).
  */
 export function ProjectList({ limit, headingLevel = 3, compact = false }: ProjectListProps) {
@@ -96,10 +96,10 @@ export function ProjectList({ limit, headingLevel = 3, compact = false }: Projec
     return (
       <>
         {featured && <FeaturedProject project={featured} headingLevel={headingLevel} />}
-        {shown.length > 0 && <ProjectGrid projects={shown} headingLevel={headingLevel} />}
+        {shown.length > 0 && <ProjectRows projects={shown} headingLevel={headingLevel} />}
         {limit !== undefined && (
           <p className="page-links">
-            <Link to="/projects">All projects</Link>
+            <Link to="/projects">all projects</Link>
           </p>
         )}
       </>
@@ -110,10 +110,10 @@ export function ProjectList({ limit, headingLevel = 3, compact = false }: Projec
     return (
       <LoadError
         compact={compact}
-        message={`The projects didn't load: ${load.error}.`}
+        message={`the projects didn't load: ${load.error}.`}
         onRetry={() => reloadProjects()}
       />
     );
   }
-  return <p>No projects yet.</p>;
+  return <p>no projects yet.</p>;
 }

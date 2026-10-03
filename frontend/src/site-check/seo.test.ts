@@ -15,8 +15,9 @@ describe("the site's head", () => {
     // The head is prerendered before any content loads, so the role is written
     // out in site.yaml too (owner.job_title, owner.works_for); a job change
     // edited in one place fails here. src/seo/site.test.ts holds the schema
-    // to site.yaml.
-    expect(site.owner.job_title).toBe(current!.title);
+    // to site.yaml. The case may differ: the timeline's titles are in the
+    // site's lowercase voice, the schema's in title case for search engines.
+    expect(site.owner.job_title.toLowerCase()).toBe(current!.title.toLowerCase());
     if (site.owner.works_for) {
       expect(site.owner.works_for.name).toBe(current!.organization);
       if (current!.domain) {

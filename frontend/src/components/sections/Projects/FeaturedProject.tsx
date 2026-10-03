@@ -15,7 +15,7 @@ export function FeaturedProject({ project, headingLevel = 3 }: FeaturedProjectPr
   const titleId = `featured-${project.id}`;
   return (
     <article className="card project-featured" aria-labelledby={titleId}>
-      <p className="page-eyebrow">Featured project</p>
+      <p className="page-eyebrow">featured project</p>
       <Heading id={titleId} className="project-featured-title">
         <span aria-hidden="true">{project.icon}</span> {project.title}
       </Heading>
@@ -29,7 +29,7 @@ export function FeaturedProject({ project, headingLevel = 3 }: FeaturedProjectPr
       )}
       <div className="page-ctas">
         <Link to={`/projects/${project.id}`} className="btn btn-primary">
-          View project
+          view project
         </Link>
         {project.github && (
           // Counted when it's Claudlobby's repo, as its page's links are (#177).

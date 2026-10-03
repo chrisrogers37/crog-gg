@@ -107,7 +107,6 @@ export const projectShape = object({
   icon: text,
   category: text,
   technologies: withDefault(list(text), noSkills),
-  gradient: optional(text),
   status: optional(oneOf(PROJECT_STATUSES)),
   /** The project's own link preview, where it isn't the site's card. */
   share_card: optional(shareImage),

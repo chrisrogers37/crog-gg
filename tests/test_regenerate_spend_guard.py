@@ -94,7 +94,7 @@ def no_openai():
 def test_outage_returns_503_and_spends_nothing(client, metering_broken, no_openai):
     r = client.post("/api/regenerate", json=_BODY)
     assert r.status_code == 503
-    assert r.get_json()["error"] == "Regeneration temporarily unavailable"
+    assert r.get_json()["error"] == "regeneration temporarily unavailable"
     no_openai.chat.completions.create.assert_not_called()
 
 
@@ -160,6 +160,6 @@ def test_site_wide_ceiling_refuses_without_spending_the_visitors_slots(client, r
     assert rate_limit.check_and_consume(budget, REGEN_DAILY_WINDOW, cost=REGEN_GLOBAL_DAILY_MAX) is None
     r = client.post("/api/regenerate", json=_BODY)
     assert r.status_code == 503
-    assert r.get_json()["error"] == "Daily regeneration budget reached"
+    assert r.get_json()["error"] == "daily regeneration budget reached"
     assert fake_upstash.zcard(_regen_daily_key(Visitor.from_ip("127.0.0.1"))) == 0
     no_openai.chat.completions.create.assert_not_called()

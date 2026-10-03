@@ -61,7 +61,7 @@ export class ErrorBoundary extends Component<
         return (
           <LoadError
             compact
-            message="Something went wrong loading this section."
+            message="something went wrong loading this section."
             onRetry={this.handleReset}
           />
         );
@@ -70,25 +70,25 @@ export class ErrorBoundary extends Component<
       return (
         <div className="error-boundary" role="alert">
           <div className="error-boundary__icon">!</div>
-          <h2 className="error-boundary__title">Something went wrong</h2>
+          <h2 className="error-boundary__title">something went wrong</h2>
           <p className="error-boundary__message">
-            An unexpected error occurred. You can try again, and if the problem
+            an unexpected error occurred. you can try again, and if the problem
             persists, try refreshing the page.
           </p>
           <div className="error-boundary__actions">
             <button className="btn btn-primary btn-sm" onClick={this.handleReset}>
-              Try again
+              try again
             </button>
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => window.location.reload()}
             >
-              Reload page
+              reload page
             </button>
           </div>
           {import.meta.env.DEV && (
             <details className="error-boundary__details">
-              <summary>Error details</summary>
+              <summary>error details</summary>
               <pre>{error.message}</pre>
               <pre>{error.stack}</pre>
             </details>

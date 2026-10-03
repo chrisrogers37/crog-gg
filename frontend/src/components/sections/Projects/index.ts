@@ -1,3 +1,3 @@
-export { ProjectList, ProjectGrid, ProjectSkeleton } from "./Projects";
-export { ProjectCard } from "./ProjectCard";
+export { ProjectList, ProjectRows, ProjectSkeleton } from "./Projects";
+export { ProjectRow } from "./ProjectRow";
 export { FeaturedProject } from "./FeaturedProject";

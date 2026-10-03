@@ -97,7 +97,7 @@ function StandardProject({ project }: { project: Project }) {
         <div className="page-ctas">
           {project.url !== "#" && (
             <a href={project.url} className="btn btn-primary" {...EXTERNAL}>
-              {project.url.includes("github.com") ? "View on GitHub" : "Visit"}
+              {project.url.includes("github.com") ? "view on GitHub" : "visit"}
             </a>
           )}
           {liveDemo && (
@@ -179,7 +179,7 @@ export function ProjectDetailPage() {
       return (
         <div className="page project-page">
           <LoadError
-            message={`The projects didn't load: ${load.error}.`}
+            message={`the projects didn't load: ${load.error}.`}
             onRetry={() => reloadProjects()}
           />
         </div>
@@ -188,11 +188,11 @@ export function ProjectDetailPage() {
     return (
       <div className="page project-page">
         <header className="page-hero">
-          <h1 className="page-headline">Project not found</h1>
-          <p className="page-sub">There's no project called "{slug}".</p>
+          <h1 className="page-headline">project not found</h1>
+          <p className="page-sub">there's no project called "{slug}".</p>
           <div className="page-ctas">
             <Link to="/projects" className="btn btn-primary">
-              All projects
+              all projects
             </Link>
           </div>
         </header>
@@ -220,10 +220,10 @@ export function ProjectDetailPage() {
             }
             className="btn btn-ghost"
           >
-            Go back
+            go back
           </button>
           <Link to="/projects" className="btn btn-ghost">
-            All projects
+            all projects
           </Link>
         </div>
       </div>

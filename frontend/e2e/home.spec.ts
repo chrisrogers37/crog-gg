@@ -57,9 +57,9 @@ test.describe("Home page", () => {
     await expect(location).toHaveCount(bio.location ? 1 : 0);
   });
 
-  test("its project cards open their pages on the site (#196 M43)", async ({ page }) => {
+  test("its project rows open their pages on the site (#196 M43)", async ({ page }) => {
     test.skip(!SECTIONS.some(({ id }) => id === "projects"), "the site shows no projects section");
-    const card = page.locator("#projects a.project-card").first();
+    const card = page.locator("#projects a.project-row-link").first();
     const href = await card.getAttribute("href");
     expect(href).toMatch(/^\/projects\/[a-z0-9-]+$/);
     await card.click();

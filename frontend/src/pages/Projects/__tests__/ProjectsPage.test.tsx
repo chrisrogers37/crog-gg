@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import site from "virtual:site-config";
 import { useContentStore } from "../../../store";
 import {
   fireEvent,
@@ -28,7 +29,7 @@ describe("ProjectsPage when the content failed to load", () => {
     });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "The projects didn't load: content/projects/index.yaml answered 500.",
+      "the projects didn't load: content/projects/index.yaml answered 500.",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(reloadProjects).toHaveBeenCalled();
@@ -37,19 +38,19 @@ describe("ProjectsPage when the content failed to load", () => {
   it("says when there's nothing to show, rather than loading forever (#190 M23)", () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "ready" } });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
-    expect(screen.getByText("No projects yet.")).toBeInTheDocument();
+    expect(screen.getByText("no projects yet.")).toBeInTheDocument();
     expect(screen.queryByRole("status", { name: /loading projects/i })).toBeNull();
   });
 
-  it("holds the featured card's and the grid's places while it loads", () => {
+  it("holds the featured card's and the rows' places while it loads", () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "loading" } });
     const { container } = renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     expect(screen.getByRole("status", { name: /loading projects/i })).toBeInTheDocument();
     expect(container.querySelector(".skeleton-card.project-featured")).toBeInTheDocument();
-    expect(container.querySelectorAll(".projects-grid .skeleton-card").length).toBeGreaterThan(0);
+    expect(container.querySelectorAll(".project-rows .skeleton-row").length).toBeGreaterThan(0);
   });
 
-  it("shows the featured project first and larger, then every other one as a card", () => {
+  it("shows the featured project first and larger, then every other one as a row", () => {
     const project = (id: string, featured = false) =>
       makeProject({ id, title: `Project ${id}`, url: `https://${id}.example`, icon: "x", featured });
     useContentStore.setState({
@@ -66,9 +67,23 @@ describe("ProjectsPage when the content failed to load", () => {
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
   });
 
+  it("ends with the rest on GitHub: site.yaml's link, in a new tab", () => {
+    // In place of the GitHub card it once listed as a project.
+    useContentStore.setState({
+      projects: [makeProject({ id: "a", title: "Project a" })],
+      loads: { ...INITIAL.loads, projects: "ready" },
+    });
+    renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
+    const github = site.socials.find((social) => social.icon === "github")!;
+    const link = screen.getByRole("link", { name: "more on GitHub" });
+    expect(link).toHaveAttribute("href", github.url);
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
   it("names the page in the tab while it loads, not only once it has", async () => {
     useContentStore.setState({ projects: [], loads: { ...INITIAL.loads, projects: "loading" } });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
-    await waitFor(() => expect(document.title).toMatch(/^Projects \|/));
+    await waitFor(() => expect(document.title).toMatch(/^projects \|/));
   });
 });

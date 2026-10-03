@@ -107,7 +107,7 @@ test.describe("Claudlobby's page", () => {
 
   test("sits under the site's breadcrumbs, back to the projects", async ({ page }) => {
     const trail = page.getByRole("navigation", { name: "Breadcrumb" });
-    await expect(trail.getByRole("link", { name: "Projects" })).toHaveAttribute("href", "/projects");
+    await expect(trail.getByRole("link", { name: "projects" })).toHaveAttribute("href", "/projects");
   });
 
   for (const [label, viewport] of VIEWPORTS) {

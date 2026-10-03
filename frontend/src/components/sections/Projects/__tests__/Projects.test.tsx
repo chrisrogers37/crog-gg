@@ -30,7 +30,7 @@ describe("ProjectList, as the home page's section", () => {
     });
     renderWithProviders(<ProjectList limit={3} compact />);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "The projects didn't load: content/projects/a.yaml has 1 problem(s).",
+      "the projects didn't load: content/projects/a.yaml has 1 problem(s).",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(reloadProjects).toHaveBeenCalled();
@@ -39,7 +39,7 @@ describe("ProjectList, as the home page's section", () => {
   it("says when there are none, rather than loading forever", () => {
     useContentStore.setState({ projects: [], loads: loads("ready") });
     renderWithProviders(<ProjectList limit={3} compact />);
-    expect(screen.getByText("No projects yet.")).toBeInTheDocument();
+    expect(screen.getByText("no projects yet.")).toBeInTheDocument();
     expect(screen.queryByRole("status")).toBeNull();
   });
 
@@ -55,10 +55,10 @@ describe("ProjectList, as the home page's section", () => {
     expect(screen.getByRole("article", { name: /Project star/ })).toBeInTheDocument();
     const cards = screen
       .getAllByRole("link")
-      .filter((link) => link.classList.contains("project-card"))
+      .filter((link) => link.classList.contains("project-row-link"))
       .map((link) => link.getAttribute("href"));
     expect(cards).toEqual(["/projects/a", "/projects/b", "/projects/c"]);
-    expect(screen.getByRole("link", { name: "All projects" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "all projects" })).toHaveAttribute(
       "href",
       "/projects",
     );

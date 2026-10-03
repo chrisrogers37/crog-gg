@@ -1,7 +1,7 @@
 # Dead Redux - Daily Grateful Dead Shows
 id: dead-redux
 title: Dead Redux
-description: a new grateful dead show hosted each day
+description: a new Grateful Dead show hosted each day
 url: https://dead-redux.vercel.app
 icon: "\U0001F3B5"
 category: web-app
@@ -9,7 +9,6 @@ technologies:
   - TypeScript
   - React
   - Vercel
-gradient: "linear-gradient(135deg, #991B1B 0%, #1a1a2e 100%)"
 github: https://github.com/chrisrogers37/dead-redux
 demo: https://dead-redux.vercel.app
 status: active

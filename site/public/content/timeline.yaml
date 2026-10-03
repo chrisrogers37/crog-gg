@@ -4,150 +4,150 @@
 
 entries:
   - type: role
-    title: Data Platform Lead
+    title: data platform lead
     organization: Artemis
     domain: artemis.ai
     start_date: "Mar 2026"
     end_date: present
     one_liner: now leading the data platform for blockchain and equities analytics
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - data modeling
-      - llms
+      - LLMs
 
   - type: role
-    title: Senior Data Scientist and Engineer
+    title: senior data scientist and engineer
     organization: Artemis
     domain: artemis.ai
     start_date: "Nov 2025"
     end_date: "Mar 2026"
     one_liner: data science and engineering for blockchain and equities analytics
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - data modeling
-      - llms
+      - LLMs
 
   - type: milestone
-    title: AI-Maxxing
-    organization: Independent
+    title: AI-maxxing
+    organization: independent
     start_date: "Jul 2025"
     end_date: "Nov 2025"
-    one_liner: quit my job and went full send on ai. built things, broke things, learned a ton
+    one_liner: quit my job and went full send on AI. built things, broke things, learned a ton
     skills:
-      - python
-      - llms
+      - Python
+      - LLMs
       - object-oriented programming
-      - aws
-      - docker
+      - AWS
+      - Docker
 
   - type: role
-    title: Senior Analytics Engineer
+    title: senior analytics engineer
     organization: Citadel
     domain: citadel.com
     start_date: "Feb 2023"
     end_date: "Jul 2025"
     one_liner: automated a bunch of finance workflows that people were doing by hand. saved everyone a lot of time
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - dbt
-      - bigquery
-      - google cloud platform
-      - airflow
-      - kubernetes
-      - docker
-      - git
-      - tableau
+      - BigQuery
+      - Google Cloud Platform
+      - Airflow
+      - Kubernetes
+      - Docker
+      - Git
+      - Tableau
 
   - type: role
-    title: Data Scientist
+    title: data scientist
     organization: Meta
     domain: meta.com
     start_date: "Dec 2021"
     end_date: "Feb 2023"
     one_liner: helped recruiting teams figure out what metrics actually mattered and ran a bunch of experiments
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - statistical testing
       - experimentation
       - regression
       - forecasting
       - metric design
-      - tableau
+      - Tableau
 
   - type: education
-    title: MS (partial), Applied Analytics
+    title: MS (partial), applied analytics
     organization: Columbia University
     domain: columbia.edu
     start_date: "2020"
     end_date: "2021"
-    one_liner: got halfway through a masters before meta came calling. no regrets (3.83 gpa)
+    one_liner: got halfway through a masters before Meta came calling. no regrets (3.83 GPA)
     skills:
-      - python
+      - Python
       - statistical testing
       - regression
       - classification
 
   - type: role
-    title: Business Intelligence Analyst II
+    title: business intelligence analyst II
     organization: Memorial Sloan Kettering
     domain: mskcc.org
     start_date: "Dec 2020"
     end_date: "Dec 2021"
-    one_liner: published nlp research and built dashboards that actually changed how the hospital made decisions
+    one_liner: published NLP research and built dashboards that actually changed how the hospital made decisions
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - R
-      - tableau
+      - Tableau
       - natural language processing
       - classification
       - time series analysis
 
   - type: role
-    title: Business Intelligence Analyst I
+    title: business intelligence analyst I
     organization: Memorial Sloan Kettering
     domain: mskcc.org
     start_date: "Oct 2018"
     end_date: "Dec 2020"
     one_liner: built the reporting and analytics setup from scratch for clinical ops
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - R
-      - tableau
+      - Tableau
 
   - type: role
-    title: Data Analyst / Senior Data Analyst
+    title: data analyst / senior data analyst
     organization: VillageMD
     domain: villagemd.com
     start_date: "Feb 2016"
     end_date: "Oct 2018"
     one_liner: first real data job. started as an analyst, worked my way up
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - R
 
   - type: education
-    title: MEng, Chemical Engineering
+    title: MEng, chemical engineering
     organization: Cornell University
     domain: cornell.edu
     start_date: "2014"
     end_date: "2015"
-    one_liner: engineering masters, mostly spent optimizing chemical processes and wondering if i'd actually be a chemical engineer (3.96 gpa)
+    one_liner: engineering masters, mostly spent optimizing chemical processes and wondering if i'd actually be a chemical engineer (3.96 GPA)
     skills: []
 
   - type: education
-    title: BS, Chemical Engineering
+    title: BS, chemical engineering
     organization: Cornell University
     domain: cornell.edu
     start_date: "2010"
     end_date: "2014"
-    one_liner: where it all started. go big red
+    one_liner: where it all started. go Big Red
     skills: []
 
 # All skills with metadata for the bubble display. Each category's color is a
@@ -157,24 +157,24 @@ skill_categories:
   languages:
     color: "#3178C6"
     skills:
-      - python
-      - sql
+      - Python
+      - SQL
       - R
   data_tools:
     color: "#10B981"
     skills:
       - dbt
-      - bigquery
-      - tableau
-      - airflow
+      - BigQuery
+      - Tableau
+      - Airflow
   cloud_infra:
     color: "#8B5CF6"
     skills:
-      - google cloud platform
-      - aws
-      - kubernetes
-      - docker
-      - git
+      - Google Cloud Platform
+      - AWS
+      - Kubernetes
+      - Docker
+      - Git
   data_science:
     color: "#F59E0B"
     skills:
@@ -189,8 +189,8 @@ skill_categories:
   creative:
     color: "#EC4899"
     skills:
-      - llms
-      - ableton
-      - adobe premiere pro
+      - LLMs
+      - Ableton
+      - Adobe Premiere Pro
       - object-oriented programming
       - data modeling
