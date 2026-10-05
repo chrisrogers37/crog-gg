@@ -8,15 +8,17 @@
   padding: 0 1.5rem;
 }
 
+/* The theme's own colours (App.css), which switch with it: no dark-mode
+   overrides needed. */
 .nav-logo {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-color);
   text-decoration: none;
 }
 
 .nav-logo:hover {
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 .nav-right {
@@ -34,7 +36,7 @@
 }
 
 .nav-link {
-  color: #64748b;
+  color: var(--text-color-secondary);
   text-decoration: none;
   font-weight: 500;
   padding: 0.5rem 0;
@@ -42,11 +44,11 @@
 }
 
 .nav-link:hover {
-  color: #1e293b;
+  color: var(--text-color);
 }
 
 .nav-link.active {
-  color: #2563eb;
+  color: var(--primary-color);
 }
 
 .nav-link.active::after {
@@ -56,32 +58,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #2563eb;
-}
-
-/* Dark mode styles */
-.dark .nav-logo {
-  color: #f1f5f9;
-}
-
-.dark .nav-logo:hover {
-  color: #60a5fa;
-}
-
-.dark .nav-link {
-  color: #9ca3af;
-}
-
-.dark .nav-link:hover {
-  color: #f1f5f9;
-}
-
-.dark .nav-link.active {
-  color: #60a5fa;
-}
-
-.dark .nav-link.active::after {
-  background: #60a5fa;
+  background: var(--primary-color);
 }
 
 /* Hamburger button - hidden on desktop */

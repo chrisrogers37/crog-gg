@@ -34,27 +34,7 @@ export default {
           "monospace",
         ],
       },
-
-      typography: (theme) => ({
-        DEFAULT: {
-          css: {
-            color: theme("colors.slate.700"),
-            a: {
-              color: theme("colors.primary.600"),
-              "&:hover": {
-                color: theme("colors.primary.700"),
-              },
-            },
-            "code::before": {
-              content: '""',
-            },
-            "code::after": {
-              content: '""',
-            },
-          },
-        },
-      }),
     },
   },
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [],
 };
