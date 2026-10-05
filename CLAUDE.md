@@ -108,7 +108,7 @@ git diff                # Review changes before commit
 
 - In production, frontend calls same-origin `/api/*` (Flask function on the same Vercel domain). `VITE_API_URL` should be empty/unset in Vercel so the code default kicks in.
 - For local dev: run `python3 -m api.index` from the repo root (port 5001); Vite dev proxy in `vite.config.ts` forwards `/api` requests there. `python api/index.py` fails with `ModuleNotFoundError`.
-- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`). The paid `/api/regenerate` path fails closed (503) when Redis is unavailable or not configured, so it can never run unmetered (#113). The GitHub endpoints' rate limiter fails open, but the `/languages` aggregate answers 503 when its Redis cache can't be read, rather than fan out to GitHub uncached (#194 M33). Don't "fix" a 503 by making the paid path fall open.
+- Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`). The paid `/api/regenerate` path fails closed (503) when Redis is unavailable or not configured, so it can never run unmetered (#113). The GitHub endpoints' rate limiter fails open. Don't "fix" a 503 by making the paid path fall open.
 
 #### Backend Endpoints
 
@@ -120,9 +120,6 @@ git diff                # Review changes before commit
 | `/api/health`                            | GET    | Health checks for uptime monitors (200 / 503)       |
 | `/api/v1/github/repo/[<owner>/]<name>`   | GET    | GitHub repo details (allowed owners only)           |
 | `/api/v1/github/readme/[<owner>/]<name>` | GET    | GitHub README content (allowed owners only)         |
-| `/api/v1/github/languages/<name>`        | GET    | Language stats for repo                             |
-| `/api/v1/github/languages`               | GET    | Aggregated language stats                           |
-| `/api/v1/github/contributions`           | GET    | GitHub contribution calendar (GraphQL)              |
 
 ### Styling
 
@@ -181,12 +178,12 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 - the palette is defined ONCE in `frontend/src/styles/palette.ts` (the `primary` / `accent` / `slate` ramps).
 - `frontend/tailwind.config.js` imports that palette, so every `bg-primary-600` / `text-slate-500` utility resolves back to the one file. tailwind is the canonical palette surface.
-- `frontend/src/styles/tokens.ts` imports the same palette for js-side values, and `frontend/src/App.css` mirrors the shades by hand as css variables (plain css can't import js) with each var tagged by its shade.
+- `frontend/src/App.css` mirrors the shades by hand as css variables (plain css can't import js), each tagged by its shade, and they switch with the theme. new component css should read those vars, or the palette through tailwind's `theme()`, rather than hard-code a hex value.
 - never hand-edit a color in only one of these. change `palette.ts` and let the rest follow; if you touch an `App.css` var, match it to the shade it tracks.
 
 ### Core Tokens
 
-- read exact values from source, don't restate them here (a second copy drifts): color ramps in `frontend/src/styles/palette.ts`, spacing in `frontend/src/styles/tokens.ts` (`spacing`), fonts/type in `frontend/tailwind.config.js` (`fontFamily`).
+- read exact values from source, don't restate them here (a second copy drifts): color ramps in `frontend/src/styles/palette.ts`, spacing from tailwind's default scale, fonts/type in `frontend/tailwind.config.js` (`fontFamily`).
 
 ### Do's and Don'ts (from design review)
 
@@ -217,7 +214,7 @@ Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robo
 
 The README's [table](README.md#environment-variables) lists them all. The token's scope matters enough to keep here:
 
-- `GITHUB_TOKEN` — required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data: a classic PAT with **no scopes**, or a fine-grained token set to "Public repositories (read-only)". Any authenticated token gets the 5000/hr REST quota and can run the GraphQL contributions query, so no scope is needed. Don't use `public_repo` (it can push to your public repos) or `repo`. The per-repo proxy endpoints (`repo` / `readme` / `languages`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
+- `GITHUB_TOKEN` (optional): it raises the REST rate limit for the repo and README endpoints. Use a token that can only read public data: a classic PAT with **no scopes**, or a fine-grained token set to "Public repositories (read-only)". Any authenticated token gets the 5000/hr REST quota, so no scope is needed. Don't use `public_repo` (it can push to your public repos) or `repo`. The proxy endpoints (`repo` / `readme`) enforce a public-only check in code as defense-in-depth, but the token itself must not be able to read private repos.
 
 ### CI
 

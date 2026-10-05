@@ -124,7 +124,7 @@ def test_the_client_is_bounded_and_does_not_retry_on_its_own():
     assert (client.timeout.read, client.timeout.connect) == (_OPENAI_CALL_SECONDS, _OPENAI_CONNECT_SECONDS)
 
 
-def test_the_deadline_runs_from_when_the_press_arrives(client):
+def test_the_deadline_runs_from_when_the_press_arrives(client, notes_section):
     # Time spent before the model calls comes out of the same budget: here the
     # cooldown claim takes 5 of the 12 seconds, leaving each section 7.
     clock = _Clock(100.0)
@@ -136,7 +136,7 @@ def test_the_deadline_runs_from_when_the_press_arrives(client):
     choice = MagicMock(finish_reason="stop")
     choice.message.content = '{"bio": "rewritten"}'
     completion = MagicMock(choices=[choice])
-    both = {"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}}
+    both = {"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}}
     with (
         _openai((0.0, completion), (0.0, completion), clock=clock) as create,
         patch("api.index.REGEN_DEADLINE_SECONDS", 12),

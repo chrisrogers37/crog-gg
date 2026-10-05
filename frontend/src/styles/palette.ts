@@ -1,9 +1,9 @@
 /**
  * Palette: the canonical color source of truth for the site.
  *
- * These raw ramps are the ONE place a brand color value lives. Both
- * `tailwind.config.js` and `src/styles/tokens.ts` import from here, so a
- * color is defined exactly once and the two cannot drift apart.
+ * These raw ramps are the ONE place a brand color value lives.
+ * `tailwind.config.js` imports from here, so every utility class and every
+ * `theme()` in the CSS resolves to these values: a color is defined once.
  *
  * The CSS custom properties in `src/App.css` mirror these by hand (plain CSS
  * cannot import JS); each var there is annotated with the shade it tracks, so

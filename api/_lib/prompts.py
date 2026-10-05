@@ -53,10 +53,6 @@ _PROMPTS = {
         + " or ".join(f"'{name}'" for name in CONFIG.name_variants)
         + "\n2. Never return the exact input name\n",
     },
-    "portfolio": {
-        "system": "You are a technical and creative writer who specializes in professional portfolios. You MUST rewrite ALL text content in the portfolio (experience, education, skills, projects, music) while preserving the core meaning and facts. Return ONLY valid JSON with no prefixes or additional text.",
-        "format": "Return ONLY the JSON object with no prefixes or additional text. You MUST rewrite EVERY text field in experience, education, skills, projects, and music with new wording while maintaining the same core information.\n\nFor ALL text content (titles, descriptions, achievements, etc.):\n1. EVERY single text field must be rewritten with new phrasing\n2. Maintain the same core accomplishments and facts\n3. Use varied sentence structures and strong action verbs\n4. Keep all numerical metrics (percentages, numbers) exactly the same\n5. Do not copy any full sentences from the original text\n\nFor experience, education, skills, projects, and music:\n- Experience: Retitle roles and rename employers in the world's terms; keep every period exactly as given.\n- Education: Rename schools and degrees in the world's terms; keep every year exactly as given.\n- Skills: Rewrite each skill with a new phrasing or synonym.\n- Projects: Rewrite project titles, descriptions, and technologies.\n- Music: Rename tracks and albums in the world's terms; keep every year exactly as given.\n",
-    },
 }
 
 
@@ -102,11 +98,6 @@ _LENGTH_ANCHOR = (
 # step can honour its input while the tenth is about someone else. Enforcement
 # means re-sending the ORIGINAL alongside the current text as ground truth, which
 # the client does not send today.
-#
-# The nested date fields -- experience[].period, education[].year, music[].year --
-# are _UNAUTHORED_KEYS candidates the moment that table learns paths. They are
-# pin-the-caller's-value semantics asked for in prose here because the restore is
-# currently flat (parsed[key] = content[key]) and these live inside arrays.
 _FACT_ANCHOR = (
     " Two things are fixed; everything else is yours to move. FIXED: the person this is about -- "
     f"the work {_P['subj']} actually {_P['does']}, the field {_P['subj']} {_P['does']} it in, the places "

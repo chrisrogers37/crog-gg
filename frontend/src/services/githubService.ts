@@ -47,27 +47,6 @@ export type Readme = {
 };
 
 /**
- * Language statistics
- */
-export interface LanguageStats {
-  [language: string]: number;
-}
-
-/**
- * Contribution data for heatmap
- */
-export interface ContributionDay {
-  date: string;
-  count: number;
-  level: 0 | 1 | 2 | 3 | 4;
-}
-
-export interface ContributionData {
-  total: number;
-  weeks: ContributionDay[][];
-}
-
-/**
  * GitHub Service
  *
  * Handles all GitHub API interactions via the backend proxy.
@@ -148,57 +127,6 @@ class GitHubService {
         htmlUrl: data.html_url,
         downloadUrl: data.download_url,
       };
-    });
-  }
-
-  /**
-   * Fetch repository language statistics
-   */
-  async getLanguages(repoName: string): Promise<LanguageStats> {
-    return this.cachedFetch(`languages:${repoName}`, async () => {
-      const response = await fetch(`${this.baseUrl}/languages/${repoName}`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch languages: ${response.status}`);
-      }
-
-      return response.json();
-    });
-  }
-
-  /**
-   * Fetch aggregated language stats for all user repos
-   */
-  async getAllLanguages(): Promise<LanguageStats> {
-    return this.cachedFetch("all-languages", async () => {
-      const response = await fetch(`${this.baseUrl}/languages`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch all languages: ${response.status}`);
-      }
-
-      return response.json();
-    });
-  }
-
-  /**
-   * Fetch contribution data for heatmap
-   */
-  async getContributions(): Promise<ContributionData> {
-    return this.cachedFetch("contributions", async () => {
-      const response = await fetch(`${this.baseUrl}/contributions`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch contributions: ${response.status}`);
-      }
-
-      return response.json();
     });
   }
 

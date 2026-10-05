@@ -2,10 +2,9 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import site from "virtual:site-config";
 import { API_URL } from "../config/api";
-import { BioData, Employment, Education, Skill, Project } from "../types";
+import { BioData, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
 import type { ShowcaseImage } from "../types/Showcase";
-import { loadResume } from "../data/resume";
 import { loadBio } from "../utils/bioLoader";
 import { loadProjects } from "../utils/projectLoader";
 import { loadShowcase } from "../utils/showcaseLoader";
@@ -27,9 +26,6 @@ export type LoadedContent = "bio" | "timeline" | "projects";
 interface ContentState {
   // Data
   bio: BioData | null;
-  experience: Employment[];
-  education: Education[];
-  skills: Skill[];
   projects: Project[];
   timeline: TimelineData | null;
   // The photo strip's images, null until showcase.yaml settles. The strip is
@@ -38,8 +34,6 @@ interface ContentState {
 
   // Original data for reset functionality
   originalBio: BioData | null;
-  originalExperience: Employment[];
-  originalEducation: Education[];
 
   // Each file's load, apart (#190 M23): bio's failure is the home page's,
   // timeline's the journey's, and projects' the projects section's and the
@@ -87,15 +81,10 @@ type ContentStore = ContentState & ContentActions;
 
 const initialState: ContentState = {
   bio: null,
-  experience: [],
-  education: [],
-  skills: [],
   projects: [],
   timeline: null,
   showcase: null,
   originalBio: null,
-  originalExperience: [],
-  originalEducation: [],
   loads: { bio: "loading", timeline: "loading", projects: "loading" },
   isRegenerating: false,
   regenerationError: null,
@@ -211,17 +200,6 @@ export const useContentStore = create<ContentStore>()(
        * Called once on app initialization, and by the home page's retry.
        */
       loadContent: async () => {
-        // Nothing renders the résumé files (#159), so a failure there is
-        // logged, not shown.
-        const resume = loadResume().then(
-          (value) =>
-            set({
-              ...value,
-              originalExperience: value.experience,
-              originalEducation: value.education,
-            }),
-          (error: unknown) => console.error(error),
-        );
         await Promise.all([
           // Stored for reset, too
           reload("bio", loadBio, (bio) => ({ bio, originalBio: bio })),
@@ -230,7 +208,6 @@ export const useContentStore = create<ContentStore>()(
           // With the rest, not once the home page is up: a link to the
           // contact section below the strip waits for it (HomePage).
           loadShowcase().then((showcase) => set({ showcase })),
-          resume,
         ]);
       },
 
@@ -425,9 +402,8 @@ export const useContentStore = create<ContentStore>()(
        * header and nav and the button that was just clicked included, in order
        * to fetch files whose contents were already in memory.
        *
-       * Only the slices a regeneration could touch are restored: the bio, and
-       * experience and education until #190's step 2 settles them (a press
-       * sends only the bio now). Skills, projects and timeline are never
+       * Only the slice a regeneration can touch is restored: the bio, since a
+       * press sends only that (#190). Projects and the timeline are never
        * rewritten, so re-reading them was always a no-op.
        */
       resetContent: () => {
@@ -439,16 +415,8 @@ export const useContentStore = create<ContentStore>()(
           return;
         }
 
-        const data = {
-          bio: state.originalBio,
-          experience: state.originalExperience,
-          education: state.originalEducation,
-        };
-
         set({
-          bio: data.bio,
-          experience: data.experience,
-          education: data.education,
+          bio: state.originalBio,
           hasModifiedContent: false,
           regenerationError: null,
         });

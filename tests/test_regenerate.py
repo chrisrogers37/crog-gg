@@ -98,6 +98,16 @@ def test_unknown_section_returns_400(client):
     assert r.get_json()["error"] == "Invalid section: system"
 
 
+def test_the_retired_portfolio_section_returns_400(client):
+    # The page stopped sending it in #234 and its prompt is gone, so it is
+    # refused like any other unknown name, before anything is metered.
+    with patch("api.index.rate_limit.check_and_consume") as consume:
+        r = client.post("/api/regenerate", json={"sections": {"portfolio": {"experience": []}}})
+    assert r.status_code == 400
+    assert r.get_json()["error"] == "Invalid section: portfolio"
+    consume.assert_not_called()
+
+
 def test_one_bad_section_rejects_the_whole_request(client):
     # Validation is all-or-nothing and happens before metering, so a request
     # carrying a bad name can't get its good sections generated for free.
@@ -137,8 +147,9 @@ _BIO_ROOM = MAX_SECTION_CHARS - len(_prompt_json({"bio": ""}))
     ],
 )
 def test_oversized_section_is_413_unmetered(client, bio):
-    # The 64 KB body cap still lets one section carry ~16x the shipped content
-    # into a paid prompt; the section cap stops it before any metering (#194 M11).
+    # The 64 KB body cap still lets one section carry dozens of times the
+    # shipped content into a paid prompt; the section cap stops it before any
+    # metering (#194 M11).
     with patch("api.index.openai_client", _mock_openai()):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": bio}}})
@@ -227,14 +238,14 @@ def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
     fake.chat.completions.create.assert_not_called()
 
 
-def test_daily_slot_consumed_per_section(client):
+def test_daily_slot_consumed_per_section(client, notes_section):
     # Batching sections into one request must cost the same as the per-section
     # requests it replaces, or the daily caps would be trivially stretched.
     with patch("api.index.openai_client", _mock_openai()):
         with patch("api.index.rate_limit.check_and_consume", return_value=None) as consume:
             r = client.post(
                 "/api/regenerate",
-                json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+                json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
             )
     assert r.status_code == 200
     consume.assert_called_once()
@@ -280,7 +291,7 @@ def test_global_ceiling_returns_503(client, caplog):
 # --- one action is one request ---------------------------------------------
 
 
-def test_multi_section_request_checks_cooldown_once(client):
+def test_multi_section_request_checks_cooldown_once(client, notes_section):
     # The regression this route shape exists to prevent: a full regeneration used
     # to be two concurrent requests, so the second hit the cooldown the first had
     # just started and was rejected. One request means one gate check.
@@ -288,13 +299,13 @@ def test_multi_section_request_checks_cooldown_once(client):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as gate:
             r = client.post(
                 "/api/regenerate",
-                json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+                json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
             )
     assert r.status_code == 200
     gate.assert_called_once()
 
 
-def test_every_section_prompt_carries_the_length_anchor(client):
+def test_every_section_prompt_carries_the_length_anchor(client, notes_section):
     """The rewrite must be told not to grow (#134).
 
     The client sends the CURRENT content, so each rewrite takes the previous
@@ -309,7 +320,7 @@ def test_every_section_prompt_carries_the_length_anchor(client):
     with patch("api.index.openai_client", fake):
         client.post(
             "/api/regenerate",
-            json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+            json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
         )
 
     systems = [c.kwargs["messages"][0]["content"] for c in fake.chat.completions.create.call_args_list]
@@ -319,14 +330,14 @@ def test_every_section_prompt_carries_the_length_anchor(client):
         assert "do not expand it" in sys_prompt.lower()
 
 
-def test_all_requested_sections_are_returned(client):
+def test_all_requested_sections_are_returned(client, notes_section):
     # Each section is answered in its own shape. A rewrite that shares no key
     # with the section it replaces is now refused (#105), so one canned body
     # standing in for both sections would be rejected for whichever it did not
     # match -- that is the check working, not a limit of it.
     def _per_section(**kwargs):
         prompt = kwargs["messages"][1]["content"]
-        body = '{"experience": [{"title": "Engineer"}]}' if "experience" in prompt else '{"bio": "rewritten"}'
+        body = '{"entries": [{"title": "Engineer"}]}' if "entries" in prompt else '{"bio": "rewritten"}'
         resp = MagicMock()
         resp.choices = [MagicMock()]
         resp.choices[0].message.content = body
@@ -335,17 +346,17 @@ def test_all_requested_sections_are_returned(client):
     with patch("api.index.openai_client", _mock_openai(per_call=_per_section)):
         r = client.post(
             "/api/regenerate",
-            json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+            json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
         )
     assert r.status_code == 200
-    assert set(r.get_json()["content"]) == {"about", "portfolio"}
+    assert set(r.get_json()["content"]) == {"about", "notes"}
 
 
-def test_partial_failure_keeps_the_sections_that_worked(client):
+def test_partial_failure_keeps_the_sections_that_worked(client, notes_section):
     # The old client discarded BOTH sections when either failed, including the
     # one that succeeded. A partial failure must degrade, not collapse.
     def _per_section(**kwargs):
-        if "portfolio-marker" in kwargs["messages"][1]["content"]:
+        if "notes-marker" in kwargs["messages"][1]["content"]:
             raise openai.OpenAIError("boom")
         resp = MagicMock()
         resp.choices = [MagicMock()]
@@ -358,7 +369,7 @@ def test_partial_failure_keeps_the_sections_that_worked(client):
             json={
                 "sections": {
                     "about": {"bio": "hi"},
-                    "portfolio": {"experience": ["portfolio-marker"]},
+                    "notes": {"entries": ["notes-marker"]},
                 }
             },
         )
@@ -366,19 +377,19 @@ def test_partial_failure_keeps_the_sections_that_worked(client):
     body = r.get_json()
     assert body["success"] is True
     assert body["content"] == {"about": {"bio": "rewritten"}}
-    assert body["failed_sections"] == ["portfolio"]
+    assert body["failed_sections"] == ["notes"]
 
 
-def test_total_failure_is_a_500(client):
+def test_total_failure_is_a_500(client, notes_section):
     with patch("api.index.openai_client", _mock_openai(error=openai.OpenAIError("boom"))):
         r = client.post(
             "/api/regenerate",
-            json={"sections": {"about": {"bio": "hi"}, "portfolio": {"experience": []}}},
+            json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
         )
     assert r.status_code == 500
     body = r.get_json()
     assert body["success"] is False
-    assert body["failed_sections"] == ["about", "portfolio"]
+    assert body["failed_sections"] == ["about", "notes"]
     # Metered before the calls failed, so the cooldown is running; the page
     # counts it down from this rather than inventing its own (#196 M44).
     assert body["cooldown_total"] == 30

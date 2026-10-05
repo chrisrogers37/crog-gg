@@ -175,7 +175,7 @@ def _section_aware_client():
 
     def per_call(**kwargs):
         prompt = kwargs["messages"][1]["content"]
-        body = {"experience": [{"title": "Engineer"}]} if "experience" in prompt else {"bio": "rewritten"}
+        body = {"entries": [{"title": "Engineer"}]} if "entries" in prompt else {"bio": "rewritten"}
         return MagicMock(choices=[MagicMock(message=MagicMock(content=json.dumps(body)))])
 
     fake.chat.completions.create.side_effect = per_call
@@ -208,8 +208,8 @@ def test_every_failure_reaches_the_log_at_one_level(client, caplog):
     assert levels == {"ERROR"}, f"taxonomy split across log levels: {levels}"
 
 
-@pytest.mark.parametrize("sections", [{"about": _BIO}, {"about": _BIO, "portfolio": {"experience": []}}])
-def test_a_successful_request_reports_no_failures(client, sections):
+@pytest.mark.parametrize("sections", [{"about": _BIO}, {"about": _BIO, "notes": {"entries": []}}])
+def test_a_successful_request_reports_no_failures(client, notes_section, sections):
     with patch("api.index.openai_client", _section_aware_client()):
         r = client.post("/api/regenerate", json={"sections": sections})
     assert r.status_code == 200
@@ -221,7 +221,7 @@ def test_a_successful_request_reports_no_failures(client, sections):
 # and any exception in a worker re-raised from future.result(). Either way the
 # request became an HTML 500 that also discarded the sections that worked.
 
-_TWO = {"sections": {"about": _BIO, "portfolio": {"experience": [{"title": "Eng"}]}}}
+_TWO = {"sections": {"about": _BIO, "notes": {"entries": [{"title": "Eng"}]}}}
 
 
 def _choice(content, finish_reason="stop"):
@@ -235,24 +235,24 @@ def _choices_client(choices):
 
 
 def _about_gets(about_choices):
-    """`about` receives ``about_choices``; `portfolio` receives a usable rewrite."""
+    """`about` receives ``about_choices``; `notes` receives a usable rewrite."""
     fake = MagicMock()
 
     def per_call(**kwargs):
-        if "experience" in kwargs["messages"][1]["content"]:
-            return MagicMock(choices=[_choice(json.dumps({"experience": [{"title": "Engineer"}]}))])
+        if "entries" in kwargs["messages"][1]["content"]:
+            return MagicMock(choices=[_choice(json.dumps({"entries": [{"title": "Engineer"}]}))])
         return MagicMock(choices=about_choices)
 
     fake.chat.completions.create.side_effect = per_call
     return fake
 
 
-def test_none_content_is_counted_and_sibling_survives(client):
+def test_none_content_is_counted_and_sibling_survives(client, notes_section):
     with patch("api.index.openai_client", _about_gets([_choice(None, finish_reason="content_filter")])):
         r = client.post("/api/regenerate", json=_TWO)
     assert r.status_code == 200
     body = r.get_json()
-    assert "portfolio" in body["content"]
+    assert "notes" in body["content"]
     assert body["failed_sections"] == ["about"]
     assert body["failures"]["about"] == {"reason": FAILURE_EMPTY_RESPONSE, "finish_reason": "content_filter"}
 
@@ -270,17 +270,17 @@ def test_empty_completion_is_counted(client, choices):
     assert r.get_json()["failures"]["about"]["reason"] == FAILURE_EMPTY_RESPONSE
 
 
-def test_worker_crash_is_counted_not_500(client):
+def test_worker_crash_is_counted_not_500(client, notes_section):
     def crash_about(name, *args):
         if name == "about":
             raise RuntimeError("detail that must stay server-side")
-        return {"experience": [{"title": "Engineer"}]}, None
+        return {"entries": [{"title": "Engineer"}]}, None
 
     with patch("api.index.openai_client", MagicMock()), patch("api.index._regenerate_section", side_effect=crash_about):
         r = client.post("/api/regenerate", json=_TWO)
     assert r.status_code == 200
     body = r.get_json()
-    assert body["content"] == {"portfolio": {"experience": [{"title": "Engineer"}]}}
+    assert body["content"] == {"notes": {"entries": [{"title": "Engineer"}]}}
     assert body["failures"]["about"] == {"reason": FAILURE_UNEXPECTED, "error_type": "RuntimeError"}
     assert "must stay server-side" not in r.get_data(as_text=True)
 

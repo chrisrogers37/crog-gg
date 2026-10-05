@@ -98,9 +98,9 @@ def test_outage_returns_503_and_spends_nothing(client, metering_broken, no_opena
     no_openai.chat.completions.create.assert_not_called()
 
 
-def test_outage_blocks_every_section_of_a_multi_section_request(client, metering_broken, no_openai):
+def test_outage_blocks_every_section_of_a_multi_section_request(client, metering_broken, no_openai, notes_section):
     # The handler fans out one paid call per section; none may start.
-    r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}, "portfolio": {"items": []}}})
+    r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}})
     assert r.status_code == 503
     no_openai.chat.completions.create.assert_not_called()
 
