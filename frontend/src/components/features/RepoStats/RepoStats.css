@@ -1,6 +1,6 @@
 .repo-stats {
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: 8px;
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
 }
@@ -53,6 +53,10 @@
   gap: 1rem;
   font-size: 0.875rem;
   color: var(--text-color-secondary);
+}
+
+/* A line under the counts, when site.yaml shows them (github.show_counts). */
+.stats-grid + .repo-meta {
   padding-top: 1rem;
   border-top: 1px solid var(--border-color);
 }

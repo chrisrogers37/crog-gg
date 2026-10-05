@@ -105,7 +105,7 @@ describe("githubService", () => {
     });
 
     it("decodes the README as UTF-8, so emoji and symbols survive", async () => {
-      // Headings from the Shitpost Alpha and Storydump READMEs, which rendered
+      // Headings from two project READMEs, which rendered
       // as "ð The Story", "â ï¸ Disclaimer" and "Â·" before #178.
       const text = "## 📖 The Story\n## 🎯 Overview\n## ⚠️ Disclaimer\na — b · c";
       const utf8 = String.fromCharCode(...new TextEncoder().encode(text));
@@ -115,7 +115,7 @@ describe("githubService", () => {
         json: () => Promise.resolve({ content: btoa(utf8).replace(/(.{60})/g, "$1\n") }),
       });
 
-      expect((await githubService.getReadme("owner", "shitpost-alpha"))?.text).toBe(text);
+      expect((await githubService.getReadme("owner", "emoji-readme"))?.text).toBe(text);
     });
 
     it("asks by owner, and caches each owner's README apart (#189)", async () => {

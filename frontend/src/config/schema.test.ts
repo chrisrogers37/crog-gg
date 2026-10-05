@@ -116,6 +116,17 @@ describe("parseSiteConfig", () => {
     expect(message).toContain("features.regenerate: expected one of auto, on, off");
   });
 
+  it("takes github.show_counts as true or false, and names anything else", () => {
+    for (const value of [true, false]) {
+      const raw = shipped();
+      at(raw, "github").show_counts = value;
+      expect(parseSiteConfig(raw).github.show_counts).toBe(value);
+    }
+    const raw = shipped();
+    at(raw, "github").show_counts = "no";
+    expect(problems(raw)).toContain("github.show_counts: expected true or false");
+  });
+
   it("needs {artist} in the music intro, once", () => {
     const raw = shipped();
     at(raw, "music").intro = "i make music.";

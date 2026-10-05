@@ -12,7 +12,7 @@ const BLOB = "https://github.com/chrisrogers37/storydump/blob/main";
 const RAW = "https://raw.githubusercontent.com/chrisrogers37/storydump/main";
 
 describe("readmeHref", () => {
-  // The first four are links the Storydump and Shitpost Alpha READMEs carry
+  // The first four are links two project READMEs carry
   // today, each of which used to land on the crog.gg 404 page.
   it.each([
     ["AGENTS.md", `${BLOB}/AGENTS.md`],

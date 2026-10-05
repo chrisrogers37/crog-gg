@@ -60,6 +60,9 @@ export const sitePath = matching(/^\/(?!\/)\S+$/, 'a path that starts with one "
 
 export const slug = matching(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "a lowercase id (a-z, 0-9, -)");
 
+export const flag: Check<boolean> = (value, path, issues) =>
+  typeof value === "boolean" ? value : fail(issues, path, value, "true or false");
+
 export const positiveInteger: Check<number> = (value, path, issues) =>
   Number.isInteger(value) && (value as number) > 0
     ? (value as number)

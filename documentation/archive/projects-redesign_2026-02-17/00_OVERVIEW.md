@@ -50,8 +50,8 @@ All screenshots captured during the review are stored at:
 
 | Phase | File                                    | Summary                                                                                                                                                             | Impact | Effort |
 | ----- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
-| 01    | `01_normalize-yaml-data.md`             | Standardize non-standard fields in `shitpost-alpha.yaml` and `30-day-abs.yaml` (`github_url` to `github`, `demo_url` to `demo`)                                     | Low    | Low    |
-| 02    | `02_reorder-projects-add-dead-redux.md` | Create `dead-redux.yaml`, reorder all projects by impact (Shuffify, Storyline AI, Dead Redux, Shitpost Alpha, 30 Day A/Bs, City Cycles, GitHub), keep Hedwig hidden | High   | Low    |
+| 01    | `01_normalize-yaml-data.md`             | Standardize non-standard fields in `<removed>.yaml` and `30-day-abs.yaml` (`github_url` to `github`, `demo_url` to `demo`)                                     | Low    | Low    |
+| 02    | `02_reorder-projects-add-dead-redux.md` | Create `dead-redux.yaml`, reorder all projects by impact (Shuffify, Storyline AI, Dead Redux, a removed project, 30 Day A/Bs, City Cycles, GitHub), keep Hedwig hidden | High   | Low    |
 | 03    | `03_fix-nav-spacing.md`                 | Fix "Chris Rogers" logo running into "Home" nav link on projects page                                                                                               | Low    | Low    |
 | 04    | `04_fix-mobile-overflow.md`             | Fix section tab overflow and text clipping at 375px on home and projects pages                                                                                      | High   | Low    |
 | 05    | `05_projects-grid-tiles-redesign.md`    | Convert projects page and home projects section from vertical list to compact visual tile grid                                                                      | High   | Medium |
@@ -117,7 +117,7 @@ Track C:  [Phase 04] ------------------------------------------>
 | File                                                        | Relevant Phases |
 | ----------------------------------------------------------- | --------------- |
 | `frontend/public/content/projects/index.yaml`               | 02              |
-| `frontend/public/content/projects/shitpost-alpha.yaml`      | 01, 02          |
+| `frontend/public/content/projects/<removed>.yaml`      | 01, 02          |
 | `frontend/public/content/projects/30-day-abs.yaml`          | 01, 02          |
 | `frontend/public/content/projects/dead-redux.yaml` (new)    | 02              |
 | `frontend/src/utils/projectLoader.ts`                       | 01 (reference)  |

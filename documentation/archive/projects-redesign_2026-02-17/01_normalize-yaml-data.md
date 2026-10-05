@@ -13,7 +13,7 @@
 
 ## Context
 
-Two project YAML files (`shitpost-alpha.yaml` and `30-day-abs.yaml`) use non-standard field names `github_url` and `demo_url` instead of the standard `github` and `demo` fields used by other projects and defined in the `Project` TypeScript interface at `frontend/src/types/Project.ts`.
+Two project YAML files (`<removed>.yaml` and `30-day-abs.yaml`) use non-standard field names `github_url` and `demo_url` instead of the standard `github` and `demo` fields used by other projects and defined in the `Project` TypeScript interface at `frontend/src/types/Project.ts`.
 
 The project loader at `frontend/src/utils/projectLoader.ts` currently maps these non-standard fields (lines 64-65: `github: projectData.github_url`, `demo: projectData.demo_url`), but the data should be normalized at the source for consistency.
 
@@ -33,24 +33,24 @@ This is a data-only cleanup that makes the YAML files self-consistent before Pha
 
 ## Detailed Implementation Plan
 
-### Step 1: Update shitpost-alpha.yaml
+### Step 1: Update <removed>.yaml
 
-**File:** `frontend/public/content/projects/shitpost-alpha.yaml`
+**File:** `frontend/public/content/projects/<removed>.yaml`
 
 Read the file. Find the fields `github_url` and `demo_url`. Rename them:
 
 **Before:**
 
 ```yaml
-github_url: https://github.com/chrisrogers37/shitpost-alpha
-demo_url: https://shitpost-alpha-dash.up.railway.app/
+github_url: https://github.com/chrisrogers37/<removed>
+demo_url: <removed>
 ```
 
 **After:**
 
 ```yaml
-github: https://github.com/chrisrogers37/shitpost-alpha
-demo: https://shitpost-alpha-dash.up.railway.app/
+github: https://github.com/chrisrogers37/<removed>
+demo: <removed>
 ```
 
 Keep all values identical. Do not change any other fields.
@@ -160,7 +160,7 @@ N/A - data-only change.
 3. Manual verification:
    - Start dev server (`cd frontend && npm run dev`)
    - Navigate to home page, click "Projects" section tab
-   - Verify Shitpost Alpha renders with correct GitHub and demo links
+   - Verify a removed project renders with correct GitHub and demo links
    - Verify 30 Day A/Bs renders with correct GitHub and demo links
    - Click through to verify links open correctly
 
@@ -168,8 +168,8 @@ N/A - data-only change.
 
 ## Verification Checklist
 
-- [ ] `shitpost-alpha.yaml` uses `github` not `github_url`
-- [ ] `shitpost-alpha.yaml` uses `demo` not `demo_url`
+- [ ] `<removed>.yaml` uses `github` not `github_url`
+- [ ] `<removed>.yaml` uses `demo` not `demo_url`
 - [ ] `30-day-abs.yaml` uses `github` not `github_url`
 - [ ] `30-day-abs.yaml` uses `demo` not `demo_url`
 - [ ] No other fields were changed in either YAML file
