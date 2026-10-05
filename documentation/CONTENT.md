@@ -17,9 +17,8 @@ The content belongs to the site's owner and isn't covered by the code's MIT lice
 | `timeline.yaml` | `/`, the journey section |
 | `projects/index.yaml` and `projects/*.yaml` | `/projects`, each `/projects/<id>`, and `/`'s projects section |
 | `showcase.yaml` | `/`: the photo strip |
-| `experience.yaml`, `education.yaml`, `skills.yaml` | nowhere ([below](#experienceyaml-educationyaml-and-skillsyaml)) |
 
-The files the site renders (`bio.yaml`, `timeline.yaml`, the projects and `showcase.yaml`) are held to a shape (`frontend/src/config/contentSchema.ts`, #190): by `npm run build`, by `npm run site:check`, and by the page as it loads them. A field that's missing or the wrong kind, or a key the file shouldn't have, fails with the file and the field named. On the page, a file that fails takes only its own part of the site with it, which says so and offers a retry: `bio.yaml` is the home page's, and a broken `showcase.yaml` only hides the photo strip. The résumé files nothing renders aren't checked ([below](#experienceyaml-educationyaml-and-skillsyaml)).
+Every content file is held to a shape (`frontend/src/config/contentSchema.ts`, #190): by `npm run build`, by `npm run site:check`, and by the page as it loads them. A field that's missing or the wrong kind, or a key the file shouldn't have, fails with the file and the field named. On the page, a file that fails takes only its own part of the site with it, which says so and offers a retry: `bio.yaml` is the home page's, and a broken `showcase.yaml` only hides the photo strip.
 
 ## bio.yaml
 
@@ -75,10 +74,6 @@ The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through addi
 - `alt`: the image's description.
 
 The strip needs at least three images. With fewer, it doesn't show.
-
-## experience.yaml, education.yaml and skills.yaml
-
-They're loaded at start-up with the rest of the content, but nothing renders them: the journey section renders `timeline.yaml`. An edit changes nothing on the site, and a broken file only logs to the console (#190). #159's item 1 decides whether they're deleted, or rendered on `/`.
 
 ## site/site.yaml
 

@@ -1,13 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { makeBio, makeEducation, makeEmployment } from "../../test/builders";
+import { makeBio } from "../../test/builders";
 
 /**
  * The load -> revert round trip, which is the half of the critical path the
  * regenerate suite does not reach.
  *
  * These two actions are coupled in a way that hides bugs: `loadContent` is the
- * only writer of originalBio/originalExperience/originalEducation, and
- * `resetContent` is their only reader. So a fault in the load is invisible
+ * only writer of originalBio, and `resetContent` is its only reader. So a fault in the load is invisible
  * until a visitor presses DISPEL ENCHANTMENT, possibly much later and with no
  * error anywhere in between. Pinning them apart is not enough -- the round
  * trip itself is asserted below.
@@ -21,13 +20,11 @@ import { makeBio, makeEducation, makeEmployment } from "../../test/builders";
 const loadBio = vi.fn();
 const loadTimeline = vi.fn();
 const loadProjects = vi.fn();
-const loadResume = vi.fn();
 const loadShowcase = vi.fn();
 
 vi.mock("../../utils/bioLoader", () => ({ loadBio: () => loadBio() }));
 vi.mock("../../utils/timelineLoader", () => ({ loadTimeline: () => loadTimeline() }));
 vi.mock("../../utils/projectLoader", () => ({ loadProjects: () => loadProjects() }));
-vi.mock("../../data/resume", () => ({ loadResume: () => loadResume() }));
 vi.mock("../../utils/showcaseLoader", () => ({ loadShowcase: () => loadShowcase() }));
 
 const { useContentStore } = await import("../contentStore");
@@ -36,29 +33,17 @@ const BIO = makeBio({
   display_name: "Christopher Rogers",
   about_text: "the original",
 });
-const EXPERIENCE = [
-  makeEmployment({
-    title: "Engineer",
-    company: "Somewhere",
-  }),
-];
-const EDUCATION = [makeEducation({ degree: "BSc", school: "Somewhere Else" })];
 const TIMELINE = { entries: [], skill_categories: {} };
 const PROJECTS = [{ id: "shuffify" }];
-const RESUME = { experience: EXPERIENCE, education: EDUCATION, skills: [] };
 
 /** Return the store to the shape it has before anything has ever loaded. */
 const blankStore = () =>
   useContentStore.setState({
     bio: null,
-    experience: [],
-    education: [],
     timeline: null,
     projects: [],
     showcase: null,
     originalBio: null,
-    originalExperience: [],
-    originalEducation: [],
     loads: { bio: "loading", timeline: "loading", projects: "loading" },
     regenerationError: null,
     hasModifiedContent: false,
@@ -77,20 +62,16 @@ describe("loadContent", () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
     const s = useContentStore.getState();
     // The visible content...
     expect(s.bio).toEqual(BIO);
-    expect(s.experience).toEqual(EXPERIENCE);
     // ...and the copy DISPEL ENCHANTMENT will restore from. A load that
     // populated the page but not these would look completely healthy and
     // break only on a revert, later.
     expect(s.originalBio).toEqual(BIO);
-    expect(s.originalExperience).toEqual(EXPERIENCE);
-    expect(s.originalEducation).toEqual(EDUCATION);
     expect(s.loads).toEqual({ bio: "ready", timeline: "ready", projects: "ready" });
   });
 
@@ -100,7 +81,6 @@ describe("loadContent", () => {
     loadBio.mockRejectedValue(new Error("content/bio.yaml answered 404"));
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
@@ -117,7 +97,6 @@ describe("loadContent", () => {
       new Error("content/timeline.yaml has 1 problem(s):\n  - entries.0.end_date: expected a date"),
     );
     loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
@@ -135,7 +114,6 @@ describe("loadContent", () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockRejectedValue(new Error("content/projects/index.yaml answered 500"));
-    loadResume.mockResolvedValue(RESUME);
 
     await useContentStore.getState().loadContent();
 
@@ -150,7 +128,6 @@ describe("loadContent", () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockReturnValue(new Promise(() => {})); // never answers
-    loadResume.mockResolvedValue(RESUME);
 
     void useContentStore.getState().loadContent();
     await vi.waitFor(() => expect(useContentStore.getState().loads.bio).toBe("ready"));
@@ -166,7 +143,6 @@ describe("loadContent", () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockResolvedValue(RESUME);
 
     const loading = useContentStore.getState().loadContent();
     expect(loadShowcase).toHaveBeenCalledTimes(1);
@@ -175,19 +151,6 @@ describe("loadContent", () => {
     resolve(IMAGES);
     await loading;
     expect(useContentStore.getState().showcase).toEqual(IMAGES);
-  });
-
-  it("takes nothing down when a résumé file no page renders fails (#159)", async () => {
-    loadBio.mockResolvedValue(BIO);
-    loadTimeline.mockResolvedValue(TIMELINE);
-    loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockRejectedValue(new Error("content/skills.yaml answered 404"));
-
-    await useContentStore.getState().loadContent();
-
-    const s = useContentStore.getState();
-    expect(s.loads).toEqual({ bio: "ready", timeline: "ready", projects: "ready" });
-    expect(s.experience).toEqual([]);
   });
 });
 
@@ -251,11 +214,7 @@ describe("resetContent", () => {
         display_name: "Christopher Rogers",
         about_text: "rewritten",
       }),
-      experience: [makeEmployment({ title: "Wizard", company: "Elsewhere" })],
-      education: [],
       originalBio: BIO,
-      originalExperience: EXPERIENCE,
-      originalEducation: EDUCATION,
       hasModifiedContent: true,
       regenerationError: "stale transient",
     });
@@ -264,8 +223,6 @@ describe("resetContent", () => {
 
     const s = useContentStore.getState();
     expect(s.bio).toEqual(BIO);
-    expect(s.experience).toEqual(EXPERIENCE);
-    expect(s.education).toEqual(EDUCATION);
     expect(s.hasModifiedContent).toBe(false);
     expect(s.regenerationError).toBeNull();
   });
@@ -282,9 +239,7 @@ describe("resetContent", () => {
     });
     useContentStore.setState({
       bio: onScreen,
-      experience: EXPERIENCE,
       originalBio: null,
-      originalExperience: [],
       hasModifiedContent: true,
     });
 
@@ -292,7 +247,6 @@ describe("resetContent", () => {
 
     const s = useContentStore.getState();
     expect(s.bio).toEqual(onScreen); // not blanked
-    expect(s.experience).toEqual(EXPERIENCE);
     expect(s.hasModifiedContent).toBe(true); // and it did not pretend to act
   });
 });
@@ -308,7 +262,6 @@ describe("the round trip a visitor actually performs", () => {
     loadBio.mockResolvedValue(BIO);
     loadTimeline.mockResolvedValue(TIMELINE);
     loadProjects.mockResolvedValue(PROJECTS);
-    loadResume.mockResolvedValue(RESUME);
     await useContentStore.getState().loadContent();
 
     const asLoaded = useContentStore.getState().bio;

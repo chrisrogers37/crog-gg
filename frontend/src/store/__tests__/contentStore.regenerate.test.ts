@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import site from "virtual:site-config";
 import { useContentStore } from "../contentStore";
-import { makeBio, makeEmployment } from "../../test/builders";
+import { makeBio } from "../../test/builders";
 
 /**
  * Regeneration is one request per click.
@@ -33,8 +33,6 @@ const ON_COOLDOWN = {
 const seed = () =>
   useContentStore.setState({
     bio: BIO,
-    experience: [],
-    education: [],
     isRegenerating: false,
     loads: { bio: "ready", timeline: "ready", projects: "ready" },
     regenerationError: null,
@@ -88,7 +86,7 @@ describe("regenerateContent", () => {
     respondWith({
       success: true,
       content: { about: { about_text: "rewritten" } },
-      failed_sections: ["portfolio"],
+      failed_sections: ["notes"],
     });
 
     await useContentStore.getState().regenerateContent(true);
@@ -98,12 +96,11 @@ describe("regenerateContent", () => {
     expect(state.regenerationError).toBeNull();
   });
 
-  it("changes nothing for a reply that only carries a portfolio", async () => {
-    const experience = [makeEmployment({ title: "Engineer" })];
-    useContentStore.setState({ experience, hasModifiedContent: false });
+  it("changes nothing for a reply that only carries a section it never sent", async () => {
+    useContentStore.setState({ hasModifiedContent: false });
     respondWith({
       success: true,
-      content: { portfolio: { experience: [{ title: "Rewritten" }] } },
+      content: { notes: { text: "Rewritten" } },
       failed_sections: ["about"],
     });
 
@@ -111,8 +108,7 @@ describe("regenerateContent", () => {
 
     const state = useContentStore.getState();
     expect(state.bio).toEqual(BIO);
-    // A fresh record, so an in-place edit of the seeded array would fail too.
-    expect(state.experience).toEqual([makeEmployment({ title: "Engineer" })]);
+    expect(state).not.toHaveProperty("notes");
     expect(state.hasModifiedContent).toBe(false);
     expect(state.regenerationError).toBe("that one didn't come through. press it again.");
   });
@@ -155,16 +151,15 @@ describe("regenerateContent", () => {
       success: true,
       content: {
         about: { about_text: "rewritten" },
-        portfolio: { experience: [{ title: "Rewritten" }] },
+        notes: { text: "Rewritten" },
       },
       failed_sections: [],
     });
-    const experience = useContentStore.getState().experience;
 
     await useContentStore.getState().regenerateContent(true);
 
     expect(useContentStore.getState().bio).toEqual({ ...BIO, about_text: "rewritten" });
-    expect(useContentStore.getState().experience).toBe(experience);
+    expect(useContentStore.getState()).not.toHaveProperty("notes");
   });
 
   it("does not set the fatal error on a failed regeneration", async () => {
