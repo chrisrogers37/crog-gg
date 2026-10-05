@@ -30,8 +30,8 @@ def test_every_section_the_allowlist_accepts_has_an_output_budget():
     assert set(_PROMPTS) == set(_MAX_COMPLETION_TOKENS)
 
 
-@pytest.mark.parametrize("section, body", [("about", {"bio": "hi"}), ("portfolio", {"experience": []})])
-def test_each_call_is_bounded_for_its_section_and_in_json_mode(client, section, body):
+@pytest.mark.parametrize("section, body", [("about", {"bio": "hi"}), ("notes", {"entries": []})])
+def test_each_call_is_bounded_for_its_section_and_in_json_mode(client, notes_section, section, body):
     fake = _model()
     with patch("api.index.openai_client", fake):
         client.post("/api/regenerate", json={"sections": {section: body}})

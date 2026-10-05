@@ -143,12 +143,12 @@ def test_input_without_social_links_is_not_synthesised(client):
     assert "social_links" not in result or result["social_links"] == {}
 
 
-def test_portfolio_section_is_untouched(client):
-    """The pin is scoped to `about`; portfolio carries no social_links."""
-    portfolio = {"experience": [{"title": "Engineer"}], "education": []}
-    rewritten = {"experience": [{"title": "Senior Engineer"}], "education": []}
+def test_another_section_is_untouched(client, notes_section):
+    """The pin is scoped to `about`; another section carries no social_links."""
+    notes = {"entries": [{"title": "Engineer"}], "tags": []}
+    rewritten = {"entries": [{"title": "Senior Engineer"}], "tags": []}
 
-    result = _regenerate(client, rewritten, portfolio, section="portfolio")
+    result = _regenerate(client, rewritten, notes, section="notes")
 
     assert result == rewritten
 

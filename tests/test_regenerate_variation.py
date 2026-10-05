@@ -77,7 +77,7 @@ def _register_in(user_prompt):
 
 
 @pytest.mark.parametrize("use_fantasy", [True, False])
-def test_every_standing_constraint_rides_every_section_in_both_modes(client, use_fantasy):
+def test_every_standing_constraint_rides_every_section_in_both_modes(client, notes_section, use_fantasy):
     """Length and facts are pinned on the system prompt, independent of the mode.
 
     Independence is the whole reason turning variation up is safe: on the old
@@ -86,7 +86,7 @@ def test_every_standing_constraint_rides_every_section_in_both_modes(client, use
     ``format``, which is what keeps them separable -- and what would break first
     if a later change moved either behind ``use_fantasy``.
     """
-    prompts = _press(client, {"about": {"bio": "hi"}, "portfolio": {"experience": []}}, use_fantasy)
+    prompts = _press(client, {"about": {"bio": "hi"}, "notes": {"entries": []}}, use_fantasy)
     assert len(prompts) == 2, f"expected one call per section, got {len(prompts)}"
     for p in prompts:
         assert "Two things are fixed" in p["system"]
@@ -223,13 +223,13 @@ def test_plain_is_still_reachable_by_asking_for_it(client):
     assert "TELL IT AS" not in prompts[0]["user"]
 
 
-def test_one_press_is_one_register(client):
+def test_one_press_is_one_register(client, notes_section):
     """Every section of a single press lands in the same world.
 
     Sampled per section instead, one press could open `about` as a sea shanty and
-    `portfolio` as a stat block -- which reads as broken rather than wild.
+    the section beside it as a stat block -- which reads as broken rather than wild.
     """
-    prompts = _press(client, {"about": {"bio": "hi"}, "portfolio": {"experience": []}})
+    prompts = _press(client, {"about": {"bio": "hi"}, "notes": {"entries": []}})
     registers = {_register_in(p["user"]) for p in prompts}
     assert len(registers) == 1, f"one press delivered {len(registers)} registers: {registers}"
     assert registers.pop() is not None, "no register reached the model"
@@ -278,17 +278,6 @@ def test_the_worked_examples_are_gone(client):
         assert attractor not in user, f"worked example back in the prompt: {attractor}"
 
 
-def test_the_prompt_stops_asking_for_invented_dates(client):
-    """`Keep all numerical metrics exactly the same` used to sit in the same prompt
-    as `Rewrite school names, degrees, and years`. Under a stated split, years are
-    facts. A contradiction is not a stated split -- it is two defaults fighting.
-    """
-    user = _press(client, {"portfolio": {"experience": []}})[0]["user"]
-    assert "keep every year exactly as given" in user
-    assert "keep every period exactly as given" in user
-    assert "Rewrite school names, degrees, and years" not in user
-
-
 # ---------------------------------------------------------------------------
 # The measurement half. A prompt cannot guarantee either property, so the server
 # counts what came back -- see the helpers for why this is a warning and not a
@@ -325,7 +314,8 @@ def test_a_control_that_survived_is_not_reported():
 
 
 def test_a_control_absent_from_the_input_is_not_expected_back():
-    """Only what was sent is owed back. Otherwise every portfolio press reports a loss."""
+    """Only what was sent is owed back. Otherwise every field that never named
+    the control reports a loss on every press."""
     assert _lost_verbatim({"bio": "no controls here."}, {"bio": "still none."}) == []
 
 

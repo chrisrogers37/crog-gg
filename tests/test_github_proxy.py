@@ -5,9 +5,8 @@ Coverage:
   - ``get_repository`` drops private repos via the upstream ``private`` flag,
     and makes a single GitHub call — it reuses the metadata the public-repo
     guard already fetched (#106).
-  - ``get_readme`` / ``get_repo_languages`` are gated on ``_fetch_public_repo``,
-    which returns the SAME generic 404 for a private repo and a missing repo
-    (no existence oracle).
+  - ``get_readme`` is gated on ``_fetch_public_repo``, which returns the SAME
+    generic 404 for a private repo and a missing repo (no existence oracle).
   - Public-repo happy paths still return 200.
   - GitHub's own failures (#195) are 502/503 "GitHub is unavailable right now"
     and are logged, rather than reading as "Repository not found".
@@ -43,16 +42,14 @@ def _make_response(status_code=200, json_data=None):
 
 def _metadata_then_payload(metadata):
     """Build a ``requests.get`` side_effect where the metadata pre-check call
-    (``/repos/<owner>/<repo>``) returns ``metadata`` and the follow-up
-    readme/languages fetch returns a benign public payload."""
+    (``/repos/<owner>/<repo>``) returns ``metadata`` and the follow-up readme
+    fetch returns a benign public payload."""
 
     def _side_effect(url, **kwargs):
         # The readme route asks for the root README.md first and only falls back
         # to GitHub's /readme resolution when that 404s, so both are served here.
         if url.endswith("/contents/README.md") or url.endswith("/readme"):
             return _make_response(200, {"content": "aGVsbG8=", "encoding": "base64"})
-        if url.endswith("/languages"):
-            return _make_response(200, {"Python": 1234})
         return metadata
 
     return _side_effect
@@ -110,7 +107,7 @@ def test_get_repository_makes_single_github_call(client):
 
 # --- CDN caching (#194 M33) ------------------------------------------------
 
-_PROXY_ROUTES = ["repo", "readme", "languages"]
+_PROXY_ROUTES = ["repo", "readme"]
 
 
 @pytest.mark.parametrize("route", _PROXY_ROUTES)
@@ -226,33 +223,6 @@ def test_get_readme_missing_returns_generic_404(client):
     assert r.get_json() == {"error": "Repository not found"}
 
 
-# --- get_repo_languages ----------------------------------------------------
-
-
-def test_get_languages_public_returns_200(client):
-    meta = _make_response(200, {"name": "shuffify", "private": False})
-    with patch("api.index.requests.get", side_effect=_metadata_then_payload(meta)):
-        r = client.get("/api/v1/github/languages/shuffify")
-    assert r.status_code == 200
-    assert r.get_json() == {"Python": 1234}
-
-
-def test_get_languages_private_returns_generic_404(client):
-    meta = _make_response(200, {"name": "secret", "private": True})
-    with patch("api.index.requests.get", side_effect=_metadata_then_payload(meta)):
-        r = client.get("/api/v1/github/languages/secret")
-    assert r.status_code == 404
-    assert r.get_json() == {"error": "Repository not found"}
-
-
-def test_get_languages_missing_returns_generic_404(client):
-    meta = _make_response(404, {})
-    with patch("api.index.requests.get", side_effect=_metadata_then_payload(meta)):
-        r = client.get("/api/v1/github/languages/nope")
-    assert r.status_code == 404
-    assert r.get_json() == {"error": "Repository not found"}
-
-
 def test_private_and_missing_are_indistinguishable_no_oracle(client):
     """readme must return byte-identical 404s for a private vs a missing repo,
     so the endpoint is not an oracle for which private repo names exist."""
@@ -335,12 +305,12 @@ def test_sub_resource_network_error_is_502(client):
     meta = _make_response(200, {"name": "shuffify", "private": False})
 
     def _side_effect(url, **kwargs):
-        if url.endswith("/languages"):
+        if url.endswith("/contents/README.md"):
             raise requests.ConnectionError("down")
         return meta
 
     with patch("api.index.requests.get", side_effect=_side_effect):
-        r = client.get("/api/v1/github/languages/shuffify")
+        r = client.get("/api/v1/github/readme/shuffify")
     assert r.status_code == 502
     assert r.get_json() == _UNAVAILABLE
 
@@ -359,27 +329,19 @@ def test_repo_metadata_that_is_not_json_is_502(client):
     assert r.get_json() == _UNAVAILABLE
 
 
-@pytest.mark.parametrize(
-    "route, suffix, reply",
-    [
-        ("/api/v1/github/readme/shuffify", "/contents/README.md", _not_json),
-        ("/api/v1/github/languages/shuffify", "/languages", lambda: _not_json(204)),
-    ],
-    ids=["readme-not-json", "languages-204"],
-)
-def test_sub_resource_reply_that_is_not_json_is_502(client, route, suffix, reply):
+def test_sub_resource_reply_that_is_not_json_is_502(client):
     meta = _make_response(200, {"name": "shuffify", "private": False})
 
     def _side_effect(url, **kwargs):
-        return reply() if url.endswith(suffix) else meta
+        return _not_json() if url.endswith("/contents/README.md") else meta
 
     with patch("api.index.requests.get", side_effect=_side_effect):
-        r = client.get(route)
+        r = client.get("/api/v1/github/readme/shuffify")
     assert r.status_code == 502
     assert r.get_json() == _UNAVAILABLE
 
 
-@pytest.mark.parametrize("route, endpoint", [("repo", "repo"), ("readme", "readme"), ("languages", "languages_repo")])
+@pytest.mark.parametrize("route, endpoint", [("repo", "repo"), ("readme", "readme")])
 def test_a_full_rate_limit_window_is_a_429_before_github_is_called(client, salted, route, endpoint):
     # Salted, so the key names the visitor by tag: one built from the raw
     # address would not match (#199 M75).
@@ -405,7 +367,7 @@ def test_repo_name_with_a_trailing_newline_is_rejected(client):
     mock_get.assert_not_called()
 
 
-# --- what /repo and the language total expose (#199) -------------------------
+# --- what /repo exposes (#199) -----------------------------------------------
 
 
 @pytest.mark.parametrize(
@@ -449,28 +411,6 @@ def test_repo_fields_match_the_frontend_type():
     assert sorted(re.findall(r"^  (\w+)\??:", block, flags=re.M)) == sorted(_REPO_FIELDS)
     license_block = block.split("license: {", 1)[1].split("}", 1)[0]
     assert sorted(re.findall(r"^    (\w+)\??:", license_block, flags=re.M)) == ["name", "spdx_id"]
-
-
-def test_language_total_skips_private_repos(client):
-    repos = [
-        {"name": "public-one", "fork": False, "private": False},
-        {"name": "secret-one", "fork": False, "private": True},
-        {"name": "forked-one", "fork": True, "private": False},
-    ]
-
-    def _side_effect(url, **kwargs):
-        if url.endswith("/repos?per_page=100"):
-            return _make_response(200, repos)
-        if "/public-one/" in url:
-            return _make_response(200, {"Python": 10})
-        return _make_response(200, {"Secret": 99})
-
-    with patch("api.index.cache.get_json", return_value=None), patch("api.index.cache.set_json"):
-        with patch("api.index.requests.get", side_effect=_side_effect) as mock_get:
-            r = client.get("/api/v1/github/languages")
-
-    assert r.get_json() == {"Python": 10}
-    assert not any("secret-one" in call.args[0] for call in mock_get.call_args_list)
 
 
 def _import_request_utils(env):
@@ -578,9 +518,6 @@ def test_a_repo_still_with_an_allowed_owner_is_served(client):
     [
         "/api/v1/github/repo/shuffify",
         "/api/v1/github/readme/octocat/shuffify",
-        "/api/v1/github/languages/shuffify",
-        "/api/v1/github/languages",
-        "/api/v1/github/contributions",
     ],
 )
 def test_github_off_in_site_yaml_is_a_404_without_a_github_call(client, monkeypatch, path):
@@ -591,12 +528,10 @@ def test_github_off_in_site_yaml_is_a_404_without_a_github_call(client, monkeypa
     monkeypatch.setattr(index, "CONFIG", dataclasses.replace(index.CONFIG, github_mode="off"))
     with (
         patch("api.index.requests.get") as get,
-        patch("api.index.requests.post") as post,
         patch("api.index.rate_limit.check_and_consume") as consume,
     ):
         r = client.get(path)
     assert r.status_code == 404
     get.assert_not_called()
-    post.assert_not_called()
     # Before the rate limiter, so not even Redis is asked.
     consume.assert_not_called()

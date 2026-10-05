@@ -26,11 +26,10 @@ import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from api._lib import cache, rate_limit, redis_client
+from api._lib import rate_limit, redis_client
 from api._lib.github_proxy import (
     _cdn_cached,
     _fetch_public_repo,
-    _gh_rate_limit_or_429,
     _guard_repo_request,
     _proxy_sub_resource,
     _repository_fields,
@@ -45,7 +44,6 @@ from api._lib.prompts import (
 )
 from api._lib.request_utils import (
     GITHUB_API,
-    GITHUB_TIMEOUT_SECONDS,
     GITHUB_TOKEN,
     Visitor,
     current_visitor,
@@ -59,7 +57,7 @@ logger = logging.getLogger("crog")
 app = Flask(__name__)
 
 # Cap request bodies (#90). Only /api/regenerate accepts a POST body; 64KB is
-# generous for portfolio content and bounds both parse memory and the prompt
+# generous for what a press sends and bounds both parse memory and the prompt
 # size forwarded to OpenAI. The GitHub routes are GET, so this is a no-op there.
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 
@@ -133,16 +131,8 @@ REGEN_DAILY_WINDOW = 86400
 REGEN_GLOBAL_DAILY_MAX = 300
 REGEN_GLOBAL_KEY = "spend:regen_global"
 # The largest section a press may send, measured as it goes into the prompt
-# (#194 M11). The shipped sections are about 1.7 KB and 3.9 KB.
+# (#194 M11). The shipped about section is under 2 KB.
 MAX_SECTION_CHARS = 12_000
-
-# Server-side cache for the /languages aggregate fan-out (#91). That endpoint
-# makes 1 + N GitHub calls (N = non-fork repos); caching the result bounds the
-# fan-out to at most once per hour per warm cache, so a burst of client requests
-# can't exhaust the GITHUB_TOKEN quota. Language stats change rarely, so a 1h
-# staleness window is an acceptable trade.
-CACHE_ALL_LANGUAGES_KEY = "cache:all_languages"
-CACHE_ALL_LANGUAGES_TTL = 3600
 
 
 def _cooldown_key(visitor: Visitor) -> str:
@@ -193,11 +183,11 @@ FAILURE_TRUNCATED = "truncated"
 # Output bounds per call (#194 M12): no completion runs longer than this,
 # whatever the input asks for. Reasoning tokens count against it too. Set to
 # about twice the largest completion real presses produced on Preview, with
-# low reasoning effort: about 530 and 662, portfolio 857 and 768. Keep them
-# well under what the section cap would take back (MAX_SECTION_CHARS / ~3.5
+# low reasoning effort: 530 and 662 tokens for `about`. Keep each one well
+# under what the section cap would take back (MAX_SECTION_CHARS / ~3.5
 # characters per token), since output beyond that can only be billed and then
 # refused as too_long.
-_MAX_COMPLETION_TOKENS = {"about": 1500, "portfolio": 2000}
+_MAX_COMPLETION_TOKENS = {"about": 1500}
 
 
 def _describe_failure(exc) -> tuple[dict, dict]:
@@ -430,7 +420,7 @@ def _regenerate_section(
                 },
             ],
             max_completion_tokens=_MAX_COMPLETION_TOKENS[section],
-            # Both prompts' formats ask for JSON in words, which the API
+            # Every section's format asks for JSON in words, which the API
             # requires before it accepts JSON mode.
             response_format={"type": "json_object"},
             **({"safety_identifier": tag} if tag else {}),
@@ -943,147 +933,9 @@ def get_readme(repo_name, owner=None):
     )
 
 
-@app.route("/api/v1/github/languages/<repo_name>", methods=["GET"])
-def get_repo_languages(repo_name):
-    owner = CONFIG.github_owner
-    if (resp := _guard_repo_request(owner, repo_name, "languages_repo")) is not None:
-        return resp
-    _data, error = _fetch_public_repo(owner, repo_name, "languages_repo")
-    if error is not None:
-        return error
-    return _proxy_sub_resource(owner, repo_name, "/languages", "languages", "languages_repo")
-
-
-@app.route("/api/v1/github/languages", methods=["GET"])
-def get_all_languages_v1():
-    if (resp := _gh_rate_limit_or_429("languages_all")) is not None:
-        return resp
-    # A cache that can't be read is a refusal, not a miss: a miss fans out to
-    # GitHub (1 + N calls), and during an Upstash outage every request would,
-    # spending the token's quota for every project page (#194 M33).
-    try:
-        cached = cache.get_json(CACHE_ALL_LANGUAGES_KEY)
-    except rate_limit.RedisUnavailable:
-        return jsonify({"error": "Language stats are unavailable right now"}), 503
-    if cached is not None:
-        return jsonify(cached)
-
-    try:
-        repos_response = requests.get(
-            f"{GITHUB_API}/users/{CONFIG.github_owner}/repos?per_page=100",
-            headers=github_headers(),
-            timeout=GITHUB_TIMEOUT_SECONDS,
-        )
-        repos_response.raise_for_status()
-        repos = repos_response.json()
-
-        all_languages: dict[str, int] = {}
-        for repo in repos:
-            # Private repos are skipped like forks: a token that can see them
-            # would otherwise add their languages to a public total (#199).
-            if repo.get("fork") or repo.get("private"):
-                continue
-            lang_response = requests.get(
-                f"{GITHUB_API}/repos/{CONFIG.github_owner}/{repo['name']}/languages",
-                headers=github_headers(),
-                timeout=GITHUB_TIMEOUT_SECONDS,
-            )
-            if lang_response.ok:
-                for lang, bytes_count in lang_response.json().items():
-                    all_languages[lang] = all_languages.get(lang, 0) + bytes_count
-
-        # Only reached once the aggregate is fully computed (past the point the
-        # repo-list fetch could raise). Cache it so subsequent requests skip the
-        # fan-out entirely until the TTL lapses.
-        cache.set_json(CACHE_ALL_LANGUAGES_KEY, all_languages, CACHE_ALL_LANGUAGES_TTL)
-        return jsonify(all_languages)
-    except requests.RequestException:
-        return jsonify({"error": "Failed to aggregate languages from GitHub"}), 500
-
-
-@app.route("/api/v1/github/contributions", methods=["GET"])
-def get_contributions():
-    if (resp := _gh_rate_limit_or_429("contributions")) is not None:
-        return resp
-    github_token = os.environ.get("GITHUB_TOKEN")
-    if not github_token:
-        return jsonify({"error": "GitHub token required for contribution data"}), 500
-
-    query = """
-    query($username: String!) {
-        user(login: $username) {
-            contributionsCollection {
-                contributionCalendar {
-                    totalContributions
-                    weeks {
-                        contributionDays {
-                            date
-                            contributionCount
-                            contributionLevel
-                        }
-                    }
-                }
-            }
-        }
-    }
-    """
-
-    try:
-        response = requests.post(
-            "https://api.github.com/graphql",
-            headers={
-                "Authorization": f"bearer {github_token}",
-                "Content-Type": "application/json",
-            },
-            json={"query": query, "variables": {"username": CONFIG.github_owner}},
-            timeout=GITHUB_TIMEOUT_SECONDS,
-        )
-        response.raise_for_status()
-        data = response.json()
-
-        if "errors" in data:
-            return jsonify({"error": "GraphQL query failed"}), 500
-
-        calendar = data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
-        level_map = {
-            "NONE": 0,
-            "FIRST_QUARTILE": 1,
-            "SECOND_QUARTILE": 2,
-            "THIRD_QUARTILE": 3,
-            "FOURTH_QUARTILE": 4,
-        }
-        weeks = [
-            [
-                {
-                    "date": day["date"],
-                    "count": day["contributionCount"],
-                    "level": level_map.get(day["contributionLevel"], 0),
-                }
-                for day in week["contributionDays"]
-            ]
-            for week in calendar["weeks"]
-        ]
-        return jsonify({"total": calendar["totalContributions"], "weeks": weeks})
-    except requests.RequestException:
-        return jsonify({"error": "Failed to fetch contributions from GitHub"}), 500
-
-
 @app.errorhandler(413)
 def request_too_large(e):
     return jsonify({"success": False, "error": "Request body too large"}), 413
-
-
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    return (
-        jsonify(
-            {
-                "error": "Rate limit exceeded",
-                "message": "Too many requests",
-            }
-        ),
-        429,
-    )
 
 
 if __name__ == "__main__":
