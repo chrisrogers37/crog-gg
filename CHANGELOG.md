@@ -6,10 +6,12 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Changed
 - `/projects` and the home page's projects: the featured card stands out in the site's accent (a heavier border, and its label), and the projects after it are compact cards in the same family, each with its emoji, name, whole description and what it's built with, where they were bare rows (#253).
-- The projects are in order of how much went into them: Storydump, Shuffify, Shitpost Alpha, Benzo, Dead Redux (#253).
+- The projects are in order of how much went into them, Storydump and Shuffify first (#253).
 - Headlines balance their lines, so the home page's no longer leaves "things." alone on the second (#253).
 - Shuffify's and Benzo's pages link their public repos, with the repo's figures and README (#253).
-- Shitpost Alpha's page no longer links its repo, which is private now: the GitHub panel there could only fail (#253).
+- A project whose repo went private no longer links it, since its GitHub panel could only fail (#253).
+- That project is off the site (#254).
+- Project pages leave out a repo's stars, forks, watchers and open issues when `github.show_counts` in site.yaml is `false`, as it now is here: low counts undersold the projects. The language, license, last update and topics still show (#254).
 
 ## 2026-10-03
 

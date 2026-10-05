@@ -29,7 +29,7 @@ Hedwig should remain hidden (already excluded from `index.yaml`).
 1. **Shuffify** (order: 1) - coolest, has its own domain shuffify.app
 2. **Storyline AI** (order: 2) - strong, used daily by the creator
 3. **Dead Redux** (order: 3) - NEW - cool side project built in a day
-4. **Shitpost Alpha** (order: 4) - expansive product
+4. **a removed project** (order: 4) - expansive product
 5. **30 Day A/Bs** (order: 5) - shows experimentation knowledge
 6. **City Cycles** (order: 6) - data viz project
 7. **GitHub** (order: 99) - profile link, always last
@@ -38,7 +38,7 @@ Hedwig should remain hidden (already excluded from `index.yaml`).
 
 ## Dependencies
 
-- **Depends on Phase 01** (YAML normalization) since both phases touch `shitpost-alpha.yaml` and `30-day-abs.yaml`. Phase 01 must merge first to avoid conflicts.
+- **Depends on Phase 01** (YAML normalization) since both phases touch `<removed>.yaml` and `30-day-abs.yaml`. Phase 01 must merge first to avoid conflicts.
 - Phase 05 depends on this phase completing first.
 
 ---
@@ -89,7 +89,7 @@ tags:
 ```yaml
 projects:
   - 30-day-abs.yaml
-  - shitpost-alpha.yaml
+  - <removed>.yaml
   - shuffify.yaml
   - city-cycles.yaml
   - storyline-ai.yaml
@@ -103,7 +103,7 @@ projects:
   - shuffify.yaml
   - storyline-ai.yaml
   - dead-redux.yaml
-  - shitpost-alpha.yaml
+  - <removed>.yaml
   - 30-day-abs.yaml
   - city-cycles.yaml
   - github.yaml
@@ -123,7 +123,7 @@ For each file, find the `order:` line and update the value only. Do NOT change a
 
 - Change `order: 4` to `order: 2`
 
-**File: `frontend/public/content/projects/shitpost-alpha.yaml`**
+**File: `frontend/public/content/projects/<removed>.yaml`**
 
 - Change `order: 2` to `order: 4`
 
@@ -163,7 +163,7 @@ N/A - data-only change.
 2. Run `cd frontend && npm run test:run` - all tests should pass
 3. Manual verification:
    a. Start dev server, go to home page, click "Projects" section tab
-   b. Verify projects appear in new order: Shuffify, Storyline AI, Dead Redux, Shitpost Alpha, 30 Day A/Bs, City Cycles, GitHub
+   b. Verify projects appear in new order: Shuffify, Storyline AI, Dead Redux, a removed project, 30 Day A/Bs, City Cycles, GitHub
    c. Click on Dead Redux tile - verify it links to dead-redux.vercel.app
    d. Navigate to `/projects` page - verify Dead Redux appears in the listing
    e. Verify Hedwig does NOT appear anywhere
@@ -180,7 +180,7 @@ N/A - data-only change.
 - [ ] `shuffify.yaml` has `order: 1`
 - [ ] `storyline-ai.yaml` has `order: 2`
 - [ ] `dead-redux.yaml` has `order: 3`
-- [ ] `shitpost-alpha.yaml` has `order: 4`
+- [ ] `<removed>.yaml` has `order: 4`
 - [ ] `30-day-abs.yaml` has `order: 5`
 - [ ] `city-cycles.yaml` has `order: 6`
 - [ ] `github.yaml` has `order: 99`

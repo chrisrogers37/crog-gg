@@ -8,6 +8,7 @@ import {
   type Check,
   describeProblems,
   fail,
+  flag,
   httpsUrl,
   list,
   matching,
@@ -91,6 +92,12 @@ const siteShape = object({
     username: githubName,
     /** Other owners whose public repos a project may link. */
     allowed_owners: optional(list(githubName)),
+    /**
+     * Whether a project page shows its repo's stars, forks, watchers and open
+     * issues; shown if left out. Low counts undersell a project, so a site can
+     * hide them until they say something.
+     */
+    show_counts: optional(flag),
   }),
   /** Whether SUMMON and the GitHub panels show; each `auto` if left out. */
   features: optional(

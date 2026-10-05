@@ -72,7 +72,7 @@ frontend/public/content/projects/
 ├── hedwig.yaml        # RAG-assisted email templates
 ├── github.yaml        # Open source projects
 ├── 30-day-abs.yaml    # Fitness app
-└── shitpost-alpha.yaml # Creative project
+└── <removed>.yaml # Creative project
 ```
 
 ### Project Interface (Implemented)

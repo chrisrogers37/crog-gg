@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import site from "virtual:site-config";
 import { githubService, Repository } from "../../../services/githubService";
 import "./RepoStats.css";
 
@@ -35,7 +36,7 @@ const PLACEHOLDER: Pick<
  * RepoStats
  *
  * Displays GitHub repository statistics including:
- * - Stars, forks, watchers
+ * - Stars, forks, watchers and open issues (unless site.yaml hides them)
  * - Primary language
  * - Last updated date
  * - License
@@ -84,6 +85,11 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
   // so the real figures arriving move nothing below it, at any width: a
   // fixed-height block was shorter than the panel, which wraps on a phone.
   const shown = repo ?? PLACEHOLDER;
+  // The repo's stars, forks, watchers and open issues: `github.show_counts`
+  // in site.yaml, shown if left out. Chris, 2026-10-04: low counts undermine a
+  // project, so his site hides them until they say something. The loading
+  // stand-in follows the same switch, so nothing moves when the figures land.
+  const showCounts = site.github.show_counts !== false;
 
   const stats = [
     { label: "stars", value: shown.stargazers_count, icon: "⭐" },
@@ -100,22 +106,24 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
 
   const panel = (
     <>
-      {/* Main stats */}
-      <div className="stats-grid">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            className="stat-item"
-            initial={repo ? { opacity: 0, y: 10 } : false}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <span className="stat-icon">{stat.icon}</span>
-            <span className="stat-value">{stat.value.toLocaleString()}</span>
-            <span className="stat-label">{stat.label}</span>
-          </motion.div>
-        ))}
-      </div>
+      {/* Main stats, unless site.yaml hides them */}
+      {showCounts && (
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              className="stat-item"
+              initial={repo ? { opacity: 0, y: 10 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <span className="stat-icon">{stat.icon}</span>
+              <span className="stat-value">{stat.value.toLocaleString()}</span>
+              <span className="stat-label">{stat.label}</span>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* Meta info */}
       <div className="repo-meta">

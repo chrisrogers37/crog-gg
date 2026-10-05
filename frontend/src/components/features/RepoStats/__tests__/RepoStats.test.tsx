@@ -1,5 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import site from "virtual:site-config";
 import { RepoStats } from "../RepoStats";
 import {
   githubService,
@@ -96,6 +97,38 @@ describe("RepoStats' topics", () => {
     render(<RepoStats owner="owner" repoName="bare" />);
     expect(await screen.findByText("5")).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: "Topics" })).toBeNull();
+  });
+});
+
+describe("RepoStats with site.yaml's github.show_counts", () => {
+  const SITE_GITHUB = site.github;
+  afterEach(() => {
+    site.github = SITE_GITHUB;
+  });
+
+  it("shows the counts when it's left out, as on site.example", async () => {
+    expect(SITE_GITHUB.show_counts).toBeUndefined();
+    vi.spyOn(githubService, "getRepository").mockResolvedValue(repo("shown", 7));
+    const { container } = render(<RepoStats owner="owner" repoName="shown" />);
+    expect(await screen.findByText("7")).toBeInTheDocument();
+    expect(container.querySelector(".stats-grid")).toBeInTheDocument();
+  });
+
+  it("hides them when it's false, loading and loaded alike, and keeps the rest", async () => {
+    site.github = { ...SITE_GITHUB, show_counts: false };
+    const answer = deferred<Repository>();
+    vi.spyOn(githubService, "getRepository").mockReturnValue(answer.promise);
+    const { container } = render(<RepoStats owner="owner" repoName="hidden" />);
+
+    // The stand-in leaves them out too, so nothing moves when the answer lands.
+    expect(container.querySelector(".repo-stats.loading .stats-grid")).toBeNull();
+    expect(container.querySelector(".repo-stats.loading .repo-meta")).toBeInTheDocument();
+
+    await act(async () => answer.resolve(repo("hidden", 7)));
+    expect(container.querySelector(".repo-stats.loading")).toBeNull();
+    expect(container.querySelector(".stats-grid")).toBeNull();
+    expect(screen.queryByText("7")).not.toBeInTheDocument();
+    expect(screen.getByText("TypeScript")).toBeInTheDocument();
   });
 });
 

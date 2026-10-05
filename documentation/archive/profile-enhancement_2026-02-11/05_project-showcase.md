@@ -10,7 +10,7 @@
 ## Challenge Round Decisions (2026-02-12)
 
 - **Architecture:** Upgrade existing ProjectCard.tsx/Projects.tsx/Projects.css in-place rather than creating new files. Wire Portfolio.tsx to use existing Projects component.
-- **Content:** Preserve existing descriptions, URLs, and order values. Only add `gradient` field and normalize missing fields (id, icon, category, featured, status) for 30-day-abs and shitpost-alpha.
+- **Content:** Preserve existing descriptions, URLs, and order values. Only add `gradient` field and normalize missing fields (id, icon, category, featured, status) for 30-day-abs and <removed>.
 - **CSS variables:** Fix plan's `--text-primary`/`--text-secondary` → `--text-color`/`--text-color-secondary` to match codebase.
 - **hedwig.yaml:** Left untouched (not listed in index.yaml, not part of this phase).
 
@@ -22,7 +22,7 @@
 | Modified | `frontend/public/content/projects/city-cycles.yaml`         |
 | Modified | `frontend/public/content/projects/storyline-ai.yaml`        |
 | Modified | `frontend/public/content/projects/30-day-abs.yaml`          |
-| Modified | `frontend/public/content/projects/shitpost-alpha.yaml`      |
+| Modified | `frontend/public/content/projects/<removed>.yaml`      |
 | Modified | `frontend/public/content/projects/github.yaml`              |
 | Modified | `frontend/src/components/Portfolio.tsx`                     |
 | Modified | `frontend/src/components/sections/Projects/ProjectCard.tsx` |
@@ -175,18 +175,18 @@ tags:
   - health
 ```
 
-**File:** `frontend/public/content/projects/shitpost-alpha.yaml`
+**File:** `frontend/public/content/projects/<removed>.yaml`
 
 **After (complete file):**
 
 ```yaml
-# Shitpost Alpha - Creative Project
-id: shitpost-alpha
-title: Shitpost Alpha
+# a removed project - Creative Project
+id: <removed>
+title: a removed project
 description: |
   experimental creative coding project exploring generative
   content and internet culture.
-url: https://github.com/chrisrogers37/shitpost-alpha
+url: https://github.com/chrisrogers37/<removed>
 icon: fas fa-fire
 category: creative
 technologies:

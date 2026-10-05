@@ -25,7 +25,7 @@ the index and fallback branches (`:100-123`).
 
 **Stale project fallback list.** `projectLoader.ts:82-87` lists `shuffify`,
 `city-cycles`, `hedwig`, `github` — out of sync with `index.yaml` (which has 8
-projects incl. `benzo`, `storyline-ai`, `dead-redux`, `shitpost-alpha`,
+projects incl. `benzo`, `storyline-ai`, `dead-redux`, `<removed>`,
 `30-day-abs`, and does **not** list `hedwig`). See BUG-6.
 
 **Type-unsafe parsing.** All loaders use `yaml.load(...) as Type` with no runtime

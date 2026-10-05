@@ -30,6 +30,10 @@ site:
 github:
   # Whose public repos the project pages' stats and READMEs come from.
   username: chrisrogers37
+  # Stars, forks, watchers and open issues on project pages: hidden until
+  # they say something (Chris, 2026-10-04). The language, license, last update
+  # and topics still show.
+  show_counts: false
 
 seo:
   # Appended to every page's title.
