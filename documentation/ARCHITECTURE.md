@@ -35,7 +35,6 @@ Every route is in `api/index.py`. Shared helpers are in `api/_lib/`: the undersc
 - `prompts.py`: the regenerate prompt pack.
 - `github_proxy.py`: the proxy's helpers.
 - `rate_limit.py` and `redis_client.py`: the limiter, and the Upstash REST client.
-- `cache.py`: the Redis JSON cache behind the `/languages` aggregate.
 - `request_utils.py`: the visitor's identity and the GitHub settings.
 - `site_config.py`: the keys of `site/site.yaml` the API reads (#189): CORS origins, the GitHub owner, the button's label and the rewrite's persona and style rules. vercel.json's `includeFiles` bundles the file with the function; without it, the function fails at import, naming the fix.
 
@@ -59,7 +58,7 @@ Every route is in `api/index.py`. Shared helpers are in `api/_lib/`: the undersc
    - fields the model must never write are put back from the original (`_UNAUTHORED_KEYS`: `email` and `social_links`, which the page turns into links, #98).
 8. **The answer:** 200 with the rewritten sections and any `failed_sections`. It's 500 only when nothing came back. Either way the cooldown is already running, and the answer says so.
 
-If Redis is unreachable at step 4 or 5, the answer is 503: the paid path fails closed, so it never runs unmetered (#113). The GitHub endpoints' rate limiter fails open instead; the `/languages` aggregate answers 503 too (see below).
+If Redis is unreachable at step 4 or 5, the answer is 503: the paid path fails closed, so it never runs unmetered (#113). The GitHub endpoints' rate limiter fails open instead.
 
 ### Adding a regenerable section
 
@@ -71,10 +70,8 @@ Each section costs the visitor a daily slot, so send only what the page shows (#
 
 ### The GitHub proxy
 
-- `/api/v1/github/repo`, `/readme` and `/languages/<name>` serve **only public repos of allowed owners**: `github.username` and `github.allowed_owners`. `/repo/<owner>/<name>` and `/readme/<owner>/<name>` name the owner, as the project pages do; the one-segment routes mean `github.username`. Any other owner, and a private or missing repo, get the same 404 before or after GitHub is asked, so the proxy can't reveal which private repos exist (#97, #189).
+- `/api/v1/github/repo` and `/readme` serve **only public repos of allowed owners**: `github.username` and `github.allowed_owners`. `/repo/<owner>/<name>` and `/readme/<owner>/<name>` name the owner, as the project pages do; the one-segment routes mean `github.username`. Any other owner, and a private or missing repo, get the same 404 before or after GitHub is asked, so the proxy can't reveal which private repos exist (#97, #189).
 - Each is limited to 30 requests a minute per visitor (failing open), and a 200 is cached at Vercel's edge for an hour.
-- The `/languages` aggregate is cached in Redis for an hour. When that cache can't be read, it answers 503 rather than make 1 + N uncached GitHub calls (#194 M33).
-- `/contributions` asks GitHub's GraphQL API, which needs `GITHUB_TOKEN`.
 - With `features.github: off` in `site.yaml`, every GitHub route answers 404, before its rate limiter and without calling GitHub (`_github_off`, an app-level gate, #189).
 
 ### Metering, identity and failures

@@ -2,6 +2,17 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-05
+
+### Changed
+- The header takes its colours from the theme's variables, so its dark-mode overrides are gone; in the dark theme its inactive links are the palette's slate 400, where they were a grey from outside it (#255).
+- CONTRIBUTING.md says there's no formal code of conduct (#255).
+
+### Removed
+- The résumé files nothing showed, `experience.yaml`, `education.yaml` and `skills.yaml` (and `site.example`'s), with their loaders, store slices and types, and the API's `portfolio` rewrite section. A page loads three fewer files; the journey still shows the roles, degrees and skills (#255).
+- The API routes nothing called, `/api/v1/github/languages`, `/languages/<repo>` and `/contributions`, with their client methods, the unmounted contribution graph and the cache behind them. `GITHUB_TOKEN` is optional now: it only raises the rate limit for the repo figures and READMEs (#255).
+- `styles/tokens.ts`, which nothing imported, the Tailwind typography plugin and four unused CSS classes (#255).
+
 ## 2026-10-04
 
 ### Changed

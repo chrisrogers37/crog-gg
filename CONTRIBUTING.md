@@ -59,6 +59,10 @@ Add a line to [CHANGELOG.md](CHANGELOG.md) for anything a visitor or a forker wo
 
 Site copy follows CLAUDE.md's "Site copy style": plain on Claudlobby's page, lowercase and casual everywhere else (names keep their capitals), and never an em dash.
 
+## Conduct
+
+There's no formal code of conduct, since this is a personal site (decided on #192). Be kind: off-topic or abusive issues and comments get closed.
+
 ## Security
 
 Report vulnerabilities privately, as [SECURITY.md](SECURITY.md) describes, not in a public issue.

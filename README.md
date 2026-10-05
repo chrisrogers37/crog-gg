@@ -60,7 +60,7 @@ Run `npm install` once at the repo root: it installs the git hooks ([CONTRIBUTIN
 - Node.js 24. CI reads `.nvmrc` and Vercel reads `engines.node` in the root `package.json`, so bump both together. 22.13+ also works locally; avoid 25+, whose built-in localStorage breaks the jsdom unit tests
 - Python 3.12 (`.python-version`; CI and Vercel use it)
 - (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
-- (Optional) GitHub PAT — needed for `/api/v1/github/contributions`, bumps rate limits everywhere else
+- (Optional) GitHub PAT, which raises the rate limit for the repo figures and READMEs
 - (Optional) Upstash Redis credentials, which `/api/regenerate` needs (see [Troubleshooting](#troubleshooting))
 
 ### Backend Setup
@@ -192,7 +192,7 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 | Var                                     | Required          | Notes                                                                                                                                                                                           |
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`                        | for SUMMON        | SUMMON NEW LORE; without it the button doesn't show, and `/api/regenerate` answers 503 `regeneration_disabled`                                                                                  |
-| `GITHUB_TOKEN`                          | recommended       | required for `/api/v1/github/contributions` (GraphQL); bumps REST rate limits for the other GitHub endpoints. Use a token that can only read public data (CLAUDE.md has the settings) |
+| `GITHUB_TOKEN`                          | recommended       | raises the REST rate limit for the repo figures and READMEs. Use a token that can only read public data (CLAUDE.md has the settings) |
 | `KV_REST_API_URL` + `KV_REST_API_TOKEN` | for SUMMON        | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
 | `OPENAI_MODEL`                          | optional          | Overrides the rewrite model (`gpt-5.6-luna`). Changing it means checking `OPENAI_SAMPLING` in `api/index.py`, which depends on the model. `REGEN_GLOBAL_DAILY_MAX` is sized from the default model's worst-case cost |
@@ -231,13 +231,11 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `/api/regenerate` returns 503 `regeneration_disabled`                                  | `OPENAI_API_KEY` missing in Vercel env vars (or the last deploy predates it: set it and redeploy), or `features.regenerate: off` in `site/site.yaml`|
 | SUMMON NEW LORE or the GitHub panels don't show                                        | `GET /api/features` says this deployment can't serve them (SUMMON needs an OpenAI key and Upstash), `site/site.yaml`'s `features` turns them off, the API didn't answer within 3 s, or (for the GitHub panels) the repo's owner isn't `github.username` or one of `github.allowed_owners` |
-| `/api/v1/github/contributions` returns `"GitHub token required for contribution data"` | `GITHUB_TOKEN` missing — same fix                                                                                                       |
 | `/api/regenerate` returns 503 `"Regeneration temporarily unavailable"`                 | Upstash env vars missing or DB not connected to the project. The paid endpoint fails closed on Redis errors (the GitHub endpoints' rate limiter fails open), so fix Upstash, not the endpoint |
 | `/api/regenerate` returns 503 `"Daily regeneration budget reached"`                   | The site-wide daily ceiling (`REGEN_GLOBAL_DAILY_MAX` in `api/index.py`) is used up; each refusal logs `regenerate.global_cap_reached`. It frees up as the rolling 24 h window moves. Raise it only if the OpenAI budget allows |
 | `/api/regenerate` failures with reason `model_error`                                    | The OpenAI key is invalid, or its quota or budget is used up. Check the OpenAI usage page.                                               |
 | Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy answers 502, or 503 when GitHub rate-limits it, with "GitHub is unavailable right now", and logs `github upstream error`. |
 | GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. Their rate limiter fails open by design.                                                                  |
-| `/api/v1/github/languages` returns 503 `"Language stats are unavailable right now"` | Upstash is unavailable. The aggregate refuses rather than fan out to GitHub uncached (#194 M33). |
 | Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
 
 ## License

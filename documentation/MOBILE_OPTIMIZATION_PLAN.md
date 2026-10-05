@@ -1077,7 +1077,7 @@ Also add the viewport meta tag if not present. Check `frontend/index.html`:
 
 ---
 
-> **Obsolete:** `ContributionGraph` isn't mounted on any page. Whether it comes back is decided in #198.
+> **Obsolete:** `ContributionGraph` was never mounted, and #255 deleted it with the `/contributions` route (#198's decision, 2026-10-05). The steps below are kept as a record.
 
 ### 19. Optimize the Contribution Graph for Mobile
 
