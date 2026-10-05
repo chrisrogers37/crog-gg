@@ -2,6 +2,14 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-04
+
+### Changed
+- `/projects` and the home page's projects: the featured card stands out in the site's accent (a heavier border, and its label), and the projects after it are compact cards in the same family, each with its emoji, name, whole description and what it's built with, where they were bare rows (#253).
+- The projects are in order of how much went into them: Storydump, Shuffify, Shitpost Alpha, Benzo, Dead Redux (#253).
+- Headlines balance their lines, so the home page's no longer leaves "things." alone on the second (#253).
+- Shuffify's and Benzo's pages link their public repos, with the repo's figures and README (#253).
+
 ## 2026-10-03
 
 ### Changed

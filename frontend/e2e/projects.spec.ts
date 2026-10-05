@@ -48,6 +48,29 @@ test.describe("Projects page", () => {
     await expect(page).toHaveURL(/\/projects\/.+/);
   });
 
+  test("the featured card stands out in the site's accent, in both themes", async ({ page }) => {
+    test.skip(!FEATURED, "index.yaml features no project");
+    const featured = page.locator("article.project-featured");
+    const label = featured.locator(".page-eyebrow");
+    const card = page.locator(".projects-page .project-row").first();
+    const style = (locator: import("@playwright/test").Locator, property: string) =>
+      locator.evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
+    // Light, then dark: .card's dark-theme rule once kept the border grey.
+    for (const theme of ["light", "dark"]) {
+      if (theme === "dark") {
+        await page.getByRole("button", { name: /current theme/i }).first().click();
+      }
+      // A heavier border than the other cards', in the colour of its label,
+      // which is the accent.
+      await expect.poll(() => style(featured, "border-top-color"), theme).toBe(
+        await style(label, "color"),
+      );
+      expect(await style(featured, "border-top-width"), theme).toBe("2px");
+      expect(await style(card, "border-top-width"), theme).toBe("1px");
+      expect(await style(card, "border-top-color"), theme).not.toBe(await style(label, "color"));
+    }
+  });
+
   test("a row opens its project wherever it's clicked, its description included", async ({
     page,
   }) => {

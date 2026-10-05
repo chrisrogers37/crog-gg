@@ -22,7 +22,7 @@ For how it's built, and what each content file does, see the [documentation inde
 
 ### Projects (`/projects`)
 
-- The featured project first and larger, then a row for each other, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only.
+- The featured project first and larger, set off in the site's accent, then a compact card for each other, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only.
 - **Claudlobby's page** (`/projects/claudlobby`) is its own: its copy is a typed module (`frontend/src/content/claudlobby.ts`), and its calls to action are counted ([Web Analytics](#web-analytics)).
 
 ### Under the hood

@@ -12,7 +12,7 @@ type ProjectRowsProps = {
   headingLevel?: 2 | 3;
 };
 
-/** The projects as a list of rows. */
+/** The projects after the featured one, as a list of compact cards. */
 export function ProjectRows({ projects, headingLevel }: ProjectRowsProps) {
   return (
     // role="list": Safari drops list semantics under list-style: none.
@@ -28,7 +28,7 @@ export function ProjectRows({ projects, headingLevel }: ProjectRowsProps) {
  * Blank stand-ins in the real ones' boxes while the projects load, so little
  * moves when they land (#246): each line is a blank line of the real one's
  * own type. The featured card's box leads, since index.yaml usually names
- * one; a row stands in with a description of two lines, the usual length.
+ * one; a card stands in with a description of two lines, the usual length.
  */
 export function ProjectSkeleton({ count }: { count: number }) {
   return (
@@ -52,7 +52,7 @@ export function ProjectSkeleton({ count }: { count: number }) {
       </div>
       <ul className="project-rows" aria-hidden="true">
         {Array.from({ length: count }).map((_, i) => (
-          <li key={i} className="project-row skeleton-row">
+          <li key={i} className="card project-row skeleton-row">
             <div className="project-row-head">
               <div className="project-row-title">&nbsp;</div>
             </div>
@@ -82,7 +82,7 @@ type ProjectListProps = {
 
 /**
  * The projects index.yaml lists: the featured one first and larger, then the
- * others as rows, in the index's order. A failure or an empty list says so
+ * others as compact cards, in the index's order. A failure or an empty list says so
  * in its place, and the rest of the page stays up (#190 M23).
  */
 export function ProjectList({ limit, headingLevel = 3, compact = false }: ProjectListProps) {

@@ -8,7 +8,7 @@ featured: claudlobby.yaml
 projects:
   - claudlobby.yaml
   - storydump.yaml
-  - benzo.yaml
   - shuffify.yaml
-  - dead-redux.yaml
   - shitpost-alpha.yaml
+  - benzo.yaml
+  - dead-redux.yaml
