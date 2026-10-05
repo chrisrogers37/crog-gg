@@ -39,6 +39,8 @@
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.03em;
+  /* Lines of even length: no word left alone on the last line. */
+  text-wrap: balance;
 }
 
 .page-sub {

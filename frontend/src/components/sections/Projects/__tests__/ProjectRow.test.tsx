@@ -41,6 +41,13 @@ describe("ProjectRow", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Test Project" })).toBeInTheDocument();
   });
 
+  it("puts the project's emoji beside its name, hidden from screen readers", () => {
+    renderRow(mockProject);
+    const icon = screen.getByText("\u{1F680}");
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+    expect(icon.closest("h3")).toBe(screen.getByRole("heading", { name: "Test Project" }));
+  });
+
   it("gives the whole description", () => {
     renderRow(mockProject);
     expect(screen.getByText("A test project description")).toBeInTheDocument();

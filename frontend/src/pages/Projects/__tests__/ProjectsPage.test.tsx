@@ -63,7 +63,7 @@ describe("ProjectsPage when the content failed to load", () => {
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(["x Project star", "Project a", "Project b", "Project c", "Project d"]);
+    ).toEqual(["x Project star", "x Project a", "x Project b", "x Project c", "x Project d"]);
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
   });
 

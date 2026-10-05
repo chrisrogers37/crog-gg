@@ -9,17 +9,19 @@ type ProjectRowProps = {
 };
 
 /**
- * A project as a row of the list (Chris, 2026-10-03: the cards read as
- * generated): its name, which opens its page on the site (#196 M43), its
- * whole description, and what it's built with. The whole row takes the click,
- * but the link is named by the project alone.
+ * A project as a compact card under the featured one (Chris, 2026-10-03: the
+ * old tiles read as generated; 2026-10-04: bare rows looked lost): its name,
+ * which opens its page on the site (#196 M43), its whole description, and
+ * what it's built with. The whole card takes the click, but the link is named
+ * by the project alone.
  */
 export function ProjectRow({ project, headingLevel = 3 }: ProjectRowProps) {
   const Heading = `h${headingLevel}` as const;
   return (
-    <li className="project-row">
+    <li className="card project-row">
       <div className="project-row-head">
         <Heading className="project-row-title">
+          <span aria-hidden="true">{project.icon}</span>{" "}
           <Link to={`/projects/${project.id}`} className="project-row-link">
             {project.title}
           </Link>

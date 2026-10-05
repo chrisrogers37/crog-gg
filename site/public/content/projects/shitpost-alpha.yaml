@@ -11,6 +11,5 @@ technologies:
   - "PostgreSQL"
   - "AWS S3"
   - "Railway"
-github: "https://github.com/chrisrogers37/shitpost-alpha"
 demo: "https://shitpost-alpha-web-production.up.railway.app/"
 status: active

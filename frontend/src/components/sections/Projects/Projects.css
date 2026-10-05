@@ -1,18 +1,19 @@
-/* The featured project's card (the site's .card, index.css), then the rest
-   as a list of rows: a name, the whole description and what it's built with,
-   with a hairline between rows (Chris, 2026-10-03: the cards read as
-   generated). */
+/* The featured project's card (the site's .card, index.css), set off by the
+   site's accent, then the rest as compact cards in the same family: a name,
+   the whole description and what it's built with (Chris, 2026-10-03: the old
+   tiles read as generated; 2026-10-04: bare rows looked lost). */
 
 .project-rows {
+  display: grid;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* Below the featured card, whitespace first. */
 .project-featured + .project-rows,
 .projects-skeleton .project-rows {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .project-row {
@@ -20,11 +21,12 @@
   display: grid;
   grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
   column-gap: 2rem;
-  padding: 1.25rem 0;
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.15s;
 }
 
-.project-row + .project-row {
-  border-top: 1px solid var(--border-color);
+.card.project-row:hover {
+  border-color: var(--primary-color);
 }
 
 .project-row-title {
@@ -67,12 +69,22 @@
   color: var(--text-color-secondary);
 }
 
+/* Featured: the site's accent as a heavier border, and on its label. */
 .project-featured {
   padding: 1.75rem;
+  border-width: 2px;
+}
+
+/* At more than .card's weight: its dark-theme rule, .card:is(.dark *), would
+   otherwise keep the border grey. The accent follows the theme by itself. */
+.card.project-featured,
+.card.project-featured:is(.dark *) {
+  border-color: var(--primary-color);
 }
 
 .project-featured .page-eyebrow {
   margin-bottom: 0.5rem;
+  color: var(--primary-color);
 }
 
 .project-featured-title {
@@ -136,5 +148,9 @@
 @media (max-width: 480px) {
   .project-featured {
     padding: 1.25rem;
+  }
+
+  .project-row {
+    padding: 1rem 1.25rem;
   }
 }
