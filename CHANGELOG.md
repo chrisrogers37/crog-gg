@@ -9,6 +9,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - The projects are in order of how much went into them: Storydump, Shuffify, Shitpost Alpha, Benzo, Dead Redux (#253).
 - Headlines balance their lines, so the home page's no longer leaves "things." alone on the second (#253).
 - Shuffify's and Benzo's pages link their public repos, with the repo's figures and README (#253).
+- Shitpost Alpha's page no longer links its repo, which is private now: the GitHub panel there could only fail (#253).
 
 ## 2026-10-03
 
