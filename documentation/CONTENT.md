@@ -89,7 +89,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`socials`:** each has an `id`, a `label` (the link's text and its name to a screen reader), an `icon` (`github`, `linkedin`, `telegram`, `instagram`, `spotify`, `hoobe` or `link`), an `https` `url`, and `show_in`: any of `footer`, `menu`, `contact`, `music` and `schema` (the Person schema's `sameAs`). They show in the order listed.
 - **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source", at the commit the site was built from when Vercel names it (`VERCEL_GIT_COMMIT_SHA`).
 - **`sections`:** the home page's sections, in order: `about`, `journey`, `projects` and `music`, each with a `label`, its heading. `about` is required, since it's the text SUMMON rewrites; leave another out to hide it.
-- **`hero`:** `photos` (base paths in `site/public/profile-photos/`; one is picked at random) and `typewriter` (the lines the hero types out).
+- **`hero.photos`:** base paths in `site/public/profile-photos/`; one is picked at random.
 - **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189). It stays required with `features.regenerate: off`.
   - `labels`: the button's words, idle (`button`), while it works (`busy`), and the undo (`reset`). The rewrite is told to leave `button` as it is, since the About text's last line names it.
   - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`, the default).
@@ -99,7 +99,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 
 Claudlobby's page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules, shown only on a site that lists the `claudlobby` project ([FORKING.md](../FORKING.md)).
 
-`home` and `about` (which held only `preview_height`) are gone (the redesign: the owner's page is `/`, in one column), so a `site.yaml` that still has either fails, naming the key.
+`home` and `about` (which held only `preview_height`) are gone (the redesign: the owner's page is `/`, in one column), so a `site.yaml` that still has either fails, naming the key. `hero.typewriter` is gone too: remove it when updating a fork. The hero now leads straight from its tagline to its links.
 
 ## What catches a mistake
 

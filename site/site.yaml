@@ -117,17 +117,6 @@ hero:
     - /profile-photos/photo-3
     - /profile-photos/photo-4
     - /profile-photos/photo-5
-  # The lines the header types out, in turn.
-  typewriter:
-    - "hey there!"
-    - "welcome to my website"
-    - "i use this as a bit of a portfolio / digital resume / hobby page"
-    - "it's crazy, you can just make #$%@ in 2026!!!"
-    - "anyways, take a look around at what ive been up to"
-    - "i try to keep this relatively up to date..."
-    - "there are some easter eggs if you go exploring"
-    - "hope you enjoy!"
-    - "have a nice day =)"
 
 regenerate:
   # The button's words. The rewrite is told to leave the label as it is,

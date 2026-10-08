@@ -103,8 +103,8 @@ test.describe("action button layout stability", () => {
 
   test("nothing moves the regenerate button while the page settles", async ({ page }) => {
     // Everything that loads late (the journey's logos, the projects, the
-    // photo strip) sits below the button; the hero's typed line holds its
-    // height. So the button's place is final once it's on the page.
+    // photo strip) sits below the button, so its place is final once it
+    // is on the page.
     await openHome(page);
     await page.evaluate(ARM);
     await page.waitForTimeout(3000); // sampling window: the late loads landing
@@ -215,72 +215,6 @@ test.describe("undoing a regeneration", () => {
     await expect(page.locator(".reset-btn")).toHaveCount(0); // the reset committed
     await expect(about).not.toContainText("an arcane placeholder");
     expect(await about.innerText()).toBe(original);
-  });
-});
-
-/**
- * #148: the idle typewriter moved the page 25px on a loop. The assertion is
- * ZERO movement, not a smaller magnitude: "reduced" and "stopped" are
- * different outcomes, and a threshold would accept the first as the second.
- * It carries a positive control, since zero movement is also what a page that
- * never loaded reports (see #137).
- */
-
-/** Sample the idle page: the buttons under the typed line, its box and text. */
-const ARM_IDLE = () => {
-  const w = window as unknown as Record<string, unknown>;
-  w.__idle = [];
-  const tick = () => {
-    const ctas = document.querySelector<HTMLElement>(".page-hero .page-ctas");
-    const msg = document.querySelector<HTMLElement>(".home-typewriter");
-    (w.__idle as unknown[]).push({
-      ctasTop: ctas ? ctas.offsetTop : null,
-      msgHeight: msg ? msg.offsetHeight : null,
-      text: msg ? msg.innerText : null,
-    });
-    w.__idleRaf = requestAnimationFrame(tick);
-  };
-  tick();
-};
-
-const READ_IDLE = () => {
-  const w = window as unknown as Record<string, unknown>;
-  cancelAnimationFrame(w.__idleRaf as number);
-  return w.__idle as {
-    ctasTop: number | null;
-    msgHeight: number | null;
-    text: string | null;
-  }[];
-};
-
-test.describe("idle typewriter does not reflow the page (#148)", () => {
-  test("no layout movement across 45s at 375x667 with no interaction", async ({
-    page,
-  }) => {
-    test.setTimeout(120000);
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
-    await page.waitForSelector(".welcome-typewriter", { timeout: 15000 });
-
-    await page.evaluate(ARM_IDLE);
-    // observation window: nothing is clicked; the loop runs alone
-    await page.waitForTimeout(45000);
-    const samples = await page.evaluate(READ_IDLE);
-
-    const mounted = samples.filter((s) => s.ctasTop !== null);
-    expect(mounted.length).toBeGreaterThan(0);
-
-    // POSITIVE CONTROL. The typewriter has to have actually cycled, or the
-    // page never rendered its content and zero movement means nothing.
-    const changes = mounted.filter(
-      (s, i) => i > 0 && s.text !== mounted[i - 1].text,
-    ).length;
-    expect(changes).toBeGreaterThan(50);
-
-    // The line holds the tallest message at this width, so neither its box
-    // nor the buttons under it move while characters are typed and deleted.
-    expect(travel(mounted.map((s) => s.msgHeight))).toBe(0);
-    expect(travel(mounted.map((s) => s.ctasTop))).toBe(0);
   });
 });
 

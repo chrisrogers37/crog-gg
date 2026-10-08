@@ -19,13 +19,6 @@
   object-position: top;
 }
 
-/* Holds a line while the text types and deletes, so the buttons under it
-   never move. */
-.home-typewriter {
-  min-height: 1.5em;
-  margin: 1rem 0 0;
-}
-
 .about-text {
   max-width: 680px;
 }

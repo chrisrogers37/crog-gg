@@ -2,6 +2,11 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-08
+
+### Removed
+- The hero's typewriter, its blinking cursor and reserved space. The project and contact links follow the tagline directly. `hero.typewriter` is removed from `site.yaml` and `site.example`; forks updating the code should remove that key too.
+
 ## 2026-10-05
 
 ### Changed

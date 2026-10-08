@@ -20,11 +20,6 @@ test.describe("Home page", () => {
     await expect(page.locator(".home-photo")).toBeVisible();
   });
 
-  test("types its welcome lines", async ({ page }) => {
-    // The text cycles, so only that it's there.
-    await expect(page.locator(".welcome-typewriter").first()).toBeVisible();
-  });
-
   test("shows site.yaml's sections in its order, each headed by its label", async ({ page }) => {
     for (const { id, label } of SECTIONS) {
       await expect(page.locator(`#${id} h2`), id).toHaveText(named(label));
