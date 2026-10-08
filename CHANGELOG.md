@@ -5,6 +5,8 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ## 2026-10-08
 
 ### Changed
+- Post-deploy smoke separates eligibility from testing, so an untested preview has a skipped Smoke check with a reason instead of a successful Smoke check. Protected checks still require automation bypass setup (#195).
+- Frontend API calls always use same-origin `/api/*`, through Vite's local proxy or Vercel. The unsupported `VITE_API_URL` override is retired and ignored.
 - The About section describes the owner's interest in AI agent teams more plainly.
 - The hero's links say "see what i'm building" and "say hey". Their text comes from `hero.labels` in `site.yaml`, with neutral labels in `site.example`; forks can set their own words.
 

@@ -100,7 +100,7 @@ Run `npm install` once at the repo root: it installs the git hooks ([CONTRIBUTIN
    npm install
    ```
 
-3. No `.env` file is needed. Leave `VITE_API_URL` unset so the dev server proxies `/api/*` to the Flask server on `:5001` (see `frontend/.env.example`). Setting it to `http://localhost:5001` makes the browser block the API calls.
+3. No frontend `.env` file is needed. The browser always calls same-origin `/api/*`; the dev server proxies those requests to Flask on `:5001` (see `frontend/vite.config.ts`). The old `VITE_API_URL` override is no longer read and can be removed from local or Vercel settings.
 
 4. Start the development server:
 
@@ -170,7 +170,11 @@ GitHub Actions runs CI (`.github/workflows/ci.yml`) on every push to `main` and 
 6. **API Tests**: pytest.
 7. **CI Success**: passes only when all of the above do.
 
-**Post-deploy smoke** (`.github/workflows/smoke.yml`) checks each successful Vercel deployment: production, and previews when the `VERCEL_AUTOMATION_BYPASS_SECRET` secret is set (without it, a preview is skipped with a notice).
+**Post-deploy smoke** (`.github/workflows/smoke.yml`) first runs **Smoke eligibility**. It selects a protected deployment only when `VERCEL_AUTOMATION_BYPASS_SECRET` is configured and the deployed commit is a current branch head in this repository. Production can instead use the public `SITE_URL` Actions variable, without a bypass header. Only then does the separate **Smoke** job check the site. An ineligible preview gets a skipped Smoke check and a summary explaining that no deployment checks ran; a successful eligibility job is not evidence that a deployment passed. Production in this repository fails eligibility if neither path is available. The protected path rechecks the branch head before sending its header, so a branch that moves while the job queues fails closed.
+
+Preview verification still needs the Vercel automation bypass configured as an Actions secret (#195). This workflow does not create that credential; changing deployment access is a separate setup step.
+
+GitHub treats a skipped job as successful for branch protection, so it does not block merging. Check the Smoke job's conclusion and summary when reviewing deployment evidence.
 
 There is no manually-triggered deploy workflow. Vercel deploys directly from the Git integration.
 
@@ -197,7 +201,6 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. Set it for Production and Preview, with different values. |
 | `OPENAI_MODEL`                          | optional          | Overrides the rewrite model (`gpt-5.6-luna`). Changing it means checking `OPENAI_SAMPLING` in `api/index.py`, which depends on the model. `REGEN_GLOBAL_DAILY_MAX` is sized from the default model's worst-case cost |
 | `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
-| `VITE_API_URL`                          | leave empty       | If set to a non-empty value the frontend build will bake in that origin instead of calling same-origin `/api/*`                                                                                 |
 
 ### Bounding OpenAI spend
 
@@ -236,7 +239,7 @@ Vercel keeps every deployment. Roll back from the Deployments tab → ⋯ → Pr
 | `/api/regenerate` failures with reason `model_error`                                    | The OpenAI key is invalid, or its quota or budget is used up. Check the OpenAI usage page.                                               |
 | Project pages show "No README available" or no repo stats                              | A GitHub API error: `GITHUB_TOKEN` expired or rate-limited, or GitHub is down. The proxy answers 502, or 503 when GitHub rate-limits it, with "GitHub is unavailable right now", and logs `github upstream error`. |
 | GitHub endpoints ignore rate limits                                                    | Upstash is unavailable. Their rate limiter fails open by design.                                                                  |
-| Frontend calls `https://api.crog.gg` instead of same-origin                            | `VITE_API_URL` in Vercel env vars points at the dead subdomain; clear it and redeploy                                                   |
+| Frontend calls a separate API origin instead of same-origin                            | An older frontend build is still deployed or cached; current builds always use `/api/*` and ignore the retired `VITE_API_URL` setting |
 
 ## License
 

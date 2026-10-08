@@ -6,14 +6,15 @@ every press.
 """
 
 import re
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
 
 from api._lib import request_utils
-from api._lib.request_utils import Visitor, _rate_limit_subject, client_tag
 from api._lib.github_proxy import _gh_rate_key
-from api.index import _cooldown_key, _regen_daily_key
+from api._lib.request_utils import Visitor, _rate_limit_subject, client_tag
+from api.index import _cooldown_key, _regen_daily_key, app
 
 
 @pytest.mark.parametrize(
@@ -73,3 +74,54 @@ def test_salted_keys_hold_no_address(salted):
     keys = [_cooldown_key(visitor), _regen_daily_key(visitor), _gh_rate_key(visitor, "repo")]
     assert all(key.endswith(visitor.tag) for key in keys)
     assert not any(ip in key for key in keys)
+
+
+@pytest.mark.parametrize(
+    "headers, remote, expected",
+    [
+        ({"X-Real-IP": "203.0.113.7", "X-Forwarded-For": "198.51.100.9"}, "192.0.2.4", "203.0.113.7"),
+        ({"X-Forwarded-For": " 198.51.100.9, 192.0.2.1"}, "192.0.2.4", "198.51.100.9"),
+        ({}, "192.0.2.4", "192.0.2.4"),
+        ({}, None, "unknown"),
+    ],
+)
+def test_current_visitor_uses_edge_address_then_local_fallbacks(headers, remote, expected):
+    with app.test_request_context(headers=headers, environ_overrides={"REMOTE_ADDR": remote}):
+        assert request_utils.current_visitor() == Visitor.from_ip(expected)
+
+
+@pytest.mark.parametrize("token", [None, "fixture-public-data-token"])
+@pytest.mark.parametrize("site_url, user_agent", [("https://portfolio.example", "portfolio.example"), ("", "site")])
+def test_github_headers_name_the_site_and_only_add_a_configured_token(monkeypatch, token, site_url, user_agent):
+    monkeypatch.setattr(request_utils, "GITHUB_TOKEN", token)
+    monkeypatch.setattr(request_utils, "CONFIG", SimpleNamespace(site_url=site_url))
+    headers = request_utils.github_headers()
+    assert headers["Accept"] == "application/vnd.github.v3+json"
+    assert headers["User-Agent"] == user_agent
+    if token:
+        assert headers["Authorization"] == f"token {token}"
+    else:
+        assert "Authorization" not in headers
+
+
+@pytest.mark.parametrize(
+    "name, error",
+    [
+        ("", "cannot be empty"),
+        ("x" * 101, "too long"),
+        (".", "Invalid repository name"),
+        ("..", "Invalid repository name"),
+        (".hidden", "cannot start with a period"),
+        ("owner/repo", "invalid characters"),
+        ("repo\n", "invalid characters"),
+    ],
+)
+def test_invalid_repo_names_are_rejected_with_a_reason(name, error):
+    valid, message = request_utils.validate_repo_name(name)
+    assert valid is False
+    assert error in message
+
+
+@pytest.mark.parametrize("name", ["a", "Example-repo_1.2", "x" * 100])
+def test_valid_repo_names_include_the_length_boundary(name):
+    assert request_utils.validate_repo_name(name) == (True, None)
