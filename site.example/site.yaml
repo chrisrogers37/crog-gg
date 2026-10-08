@@ -71,10 +71,6 @@ hero:
   photos:
     - /profile-photos/example-1
     - /profile-photos/example-2
-  typewriter:
-    - "hello!"
-    - "this site is made up"
-    - "it exists so the tests have something to read"
 
 regenerate:
   labels:

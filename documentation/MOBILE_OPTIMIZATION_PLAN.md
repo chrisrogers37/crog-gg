@@ -3,7 +3,7 @@
 ## Status
 
 Tracked in #96, whose checklist is authoritative. The status table that was here was last reviewed on 2026-02-16 and is gone.
-Items 9 and 19 are obsolete (see the notes on those sections). #247 (2026-10-02) made the owner's page `/`, one scrolling page in a new layout, with no tabs and no section navigator: items 2, 10e, 24 and 26, which are about those, no longer apply, and items 1, 7 and 8 describe a header and sections that have changed. The file paths and line numbers below predate it.
+Items 9 and 19 are obsolete (see the notes on those sections). #247 (2026-10-02) made the owner's page `/`, one scrolling page in a new layout, with no tabs and no section navigator: items 2, 10e, 24 and 26, which are about those, no longer apply, and items 1, 7 and 8 describe a header and sections that have changed. The file paths and line numbers below predate it. The typewriter was removed on 2026-10-08, so item 1e is obsolete too.
 
 ---
 

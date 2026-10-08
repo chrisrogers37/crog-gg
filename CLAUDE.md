@@ -156,8 +156,7 @@ await expect(page.getByText(/hey there!/i)).toBeVisible();
 Example - Good:
 
 ```typescript
-const welcomeArea = page.locator('.welcome-typewriter, [class*="welcome"]');
-await expect(welcomeArea).toBeVisible();
+await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 ```
 
 ### Content Files
@@ -226,7 +225,7 @@ The README's [table](README.md#environment-variables) lists them all. The token'
 The site has two voices (#179):
 
 - **Claudlobby's page (`/projects/claudlobby`): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case. Copy is `frontend/src/content/claudlobby.ts`.
-- **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, headings, labels, buttons and the nav included, but names and acronyms keep their capitals: Spotify, macOS, AI, SEO, NYC (Chris, 2026-10-03). The SUMMON button's labels keep their all-caps game style. Casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact, music and typewriter lines in `site/site.yaml`.
+- **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, headings, labels, buttons and the nav included, but names and acronyms keep their capitals: Spotify, macOS, AI, SEO, NYC (Chris, 2026-10-03). The SUMMON button's labels keep their all-caps game style. Casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact and music lines in `site/site.yaml`.
 - **Claims on Claudlobby's page stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
 - **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on Claudlobby's page and `site-check/cards.test.ts` on the link-preview cards; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
 

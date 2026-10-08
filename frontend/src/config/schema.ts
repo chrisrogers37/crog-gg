@@ -119,7 +119,6 @@ const siteShape = object({
   sections: list(object({ id: oneOf(SECTION_IDS), label: text }), { min: 1 }),
   hero: object({
     photos: list(sitePath, { min: 1 }),
-    typewriter: list(text, { min: 1 }),
   }),
   regenerate: object({
     /** The button's words: idle, while it works, and the undo. */

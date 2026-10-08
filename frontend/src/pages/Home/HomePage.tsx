@@ -15,7 +15,6 @@ import { SEO } from "../../components/SEO";
 import { HOME_META } from "../../seo";
 import { AboutText } from "../../components/AboutText";
 import { ActionButtons } from "../../components/ActionButtons";
-import TypewriterLoop from "../../components/TypewriterLoop";
 import { ErrorBoundary } from "../../components/common/ErrorBoundary";
 import { ImageShowcase } from "../../components/common/ImageShowcase";
 import { LoadError } from "../../components/common/LoadError";
@@ -184,16 +183,6 @@ function HomeContent() {
               {bio.display_name}
             </h1>
           )}
-          <div className="page-note home-typewriter">
-            <TypewriterLoop
-              messages={site.hero.typewriter}
-              typeSpeed={25}
-              deleteSpeed={15}
-              pauseTime={2000}
-              initialDelay={1000}
-              className="welcome-typewriter"
-            />
-          </div>
           <div className="page-ctas">
             <Link to="/projects" className="btn btn-primary">
               projects
