@@ -117,6 +117,9 @@ hero:
     - /profile-photos/photo-3
     - /profile-photos/photo-4
     - /profile-photos/photo-5
+  labels:
+    projects: see what i'm building
+    contact: say hey
 
 regenerate:
   # The button's words. The rewrite is told to leave the label as it is,

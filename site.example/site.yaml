@@ -71,6 +71,9 @@ hero:
   photos:
     - /profile-photos/example-1
     - /profile-photos/example-2
+  labels:
+    projects: browse projects
+    contact: get in touch
 
 regenerate:
   labels:

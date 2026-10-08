@@ -185,10 +185,10 @@ function HomeContent() {
           )}
           <div className="page-ctas">
             <Link to="/projects" className="btn btn-primary">
-              projects
+              {site.hero.labels.projects}
             </Link>
             <a href={`#${CONTACT_ID}`} className="btn btn-ghost">
-              connect
+              {site.hero.labels.contact}
             </a>
           </div>
         </div>

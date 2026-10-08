@@ -77,8 +77,14 @@ describe("HomePage", () => {
     expect(screen.getByText("and some bigger ones.")).toBeInTheDocument();
     expect(screen.getAllByText("Ada Example").length).toBeGreaterThan(0);
     expect(screen.getByRole("img", { name: "Ada Example's profile photo" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "projects" })).toHaveAttribute("href", "/projects");
-    expect(screen.getByRole("link", { name: "connect" })).toHaveAttribute("href", "#contact");
+    expect(screen.getByRole("link", { name: site.hero.labels.projects })).toHaveAttribute(
+      "href",
+      "/projects",
+    );
+    expect(screen.getByRole("link", { name: site.hero.labels.contact })).toHaveAttribute(
+      "href",
+      "#contact",
+    );
   });
 
   it("titles itself with the owner's name when there's no tagline", () => {
