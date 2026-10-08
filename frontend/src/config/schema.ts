@@ -113,6 +113,11 @@ const siteShape = object({
     about: object({ description: text }),
     projects: object({ description: text }),
   }),
+  /** Owner-written copy for the project index and the 404 page. */
+  page_copy: object({
+    projects: object({ eyebrow: text, heading: text, github_link: text }),
+    not_found: object({ heading: text, text, home_link: text }),
+  }),
   /** In display order, on every surface they show in. */
   socials: list(social),
   footer: object({ source_repo_url: optional(httpsUrl) }),

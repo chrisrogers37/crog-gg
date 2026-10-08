@@ -49,6 +49,16 @@ seo:
   projects:
     description: Explore my portfolio of software projects, side projects, and experiments. From web apps to mobile development.
 
+page_copy:
+  projects:
+    eyebrow: projects
+    heading: things i've built.
+    github_link: more on GitHub
+  not_found:
+    heading: page not found
+    text: the scroll you seek has been lost to the ages, adventurer.
+    home_link: return to the realm
+
 # In display order. show_in picks the places each one shows: footer, menu
 # (the mobile menu), contact (the contact section), music (the music section) and
 # schema (the Person schema's sameAs). The label is the visible text.

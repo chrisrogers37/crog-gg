@@ -46,6 +46,21 @@ describe("parseSiteConfig", () => {
     expect(problems(raw)).toContain("footer.source_repo: unknown key");
   });
 
+  it.each([
+    ["projects", "eyebrow"],
+    ["projects", "heading"],
+    ["projects", "github_link"],
+    ["not_found", "heading"],
+    ["not_found", "text"],
+    ["not_found", "home_link"],
+  ])("requires nonempty page_copy.%s.%s", (page, field) => {
+    const raw = shipped();
+    delete at(raw, `page_copy.${page}`)[field];
+    expect(problems(raw)).toContain(`page_copy.${page}.${field}: missing`);
+    at(raw, `page_copy.${page}`)[field] = "";
+    expect(problems(raw)).toContain(`page_copy.${page}.${field}: expected text`);
+  });
+
   it("wants the site's origin, with no path or trailing slash", () => {
     const raw = shipped();
     at(raw, "site").url = "https://example.com/";

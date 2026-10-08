@@ -6,6 +6,8 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Changed
 - The About section describes the owner's interest in AI agent teams more plainly.
+- The project-index and 404 copy now lives in `page_copy` in `site.yaml`, with neutral example text. The owner's displayed words are unchanged; existing forks should add the required block from `site.example/site.yaml`.
+- Photo originals live in `site/photos/originals/`, so `npm run site:init` replaces them too. The variant generator reads and writes only the active `SITE_DIR`, creates its output folder, and leaves a site with no originals alone.
 - The hero's links say "see what i'm building" and "say hey". Their text comes from `hero.labels` in `site.yaml`, with neutral labels in `site.example`; forks can set their own words.
 
 ### Removed

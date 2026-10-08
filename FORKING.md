@@ -5,7 +5,7 @@ The code is built to be reused: who the site is lives in one folder, `site/`, wh
 ## Licences
 
 - **The code** is MIT ([LICENSE](LICENSE)). Take it, and keep LICENSE as it is: the licence's copyright notice has to stay with the code.
-- **The content** isn't: the bio, timeline, projects, photos, social card, personal copy and links belong to the owner ([CONTENT-TERMS.md](CONTENT-TERMS.md)), wherever they are in the repo. Step 2 replaces what's in `site/`; step 3 names the rest (the photo originals).
+- **The content** isn't: the bio, timeline, projects, photos, social card, personal copy and links belong to the owner ([CONTENT-TERMS.md](CONTENT-TERMS.md)), wherever they are in the repo. Step 2 replaces `site/`, including its photo originals.
 - **`site.example/`** is fictional and public domain (CC0), so its copy in your `site/` is yours to change.
 
 ## 1. Get a copy
@@ -30,7 +30,7 @@ This replaces `site/` with a copy of `site.example/`, a fictional site in the sa
 - **`site/site.yaml`**: who the site is: your name, URL, socials, the copy around the content, which sections the home page shows, and SUMMON NEW LORE's words and persona. The build checks it and names any key that's wrong; [CONTENT.md](documentation/CONTENT.md#sitesiteyaml) describes every field.
 - **`site/public/content/`**: the bio, the timeline, the projects (`projects/index.yaml` lists them, in order, and `featured` names the one shown first and largest) and the photo strip. Each file is checked as it loads, and names what's wrong ([CONTENT.md](documentation/CONTENT.md)).
 - **`site/public/`**'s images: one logo PNG per timeline domain in `logos/`, `manifest.json`, the favicons and the app icons.
-- **The photos.** The owner's originals are in `frontend/scripts/photos/originals/`, outside `site/`: delete them, put yours there, and run `python frontend/scripts/photos/make-variants.py`, which writes each one's 160, 320 and 480 px WebP variants into `site/public/profile-photos/` (and only then are they served). Point `hero.photos` in `site/site.yaml` and `showcase.yaml` at them, and replace `site/public/profile-photo.jpg`.
+- **The photos.** Put your JPEG originals in `site/photos/originals/` and run `python frontend/scripts/photos/make-variants.py` (requires Pillow: `pip install pillow`). It creates each one's 160, 320 and 480 px WebP variants in `site/public/profile-photos/`; only the variants are served. `SITE_DIR` selects another site folder, absolute or relative to the repo root, for both originals and output. A site with no originals produces no files. Point `hero.photos` in `site/site.yaml` and `showcase.yaml` at the variants, and replace `site/public/profile-photo.jpg`.
 - **The social card**, `site/public/og-image.png` (1200 x 630): replace it, and keep `seo.image.alt` in `site/site.yaml` in step with what it says. This site renders its own from an HTML page (`frontend/scripts/og-image/render.mjs`); the example has none to render.
 - **A project with a page of its own.** Every project gets the standard page, unless `frontend/src/content/ownPages.ts` lists its id and `projectPages.ts` beside it gives the page, as this site does for Claudlobby. A site whose projects don't include `claudlobby` never shows that page, so leave it: its tests keep passing, and the one trace is a visit straight to `/projects/claudlobby`, which shows its loading panel for a moment before the page says there's no such project. (The page's mark and card are this site's files, `site/public/profile-photos/claudfather-*.webp`, `site/public/claudlobby-card.png` and its source `site/claudlobby-card.html`; the example has none of them, and needs none.)
 
@@ -74,3 +74,8 @@ git grep -n -i -E "chris|crog|cr0g"
 ```
 
 It lists LICENSE (keep it), this repo's docs, the tests (their made-up people can stay), `crog:` names in the code (they're only names), and anything else of the owner's you haven't replaced.
+
+## Updating an existing fork
+
+- Add the required `page_copy` block from `site.example/site.yaml` to your `site/site.yaml`, then write your own project-index and 404 text. The build names any missing field.
+- Move any photo originals you kept in `frontend/scripts/photos/originals/` into `site/photos/originals/`. The generator no longer reads the old directory, and `npm run site:init` now removes originals along with the rest of the previous owner's `site/`.

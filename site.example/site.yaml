@@ -31,6 +31,16 @@ seo:
   projects:
     description: Example projects, made up for tests.
 
+page_copy:
+  projects:
+    eyebrow: Projects
+    heading: Selected projects
+    github_link: View more on GitHub
+  not_found:
+    heading: Page not found
+    text: This page does not exist. You can return to the home page.
+    home_link: Go home
+
 socials:
   - id: code
     label: code

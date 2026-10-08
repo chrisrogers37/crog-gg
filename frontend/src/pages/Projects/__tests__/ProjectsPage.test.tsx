@@ -60,7 +60,8 @@ describe("ProjectsPage when the content failed to load", () => {
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
 
     // Under the page's h1, the projects are h2s.
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(site.page_copy.projects.heading);
+    expect(screen.getByText(site.page_copy.projects.eyebrow)).toBeInTheDocument();
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
     ).toEqual(["x Project star", "x Project a", "x Project b", "x Project c", "x Project d"]);
@@ -75,7 +76,7 @@ describe("ProjectsPage when the content failed to load", () => {
     });
     renderWithProviders(<ProjectsPage />, { initialRoute: "/projects" });
     const github = site.socials.find((social) => social.icon === "github")!;
-    const link = screen.getByRole("link", { name: "more on GitHub" });
+    const link = screen.getByRole("link", { name: site.page_copy.projects.github_link });
     expect(link).toHaveAttribute("href", github.url);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
