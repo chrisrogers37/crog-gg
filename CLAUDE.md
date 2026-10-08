@@ -175,10 +175,11 @@ the site runs on a small, deliberate visual system. work inside it instead of de
 
 ### Color Source of Truth
 
-- the palette is defined ONCE in `frontend/src/styles/palette.ts` (the `primary` / `accent` / `slate` ramps).
+- the palette is defined ONCE in `frontend/src/styles/palette.ts` (the `primary` / `accent` / `slate` / `danger` ramps).
 - `frontend/tailwind.config.js` imports that palette, so every `bg-primary-600` / `text-slate-500` utility resolves back to the one file. tailwind is the canonical palette surface.
 - `frontend/src/App.css` mirrors the shades by hand as css variables (plain css can't import js), each tagged by its shade, and they switch with the theme. new component css should read those vars, or the palette through tailwind's `theme()`, rather than hard-code a hex value.
 - never hand-edit a color in only one of these. change `palette.ts` and let the rest follow; if you touch an `App.css` var, match it to the shade it tracks.
+- `index.css` owns body layout and typography, using the configured sans font and theme variables. `ActionButtons.css` owns SUMMON/reset styling, including disabled opacity and game effects. README fences share an explicit themed code surface in `GitHubReadme.css`, which also adapts the imported light syntax theme for dark mode.
 
 ### Core Tokens
 

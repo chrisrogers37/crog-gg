@@ -32,18 +32,6 @@
   --logo-chip: #f1f5f9; /* slate.100 */
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  /* clip, not hidden, so the sticky header sticks (see .layout). */
-  overflow-x: clip;
-}
-
 #root {
   width: 100%;
   display: flex;
@@ -56,50 +44,6 @@ h1 {
   font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: var(--text-color);
   margin: 0;
-}
-
-/* Generate and Reset Buttons */
-.generate-btn,
-.reset-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.generate-btn {
-  background-color: var(--button-color);
-  color: white;
-}
-
-.generate-btn:hover {
-  background-color: var(--hover-color);
-}
-
-.generate-btn:disabled {
-  background-color: var(--button-color);
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.reset-btn {
-  background-color: #dc2626;
-  color: white;
-}
-
-.reset-btn:hover {
-  background-color: #b91c1c;
-}
-
-.reset-btn:disabled {
-  background-color: #fca5a5;
-  cursor: not-allowed;
 }
 
 /* Links */

@@ -81,7 +81,7 @@
 }
 
 .timeline-entry-education .timeline-dot {
-  border-color: #8b5cf6;
+  border-color: theme("colors.accent.500");
 }
 
 /* Timeline Card */
@@ -123,7 +123,7 @@
 }
 
 .timeline-org-logo {
-  border-radius: 3px;
+  border-radius: 8px;
   flex-shrink: 0;
 }
 
@@ -172,7 +172,7 @@
 .skill-bubble {
   display: inline-block;
   padding: 0.3rem 0.7rem;
-  border-radius: 9999px;
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 500;
   border: 1px solid;

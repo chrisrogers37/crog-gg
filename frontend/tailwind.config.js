@@ -1,4 +1,4 @@
-import { primary, accent, slate, claudfather } from "./src/styles/palette";
+import { primary, accent, slate, danger, claudfather } from "./src/styles/palette";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       // Color palette: single source of truth lives in src/styles/palette.ts.
-      // primary = blue (brand), accent = purple, slate = neutral ramp, and
+      // primary = blue (brand), accent = purple, slate = neutral, danger = red, and
       // Claudlobby's page's own (claudfather).
       colors: {
         primary,
         accent,
         slate,
+        danger,
         claudfather,
       },
 
