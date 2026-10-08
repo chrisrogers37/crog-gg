@@ -5,6 +5,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ## 2026-10-08
 
 ### Changed
+- The About section describes the owner's interest in AI agent teams more plainly.
 - The hero's links say "see what i'm building" and "say hey". Their text comes from `hero.labels` in `site.yaml`, with neutral labels in `site.example`; forks can set their own words.
 
 ### Removed
