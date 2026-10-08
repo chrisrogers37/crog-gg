@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMotionPreference } from "../../../hooks/useMotionPreference";
 import { SkillCategory } from "../../../types/Timeline";
 import { DEFAULT_SKILL_COLOR } from "../../../utils/skillColor";
 
@@ -12,6 +13,7 @@ export function SkillBubbles({
   activeSkills,
   skillCategories,
 }: SkillBubblesProps) {
+  const reduceMotion = useMotionPreference();
   // Each skill's colour, from its category (already checked by timelineLoader).
   const colorBySkill = useMemo(() => {
     const colors: Record<string, string> = {};
@@ -36,10 +38,10 @@ export function SkillBubbles({
                 backgroundColor: `${color}20`,
                 borderColor: `${color}80`,
               }}
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.3 }}
+              exit={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+              transition={{ duration: reduceMotion ? 0 : 0.3 }}
             >
               {skill}
             </motion.span>

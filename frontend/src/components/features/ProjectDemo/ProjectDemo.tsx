@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useModalDialog } from "../../../hooks/useModalDialog";
 import "./ProjectDemo.css";
 
-interface ProjectDemoProps {
+type ProjectDemoProps = {
   url: string;
   title: string;
   height?: number;
-}
+};
 
 /**
  * ProjectDemo
@@ -24,11 +25,21 @@ interface ProjectDemoProps {
 export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const dialogRef = useModalDialog(isFullscreen, true);
 
   return (
-    <div className={`project-demo ${isFullscreen ? "fullscreen" : ""}`}>
+    <dialog
+      ref={dialogRef}
+      open={!isFullscreen}
+      className={`project-demo ${isFullscreen ? "fullscreen" : ""}`}
+      aria-modal={isFullscreen}
+      aria-label={`${title} demo`}
+      onCancel={(event) => {
+        event.preventDefault();
+        setIsFullscreen(false);
+      }}
+    >
       <div className="demo-header">
-        <h3 className="demo-title">live demo</h3>
         <div className="demo-actions">
           <a
             href={url}
@@ -41,6 +52,8 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="demo-fullscreen-btn"
+            aria-pressed={isFullscreen}
+            data-modal-focus
           >
             {isFullscreen ? "exit fullscreen" : "fullscreen"}
           </button>
@@ -65,6 +78,6 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         />
       </div>
-    </div>
+    </dialog>
   );
 }

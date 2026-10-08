@@ -14,7 +14,7 @@ import "./Navigation.css";
 export function Navigation() {
   const location = useLocation();
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
-
+  const isMobileMenuOpen = useUIStore((state) => state.isMobileMenuOpen);
 
   return (
     <nav className="main-navigation" aria-label="Main navigation">
@@ -47,6 +47,9 @@ export function Navigation() {
           className="nav-hamburger"
           onClick={toggleMobileMenu}
           aria-label="Open menu"
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-navigation"
+          aria-haspopup="dialog"
         >
           <span className="nav-hamburger-line" />
           <span className="nav-hamburger-line" />

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useMotionPreference } from "../../../hooks/useMotionPreference";
 import site from "virtual:site-config";
 import { githubService, Repository } from "../../../services/githubService";
 import "./RepoStats.css";
@@ -42,6 +43,7 @@ const PLACEHOLDER: Pick<
  * - License
  */
 export function RepoStats({ owner, repoName }: RepoStatsProps) {
+  const reduceMotion = useMotionPreference();
   const [repo, setRepo] = useState<Repository | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -113,11 +115,11 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
             <motion.div
               key={stat.label}
               className="stat-item"
-              initial={repo ? { opacity: 0, y: 10 } : false}
+              initial={repo && !reduceMotion ? { opacity: 0, y: 10 } : false}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ duration: reduceMotion ? 0 : 0.3, delay: reduceMotion ? 0 : index * 0.1 }}
             >
-              <span className="stat-icon">{stat.icon}</span>
+              <span className="stat-icon" aria-hidden="true">{stat.icon}</span>
               <span className="stat-value">{stat.value.toLocaleString()}</span>
               <span className="stat-label">{stat.label}</span>
             </motion.div>
@@ -131,6 +133,7 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
           <span className="meta-item">
             <span
               className="meta-dot"
+              aria-hidden="true"
               style={{ background: getLanguageColor(shown.language) }}
             />
             {shown.language}
@@ -138,11 +141,11 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
         )}
         {shown.license && (
           <span className="meta-item">
-            <span className="meta-icon">📜</span> {shown.license.spdx_id}
+            <span className="meta-icon" aria-hidden="true">📜</span> {shown.license.spdx_id}
           </span>
         )}
         <span className="meta-item">
-          <span className="meta-icon">🕐</span> updated {lastUpdated}
+          <span className="meta-icon" aria-hidden="true">🕐</span> updated {lastUpdated}
         </span>
       </div>
 

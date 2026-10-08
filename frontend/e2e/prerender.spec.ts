@@ -105,6 +105,15 @@ test.describe("Prerendered heads", () => {
     expect(head.canonical).toBeUndefined();
   });
 
+  test("the shared shell does not preload motion or Markdown on every route", async ({ request }) => {
+    for (const path of ["/", "/projects", "/404.html"]) {
+      const html = await (await request.get(path)).text();
+      const preloads = html.match(/<link[^>]+rel="modulepreload"[^>]*>/g) ?? [];
+      expect(preloads.length, path).toBeGreaterThan(0);
+      expect(preloads.join(" "), path).not.toMatch(/vendor-(motion|markdown)/);
+    }
+  });
+
   test("the assets the heads point at exist with real content types", async ({
     request,
   }) => {

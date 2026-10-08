@@ -5,6 +5,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ## 2026-10-08
 
 ### Changed
+- Mobile navigation and fullscreen demos use native modal dialogs for keyboard focus, Escape and background isolation. Section motion respects reduced-motion preferences, and the photo strip shows each photo once with manual scrolling.
 - The About section describes the owner's interest in AI agent teams more plainly.
 - The hero's links say "see what i'm building" and "say hey". Their text comes from `hero.labels` in `site.yaml`, with neutral labels in `site.example`; forks can set their own words.
 
