@@ -23,20 +23,20 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Manual chunk splitting for better caching and smaller initial bundle
-        manualChunks: {
-          // Core vendor libraries (React)
-          "vendor-react": ["react", "react-dom", "react-router", "react-router/dom"],
-          // Markdown rendering (heavy, only needed for project details)
-          "vendor-markdown": [
-            "react-markdown",
-            "remark-gfm",
-            "rehype-highlight",
-          ],
-          // Animation library
-          "vendor-motion": ["framer-motion"],
-          // State management
-          "vendor-state": ["zustand"],
+        // Assign React's submodules explicitly: object-form entry lists let
+        // Rollup move the shared JSX runtime into the lazy motion chunk,
+        // which made even the 404 page preload the animation library.
+        manualChunks(id) {
+          if (/\/node_modules\/(react|react-dom|react-router|scheduler)\//.test(id)) {
+            return "vendor-react";
+          }
+          if (/\/node_modules\/(framer-motion|motion-dom|motion-utils)\//.test(id)) {
+            return "vendor-motion";
+          }
+          if (/\/node_modules\/(react-markdown|remark-gfm|rehype-highlight)\//.test(id)) {
+            return "vendor-markdown";
+          }
+          if (id.includes("/node_modules/zustand/")) return "vendor-state";
         },
       },
     },

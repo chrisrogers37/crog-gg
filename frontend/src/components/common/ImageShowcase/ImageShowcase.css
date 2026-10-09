@@ -1,19 +1,15 @@
 .image-showcase {
   padding: 2rem 0;
   margin-top: 2rem;
-  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: thin;
   border-top: 1px solid var(--border-color);
 }
 
 .image-showcase-track {
   display: flex;
   gap: 1.5rem;
-  animation: marquee-scroll calc(var(--image-count, 5) * 5s) linear infinite;
   width: max-content;
-}
-
-.image-showcase:hover .image-showcase-track {
-  animation-play-state: paused;
 }
 
 .image-showcase-item {
@@ -26,33 +22,6 @@
   object-fit: cover;
   /* The site's one radius, and no shadow (CLAUDE.md). */
   border-radius: 8px;
-  transition: transform 0.3s ease;
-}
-
-.image-showcase-photo:hover {
-  transform: scale(1.05);
-}
-
-@keyframes marquee-scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* Reduced motion: disable animation, allow manual horizontal scroll */
-@media (prefers-reduced-motion: reduce) {
-  .image-showcase-track {
-    animation: none;
-    overflow-x: auto;
-    scrollbar-width: thin;
-  }
-
-  .image-showcase {
-    overflow-x: auto;
-  }
 }
 
 /* Tablet */

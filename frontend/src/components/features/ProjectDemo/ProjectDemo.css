@@ -1,5 +1,12 @@
 .project-demo {
-  border-radius: 12px;
+  position: static;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text-color);
+  border-radius: 8px;
   overflow: hidden;
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -11,23 +18,29 @@
   left: 1rem;
   right: 1rem;
   bottom: 1rem;
-  z-index: 50;
+  width: auto;
+  height: calc(100dvh - 2rem);
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.project-demo::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.project-demo.fullscreen .demo-container {
+  flex: 1;
+  min-height: 0;
 }
 
 .demo-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0.75rem 1rem;
   background-color: var(--background-color);
   border-bottom: 1px solid var(--border-color);
-}
-
-.demo-title {
-  font-weight: 500;
-  color: var(--text-color-secondary);
-  margin: 0;
 }
 
 .demo-actions {
@@ -48,7 +61,7 @@
 .demo-fullscreen-btn {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: var(--border-color);
   /* The secondary grey is under 4.5:1 on this grey, as on the tech pills. */
   color: var(--text-color);

@@ -29,9 +29,8 @@ const mockImages = [
 describe("ImageShowcase", () => {
   it("renders images when provided via props", () => {
     const { container } = render(<ImageShowcase images={mockImages} />);
-    // 5 originals plus the 5 copies that make the scroll loop seamless...
-    expect(container.querySelectorAll("img")).toHaveLength(10);
-    // ...of which assistive tech is only told about the originals.
+    // Every photo appears once, visually and in the accessibility tree.
+    expect(container.querySelectorAll("img")).toHaveLength(mockImages.length);
     expect(screen.getAllByRole("img")).toHaveLength(5);
   });
 
@@ -76,9 +75,8 @@ describe("ImageShowcase", () => {
     });
   });
 
-  it("sets --image-count CSS custom property", () => {
+  it("lets keyboard users focus the strip to scroll it", () => {
     render(<ImageShowcase images={mockImages} />);
-    const track = document.querySelector(".image-showcase-track");
-    expect(track).toHaveStyle({ "--image-count": "5" });
+    expect(screen.getByRole("group", { name: `Photos of ${site.owner.name}` })).toHaveAttribute("tabindex", "0");
   });
 });
