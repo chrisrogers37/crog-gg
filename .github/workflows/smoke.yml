@@ -10,8 +10,9 @@ name: Post-deploy smoke
 #     the deployment that triggered it, previews included; or
 #   - the SITE_URL Actions variable (the public production URL), which lets
 #     Production deployments be checked without the secret.
-# A preview without the secret skips with a notice. Production in this repo
-# with neither fails, so the check can't go green while checking nothing.
+# Eligibility records why a deployment can or cannot be tested. The Smoke job
+# is skipped when no safe target is available. Production in this repo with
+# neither setting fails eligibility, so it cannot silently go unchecked.
 #
 # Security: authorizing a fork's preview in Vercel (Git Fork Protection) runs
 # the fork's code with the Preview environment variables, and, because a
@@ -27,11 +28,15 @@ permissions:
   contents: read
 
 jobs:
-  smoke:
-    name: Smoke
+  eligibility:
+    name: Smoke eligibility
     if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      run_smoke: ${{ steps.target.outputs.run_smoke }}
+      base: ${{ steps.target.outputs.base }}
+      use_bypass: ${{ steps.target.outputs.use_bypass }}
     env:
       ENVIRONMENT: ${{ github.event.deployment.environment }}
       REPOSITORY: ${{ github.repository }}
@@ -39,13 +44,14 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
       SITE_URL: ${{ vars.SITE_URL }}
-      BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      HAS_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET != '' }}
     steps:
-      - name: Smoke-test the deployment
+      - name: Choose a safe smoke-test target
+        id: target
         run: |
-          # Actions runs this with `bash -e`. Turn it off so a failed lookup is
-          # reported as a FAIL line and every check still runs.
-          set +e -uo pipefail
+          set -euo pipefail
+          echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+          echo "use_bypass=false" >> "$GITHUB_OUTPUT"
           # True when the deployed commit is the head of a branch in this repo,
           # i.e. not a fork's commit, so it's safe to send the bypass header.
           own_branch_head() {
@@ -60,20 +66,62 @@ jobs:
             fi
             grep -q '"name"' <<<"${reply%$'\n'*}"
           }
-          if [ -n "$BYPASS" ] && own_branch_head; then
+          if [ "$HAS_BYPASS" = true ] && own_branch_head; then
             BASE="${DEPLOYMENT_URL%/}"
+            echo "use_bypass=true" >> "$GITHUB_OUTPUT"
           elif [ "$ENVIRONMENT" = "Production" ] && [ -n "$SITE_URL" ]; then
             BASE="${SITE_URL%/}"
-            BYPASS=""
           elif [ "$ENVIRONMENT" = "Production" ] && [ "$REPOSITORY" = "chrisrogers37/crog-gg" ]; then
-            echo "::error::Production can't be checked: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
+            reason="Production can't be checked: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
+            echo "::error::$reason"
+            echo "Smoke did not run. $reason" >> "$GITHUB_STEP_SUMMARY"
             exit 1
-          elif [ -n "$BYPASS" ]; then
-            echo "::notice::Skipped $ENVIRONMENT: $SHA isn't the head of a branch in this repo (a fork's preview, or a branch that has moved on). The bypass secret only goes to this repo's own branches."
+          elif [ "$HAS_BYPASS" = true ]; then
+            reason="The deployed commit could not be verified as a current branch head in this repository. The bypass secret is not sent to fork previews or branches that have moved on."
+            echo "::notice::Smoke skipped. $reason"
+            echo "Smoke was skipped; no deployment checks ran. $reason" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           else
-            echo "::notice::Skipped $ENVIRONMENT: set the SITE_URL variable or the VERCEL_AUTOMATION_BYPASS_SECRET secret."
+            reason="No automation bypass secret is configured. Previews need VERCEL_AUTOMATION_BYPASS_SECRET; production can use SITE_URL instead."
+            echo "::notice::Smoke skipped. $reason"
+            echo "Smoke was skipped; no deployment checks ran. $reason" >> "$GITHUB_STEP_SUMMARY"
             exit 0
+          fi
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+          echo "Smoke is eligible to check $ENVIRONMENT at $BASE. See the separate Smoke job for its result." >> "$GITHUB_STEP_SUMMARY"
+
+  smoke:
+    name: Smoke
+    needs: eligibility
+    if: needs.eligibility.outputs.run_smoke == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ENVIRONMENT: ${{ github.event.deployment.environment }}
+      REPOSITORY: ${{ github.repository }}
+      SHA: ${{ github.event.deployment.sha }}
+      GH_TOKEN: ${{ github.token }}
+      BASE: ${{ needs.eligibility.outputs.base }}
+      # The public-production fallback never receives the bypass secret.
+      BYPASS: ${{ needs.eligibility.outputs.use_bypass == 'true' && secrets.VERCEL_AUTOMATION_BYPASS_SECRET || '' }}
+    steps:
+      - name: Smoke-test the deployment
+        run: |
+          # Run every deployed check even if an earlier one fails.
+          set +e -uo pipefail
+          # A queued job may start after a branch moves. Recheck immediately
+          # before sending the secret, and fail closed if eligibility changed.
+          if [ -n "$BYPASS" ]; then
+            reply=$(curl -sS --max-time 20 -w '\n%{http_code}' -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPOSITORY/commits/$SHA/branches-where-head")
+            code="${reply##*$'\n'}"
+            if [ "$code" != 200 ] || ! grep -q '"name"' <<<"${reply%$'\n'*}"; then
+              echo "::error::The deployed commit is no longer a verified branch head here. No deployment requests were sent."
+              echo "Smoke stopped before checking the deployment: branch-head verification failed." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
           fi
           echo "Checking $ENVIRONMENT at $BASE"
 

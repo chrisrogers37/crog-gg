@@ -106,7 +106,7 @@ git diff                # Review changes before commit
 
 ### API Integration
 
-- In production, frontend calls same-origin `/api/*` (Flask function on the same Vercel domain). `VITE_API_URL` should be empty/unset in Vercel so the code default kicks in.
+- Frontend calls always use same-origin `/api/*` (Flask on the same Vercel domain, or the local Vite proxy). `VITE_API_URL` is retired and ignored; there is no separate browser-facing API origin.
 - For local dev: run `python3 -m api.index` from the repo root (port 5001); Vite dev proxy in `vite.config.ts` forwards `/api` requests there. `python api/index.py` fails with `ModuleNotFoundError`.
 - Rate-limit/cooldown state lives in Upstash Redis (`api/_lib/redis_client.py`). The paid `/api/regenerate` path fails closed (503) when Redis is unavailable or not configured, so it can never run unmetered (#113). The GitHub endpoints' rate limiter fails open. Don't "fix" a 503 by making the paid path fall open.
 
@@ -218,7 +218,7 @@ The README's [table](README.md#environment-variables) lists them all. The token'
 
 ### CI
 
-- **CI** (`ci.yml`) runs on pushes and PRs to `main`; the README's [CI/CD](README.md#cicd) lists its jobs. The post-deploy smoke (`smoke.yml`) checks each successful deployment.
+- **CI** (`ci.yml`) runs on pushes and PRs to `main`; the README's [CI/CD](README.md#cicd) lists its jobs. The post-deploy workflow (`smoke.yml`) checks deployment eligibility, then runs a separate Smoke job when a safe target is available. A skipped Smoke job means no deployment checks ran; see the eligibility summary.
 - No separate deploy workflow; Vercel handles deploys directly from the Git integration
 
 ## Site copy style (crog.gg instance; forks replace this)

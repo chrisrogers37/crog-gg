@@ -5,10 +5,6 @@ interface ViteTypeOptions {
   strictImportMetaEnv: unknown;
 }
 
-interface ImportMetaEnv {
-  readonly VITE_API_URL?: string;
-}
-
 /** The commit the build is from, or "" (scripts/vite-site.ts, #188). */
 declare const __SITE_COMMIT__: string;
 

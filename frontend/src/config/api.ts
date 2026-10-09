@@ -1,5 +1,5 @@
 /**
- * Where the API answers: same-origin `/api/*` unless VITE_API_URL names
- * another origin (leave it unset on Vercel).
+ * The API always answers on same-origin `/api/*`: Vercel serves the Flask
+ * function there, and Vite proxies that path to the local backend on :5001.
  */
-export const API_URL = import.meta.env.VITE_API_URL || "";
+export const API_URL = "";
