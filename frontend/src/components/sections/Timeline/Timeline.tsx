@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useMotionPreference } from "../../../hooks/useMotionPreference";
 import { TimelineData, TimelineEntry } from "../../../types/Timeline";
 import { parseDateToNumber } from "../../../utils/dateUtils";
 import { LogoImage } from "../../common/LogoImage";
@@ -11,6 +12,7 @@ type TimelineProps = {
 };
 
 export function Timeline({ data }: TimelineProps) {
+  const reduceMotion = useMotionPreference();
   const [visibleIndex, setVisibleIndex] = useState(0);
   const entryRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -119,10 +121,10 @@ export function Timeline({ data }: TimelineProps) {
               className={`timeline-entry timeline-entry-${entry.type} ${
                 index % 2 === 0 ? "timeline-left" : "timeline-right"
               }`}
-              initial={{ opacity: 0, y: 30 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
+              transition={{ duration: reduceMotion ? 0 : 0.4, delay: reduceMotion ? 0 : index * 0.1 }}
             >
               <div className="timeline-dot">
                 <LogoImage

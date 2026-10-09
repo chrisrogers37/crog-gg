@@ -207,6 +207,109 @@ const WIDE_README = [
   "```",
 ].join("\n");
 
+/** Plain fences and several token families, including nested tokens and diffs. */
+const CODE_README = [
+  WIDE_README,
+  "",
+  "```js",
+  "// A comment",
+  "class Example extends Base {",
+  `  run() { console.log(\"${"a long value ".repeat(30)}\", true, 42); }`,
+  "}",
+  "```",
+  "```diff",
+  "+ added line",
+  "- removed line",
+  "```",
+  "```css",
+  '.example:hover, #example[data-state="ready"] { color: red !important; }',
+  "```",
+  "```markdown",
+  "# Heading",
+  "- **strong** and *emphasis*",
+  "> a quote",
+  "```",
+  "```xml",
+  '<a href="https://example.com">link</a>',
+  "```",
+].join("\n");
+
+test.describe("README code readability", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  for (const theme of ["light", "dark"] as const) {
+    test(`plain and highlighted code are readable and keyboard-scrollable in ${theme} mode`, async ({
+      page,
+      request,
+    }) => {
+      const linked = await linkedProject(request);
+      test.skip(!linked, "no project links a repo the API serves");
+      test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.addInitScript((selectedTheme) => {
+        localStorage.setItem("ui-storage", JSON.stringify({ state: { theme: selectedTheme }, version: 0 }));
+      }, theme);
+      await page.route("**/api/v1/github/readme/**", (route) =>
+        route.fulfill({ json: readmeAnswer(CODE_README) }),
+      );
+      await page.route("**/api/v1/github/repo/**", (route) =>
+        route.fulfill({ status: 503, json: { error: "not needed for README checks" } }),
+      );
+      await page.goto(`/projects/${linked!.id}`);
+      await expect(page.locator("html")).toHaveClass(theme === "dark" ? /dark/ : /^$/);
+
+      const fences = page.locator(".readme-code-block > code");
+      await expect(fences).toHaveCount(6);
+      await expect(fences.first()).not.toHaveClass(/hljs/);
+      await expect(fences.nth(1)).toHaveClass(/hljs/);
+
+      // Computed browser colors catch cascade regressions that jsdom cannot:
+      // plain code used to inherit slate-800 on a slate-800 block (1:1).
+      const contrast = await fences.evaluateAll((blocks) => {
+        const luminance = (color: string) => {
+          const rgb = color.match(/[\d.]+/g)!.slice(0, 3).map(Number);
+          const linear = rgb.map((value) => {
+            const channel = value / 255;
+            return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+          });
+          return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+        };
+        return blocks.flatMap((block) => [block, ...block.querySelectorAll("span")]).map((node) => {
+          let surface: Element | null = node;
+          let background = "transparent";
+          while (surface) {
+            background = getComputedStyle(surface).backgroundColor;
+            if (background !== "transparent" && background !== "rgba(0, 0, 0, 0)") break;
+            surface = surface.parentElement;
+          }
+          const foreground = getComputedStyle(node).color;
+          const a = luminance(foreground);
+          const b = luminance(background);
+          return {
+            token: node.className || "plain code",
+            foreground,
+            background,
+            ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05),
+          };
+        });
+      });
+      for (const sample of contrast) {
+        expect(sample.ratio, JSON.stringify(sample)).toBeGreaterThanOrEqual(4.5);
+      }
+
+      // Both long fences scroll the focused element itself, not the page.
+      for (const fence of [fences.first(), fences.nth(1)]) {
+        await expect(fence).toHaveAttribute("tabindex", "0");
+        await fence.focus();
+        await expect(fence).toBeFocused();
+        await fence.press("ArrowRight");
+        await expect.poll(() => fence.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(360);
+    });
+  }
+});
+
 test.describe("A deep-linked project page while /api/features answers (#189 M21)", () => {
   test("doesn't shift when the answer lands", async ({ page, request }) => {
     const linked = await linkedProject(request);

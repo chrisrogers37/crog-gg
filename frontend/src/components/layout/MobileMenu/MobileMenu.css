@@ -1,27 +1,43 @@
 /* Backdrop */
-.mobile-menu-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.mobile-menu::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  z-index: 998;
 }
 
 /* Menu Panel */
 .mobile-menu {
   position: fixed;
   top: 0;
+  left: auto;
   right: 0;
   bottom: 0;
   width: 280px;
   max-width: 85vw;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
   background: var(--card-background);
-  z-index: 999;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-menu[open] {
+  animation: menu-enter 0.2s ease-out;
+}
+
+.mobile-menu > nav {
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  height: 100%;
+}
+
+@keyframes menu-enter {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu[open] { animation: none; }
 }
 
 .mobile-menu-header {
@@ -44,7 +60,9 @@
   font-size: 1.25rem;
   cursor: pointer;
   color: var(--text-color-secondary);
-  padding: 0.25rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.5rem;
   line-height: 1;
 }
 

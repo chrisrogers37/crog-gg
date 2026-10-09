@@ -68,6 +68,8 @@ describe("siteInit, in a repo of its own", () => {
     fs.writeFileSync(path.join(root, "site.example", "public", "README.md"), "kept\n");
     fs.mkdirSync(inSite());
     fs.writeFileSync(inSite("owner.txt"), "the owner's content\n");
+    fs.mkdirSync(inSite("photos", "originals"), { recursive: true });
+    fs.writeFileSync(inSite("photos", "originals", "owner.jpg"), "synthetic owner photo fixture\n");
     fs.writeFileSync(path.join(root, ".gitignore"), "*.log\n");
     git("init", "-q");
     git("add", ".");
@@ -79,6 +81,7 @@ describe("siteInit, in a repo of its own", () => {
   it("makes site/ the example, without its LICENSE and README, and keeps the example", () => {
     run();
     expect(fs.existsSync(inSite("owner.txt"))).toBe(false);
+    expect(fs.existsSync(inSite("photos", "originals", "owner.jpg"))).toBe(false);
     expect(fs.existsSync(inSite("LICENSE"))).toBe(false);
     expect(fs.existsSync(inSite("README.md"))).toBe(false);
     expect(fs.readFileSync(inSite("public", "README.md"), "utf8")).toBe("kept\n");

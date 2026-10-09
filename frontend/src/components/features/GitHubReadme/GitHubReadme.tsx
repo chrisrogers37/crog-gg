@@ -18,10 +18,9 @@ import {
   readmeHref,
   readmeImageSrc,
 } from "../../../utils/readmeLinks";
-import "./GitHubReadme.css";
-
-// Import highlight.js theme
+// Base syntax theme first; the component adapts its surface and dark colors.
 import "highlight.js/styles/github.css";
+import "./GitHubReadme.css";
 
 /** A wide table scrolls in a box a keyboard can focus, like code. */
 function ReadmeTable({ node: _node, ...props }: ComponentProps<"table"> & ExtraProps) {
@@ -33,8 +32,8 @@ function ReadmeTable({ node: _node, ...props }: ComponentProps<"table"> & ExtraP
 }
 
 /**
- * highlight.js makes the <code> inside the element that scrolls sideways, so
- * that is what a keyboard must be able to focus.
+ * Both plain and highlighted fences scroll their <code> element sideways,
+ * so that is what a keyboard must be able to focus.
  */
 function ReadmeCodeBlock({ children }: ComponentProps<"pre">) {
   return (

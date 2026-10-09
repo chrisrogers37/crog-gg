@@ -37,6 +37,15 @@ globalThis.fetch = vi.fn() as typeof fetch;
 // Mock scrollIntoView
 Element.prototype.scrollIntoView = vi.fn();
 
+// jsdom has no dialog top layer. Unit tests exercise state/lifecycle here;
+// browser tests verify native focus containment, inertness and Escape.
+HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
+  this.setAttribute("open", "");
+});
+HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
+  this.removeAttribute("open");
+});
+
 // Reset mocks after each test
 afterEach(() => {
   vi.clearAllMocks();
