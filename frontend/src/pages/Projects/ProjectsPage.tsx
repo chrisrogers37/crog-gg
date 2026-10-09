@@ -21,15 +21,15 @@ export function ProjectsPage() {
       <SEO {...PROJECTS_META} />
       <div className="page projects-page">
         <header className="page-hero">
-          <p className="page-eyebrow">projects</p>
-          <h1 className="page-headline">things i've built.</h1>
+          <p className="page-eyebrow">{site.page_copy.projects.eyebrow}</p>
+          <h1 className="page-headline">{site.page_copy.projects.heading}</h1>
         </header>
         <section aria-label="Projects">
           <ProjectList headingLevel={2} />
           {github && (
             <p className="page-links">
               <a href={github.url} target="_blank" rel="noopener noreferrer">
-                more on GitHub
+                {site.page_copy.projects.github_link}
               </a>
             </p>
           )}

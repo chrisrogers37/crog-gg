@@ -203,7 +203,7 @@ Every absolute self-URL (canonical, `og:url`, `og:image`, JSON-LD, sitemap, robo
 ### Layout
 
 - Frontend: `frontend/` — Vite build, output at `frontend/dist`, served as static assets
-- The owner's files: `site/` (`site.yaml`, and `public/`, which Vite serves as the site's root)
+- The owner's files: `site/` (`site.yaml`, `photos/originals/`, and `public/`, which Vite serves as the site's root)
 - Every route is prerendered to its own HTML file carrying that page's title, description, canonical, Open Graph/Twitter tags and JSON-LD (`frontend/scripts/vite-prerender.ts`; page list in `frontend/src/seo/prerender.ts`, tags in `frontend/src/seo/site.ts`, which the `SEO` component also renders from). `vercel.json` serves them with `cleanUrls` and has **no SPA catch-all**, so an unknown path is a real 404 (`404.html`). A new route needs a prerendered page or it 404s in production; `src/router.test.tsx` fails until it has one, and `e2e/prerender.spec.ts` (its own Playwright project, run against `vite preview` of a real build) checks the heads the build actually wrote.
 - Link-preview card: `site/public/og-image.png`, rendered from `site/og-image.html` (`node scripts/og-image/render.mjs` in `frontend/`). Keep its text in step with `seo.image.alt` in `site/site.yaml`.
 - Backend: `api/index.py` — Flask app deployed as a single Vercel Function under Fluid Compute; all `/api/*` routes are rewritten to it by `vercel.json`
@@ -237,7 +237,7 @@ When working with images:
 - **DON'T rotate images** unless explicitly requested - images are usually oriented correctly
 - Use **CSS `object-position`** for cropping (e.g., `object-position: top` to hide bottom of image)
 - Use **CSS `object-fit: cover`** for responsive image sizing
-- Profile photos are served from `site/public/profile-photos/` as WebP variants. The originals are in `frontend/scripts/photos/originals/`: to add or change a photo, edit there and run `python frontend/scripts/photos/make-variants.py`
+- Profile photos are served from `site/public/profile-photos/` as WebP variants. The originals are in `site/photos/originals/`, outside the served folder: to add or change a photo, edit there and run `python frontend/scripts/photos/make-variants.py`. `SITE_DIR` selects another site for both input and output, absolute or relative to the repo root. The generator's synthetic-image checks run with `python frontend/scripts/photos/check_variants.py` (both commands require Pillow).
 
 Example - cropping with CSS (not image manipulation):
 

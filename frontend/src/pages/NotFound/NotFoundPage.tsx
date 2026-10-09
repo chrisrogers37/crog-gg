@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import site from "virtual:site-config";
 import { SEO } from "../../components/SEO";
 import { NOT_FOUND_META } from "../../seo";
 
@@ -12,11 +13,11 @@ export function NotFoundPage() {
       <SEO {...NOT_FOUND_META} />
       <header className="page-hero">
         <p className="page-eyebrow">404</p>
-        <h1 className="page-headline">page not found</h1>
-        <p className="page-sub">the scroll you seek has been lost to the ages, adventurer.</p>
+        <h1 className="page-headline">{site.page_copy.not_found.heading}</h1>
+        <p className="page-sub">{site.page_copy.not_found.text}</p>
         <div className="page-ctas">
           <Link to="/" className="btn btn-primary">
-            return to the realm
+            {site.page_copy.not_found.home_link}
           </Link>
         </div>
       </header>
