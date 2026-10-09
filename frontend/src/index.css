@@ -9,14 +9,14 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
-    @apply dark:bg-slate-900 dark:text-slate-200;
-    @apply min-h-screen w-full m-0;
+    @apply font-sans antialiased;
+    @apply min-h-screen w-full m-0 p-0 flex justify-center;
     /* clip, not hidden: hidden makes body a scroll container, so the sticky
        header stuck to it and scrolled away with the page. */
     @apply overflow-x-clip;
     @apply transition-colors duration-200;
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
   }
 
   /* Focus styles for accessibility */

@@ -74,7 +74,7 @@ The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through addi
 - `src`: the photo's base path in `site/public/profile-photos/`. To add or change one, see CLAUDE.md's Image Handling.
 - `alt`: the image's description.
 
-The strip needs at least three images. With fewer, it doesn't show.
+The strip needs at least three images. With fewer, it doesn't show. Each image appears once in a static row; when the row overflows, visitors can scroll it by touch or focus it and use the arrow keys.
 
 ## site/site.yaml
 

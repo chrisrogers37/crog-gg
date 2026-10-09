@@ -30,7 +30,7 @@ test.describe("Home page", () => {
     expect(tops).toEqual([...tops].sort((a, b) => a - b));
   });
 
-  test("its Connect button lands on the contact section, below the sticky header", async ({ page }) => {
+  test("its contact link lands on the contact section, below the sticky header", async ({ page }) => {
     // Instant scrolling, so the check below sees where the jump lands.
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.locator('.page-hero a[href="#contact"]').click();

@@ -22,7 +22,7 @@ const contactLinks = () => [
   })),
 ];
 
-/** The contact section's id: the hero's Connect button links to it. */
+/** The contact section's id: the hero's contact link points here. */
 export const CONTACT_ID = "contact";
 
 /** The page's last section: the heading and line from site.yaml, then links. */

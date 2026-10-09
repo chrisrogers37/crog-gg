@@ -114,7 +114,7 @@ test.describe("Moving between pages", () => {
   }) => {
     await page.goto("/");
     await expect(page.locator("#contact")).toBeAttached();
-    // Connect scrolls smoothly down the long page; Projects is clicked before
+    // The contact link scrolls smoothly down the long page; Projects is clicked before
     // it lands. An instant jump to the top didn't stop that scroll, which
     // carried on down the new page.
     await page.locator('.page-hero a[href="#contact"]').click();
