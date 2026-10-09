@@ -15,8 +15,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: theme("colors.danger.100");
+  color: theme("colors.danger.800");
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,8 +26,8 @@
 }
 
 .dark .error-boundary__icon {
-  background-color: rgba(153, 27, 27, 0.3);
-  color: #fca5a5;
+  background-color: theme("colors.danger.800 / 30%");
+  color: theme("colors.danger.300");
 }
 
 .error-boundary__title {

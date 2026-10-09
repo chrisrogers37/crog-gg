@@ -68,6 +68,8 @@
 }
 
 .action-buttons .generate-btn:disabled {
+  background-color: var(--button-color);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -224,16 +226,16 @@
    ======================================== */
 
 .action-buttons .reset-btn {
-  background-color: #dc2626;
+  background-color: theme("colors.danger.600");
   color: white;
 }
 
 .action-buttons .reset-btn:hover {
-  background-color: #b91c1c;
+  background-color: theme("colors.danger.700");
 }
 
 .action-buttons .reset-btn:disabled {
-  background-color: #fca5a5;
+  background-color: theme("colors.danger.300");
   cursor: not-allowed;
 }
 
