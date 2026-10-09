@@ -4,6 +4,9 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ## 2026-10-08
 
+### Changed
+- The hero's links say "see what i'm building" and "say hey". Their text comes from `hero.labels` in `site.yaml`, with neutral labels in `site.example`; forks can set their own words.
+
 ### Removed
 - The hero's typewriter, its blinking cursor and reserved space. The project and contact links follow the tagline directly. `hero.typewriter` is removed from `site.yaml` and `site.example`; forks updating the code should remove that key too.
 

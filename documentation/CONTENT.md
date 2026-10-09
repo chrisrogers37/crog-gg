@@ -90,6 +90,7 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`footer.source_repo_url`** (optional): the repo the site is built from; the footer links to it as "view source", at the commit the site was built from when Vercel names it (`VERCEL_GIT_COMMIT_SHA`).
 - **`sections`:** the home page's sections, in order: `about`, `journey`, `projects` and `music`, each with a `label`, its heading. `about` is required, since it's the text SUMMON rewrites; leave another out to hide it.
 - **`hero.photos`:** base paths in `site/public/profile-photos/`; one is picked at random.
+- **`hero.labels`:** the home hero's link text: `projects` opens `/projects`; `contact` jumps to the contact section. Both labels are required. Forks updating from an older version can copy the `labels` block from `site.example/site.yaml`.
 - **`regenerate`:** the rewrite button (SUMMON NEW LORE here), which the API reads too (#189). It stays required with `features.regenerate: off`.
   - `labels`: the button's words, idle (`button`), while it works (`busy`), and the undo (`reset`). The rewrite is told to leave `button` as it is, since the About text's last line names it.
   - `persona`: `name_variants` (the rewritten name keeps one of these) and `pronouns` (`he`, `she` or `they`, the default).
