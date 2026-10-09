@@ -14,8 +14,6 @@ tagline: |
 # wrapped line here would be a hard break mid-sentence -- keep each paragraph on
 # a single physical line however long it gets.
 about_text: |
-  a bit about me...
-
   i make music, mess around with audio engineering, and occasionally DJ around NYC.
 
   nowadays, though, i spend most of my time building with AI. i'm especially interested in agent teams that can build applications and improve how they work.

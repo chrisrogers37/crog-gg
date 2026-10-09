@@ -109,7 +109,7 @@ footer:
 # the text SUMMON rewrites; leave another out to hide it.
 sections:
   - id: about
-    label: about
+    label: a bit about me
   - id: journey
     label: journey
   - id: projects

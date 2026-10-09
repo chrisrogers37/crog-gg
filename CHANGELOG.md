@@ -5,6 +5,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ## 2026-10-08
 
 ### Changed
+- The About heading and its menu link say "a bit about me", and the body starts directly with the music paragraph.
 - README code blocks have readable text and syntax colors in both themes, with the same keyboard-scrollable surface for tagged and untagged fences. Shared body and SUMMON styles have one owner, and error/reset colors use the shared palette.
 - Build tooling updates `source-map-js` to 1.2.2 and the root `lint-staged` hook to 17.6.0. ESLint applies the same source rules from the hook and the frontend directory. The README highlighter is now a direct dependency at the already-shipped version; its runtime code is unchanged.
 - Mobile navigation and fullscreen demos use native modal dialogs for keyboard focus, Escape and background isolation. Section motion respects reduced-motion preferences, and the photo strip shows each photo once with manual scrolling.
