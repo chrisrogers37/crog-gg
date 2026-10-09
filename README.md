@@ -57,7 +57,7 @@ Run `npm install` once at the repo root: it installs the git hooks ([CONTRIBUTIN
 
 ### Prerequisites
 
-- Node.js 24. CI reads `.nvmrc` and Vercel reads `engines.node` in the root `package.json`, so bump both together. 22.13+ also works locally; avoid 25+, whose built-in localStorage breaks the jsdom unit tests
+- Node.js 24 for the complete contributor setup, including git hooks. CI reads `.nvmrc` and Vercel reads `engines.node` in the root `package.json`, so bump both together. Avoid 25+, whose built-in localStorage breaks the jsdom unit tests
 - Python 3.12 (`.python-version`; CI and Vercel use it)
 - (Optional) OpenAI API key, for the AI regeneration (`/api/regenerate`)
 - (Optional) GitHub PAT, which raises the rate limit for the repo figures and READMEs

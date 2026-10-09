@@ -18,7 +18,9 @@ export default tseslint.config(
 
   // Project-specific config for TS/TSX files
   {
-    files: ["src/**/*.{ts,tsx}"],
+    // lint-staged invokes this config from the repo root; npm run lint runs
+    // from frontend/. Match source files from either working directory.
+    files: ["**/src/**/*.{ts,tsx}"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
