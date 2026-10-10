@@ -159,7 +159,7 @@ API checks only if API is touched (none planned). Inspect actual prerendered out
 ## Verification Checklist
 
 - [x] Portfolio remains personal; compact rows/palette/avatar preserved.
-- [x] Featured Claudfather -> new own page; old URL/query/fragments survive in client tests. The Vercel permanent redirect is configured and contract-tested; deployment verification remains below.
+- [x] Featured Claudfather -> new own page; old URL/query/fragments survive in client tests. The Vercel permanent redirect is configured, contract-tested and verified on the preview below.
 - [x] Hero walkthrough anchor works without media; illustration is visibly honest.
 - [x] Four roles have pinned/date evidence; no implied automatic integration.
 - [x] Private evaluation tooling has no public/open-source/install claim.
@@ -174,13 +174,13 @@ API checks only if API is touched (none planned). Inspect actual prerendered out
 
 ## Local build verification
 
-Implemented locally on `codex/claudfather-portfolio`, 2026-10-10. No commit, PR, deployment or production verification is implied by this status. Phase 2 remains a separate draft.
+Implemented on `codex/claudfather-portfolio`, 2026-10-10, in [PR #265](https://github.com/chrisrogers37/crog-gg/pull/265). Implementation revision `971bc4e` passed all CI jobs and the authenticated Vercel preview checks below. The PR awaits review and merge; production has not changed. Phase 2 remains a separate draft.
 
 | Check | Result |
 | --- | --- |
 | Lint and typecheck | Passed |
 | Full unit/site suite | 479 passed, 1 structural skip |
-| Owner browser suite | 86 passed initially; 2 mobile theme test setup failures corrected and passed; final focused page/analytics run 14 passed |
+| Owner browser suite | 88 passed in CI; final local focused page/analytics run 14 passed |
 | Fictional fork browser suite and build | 71 passed, 17 structural skips |
 | Fictional fork site check | 12 passed, 7 structural skips |
 | Owner production build | Passed; new project HTML, metadata, sitemap and share asset generated |
@@ -188,7 +188,7 @@ Implemented locally on `codex/claudfather-portfolio`, 2026-10-10. No commit, PR,
 | Visual inspection | Desktop and phone in light/dark; existing mark and palette, compact rows, no horizontal overflow |
 | Read-only implementation comparison | No actionable gaps |
 
-Pending release checks: verify the actual Vercel HTTP redirect (including browser query/fragment retention) and unknown-path 404 after a preview deployment. The dev server cannot prove deployment routing. No API changes or paid regeneration calls.
+Preview verification: deployment `dpl_CFb2ykKmcsECAZnqioytfZqdF6SG` serves revision `971bc4e`. HTTP checks confirmed 308 from `/projects/claudlobby?ref=shared` to `/projects/claudfather?ref=shared`, 200 for the new page, and 404 for an unknown path. An authenticated browser confirmed the old bookmark retained `?ref=shared#quickstart` and scrolled to the correct section. The PR screenshots loaded and its 15-second walkthrough played to completion in authenticated GitHub. Review media was uploaded as user attachments, never committed; the tracked PNG is the production share card. The full pre-push hook passed using supported Node 24, including Python lint and 348 API tests triggered by the Vercel configuration change. No access settings changed and no paid regeneration calls were made.
 
 ## What NOT To Do
 
@@ -200,4 +200,4 @@ No product-funnel redesign of home, broad CMS or new dependencies. No fake UI/pr
 
 ## Origin
 
-Interactive crog.gg design audit, 2026-10-10. User selected personal portfolio with product-focused Claudfather ecosystem and authoritative destination ownership. Phase 1 implemented and verified locally on 2026-10-10; release work remains as noted above.
+Interactive crog.gg design audit, 2026-10-10. User selected personal portfolio with product-focused Claudfather ecosystem and authoritative destination ownership. Phase 1 implemented and verified locally and on its deployment preview on 2026-10-10. PR review and merge remain.

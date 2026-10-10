@@ -107,7 +107,7 @@ The card/page copy above is a design proposal, not a claim of measured achieveme
 | 1 | [Featured ecosystem and detailed portfolio page](01_featured-ecosystem.md) | SAFE structure + RISK umbrella story | High / medium | None |
 | 2 | [Dated product evidence](02_product-evidence.md) | SAFE evidence + explicit synthetic/local tradeoff | High / medium | Phase 1 |
 
-Each phase is one PR, with responsive/accessibility checks and repository-required validation. Phase 1 is implemented and verified locally on `codex/claudfather-portfolio`; see its verification record for results and pending deployment checks. Phase 2 remains a draft. Phase 1 is useful without Phase 2, because its walkthrough is explicitly conceptual.
+Each phase is one PR, with responsive/accessibility checks and repository-required validation. Phase 1 is implemented in [PR #265](https://github.com/chrisrogers37/crog-gg/pull/265), with local, CI and authenticated deployment-preview checks passing; review and merge remain. Phase 2 remains a draft. Phase 1 is useful without Phase 2, because its walkthrough is explicitly conceptual.
 
 ## Related
 
