@@ -4,7 +4,7 @@
 
 crog.gg is Chris Rogers's site, Choose Your Own Chris:
 - **`/` is his page**: who he is, a career timeline, his projects, his music and how to reach him, in one column. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
-- **`/projects`** lists the projects, with [Claudlobby](https://github.com/Claudfather/Claudlobby), his agent-fleet compositor for solo founders and small teams, featured. Each has a page; Claudlobby's is its own, in the colours and mark of its GitHub org, Claudfather: what it is, the jobs its workers do, a quickstart, the roadmap, and how to follow releases, with its own link-preview card.
+- **`/projects`** lists the projects, with [Claudfather](https://github.com/Claudfather), an ecosystem of tools for AI teams, workflows and knowledge, featured. Its detailed portfolio page explains the family, shows an illustrative workflow and links to the qualified product preview and public setup guides. crog.gg remains Chris's personal site.
 
 For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -23,7 +23,7 @@ For how it's built, and what each content file does, see the [documentation inde
 ### Projects (`/projects`)
 
 - The featured project first and larger, set off in the site's accent, then a compact card for each other, and a page per project with live GitHub stats and the repo's README, fetched through a same-origin proxy that serves public repos only.
-- **Claudlobby's page** (`/projects/claudlobby`) is its own: its copy is a typed module (`frontend/src/content/claudlobby.ts`), and its calls to action are counted ([Web Analytics](#web-analytics)).
+- **Claudfather's page** (`/projects/claudfather`) has typed copy in `frontend/src/content/claudfather.ts`. Its single website destination record owns the preview/live link and qualification; current product details stay with the product site and repositories. Old `/projects/claudlobby` links redirect, preserving query strings and useful fragments.
 
 ### Under the hood
 
@@ -219,7 +219,7 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 
 ### Web Analytics
 
-Pageviews and the CTA events (`repo_click`, with where the link was: Claudlobby's hero, its quickstart or the featured card; `quickstart_click`; `updates_click`) go to Vercel Web Analytics, through `frontend/src/services/analytics.ts`. It sets no cookies, its script and beacons are served from the site's own origin (`/_vercel/insights/*`), so the CSP needs no change, and a reported URL keeps its path and `utm_*` query parameters: no other parameter, and no fragment.
+Pageviews and the CTA events go to Vercel Web Analytics through `frontend/src/services/analytics.ts`. `repo_click` still means a visit to the Claudlobby repository front page: the ecosystem uses location `family`; `hero`, `quickstart` and `featured` remain supported for existing callers. `updates_click` still means the Claudlobby releases link. `quickstart_click` remains a legacy event and is not emitted by the new walkthrough. Organization, product-preview, setup-guide and illustrative-anchor clicks do not count as these events or as product activation. Analytics sets no cookies; its script and beacons are served from the site's own origin (`/_vercel/insights/*`). Reported URLs retain only the path and `utm_*` query parameters, with no fragment.
 
 1. Vercel → project → **Analytics** → **Enable**, before the first deploy that ships `@vercel/analytics`. The `/_vercel/insights/*` routes exist from the next deployment on; until then every page requests a script that 404s.
 2. Custom events need the **Pro** plan. On Hobby only pageviews are recorded, up to the plan's monthly event cap.

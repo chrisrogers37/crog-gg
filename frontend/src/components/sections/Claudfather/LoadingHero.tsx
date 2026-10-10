@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { ClaudfatherMark } from "./Hero";
-import "./Claudlobby.css";
+import "./Claudfather.css";
 
 /**
- * Claudlobby's hero while the projects load, around the lines the project
+ * Claudfather's hero while the projects load, around the lines the project
  * page's skeleton stands in: the panel and the mark already, so a direct
  * visit doesn't flash from the site's light skeleton to the charcoal panel,
  * and the mark's download starts with the page, not after the projects.

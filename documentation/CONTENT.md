@@ -64,7 +64,7 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 - **`share_card`** (optional): the project page's own link preview, where it isn't the site's card: `path` (a PNG in `site/public/`), `width`, `height`, and `alt`, the card's words. Like the site's card, the PNG at `/<name>.png` is rendered from `site/<name>.html` by `node scripts/og-image/render.mjs` (from `frontend/`). `npm run site:check` holds the PNG to its size and, where the site keeps the source, the alt to the source's headline and the line under it (its `h1`, then its `.sub`), and fails on a source that renders a card nothing names.
 - **`category`:** on the project's page, beside its status; the raw value is shown.
 - Nothing else: `order`, `featured`, `tags` and `image` were never shown and are gone (#190), so a file that still has one fails, naming it. (Which project is featured is `index.yaml`'s call.)
-- **A page of its own:** a project whose id `frontend/src/content/ownPages.ts` lists shows its own page (`projectPages.ts`) instead of the standard one, as Claudlobby's does. Claudlobby's wears its org's look: its mark is Claudfather's avatar cropped to its medallion (`site/photos/originals/claudfather.jpg`, made into `site/public/profile-photos/claudfather-*.webp` like the photos, which `npm run site:check` finds when the site lists Claudlobby), and its `share_card` is `site/public/claudlobby-card.png`, from `site/claudlobby-card.html`.
+- **A page of its own:** a project whose id `frontend/src/content/ownPages.ts` lists shows its own page (`projectPages.ts`) instead of the standard one, as Claudfather's does. Claudfather's wears its org's look: its mark is Claudfather's avatar cropped to its medallion (`site/photos/originals/claudfather.jpg`, made into `site/public/profile-photos/claudfather-*.webp` like the photos, which `npm run site:check` finds when the site lists Claudfather), and its `share_card` is `site/public/claudfather-card.png`, from `site/claudfather-card.html`.
 
 The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through adding a project.
 
@@ -100,7 +100,11 @@ Read when the dev server, the build or the tests start, checked, and served to t
 - **`contact`:** the contact section's `heading` and `text`.
 - **`music`:** the music section's `intro`, with `{artist}` where the `artist` name goes; `embed` (optional), the player's URL, whose origin must be in `frame-src` in `vercel.json`; and `embed_title` (optional), the player's name to a screen reader, "music player" if left out.
 
-Claudlobby's page's copy isn't here: it's a typed module (`frontend/src/content/claudlobby.ts`) with its own rules, shown only on a site that lists the `claudlobby` project ([FORKING.md](../FORKING.md)).
+Claudfather's page's copy isn't here: it's a typed module (`frontend/src/content/claudfather.ts`) with its own rules, shown only on a site that lists the `claudfather` project ([FORKING.md](../FORKING.md)).
+
+That module owns evergreen ecosystem roles, public pinned source/date evidence and the creator explanation. The `website` record supplies the URL, label and caveat wherever the product site is linked. Keep it `preview` with its synthetic/no-real-team qualification until public launch and actual access are verified; then author `live` with the verified URL and remaining limitations. Set it to `null` if no public destination is available. No runtime health checks or automatic transition. Current demos/onboarding/status belong to the product website; install/reference/releases belong to the component repositories. The portfolio must not copy their changing catalogs. Private components have no source/install link. The ecosystem project uses an organization `url`, no repository `github`, and no GitHub statistics. Other project pages keep the existing `github.show_counts` choice.
+
+The `/projects/claudlobby` compatibility route redirects to `/projects/claudfather`. Keep `quickstart`, `updates`, `roadmap` and `claudlobby` destinations useful for old shared links. Vercel and the client router implement the redirect; only the new page enters the sitemap.
 
 `home` and `about` (which held only `preview_height`) are gone (the redesign: the owner's page is `/`, in one column), so a `site.yaml` that still has either fails, naming the key. `hero.typewriter` is gone too: remove it when updating a fork. The hero now leads straight from its tagline to its links.
 
@@ -111,9 +115,9 @@ Claudlobby's page's copy isn't here: it's a typed module (`frontend/src/content/
   - the files `site.yaml` and `index.html` name exist, and every photo at every size, and a logo for each timeline domain;
   - the music player's origin is in the CSP;
   - none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code;
-  - the projects: at least one, each in a category, one emoji icon, repos of the site's owner (a project with a page of its own shows no GitHub panels, so its repo may be anyone's), Claudlobby's file naming no other model provider when the site lists it, and a `frame-src` entry for an embedded demo;
+  - the projects: at least one, each in a category, one emoji icon, repos of the site's owner (a project with a page of its own shows no GitHub panels, so its repo may be anyone's), Claudfather's file naming no other model provider when the site lists it, and a `frame-src` entry for an embedded demo;
   - the About copy is at least one paragraph and, unless `features.regenerate` is `off`, ends on the sign-off that names the button (`regenerate.labels.button`);
   - each link-preview card, the site's and any project's, is a PNG at the size its head declares; where its source is in `site/`, its alt says what the card says; and neither uses an em-dash;
   - the Person schema's role matches the timeline's current one.
 - **The unit tests** read `site.example/`, a fictional site, so they test the code and not anyone's content. A content file that doesn't fit its shape, a project id that can't be a page's URL among them, fails the build and `npm run site:check` (`config/contentSchema.ts`).
-- **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site that doesn't list Claudlobby.
+- **The e2e tests** run against the active site, and CI runs them on `site.example` too. They fail rather than skip when content is missing (#120), and skip only for a structural reason, such as a site that doesn't list Claudfather.

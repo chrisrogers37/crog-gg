@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { beforeAll, describe, it, expect } from "vitest";
 import { matchPath, matchRoutes, Navigate, type RouteObject } from "react-router";
 import site from "virtual:site-config";
+import { ProjectRedirect } from "./components/common/ProjectRedirect";
 import { routes } from "./router";
 import { landingPages } from "./seo/prerender";
 import { createSeo } from "./seo/site";
@@ -49,7 +50,7 @@ const isRouteError = (element: RouteObject["errorElement"]) =>
 
 /** A route that only sends the visitor on, which vercel.json redirects too. */
 const isRedirect = (route: RouteObject) =>
-  (route.element as ReactElement | undefined)?.type === Navigate;
+  [Navigate, ProjectRedirect].includes((route.element as ReactElement | undefined)?.type as typeof Navigate);
 
 /**
  * Path patterns a visitor can land on, but "*". React Router's own rule: a
@@ -105,6 +106,16 @@ describe("routes and prerendered pages", () => {
         `${pattern} has no prerendered page, so it 404s in production`,
       ).toBe(true);
     }
+  });
+
+  it("permanently redirects the old project on Vercel without indexing it twice", () => {
+    const vercel = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../vercel.json"), "utf8"));
+    expect(vercel.redirects).toContainEqual({
+      source: "/projects/claudlobby", destination: "/projects/claudfather", permanent: true,
+    });
+    expect(pages.map((page) => page.path)).not.toContain("/projects/claudlobby");
+    expect(vercel.cleanUrls).toBe(true);
+    expect(vercel.rewrites).not.toContainEqual(expect.objectContaining({ source: "/(.*)" }));
   });
 
   it("prerenders only pages the app renders, not its catch-all 404", () => {

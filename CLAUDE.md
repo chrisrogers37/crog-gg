@@ -4,7 +4,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 
 ## Project Overview
 
-**crog.gg** - **Choose Your Own Chris**, Chris's personal site with AI-regenerated content, on `/`, and his projects on `/projects`, with Claudlobby (his agent-fleet compositor for solo founders and small teams) featured and on a page of its own. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
+**crog.gg** - **Choose Your Own Chris**, Chris's personal site with AI-regenerated content, on `/`, and his projects on `/projects`, with Claudfather (his ecosystem of tools for AI teams, workflows and knowledge) featured and on a page of its own. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
 - **Backend**: Flask (`api/index.py`) on Vercel Python runtime, OpenAI API, Upstash Redis for rate limiting
@@ -163,7 +163,7 @@ await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
 - Who the site is (the owner, the URLs, the socials, the copy around the content) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188; fields: documentation/CONTENT.md). Don't type an owner value into the code: `npm run site:check` fails on its distinctive ones (the name, email, host, descriptions and URLs). Code that `vite.config.ts` imports can't import the virtual module; it calls `siteConfig()` (`frontend/scripts/site-config.ts`). The API reads the same file (`api/_lib/site_config.py`, #189): its CORS origins, GitHub owner, the button's label, the rewrite's persona, and the `features` that hide SUMMON and the GitHub panels where the deployment can't serve them (`GET /api/features`)
 - Content lives in `site/public/content/` as YAML files
-- Exception: Claudlobby's page copy (`/projects/claudlobby`) is `frontend/src/content/claudlobby.ts`, a typed module bundled at build time (not fetched); its URLs are in `frontend/src/content/links.ts`. Wrap code terms in backticks there (they render as `<code>`). `claudlobby.test.ts` enforces its rules on the copy: no em-dashes, other model providers named only in `maturity.planned` and `roadmap.next`, and every number, and the list of roles, carries a commit-pinned source and an `asOf` date. `site-check/projects.test.ts` holds its project file, which the card and the page's head show, to the provider rule. Claudlobby is open source (Apache-2.0 since 2026-09-30), so the page may say so
+- Exception: Claudfather's page copy (`/projects/claudfather`) is `frontend/src/content/claudfather.ts`, a typed module bundled at build time. The portfolio owns evergreen purpose, component roles and creator context. The product site owns current demos/onboarding/status; repositories own installation/reference/releases. `website` is one authored preview/live/null destination with its label and caveat: switch it only after verifying public access and actual launch claims, or set it to null to hide an unavailable preview. No health polling or launch timers. Role descriptions carry public commit-pinned sources and dates. Claudosseum and the website implementation are private; no source/install links for them or blanket ecosystem license claims. `claudfather.test.ts` enforces plain copy, evidence and preview honesty. The old `/projects/claudlobby` redirects with queries and useful fragments preserved.
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
 - Projects are in `site/public/content/projects/` directory
 - Loading chain: `contentStore.loadContent` → `utils/*Loader.ts` → YAML files at runtime. The rendered ones (bio, timeline, projects, showcase) are held to their shapes in `config/contentSchema.ts` (#190), by the build and site:check too; on the page, a file that fails takes down only its own section
@@ -225,10 +225,10 @@ The README's [table](README.md#environment-variables) lists them all. The token'
 
 The site has two voices (#179):
 
-- **Claudlobby's page (`/projects/claudlobby`): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case. Copy is `frontend/src/content/claudlobby.ts`.
+- **Claudfather's page (`/projects/claudfather`): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case. Copy is `frontend/src/content/claudfather.ts`.
 - **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, headings, labels, buttons and the nav included, but names and acronyms keep their capitals: Spotify, macOS, AI, SEO, NYC (Chris, 2026-10-03). The SUMMON button's labels keep their all-caps game style. Casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact and music lines in `site/site.yaml`.
-- **Claims on Claudlobby's page stay honest.** Say what runs today (Claude Code only), and label anything planned as roadmap. The enforced rules are listed under Content Files.
-- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudlobby.test.ts` enforces it on Claudlobby's page and `site-check/cards.test.ts` on the link-preview cards; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
+- **Claims on Claudfather's page stay honest.** Label the illustrative workflow and synthetic development preview. Link to owners for current capabilities; do not imply automatic integration or real hosted execution. The enforced rules are listed under Content Files.
+- **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudfather.test.ts` enforces it on Claudfather's page and `site-check/cards.test.ts` on the link-preview cards; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
 
 ## Image Handling
 

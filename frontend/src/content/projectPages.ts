@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import { ClaudlobbyLoadingHero, ClaudlobbyPage } from "../components/sections/Claudlobby";
+import { ClaudfatherLoadingHero, ClaudfatherPage } from "../components/sections/Claudfather";
 import type { Project } from "../types";
 import type { OwnPageId } from "./ownPages";
 
@@ -10,7 +10,7 @@ import type { OwnPageId } from "./ownPages";
  * never shows the page. Every id in ownPages.ts needs one here.
  */
 export const PROJECT_PAGES: Record<OwnPageId, ComponentType<{ project: Project }>> = {
-  claudlobby: ClaudlobbyPage,
+  claudfather: ClaudfatherPage,
 };
 
 /**
@@ -18,5 +18,5 @@ export const PROJECT_PAGES: Record<OwnPageId, ComponentType<{ project: Project }
  * lines the project page's skeleton gives it.
  */
 export const PROJECT_PAGE_LOADING: Record<OwnPageId, ComponentType<{ children: ReactNode }>> = {
-  claudlobby: ClaudlobbyLoadingHero,
+  claudfather: ClaudfatherLoadingHero,
 };

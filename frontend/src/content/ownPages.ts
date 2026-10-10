@@ -3,7 +3,7 @@
  * Apart from the pages themselves, so the site checks and the e2e tests can
  * know them without loading any React.
  */
-export const OWN_PAGE_IDS = ["claudlobby"] as const;
+export const OWN_PAGE_IDS = ["claudfather"] as const;
 
 export type OwnPageId = (typeof OWN_PAGE_IDS)[number];
 

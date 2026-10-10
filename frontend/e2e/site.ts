@@ -30,8 +30,8 @@ const projectIndex = parseYaml(projectIndexShape, projectsFile("index.yaml"), "i
 const project = (file: string) => parseYaml(projectShape, projectsFile(file), file);
 const projects = projectIndex.projects.map(project);
 
-/** Whether the site lists Claudlobby, whose page is its own (content/ownPages.ts). */
-export const CLAUDLOBBY = projects.some(({ id }) => id === "claudlobby");
+/** Whether the site lists Claudfather, whose page is its own (content/ownPages.ts). */
+export const CLAUDFATHER = projects.some(({ id }) => id === "claudfather");
 
 /** The link-preview card a page shows: a project's own where its file names one, else the site's. */
 export const cardOf = (path: string) =>

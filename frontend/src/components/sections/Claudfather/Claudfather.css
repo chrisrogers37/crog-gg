@@ -1,4 +1,4 @@
-/* Claudlobby's project page (#173): what only its sections draw. The page
+/* Claudfather's project page (#173): what only its sections draw. The page
    and its sections are the site's (styles/page.css), with the global .btn
    and .card (index.css); the hero is Claudfather's panel, below. */
 
@@ -72,11 +72,10 @@
   color: theme("colors.claudfather.orange");
 }
 
-/* The site's one filled button, and the steps' numbers, in Claudfather's
+/* The site's one filled button in Claudfather's
    orange with its ink as the text (5.7:1), as on the avatar; the button
    lighter under a cream veil on hover. */
-.cl-page .btn-primary,
-.cl-step-number {
+.cl-page .btn-primary {
   background-color: theme("colors.claudfather.orange");
   color: theme("colors.claudfather.ink");
 }
@@ -109,122 +108,126 @@
 }
 
 .cl-maturity {
-  margin: 1.25rem 0 0;
+  margin: 1rem 0 0;
   line-height: 1.55;
 }
 
-/* minmax(0, ...) throughout: a grid column otherwise grows to its widest
-   unbreakable content (a command in <code>, say) and widens the whole page. */
+.cl-hero .page-ctas {
+  align-items: flex-start;
+  margin-top: 1rem;
+}
 
-/* A worker for each job, and how it works */
-.cl-roles,
-.cl-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+.cf-website {
+  max-width: 25rem;
+}
+
+.cf-website .page-note {
+  margin: 0.65rem 0 0;
+  line-height: 1.5;
+}
+
+.cl-hero .cf-website {
+  flex: 1;
+  min-width: min(100%, 14rem);
+}
+
+.cf-source-link,
+.cf-owner-links a,
+.cl-source a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+}
+
+.cf-source-link {
+  margin-top: 0.5rem;
+}
+
+.cf-steps {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.cl-role,
-.cl-step {
-  padding: 1.25rem;
-}
-
-.cl-step-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  margin-bottom: 0.75rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.cl-step-code {
-  display: block;
-  margin-top: 0.25rem;
-  color: var(--primary-color);
-}
-
-.cl-role p,
-.cl-step p,
-.cl-points p {
-  margin: 0.5rem 0 0;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  color: var(--text-color-secondary);
-}
-
-/* Why Claudlobby */
-.cl-points {
+  counter-reset: step;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
-.cl-library {
-  margin-top: 2.5rem;
-  padding: 1.5rem;
+.cf-steps li {
+  counter-increment: step;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
 }
 
-.cl-library h3 {
-  font-size: 0.875rem;
-  color: var(--text-color-secondary);
-}
-
-.cl-counts {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 1rem 0 0;
-}
-
-/* The value reads first on screen; screen readers get the label first. */
-.cl-counts > div {
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.cl-counts dd {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+.cf-steps li::before {
+  content: "0" counter(step);
+  display: block;
+  margin-bottom: 0.75rem;
   color: var(--primary-color);
+  font-weight: 600;
 }
 
-.cl-counts dt {
-  font-size: 0.875rem;
+.cf-steps p,
+.cf-family p {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  line-height: 1.6;
   color: var(--text-color-secondary);
+}
+
+.page-section > .cf-workflow-note {
+  max-width: 44rem;
+  margin-top: 1.5rem;
+  line-height: 1.6;
+}
+
+.cf-family {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.cf-family-row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) 2fr;
+  gap: 2rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border-color);
+  scroll-margin-top: 5rem;
+}
+
+.cf-family .cf-project-name {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.cf-family-row > div > p:first-child {
+  margin-top: 0;
 }
 
 .cl-source {
   margin: 1rem 0 0;
-  font-size: 0.8rem;
   color: var(--text-color-secondary);
+  font-size: 0.875rem;
 }
 
-/* Today, and what's next */
-.cl-roadmap {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+.cf-owner-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
 }
 
-.cl-roadmap-column {
-  padding: 1.25rem 1.5rem;
-}
-
-/* Muted like the other cards' body text (.cl-step p, .cl-points p). */
-.cl-roadmap-column .page-list {
-  color: var(--text-color-secondary);
+.cf-owner-links [id] {
+  scroll-margin-top: 5rem;
 }
 
 @media (max-width: 768px) {
+  .cf-steps,
+  .cf-family-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
   /* The mark shrinks into a corner of the eyebrow's row, so the CTAs and the
      maturity note stay on a phone's first screen. */
   .cl-hero {
@@ -251,17 +254,6 @@
     width: 56px;
     height: 56px;
   }
-
-  .cl-roles,
-  .cl-steps,
-  .cl-points,
-  .cl-roadmap {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .cl-counts {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 480px) {
@@ -281,9 +273,5 @@
   .cl-mark {
     width: 44px;
     height: 44px;
-  }
-
-  .cl-counts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

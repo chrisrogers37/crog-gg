@@ -1,6 +1,6 @@
 // Renders the site's link-preview cards at 1200x630 (#188): every
 // site/<name>.html to site/public/<name>.png. The site's card (og-image), and
-// a project's own (`share_card` in its file), such as claudlobby-card.
+// a project's own (`share_card` in its file), such as claudfather-card.
 //
 // Run from frontend/ after changing a card's text or colours (SITE_DIR picks
 // another site folder, as for the build):

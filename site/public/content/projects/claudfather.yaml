@@ -1,0 +1,15 @@
+# Claudfather, the ecosystem. Current product detail belongs to its owners.
+id: claudfather
+title: Claudfather
+description: tools for running AI teams, giving them useful workflows, and keeping what they learn.
+url: https://github.com/Claudfather
+icon: "🤖"
+category: ai-tools
+technologies: []
+status: experimental
+# Rendered from site/claudfather-card.html.
+share_card:
+  path: /claudfather-card.png
+  width: 1200
+  height: 630
+  alt: "Build a team of AI workers. Tools for teams, workflows and knowledge. For solo founders and small teams. Early alpha."

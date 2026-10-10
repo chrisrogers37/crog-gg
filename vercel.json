@@ -8,6 +8,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/projects/claudlobby",
+      "destination": "/projects/claudfather",
+      "permanent": true
+    },
+    {
       "source": "/about",
       "destination": "/",
       "permanent": true

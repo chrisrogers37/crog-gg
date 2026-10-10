@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import site from "virtual:site-config";
 import showcaseYaml from "@site/public/content/showcase.yaml?raw";
 import { showcaseShape } from "../config/contentSchema";
-import { claudlobby } from "../content/claudlobby";
+import { claudfather } from "../content/claudfather";
 import { shippedProjects } from "../test/content";
 import { inSite } from "../test/site";
 import { parseYaml } from "../utils/contentFile";
@@ -19,9 +19,9 @@ const showcase = parseYaml(showcaseShape, showcaseYaml, "content/showcase.yaml")
   (image) => image.src,
 );
 
-// Claudlobby's page's mark, Claudfather's avatar, where the site lists it.
-const mark = (await shippedProjects()).some(({ id }) => id === "claudlobby")
-  ? [claudlobby.mark.photo]
+// Claudfather's page's mark, Claudfather's avatar, where the site lists it.
+const mark = (await shippedProjects()).some(({ id }) => id === "claudfather")
+  ? [claudfather.mark.photo]
   : [];
 
 describe("the site's photos", () => {
