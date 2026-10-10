@@ -3,10 +3,10 @@
 # See documentation/CONTENT.md, and the add-project skill.
 
 # Shown first and largest, on the home page and /projects.
-featured: claudlobby.yaml
+featured: claudfather.yaml
 
 projects:
-  - claudlobby.yaml
+  - claudfather.yaml
   - storydump.yaml
   - shuffify.yaml
   - benzo.yaml

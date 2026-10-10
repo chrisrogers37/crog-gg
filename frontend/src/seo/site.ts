@@ -1,6 +1,5 @@
 import type { SiteConfig } from "../config/schema";
 import { socialsIn } from "../config/socials";
-import { CLAUDLOBBY_REPO } from "../content/links";
 import { hasOwnPage, type OwnPageId } from "../content/ownPages";
 import type { Project } from "../types/Project";
 
@@ -177,23 +176,20 @@ export function createSeo(site: SiteConfig) {
   };
 
   /**
-   * A page of its own says what it is in its own terms: Claudlobby's is
-   * source code. Every own page has an entry, or the type check fails.
+   * A page of its own says what it is in its own terms: Claudfather is an
+   * ecosystem, without one shared license or runtime. Every own page has an entry, or the type check fails.
    */
   const OWN_PAGE_SCHEMAS: Record<
     OwnPageId,
     (project: ProjectSummary, description: string, url: string) => object
   > = {
-    claudlobby: (project, description, url) => ({
+    claudfather: (project, description, url) => ({
       "@context": "https://schema.org",
-      "@type": "SoftwareSourceCode",
+      "@type": "CreativeWork",
       name: project.title,
       description,
       url,
-      codeRepository: CLAUDLOBBY_REPO,
-      license: "https://www.apache.org/licenses/LICENSE-2.0",
-      programmingLanguage: "Python",
-      runtimePlatform: "Claude Code",
+      sameAs: project.url,
       author: AUTHOR,
     }),
   };

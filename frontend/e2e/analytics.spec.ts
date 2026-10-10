@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import { CLAUDLOBBY_REPO as REPO } from "../src/content/links";
-import { CLAUDLOBBY, FEATURED } from "./site";
+import { CLAUDFATHER, FEATURED } from "./site";
 
 /**
  * Analytics in the production build (#177). Vercel serves the real script
@@ -43,30 +43,27 @@ test("loads the analytics script from the site's own origin", async ({
   expect(reported).toBe(`${new URL(page.url()).origin}/?utm_source=x`);
 });
 
-test("reports each CTA click once, with where it was", async ({ page }) => {
-  test.skip(!CLAUDLOBBY, "the calls to action are Claudlobby's page's");
-  await page.goto("/projects/claudlobby");
-
-  await page.locator(`.page-hero a[href="${REPO}"]`).click();
-  await page.locator('.page-hero a[href="#quickstart"]').click();
-  await page.locator(`#quickstart a[href="${REPO}#quick-start"]`).click();
-
-  // Each click is reported once.
-  const events = await queuedEvents(page);
-  expect(events).toEqual([
-    ["event", { name: "repo_click", data: { location: "hero" } }],
-    ["event", { name: "quickstart_click", data: {} }],
-    ["event", { name: "repo_click", data: { location: "quickstart" } }],
+test("keeps repo clicks specific and never counts product exploration as activation", async ({ page, context }) => {
+  test.skip(!CLAUDFATHER, "the site doesn't list the ecosystem page");
+  await context.route("https://claudfather-ai.vercel.app/**", (route) => route.abort());
+  await page.goto("/projects/claudfather");
+  await page.locator('.page-hero a[href="#how-it-works"]').click();
+  await page.locator('.page-hero a[href="https://github.com/Claudfather"]').click();
+  await page.locator('.page-hero .cf-website a').click();
+  expect(await queuedEvents(page)).toEqual([]);
+  await page.locator(`#claudlobby a[href="${REPO}"]`).click();
+  await page.locator(`#updates a[href="${REPO}/releases"]`).click();
+  expect(await queuedEvents(page)).toEqual([
+    ["event", { name: "repo_click", data: { location: "family" } }],
+    ["event", { name: "updates_click", data: {} }],
   ]);
   expect(await page.context().cookies()).toEqual([]);
 });
 
-test("reports the featured card's link into the repo, with where it was", async ({ page }) => {
-  test.skip(FEATURED !== "claudlobby", "the site doesn't feature Claudlobby");
-  // /projects always shows the featured card; / only where site.yaml lists the section.
+test("the featured ecosystem leads internally without a repository conversion", async ({ page }) => {
+  test.skip(FEATURED !== "claudfather", "the site doesn't feature Claudfather");
   await page.goto("/projects");
-  await page.locator(`article.project-featured a[href="${REPO}"]`).click();
-
-  const events = await queuedEvents(page);
-  expect(events).toEqual([["event", { name: "repo_click", data: { location: "featured" } }]]);
+  await page.locator('article.project-featured a[href="/projects/claudfather"]').click();
+  await expect(page).toHaveURL(/\/projects\/claudfather$/);
+  expect(await queuedEvents(page)).toEqual([]);
 });

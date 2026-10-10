@@ -5,7 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { createMemoryRouter, MemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { routes } from "../../../router";
-import { ClaudlobbyPage } from "../../sections/Claudlobby";
+import { ClaudfatherPage } from "../../sections/Claudfather";
 import { RepoLink } from "../RepoLink";
 import { makeProject } from "../../../test/builders";
 import { CLAUDLOBBY_REPO, isClaudlobbyFrontPage } from "../../../content/links";
@@ -22,7 +22,7 @@ describe("RepoLink", () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <ClaudlobbyPage project={makeProject({ id: "claudlobby", title: "Claudlobby" })} />
+        <ClaudfatherPage project={makeProject({ id: "claudfather", title: "Claudfather" })} />
       </MemoryRouter>,
     );
 
@@ -41,7 +41,7 @@ describe("RepoLink", () => {
         event.name === "repo_click" ? [event.location] : [],
       );
     expect(repoClicks).toHaveLength(frontPage.length);
-    expect(repoClicks.sort()).toEqual(["hero", "quickstart"]);
+    expect(repoClicks.sort()).toEqual(["family"]);
     // The one other event is "Watch releases" reporting updates_click; the
     // feed and the deeper links report nothing.
     expect(

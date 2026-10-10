@@ -8,7 +8,7 @@ import { useContentStore, useUIStore } from "../../../store";
 import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
 import { makeProject } from "../../../test/builders";
-import { claudlobby } from "../../../content/claudlobby";
+import { claudfather } from "../../../content/claudfather";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
 // Restored after each test, so a stubbed action can't leak into the next.
@@ -63,9 +63,9 @@ describe("ProjectDetailPage before its project is found", () => {
   });
 
   it("stands a page of its own's hero in its own look while it loads", () => {
-    // Claudlobby's: its charcoal panel and mark already, around the same
+    // Claudfather's: its charcoal panel and mark already, around the same
     // lines, so a direct visit doesn't flash from the light bars to it.
-    renderAt(["/projects/claudlobby"]);
+    renderAt(["/projects/claudfather"]);
     const loading = screen.getByRole("status", { name: /loading project/i });
     expect(loading.querySelector(":scope > .breadcrumbs")).not.toBeNull();
     const hero = loading.querySelector(".cl-hero--loading");
@@ -132,9 +132,10 @@ describe("A project with a page of its own", () => {
     useContentStore.setState({
       projects: [
         makeProject({
-          id: "claudlobby",
-          title: "Claudlobby",
-          github: "https://github.com/Claudfather/Claudlobby",
+          id: "claudfather",
+          title: "Claudfather",
+          url: "https://github.com/Claudfather",
+          github: undefined,
           featured: true,
         }),
       ],
@@ -145,9 +146,9 @@ describe("A project with a page of its own", () => {
       .spyOn(githubService, "getRepository")
       .mockRejectedValue(new Error("offline"));
     const getReadme = vi.spyOn(githubService, "getReadme").mockRejectedValue(new Error("offline"));
-    renderAt(["/projects/claudlobby"]);
+    renderAt(["/projects/claudfather"]);
 
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(claudlobby.hero.headline);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(claudfather.hero.headline);
     expect(screen.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /^(repository|readme)$/i })).toBeNull();
     expect(getRepository).not.toHaveBeenCalled();

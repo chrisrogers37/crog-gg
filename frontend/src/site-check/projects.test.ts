@@ -3,7 +3,7 @@ import site from "virtual:site-config";
 import { hasOwnPage } from "../content/ownPages";
 import type { Project } from "../types/Project";
 import { githubRepo, hasLiveDemo, isServedOwner } from "../utils/projectLinks";
-import { PLANNED, strings } from "../test/claudlobbyRules";
+import { PLANNED, strings } from "../test/claudfatherRules";
 import { shippedProjects } from "../test/content";
 import { frameSrc } from "../test/csp";
 
@@ -35,7 +35,7 @@ describe("the shipped projects", () => {
   });
 
   it("only link GitHub repos of an owner the API serves", (ctx) => {
-    // A page of its own (Claudlobby's) shows no GitHub panels, so its repo
+    // A page of its own (Claudfather's) shows no GitHub panels, so its repo
     // may be anyone's.
     const linked = projects.filter((project) => githubRepo(project) && !hasOwnPage(project.id));
     if (linked.length === 0) ctx.skip(); // no project links a repo
@@ -47,12 +47,12 @@ describe("the shipped projects", () => {
     }
   });
 
-  it("say of Claudlobby, when they list it, what its page says: no other model provider", (ctx) => {
+  it("say of Claudfather, when they list it, what its page says: no other model provider", (ctx) => {
     // The card and its page's head show the project file, so it keeps the
     // page copy's rule (#179): other agents and providers are the roadmap.
-    const claudlobby = projects.find((project) => project.id === "claudlobby");
-    if (!claudlobby) ctx.skip(); // the site doesn't list Claudlobby
-    for (const text of strings(claudlobby)) expect(text, text).not.toMatch(PLANNED);
+    const claudfather = projects.find((project) => project.id === "claudfather");
+    if (!claudfather) ctx.skip(); // the site doesn't list Claudfather
+    for (const text of strings(claudfather)) expect(text, text).not.toMatch(PLANNED);
   });
 
   it("only embed demos from hosts the CSP lets the page frame", (ctx) => {

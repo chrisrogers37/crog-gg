@@ -19,7 +19,7 @@ import "./ProjectDetailPage.css";
 const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 // react-markdown and highlight.js, in a chunk of their own: fetched only for
-// a page that shows a README, not for Claudlobby's, which has none.
+// a page that shows a README, not for Claudfather's, which has none.
 const GitHubReadme = lazy(() =>
   import("../../components/features/GitHubReadme").then((m) => ({
     default: m.GitHubReadme,
@@ -166,7 +166,7 @@ export function ProjectDetailPage() {
   const reloadProjects = useContentStore((s) => s.reloadProjects);
 
   const project = projects.find((p) => p.id === slug);
-  // A link to a section (/projects/claudlobby#quickstart) lands on it once
+  // A link to a section (/projects/claudfather#quickstart) lands on it once
   // the project is in.
   useScrollToHash(project !== undefined);
 

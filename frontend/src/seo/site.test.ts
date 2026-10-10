@@ -12,8 +12,7 @@ import {
   type PageMeta,
 } from ".";
 import site from "virtual:site-config";
-import { claudlobby } from "../content/claudlobby";
-import { CLAUDLOBBY_REPO } from "../content/links";
+import { claudfather } from "../content/claudfather";
 import { createSeo } from "./site";
 
 const tagValue = (meta: PageMeta, key: string) => {
@@ -94,20 +93,20 @@ describe("projectMeta", () => {
 
 describe("a project's own head", () => {
   const card = {
-    path: "/claudlobby-card.png",
+    path: "/claudfather-card.png",
     width: 1200,
     height: 630,
     alt: "Words on the card.",
   };
-  const claudlobbyPage = {
-    id: "claudlobby",
-    title: "Claudlobby",
-    description: "an open-source agent fleet.",
-    url: CLAUDLOBBY_REPO,
+  const claudfatherPage = {
+    id: "claudfather",
+    title: "Claudfather",
+    description: "tools for AI teams.",
+    url: claudfather.organization,
   };
 
   it("points link previews at the project's own card, where its file names one", () => {
-    const meta = projectMeta({ ...claudlobbyPage, id: "benzo", title: "Benzo", share_card: card });
+    const meta = projectMeta({ ...claudfatherPage, id: "benzo", title: "Benzo", share_card: card });
     const image = `${SITE_URL}${card.path}`;
     expect(tagValue(meta, "og:image")).toBe(image);
     expect(tagValue(meta, "twitter:image")).toBe(image);
@@ -118,26 +117,23 @@ describe("a project's own head", () => {
   });
 
   it("gives every other project the site's card", () => {
-    const meta = projectMeta({ ...claudlobbyPage, id: "benzo", title: "Benzo" });
+    const meta = projectMeta({ ...claudfatherPage, id: "benzo", title: "Benzo" });
     expect(tagValue(meta, "og:image")).toBe(`${SITE_URL}${OG_IMAGE.path}`);
     expect(tagValue(meta, "og:image:alt")).toBe(OG_IMAGE.alt);
     expect(meta.schemas?.[0]).toMatchObject({ "@type": "SoftwareApplication" });
   });
 
-  it("describes a page of its own in its own terms: Claudlobby's as source code", () => {
-    const [schema] = projectMeta(claudlobbyPage).schemas ?? [];
+  it("describes the ecosystem without applying one component's license or runtime", () => {
+    const [schema] = projectMeta(claudfatherPage).schemas ?? [];
     expect(schema).toMatchObject({
-      "@type": "SoftwareSourceCode",
-      name: "Claudlobby",
-      url: `${SITE_URL}/projects/claudlobby`,
-      codeRepository: CLAUDLOBBY_REPO,
-      license: "https://www.apache.org/licenses/LICENSE-2.0",
+      "@type": "CreativeWork",
+      name: "Claudfather",
+      url: `${SITE_URL}/projects/claudfather`,
+      sameAs: claudfather.organization,
     });
-    // What it runs on is what the page says runs today, so the two change
-    // together when other providers ship.
-    expect(claudlobby.maturity.today).toContain(
-      (schema as { runtimePlatform: string }).runtimePlatform,
-    );
+    for (const key of ["codeRepository", "license", "programmingLanguage", "runtimePlatform"]) {
+      expect(schema).not.toHaveProperty(key);
+    }
   });
 });
 

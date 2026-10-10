@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-10
+
+### Changed
+
+- Feature Claudfather with an ecosystem portfolio page, an honest illustrative workflow, qualified preview links, public component sources and a matching share card. Preserve old Claudlobby URLs and section links; leave GitHub popularity counts hidden.
+
 ## 2026-10-08
 
 ### Changed

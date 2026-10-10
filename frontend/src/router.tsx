@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 import { RouterProvider } from "react-router/dom";
 
 // Layout (loaded immediately as it's the shell)
+import { ProjectRedirect } from "./components/common/ProjectRedirect";
 import { Layout } from "./components/layout";
 
 // NotFound page loaded immediately for fast 404 response
@@ -99,6 +100,7 @@ export const routes: RouteObject[] = [
               </LazyPage>
             ),
           },
+          { path: "claudlobby", element: <ProjectRedirect to="/projects/claudfather" /> },
           {
             path: ":slug",
             element: (

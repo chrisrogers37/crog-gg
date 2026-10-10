@@ -6,6 +6,7 @@ This directory holds active development plans. Completed plans are archived to `
 
 | Artifact | Description |
 | --- | --- |
+| [Claudfather portfolio presentation](./phases/claudfather_2026-10-10/INDEX.md) | Approved ecosystem design, implemented first phase and a separate draft for dated product evidence. |
 | [`tech-debt-triage_2026-07-02.md`](./tech-debt-triage_2026-07-02.md) | The 2026-07-02 system review's triage. #172 tracks which items are still live. |
 
 Current work is tracked in GitHub issues; the 2026-09-29 system review filed #186–#199.
@@ -43,4 +44,4 @@ Archived as `documentation/archive/01-current-state-analysis.md` through `docume
 
 ---
 
-_Last updated: 2026-10-01_
+_Last updated: 2026-10-10_

@@ -16,9 +16,9 @@ import {
 
 /**
  * Where a link to the Claudlobby repo's front page sits: its page's hero and
- * quickstart, or the featured card on / and /projects.
+ * quickstart, the featured card on / and /projects, or the ecosystem family.
  */
-export type RepoLinkLocation = "hero" | "quickstart" | "featured";
+export type RepoLinkLocation = "hero" | "quickstart" | "featured" | "family";
 
 export type AnalyticsEvent =
   | { name: "repo_click"; location: RepoLinkLocation }
