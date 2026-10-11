@@ -16,7 +16,7 @@ import requests
 
 import api.index as index
 
-_CHECKS = {"openai_key", "redis_configured", "redis_ping", "github_token", "github_core_remaining"}
+_CHECKS = {"openai_key", "redis_configured", "redis_ping", "github_token", "github_quota"}
 
 
 @pytest.fixture(autouse=True)
@@ -64,7 +64,7 @@ def test_healthy_returns_200_with_every_check(client):
     body = r.get_json()
     assert body["ok"] is True
     assert set(body["checks"]) == _CHECKS
-    assert body["checks"]["github_core_remaining"] == 4999
+    assert body["checks"]["github_quota"] is True
     assert r.headers["Cache-Control"] == "no-store"
 
 
@@ -89,7 +89,7 @@ def test_expired_github_token_is_503(client):
         _deps(stack, github=_rate_limit(status=401))
         r = client.get("/api/health")
     assert r.status_code == 503
-    assert r.get_json()["checks"]["github_core_remaining"] is None
+    assert r.get_json()["checks"]["github_quota"] is None
 
 
 def test_exhausted_github_quota_is_503(client):
@@ -97,6 +97,7 @@ def test_exhausted_github_quota_is_503(client):
         _deps(stack, github=_rate_limit(remaining=0))
         r = client.get("/api/health")
     assert r.status_code == 503
+    assert r.get_json()["checks"]["github_quota"] is False
 
 
 def test_no_github_token_is_still_healthy(client):
@@ -197,9 +198,10 @@ def _real_response(status, body: bytes):
         (200, b"[]"),
         (200, b"null"),
         (200, b'{"resources": {}}'),
+        (200, b'{"resources": {"core": {"remaining": "lots"}}}'),
         (502, b"bad gateway"),
     ],
-    ids=["html", "empty", "list", "null", "wrong-shape", "502"],
+    ids=["html", "empty", "list", "null", "wrong-shape", "not-a-number", "502"],
 )
 def test_an_unusable_github_reply_is_null_not_a_500(client, caplog, status, body):
     caplog.set_level(logging.WARNING, logger="crog")
@@ -208,16 +210,18 @@ def test_an_unusable_github_reply_is_null_not_a_500(client, caplog, status, body
         r = client.get("/api/health")
     assert r.status_code == 503
     assert r.is_json
-    assert r.get_json()["checks"]["github_core_remaining"] is None
+    assert r.get_json()["checks"]["github_quota"] is None
     assert any("health check failed: check=github_core_remaining" in rec.getMessage() for rec in caplog.records)
 
 
-def test_a_usable_github_reply_reports_the_quota(client):
+def test_a_usable_github_reply_says_quota_is_left_but_not_how_much(client):
     with ExitStack() as stack:
         _deps(stack, github=_real_response(200, b'{"resources": {"core": {"remaining": 4321}}}'))
         r = client.get("/api/health")
     assert r.status_code == 200
-    assert r.get_json()["checks"]["github_core_remaining"] == 4321
+    assert r.get_json()["checks"]["github_quota"] is True
+    # The endpoint is public: the count would show how close the token is to empty.
+    assert "4321" not in r.get_data(as_text=True)
 
 
 # --- what the deployment serves (#189 M21) ----------------------------------
@@ -267,5 +271,5 @@ def test_github_off_skips_the_github_check_and_its_call(client):
         _with_modes(stack, github_mode="off")
         r = client.get("/api/health")
     assert r.status_code == 200
-    assert r.get_json()["checks"]["github_core_remaining"] is None
+    assert r.get_json()["checks"]["github_quota"] is None
     get.assert_not_called()

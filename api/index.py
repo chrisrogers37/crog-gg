@@ -560,6 +560,17 @@ def _github_off():
     return None
 
 
+@app.before_request
+def _github_query_refused():
+    """A GitHub route with a query string is a 400, before its rate limiter and
+    without a GitHub call. Vercel's CDN caches a proxy reply by its full URL
+    (_cdn_cached), so each new query string would be a miss that spends the
+    token's GitHub quota. The page never sends one."""
+    if request.path.startswith("/api/v1/github/") and request.query_string:
+        return jsonify({"error": "Query parameters aren't supported"}), 400
+    return None
+
+
 @app.route("/api/regenerate", methods=["POST"])
 def regenerate_content():
     deadline = time.monotonic() + REGEN_DEADLINE_SECONDS
@@ -825,7 +836,10 @@ def _github_core_remaining():
     try:
         r = requests.get(f"{GITHUB_API}/rate_limit", headers=github_headers(), timeout=5)
         r.raise_for_status()
-        return r.json()["resources"]["core"]["remaining"]
+        remaining = r.json()["resources"]["core"]["remaining"]
+        if not isinstance(remaining, int):
+            raise TypeError(f"remaining is {type(remaining).__name__}")
+        return remaining
     except (requests.RequestException, ValueError, KeyError, TypeError) as e:
         status = getattr(getattr(e, "response", None), "status_code", None)
         logger.warning("health check failed: check=github_core_remaining status=%s error=%s", status, type(e).__name__)
@@ -844,18 +858,21 @@ def _run_health_checks():
     with ThreadPoolExecutor(max_workers=2) as pool:
         ping = pool.submit(_redis_ping)
         remaining = pool.submit(_github_core_remaining) if github_served else None
+        left = remaining.result() if remaining else None
         checks = {
             "openai_key": openai_client is not None,
             "redis_configured": redis_client.is_configured(),
             "redis_ping": ping.result(),
             "github_token": bool(GITHUB_TOKEN),
-            "github_core_remaining": remaining.result() if remaining else None,
+            # Whether any quota is left, not how much: the endpoint is public,
+            # and the count would show anyone how close the token is to empty.
+            "github_quota": None if left is None else left > 0,
         }
     rewrite_expected = CONFIG.regenerate_mode == "on" or (
         CONFIG.regenerate_mode == "auto" and (checks["openai_key"] or checks["redis_configured"])
     )
     ok = (not rewrite_expected or (checks["openai_key"] and checks["redis_ping"])) and (
-        not github_served or not checks["github_token"] or bool(checks["github_core_remaining"])
+        not github_served or not checks["github_token"] or checks["github_quota"] is True
     )
     return time.monotonic(), {"ok": ok, "checks": checks}, 200 if ok else 503
 
@@ -872,7 +889,8 @@ def health():
     answers a PING; for the GitHub panels, the token (if one is set) still
     works and has quota left. 503 otherwise. A feature it doesn't serve is
     skipped (see _run_health_checks). The body
-    always lists every check, so a 503 says which one failed. It never calls
+    always lists every check, so a 503 says which one failed, and says whether
+    GitHub quota is left without saying how much. It never calls
     OpenAI, which would spend money on every poll. /api/limits isn't a health
     check either: it answers null on purpose during an outage.
     """
