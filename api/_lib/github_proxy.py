@@ -141,9 +141,10 @@ def _cdn_cached(response: Response) -> Response:
     M33). Repos change slowly, and a repo made private drops out within the
     hour. Only a 200 is marked: errors and refusals are never cached.
 
-    The CDN keys on the full URL, so a varying query string still reaches the
-    function. Only an edge rule (a Vercel Firewall rate limit on /api/*) bounds
-    those invocations.
+    The CDN keys on the full URL, so a varying query string would reach the
+    function every time. The GitHub routes refuse any query string with a 400
+    before the rate limiter or GitHub is asked (_github_query_refused in
+    index.py), so a cache miss can't be bought that way.
     """
     response.headers["Cache-Control"] = "public, s-maxage=3600"
     return response

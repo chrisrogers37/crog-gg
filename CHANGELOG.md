@@ -6,6 +6,8 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Changed
 
+- `/api/health` reports `github_quota` (true or false) in place of `github_core_remaining`, so the public endpoint no longer shows how much GitHub quota the token has left. A monitor that read the count should read the flag.
+- The GitHub proxy (`/api/v1/github/*`) answers 400 to a request with a query string, before its rate limiter and without calling GitHub. The page never sends one.
 - Feature Claudfather with an ecosystem portfolio page, an honest illustrative workflow, qualified preview links, public component sources and a matching share card. Preserve old Claudlobby URLs and section links; leave GitHub popularity counts hidden.
 
 ## 2026-10-08

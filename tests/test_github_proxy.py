@@ -135,6 +135,33 @@ def test_a_failed_response_is_never_cached(client, route, metadata):
     assert "s-maxage" not in r.headers.get("Cache-Control", "")
 
 
+# --- query strings ---------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/v1/github/repo/shuffify?cb=1",
+        "/api/v1/github/repo/octocat/shuffify?cb=1",
+        "/api/v1/github/readme/shuffify?x",
+        "/api/v1/github/readme/octocat/shuffify?a=1&b=2",
+    ],
+)
+def test_a_query_string_is_a_400_without_a_github_call(client, path):
+    # The CDN caches by full URL, so each new query string would be a miss that
+    # spends the token's quota. The page never sends one.
+    with (
+        patch("api.index.requests.get") as get,
+        patch("api.index.rate_limit.check_and_consume") as consume,
+    ):
+        r = client.get(path)
+    assert r.status_code == 400
+    assert "s-maxage" not in r.headers.get("Cache-Control", "")
+    get.assert_not_called()
+    # Before the rate limiter, so not even Redis is asked.
+    consume.assert_not_called()
+
+
 # --- get_readme ------------------------------------------------------------
 
 
