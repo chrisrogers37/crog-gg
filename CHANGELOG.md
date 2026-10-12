@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-12
+
+### Removed
+
+- The "all links" link to the owner's hoo.be page, from the contact and music sections. The `hoobe` icon is still supported, so a site can list one in `socials`.
+
 ## 2026-10-10
 
 ### Changed

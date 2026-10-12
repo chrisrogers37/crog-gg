@@ -55,6 +55,6 @@ SOFTWARE.
 
 ## Trademarks
 
-The GitHub, LinkedIn, Telegram, Instagram, Spotify and hoo.be names and logos belong to their owners. They're used here only to link to the site owner's profiles on those services.
+The GitHub, LinkedIn, Telegram, Instagram and Spotify names and logos belong to their owners. They're used here only to link to the site owner's profiles on those services.
 
 The Artemis, Citadel, Meta, Columbia University, Cornell University, Memorial Sloan Kettering Cancer Center and VillageMD names and logos (`site/public/logos/*.png`) belong to their owners. They're used here only to identify the site owner's employers and schools.
