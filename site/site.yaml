@@ -93,11 +93,6 @@ socials:
     icon: instagram
     url: https://instagram.com/crogmusic
     show_in: [contact, music]
-  - id: hoobe
-    label: all links
-    icon: hoobe
-    url: https://hoo.be/crog
-    show_in: [contact, music]
 
 footer:
   # The repo this site is built from: the footer links to it as "view source".
