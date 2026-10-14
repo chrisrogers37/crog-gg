@@ -67,7 +67,7 @@ entries:
     domain: meta.com
     start_date: "Dec 2021"
     end_date: "Feb 2023"
-    one_liner: helped recruiting teams figure out what metrics actually mattered and ran a bunch of experiments
+    one_liner: designed metrics and ran experiments to help recruiting teams figure out what actually mattered
     skills:
       - Python
       - SQL
@@ -84,7 +84,7 @@ entries:
     domain: columbia.edu
     start_date: "2020"
     end_date: "2021"
-    one_liner: got halfway through a masters before Meta came calling. no regrets (3.83 GPA)
+    one_liner: got halfway through an analytics master's before deciding to join Meta
     skills:
       - Python
       - statistical testing
@@ -97,7 +97,7 @@ entries:
     domain: mskcc.org
     start_date: "Dec 2020"
     end_date: "Dec 2021"
-    one_liner: published NLP research and built dashboards that actually changed how the hospital made decisions
+    one_liner: published NLP research and built dashboards that changed how the hospital made decisions
     skills:
       - Python
       - SQL
@@ -113,9 +113,8 @@ entries:
     domain: mskcc.org
     start_date: "Oct 2018"
     end_date: "Dec 2020"
-    one_liner: built the reporting and analytics setup from scratch for clinical ops
+    one_liner: learned R and Tableau. built out reporting and analytics for clinical operations
     skills:
-      - Python
       - SQL
       - R
       - Tableau
@@ -126,11 +125,10 @@ entries:
     domain: villagemd.com
     start_date: "Feb 2016"
     end_date: "Oct 2018"
-    one_liner: first real data job. started as an analyst, worked my way up
+    one_liner: left chemical engineering and began my dive into data
     skills:
-      - Python
+      - SAS
       - SQL
-      - R
 
   - type: education
     title: MEng, chemical engineering
@@ -138,7 +136,7 @@ entries:
     domain: cornell.edu
     start_date: "2014"
     end_date: "2015"
-    one_liner: engineering masters, mostly spent optimizing chemical processes and wondering if i'd actually be a chemical engineer (3.96 GPA)
+    one_liner: engineering master's, spent going deeper on energy economics and TA'ing chemical processing labs
     skills: []
 
   - type: education
@@ -160,6 +158,7 @@ skill_categories:
       - Python
       - SQL
       - R
+      - SAS
   data_tools:
     color: "#10B981"
     skills:

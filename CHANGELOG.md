@@ -8,6 +8,8 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 - The timeline's AI-maxxing entry names the job it followed (Citadel) and the tools it used (Cursor, then Claude).
 - The timeline's Citadel entry describes the analytics automation and the expense data model.
+- The timeline's Meta, Columbia, Memorial Sloan Kettering, VillageMD and Cornell master's entries are reworded, and no entry shows a GPA.
+- The VillageMD entry's skills are SAS and SQL, and the first Memorial Sloan Kettering role's are SQL, R and Tableau. SAS joins the languages category.
 
 ## 2026-10-12
 
