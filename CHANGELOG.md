@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-14
+
+### Changed
+
+- The timeline's AI-maxxing entry names the job it followed (Citadel) and the tools it used (Cursor, then Claude).
+
 ## 2026-10-12
 
 ### Removed
