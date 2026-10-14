@@ -48,7 +48,7 @@ entries:
     domain: citadel.com
     start_date: "Feb 2023"
     end_date: "Jul 2025"
-    one_liner: automated a bunch of finance workflows that people were doing by hand. saved everyone a lot of time
+    one_liner: automated a bunch of analytics workflows. built the unified expense data model that powered the firm's financial reporting
     skills:
       - Python
       - SQL

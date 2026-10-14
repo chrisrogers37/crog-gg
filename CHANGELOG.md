@@ -7,6 +7,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 
 - The timeline's AI-maxxing entry names the job it followed (Citadel) and the tools it used (Cursor, then Claude).
+- The timeline's Citadel entry describes the analytics automation and the expense data model.
 
 ## 2026-10-12
 
