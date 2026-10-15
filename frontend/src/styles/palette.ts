@@ -3,11 +3,8 @@
  *
  * These raw ramps are the ONE place a brand color value lives.
  * `tailwind.config.js` imports from here, so every utility class and every
- * `theme()` in the CSS resolves to these values: a color is defined once.
- *
- * The CSS custom properties in `src/App.css` mirror these by hand (plain CSS
- * cannot import JS); each var there is annotated with the shade it tracks, so
- * keep them in step with these values.
+ * `theme()` in the CSS resolves to these values, the theme's custom
+ * properties in `src/App.css` included: a color is defined once.
  *
  * Scales follow Tailwind's 50..950 convention:
  *   primary = blue (brand)   accent = purple   slate = neutral   danger = red
