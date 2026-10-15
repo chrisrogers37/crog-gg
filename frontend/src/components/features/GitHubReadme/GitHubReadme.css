@@ -1,3 +1,5 @@
+@reference "../../../index.css";
+
 .github-readme {
   --readme-code-background: theme("colors.white");
   border-radius: 8px;
