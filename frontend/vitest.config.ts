@@ -54,6 +54,14 @@ export default defineConfig({
         "src/main.tsx",
         "src/vite-env.d.ts",
       ],
+      // Today's coverage less a point (#272), so CI's test:coverage fails on a real drop.
+      // Raise them as coverage grows.
+      thresholds: {
+        statements: 91,
+        branches: 85,
+        functions: 90,
+        lines: 91,
+      },
     },
   },
 });

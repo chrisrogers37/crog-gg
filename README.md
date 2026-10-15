@@ -146,7 +146,7 @@ python3 -m pytest -q
 cd frontend
 
 # Install Playwright browsers (first time only)
-npx playwright install --with-deps chromium
+npx playwright install --with-deps chromium webkit
 
 # Run E2E tests
 npm run test:e2e
@@ -163,8 +163,8 @@ npm run test:e2e:headed
 GitHub Actions runs CI (`.github/workflows/ci.yml`) on every push to `main` and every pull request into it. It needs no secrets.
 
 1. **Frontend Lint**: ESLint and the type check (`npm run typecheck`).
-2. **Frontend Unit Tests**: Vitest, with a coverage report.
-3. **Frontend E2E Tests**: Playwright.
+2. **Frontend Unit Tests**: Vitest, with a coverage report. It fails if coverage drops below the floor in `frontend/vitest.config.ts`.
+3. **Frontend E2E Tests**: Playwright, in Chromium and, for the home and project specs, in WebKit on an iPhone-sized screen.
 4. **Frontend Build**: the production build, including the prerendered heads.
 5. **API Lint**: flake8, black and isort on `api/`.
 6. **API Tests**: pytest.

@@ -47,6 +47,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
       testIgnore: [/prerender\.spec\.ts/, /analytics\.spec\.ts/],
     },
+    // Safari's engine on a phone (#272), for the pages most visitors see.
+    {
+      name: "webkit",
+      use: { ...devices["iPhone 13"] },
+      testMatch: /(home|projects)\.spec\.ts/,
+    },
     // The crawler's view of a production build: raw HTML, no browser.
     {
       name: "prerender",
@@ -59,15 +65,6 @@ export default defineConfig({
       testMatch: /analytics\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:4179" },
     },
-    // Uncomment to test on more browsers
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
   ],
 
   // The dev server for the browser tests, and a production build under
