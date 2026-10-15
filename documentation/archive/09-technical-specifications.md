@@ -564,7 +564,6 @@ projects:
 projects:
   - shuffify.yaml
   - city-cycles.yaml
-  - hedwig.yaml
 ```
 
 ---

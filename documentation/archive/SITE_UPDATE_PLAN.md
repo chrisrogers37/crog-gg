@@ -69,7 +69,6 @@ frontend/public/content/projects/
 ├── index.yaml         # Project index/metadata
 ├── shuffify.yaml      # Spotify playlist manager
 ├── city-cycles.yaml   # NYC/London bike analytics
-├── hedwig.yaml        # RAG-assisted email templates
 ├── github.yaml        # Open source projects
 ├── 30-day-abs.yaml    # Fitness app
 └── <removed>.yaml # Creative project

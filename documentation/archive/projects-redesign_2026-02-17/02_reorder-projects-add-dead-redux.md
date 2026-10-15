@@ -18,8 +18,6 @@ The portfolio site currently orders projects weakest-first (30-Day A/Bs at order
 
 Additionally, a new project "Dead Redux" needs to be added - a Grateful Dead project that shows a new show each day, deployed at dead-redux.vercel.app, built with TypeScript/React.
 
-Hedwig should remain hidden (already excluded from `index.yaml`).
-
 **Screenshot reference:** `/tmp/design-review/projects-desktop.png` - shows current project ordering with "Loading projects..." state.
 
 ---
@@ -139,10 +137,6 @@ For each file, find the `order:` line and update the value only. Do NOT change a
 
 - Already `order: 99`, no change needed.
 
-### Step 4: Verify hedwig.yaml is NOT in index.yaml
-
-Confirm that `hedwig.yaml` does NOT appear in `index.yaml`. It should remain excluded. The YAML file can stay on disk but must not be listed in the index.
-
 ---
 
 ## Responsive Behavior
@@ -166,8 +160,7 @@ N/A - data-only change.
    b. Verify projects appear in new order: Shuffify, Storyline AI, Dead Redux, a removed project, 30 Day A/Bs, City Cycles, GitHub
    c. Click on Dead Redux tile - verify it links to dead-redux.vercel.app
    d. Navigate to `/projects` page - verify Dead Redux appears in the listing
-   e. Verify Hedwig does NOT appear anywhere
-   f. Verify all existing project links still work
+   e. Verify all existing project links still work
 
 ---
 
@@ -176,7 +169,6 @@ N/A - data-only change.
 - [ ] `dead-redux.yaml` exists at `frontend/public/content/projects/dead-redux.yaml`
 - [ ] `dead-redux.yaml` has all required fields (id, title, description, url, icon, category, technologies, featured, order, gradient, github, demo, status, tags)
 - [ ] `dead-redux.yaml` is listed in `index.yaml`
-- [ ] `hedwig.yaml` is NOT in `index.yaml`
 - [ ] `shuffify.yaml` has `order: 1`
 - [ ] `storyline-ai.yaml` has `order: 2`
 - [ ] `dead-redux.yaml` has `order: 3`
@@ -194,7 +186,6 @@ N/A - data-only change.
 
 ## What NOT To Do
 
-- Do NOT delete `hedwig.yaml` from disk - just keep it out of `index.yaml`
 - Do NOT modify any component code - this is a data-only change
 - Do NOT change the `featured` status of existing projects
 - Do NOT modify the project loader or type definitions
