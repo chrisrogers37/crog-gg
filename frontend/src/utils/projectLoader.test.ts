@@ -89,20 +89,21 @@ describe("loadProjects", () => {
   });
 
   it("does not invent projects the index omits", async () => {
-    // hedwig.yaml is present on disk but deliberately absent from the index.
-    // The removed hardcoded fallback named it, so an index failure used to
-    // surface it. Nothing should reach for a file the index does not list.
+    // A project file the index doesn't list is still served, like everything
+    // in public/. The removed hardcoded fallback named such a file, so an
+    // index failure used to surface it. Nothing should reach for a file the
+    // index does not list.
     const fetchMock = serve({
       "/content/projects/index.yaml": INDEX_YAML,
       "/content/projects/shuffify.yaml": SHUFFIFY_YAML,
-      "/content/projects/hedwig.yaml": "id: hedwig\ntitle: Hedwig\n",
+      "/content/projects/unlisted.yaml": "id: unlisted\ntitle: Unlisted\n",
     });
     globalThis.fetch = fetchMock;
 
     const projects = await loadProjects();
 
     expect(projects.map((p) => p.id)).toEqual(["shuffify"]);
-    expect(fetchMock).not.toHaveBeenCalledWith("/content/projects/hedwig.yaml");
+    expect(fetchMock).not.toHaveBeenCalledWith("/content/projects/unlisted.yaml");
   });
 });
 

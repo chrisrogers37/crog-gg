@@ -12,7 +12,6 @@
 - **Architecture:** Upgrade existing ProjectCard.tsx/Projects.tsx/Projects.css in-place rather than creating new files. Wire Portfolio.tsx to use existing Projects component.
 - **Content:** Preserve existing descriptions, URLs, and order values. Only add `gradient` field and normalize missing fields (id, icon, category, featured, status) for 30-day-abs and <removed>.
 - **CSS variables:** Fix plan's `--text-primary`/`--text-secondary` → `--text-color`/`--text-color-secondary` to match codebase.
-- **hedwig.yaml:** Left untouched (not listed in index.yaml, not part of this phase).
 
 ## Files Modified
 

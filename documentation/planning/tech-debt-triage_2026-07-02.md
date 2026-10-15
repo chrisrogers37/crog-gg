@@ -25,7 +25,7 @@ link the PR next to each one.
 | [BUG-3](#bug-3)     | P2       | Build        | `vite.config.ts` `copy-content` plugin reads `src/content` (wrong path) with a stale file list                                                     |
 | [BUG-4](#bug-4)     | P2       | Regeneration | Cooldown starts even when regeneration is skipped or fails; client cooldown desyncs from server                                                    |
 | [BUG-5](#bug-5)     | P2       | Regeneration | One "regenerate" click fires 2 parallel API calls, consuming 2 daily-quota hits                                                                    |
-| [BUG-6](#bug-6)     | P2       | Data         | `hedwig.yaml` project exists on disk but is missing from `index.yaml`; loader fallback list is stale                                               |
+| [BUG-6](#bug-6)     | P2       | Data         | A project file exists on disk but is missing from `index.yaml`; loader fallback list is stale                                                      |
 | [BUG-7](#bug-7)     | P2       | Robustness   | LLM output is stored in state with no shape validation                                                                                             |
 | [DEBT-1](#debt-1)   | P2       | Dead code    | Unused legacy components still shipped (`Portfolio`, `Skills`, `Typewriter`, `SectionTiles`)                                                       |
 | [DEBT-2](#debt-2)   | P2       | Architecture | `CustomEvent` bridge (`contentRegenerated` / `contentUpdated`) coexists with Zustand                                                               |
@@ -136,7 +136,7 @@ by hand:
 The `try/catch` swallows the error (`vite.config.ts:92-94`), so builds pass while
 the plugin does nothing. The hardcoded list (`vite.config.ts:62-89`) is also out
 of sync with `public/content/projects/` (e.g. it lists `github.yaml` and omits
-`benzo.yaml`, `dead-redux.yaml`, `hedwig.yaml`).
+`benzo.yaml` and `dead-redux.yaml`).
 
 **Fix direction:** delete the plugin entirely (Vite already copies `public/`), or
 repoint it and make failures fail the build.
@@ -207,16 +207,16 @@ sections one request; check `response.ok`; handle partial success.
 
 **P2 — Project content files are out of sync between disk, index, and the loader fallback.**
 
-- `public/content/projects/hedwig.yaml` exists on disk but is **not** listed in
-  `public/content/projects/index.yaml`, so it never loads.
+- A project file in `public/content/projects/` exists on disk but is **not**
+  listed in `public/content/projects/index.yaml`, so it never loads.
 - `projectLoader.ts` has a hardcoded fallback list used when the index fetch
-  fails; it lists a stale subset (`shuffify`, `city-cycles`, `hedwig`, `github`)
-  that no longer matches the 8 projects in `index.yaml`.
+  fails; it lists a stale subset (`shuffify`, `city-cycles`, `github` and the
+  unlisted project) that no longer matches the 8 projects in `index.yaml`.
 - The `vite.config.ts` copy list is a third, separate stale enumeration (see BUG-3).
 
 **Fix direction:** pick a single source of truth (`index.yaml`), remove the
-hardcoded fallback (or generate it), and either add `hedwig` to the index or
-delete the file.
+hardcoded fallback (or generate it), and either add the unlisted project to the
+index or delete its file.
 
 - [ ] Fixed — PR: _____
 
