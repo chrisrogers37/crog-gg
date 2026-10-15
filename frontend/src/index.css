@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+/* tailwind.config.js still holds the theme, palette.ts's colors included, and
+   the files to scan (`content`): source(none) turns off Tailwind 4's scan of
+   the whole project. */
+@config "../tailwind.config.js";
 
 /* Custom base styles */
 @layer base {
@@ -23,40 +25,56 @@
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-500;
   }
+
+  /* Two Tailwind 3 defaults that Tailwind 4 changed: a light grey border
+     where none is set (a README's <hr>), and the pointer on buttons. */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: theme(colors.gray.200);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
-/* Custom component classes */
-@layer components {
-  /* The site's two button styles (CLAUDE.md): one filled primary, one ghost.
-     Focus is the global *:focus-visible outline above. */
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 no-underline hover:no-underline;
-    @apply px-5 py-3 rounded-lg border border-transparent;
-    @apply text-base font-semibold;
-    @apply transition-colors duration-150;
-  }
+/* Custom component classes. Unlayered, as everything was under Tailwind 3:
+   in a layer they would lose to App.css's plain `a` rule, which they beat on
+   specificity. */
 
-  .btn-sm {
-    @apply px-3 py-1.5 text-sm;
-  }
+/* The site's two button styles (CLAUDE.md): one filled primary, one ghost.
+   Focus is the global *:focus-visible outline above. */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 no-underline hover:no-underline;
+  @apply px-5 py-3 rounded-lg border border-transparent;
+  @apply text-base font-semibold;
+  @apply transition-colors duration-150;
+}
 
-  /* White on primary-600 is 5.2:1, so the same fill works in both themes. */
-  .btn-primary {
-    @apply bg-primary-600 text-white;
-    @apply hover:bg-primary-700;
-  }
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
 
-  .btn-ghost {
-    @apply bg-transparent border-slate-200 text-slate-800;
-    @apply hover:border-slate-400;
-    @apply dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-400;
-  }
+/* White on primary-600 is 5.2:1, so the same fill works in both themes. */
+.btn-primary {
+  @apply bg-primary-600 text-white;
+  @apply hover:bg-primary-700;
+}
 
-  /* One radius (8px), and a border rather than a shadow (CLAUDE.md). */
-  .card {
-    @apply bg-white rounded-lg border border-slate-200;
-    @apply dark:bg-slate-800 dark:border-slate-700;
-  }
+.btn-ghost {
+  @apply bg-transparent border-slate-200 text-slate-800;
+  @apply hover:border-slate-400;
+  @apply dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-400;
+}
+
+/* One radius (8px), and a border rather than a shadow (CLAUDE.md). */
+.card {
+  @apply bg-white rounded-lg border border-slate-200;
+  @apply dark:bg-slate-800 dark:border-slate-700;
 }
 
 /* Respect user motion preferences */

@@ -1,3 +1,5 @@
+@reference "../../../index.css";
+
 .error-boundary {
   display: flex;
   flex-direction: column;

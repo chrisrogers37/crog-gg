@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { prerender } from "./scripts/vite-prerender";
 import { site } from "./scripts/vite-site";
 
@@ -41,7 +42,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), site(), prerender(), insightsPreview],
+  plugins: [react(), tailwindcss(), site(), prerender(), insightsPreview],
   server: {
     proxy: {
       "/api": {

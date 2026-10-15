@@ -1,3 +1,5 @@
+@reference "../../../index.css";
+
 /* Claudfather's project page (#173): what only its sections draw. The page
    and its sections are the site's (styles/page.css), with the global .btn
    and .card (index.css); the hero is Claudfather's panel, below. */
