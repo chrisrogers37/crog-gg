@@ -7,6 +7,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 
 - The CSS is built with Tailwind CSS 4, through its Vite plugin; `autoprefixer` and the PostCSS config are gone. Pages look the same, but Tailwind 4 targets Safari 16.4, Chrome 111, Firefox 128 and newer, so older browsers may show pages partly unstyled. Keyboard focus rings are a solid 2px outline in the accent color in every browser, where Tailwind 3 left the browser's own ring style. A fork's stylesheet that calls `theme()` needs an `@reference` to `src/index.css` (CLAUDE.md).
+- `App.css`'s theme variables read `palette.ts` through `theme()`, so a color changed there reaches them too; there's no hand-kept copy to update.
 
 ## 2026-10-14
 

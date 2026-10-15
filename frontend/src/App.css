@@ -1,35 +1,33 @@
+@reference "./index.css";
+
 /*
- * Theme custom properties.
- *
- * Color source of truth is the Tailwind palette (frontend/tailwind.config.js,
- * defined in frontend/src/styles/palette.ts). Plain CSS cannot import JS, so
- * these vars mirror palette shades by hand, and each is tagged with the shade
- * it tracks. If a palette shade changes, update the matching var here too.
+ * Theme custom properties, read from the palette (src/styles/palette.ts)
+ * through Tailwind's theme(), so they can't drift from it.
  */
 :root {
-  --primary-color: #2563eb; /* primary.600 */
-  --background-color: #f8fafc; /* slate.50 */
-  --text-color: #1e293b; /* slate.800 */
-  --text-color-secondary: #64748b; /* slate.500 */
-  --card-background: #ffffff; /* white */
-  --border-color: #e2e8f0; /* slate.200 */
+  --primary-color: theme(colors.primary.600);
+  --background-color: theme(colors.slate.50);
+  --text-color: theme(colors.slate.800);
+  --text-color-secondary: theme(colors.slate.500);
+  --card-background: theme(colors.white);
+  --border-color: theme(colors.slate.200);
   /* SUMMON's filled button (ActionButtons.css), under white text in both
      themes, as .btn-primary (index.css): white is 5.2:1 on primary.600 and
      6.7:1 on primary.700. --primary-color is the text accent, and in the dark
      theme it is too light to put white on. */
-  --button-color: #2563eb; /* primary.600 */
-  --hover-color: #1d4ed8; /* primary.700 */
+  --button-color: theme(colors.primary.600);
+  --hover-color: theme(colors.primary.700);
 }
 
 /* Dark mode overrides */
 .dark {
-  --primary-color: #60a5fa; /* primary.400 */
-  --background-color: #0f172a; /* slate.900 */
-  --text-color: #f1f5f9; /* slate.100 */
-  --text-color-secondary: #94a3b8; /* slate.400 */
-  --card-background: #1e293b; /* slate.800 */
-  --border-color: #334155; /* slate.700 */
-  --logo-chip: #f1f5f9; /* slate.100 */
+  --primary-color: theme(colors.primary.400);
+  --background-color: theme(colors.slate.900);
+  --text-color: theme(colors.slate.100);
+  --text-color-secondary: theme(colors.slate.400);
+  --card-background: theme(colors.slate.800);
+  --border-color: theme(colors.slate.700);
+  --logo-chip: theme(colors.slate.100);
 }
 
 #root {
