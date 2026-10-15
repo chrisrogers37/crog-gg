@@ -6,25 +6,10 @@ import {
   githubService,
   type Repository,
 } from "../../../../services/githubService";
+import { makeRepository } from "../../../../test/builders";
 
-const repo = (name: string, stars: number): Repository => ({
-  name,
-  full_name: `owner/${name}`,
-  description: null,
-  html_url: `https://github.com/owner/${name}`,
-  homepage: null,
-  stargazers_count: stars,
-  forks_count: 1,
-  watchers_count: 1,
-  open_issues_count: 0,
-  language: "TypeScript",
-  topics: [],
-  created_at: "2026-01-01T00:00:00Z",
-  updated_at: "2026-09-01T00:00:00Z",
-  pushed_at: "2026-09-01T00:00:00Z",
-  license: null,
-  default_branch: "main",
-});
+const repo = (name: string, stars: number) =>
+  makeRepository({ name, full_name: `owner/${name}`, stargazers_count: stars });
 
 /** A promise the test resolves when it chooses. */
 function deferred<T>() {
@@ -97,6 +82,20 @@ describe("RepoStats' topics", () => {
     render(<RepoStats owner="owner" repoName="bare" />);
     expect(await screen.findByText("5")).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: "Topics" })).toBeNull();
+  });
+});
+
+describe("RepoStats' license", () => {
+  it("shows no badge for a license without an SPDX id, rather than a bare icon", async () => {
+    vi.spyOn(githubService, "getRepository").mockResolvedValue({
+      ...repo("other", 7),
+      license: { spdx_id: null },
+    });
+    render(<RepoStats owner="owner" repoName="other" />);
+
+    // Loaded: the loading stand-in has a license badge of its own.
+    expect(await screen.findByText("7")).toBeInTheDocument();
+    expect(screen.queryByText("📜")).toBeNull();
   });
 });
 

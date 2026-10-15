@@ -7,7 +7,7 @@ import site from "virtual:site-config";
 import { useContentStore, useUIStore } from "../../../store";
 import { githubService, type Repository } from "../../../services/githubService";
 import type { Project } from "../../../types";
-import { makeProject } from "../../../test/builders";
+import { makeProject, makeRepository } from "../../../test/builders";
 import { claudfather } from "../../../content/claudfather";
 import { ProjectDetailPage } from "../ProjectDetailPage";
 
@@ -177,16 +177,7 @@ describe("ProjectDetailPage across projects", () => {
     vi.spyOn(githubService, "getRepository").mockImplementation(async (_owner, name) =>
       name === "alpha"
         ? ({} as Repository)
-        : ({
-            name,
-            stargazers_count: 222,
-            forks_count: 1,
-            watchers_count: 1,
-            open_issues_count: 0,
-            pushed_at: "2026-09-01T00:00:00Z",
-            language: null,
-            license: null,
-          } as Repository),
+        : makeRepository({ name, stargazers_count: 222, language: null }),
     );
     vi.spyOn(githubService, "getReadme").mockRejectedValue(new Error("offline"));
     vi.spyOn(console, "error").mockImplementation(() => {});
