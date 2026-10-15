@@ -1,10 +1,12 @@
 /**
  * Small checks that hold YAML to a shape: site.yaml (schema.ts, #188) and the
- * content files (contentSchema.ts, #190), which the browser checks too.
+ * content files (contentSchema.ts, #190), which the browser checks too, and
+ * the GitHub proxy's replies (githubService.ts, #272).
  *
  * Each field is a check that records "path: problem" and carries on, so one
  * run reports every mistake rather than the first. A key the shape doesn't
- * name is a mistake too, so a misspelt key fails instead of being ignored.
+ * name is a mistake too, so a misspelt key fails instead of being ignored,
+ * unless the shape says to ignore unknown keys, as an API's reply needs.
  * A shape's type is inferred from the same checks.
  */
 
@@ -68,6 +70,11 @@ export const positiveInteger: Check<number> = (value, path, issues) =>
     ? (value as number)
     : fail(issues, path, value, "a positive whole number");
 
+export const count: Check<number> = (value, path, issues) =>
+  Number.isInteger(value) && (value as number) >= 0
+    ? (value as number)
+    : fail(issues, path, value, "a whole number, 0 or more");
+
 export const oneOf =
   <const T extends string>(allowed: readonly T[]): Check<T> =>
   (value, path, issues) =>
@@ -82,6 +89,12 @@ export const optional =
     value === undefined || value === null || value === ""
       ? undefined
       : check(value, path, issues);
+
+/** null is a value, as in a JSON reply; anything else is held to `check`. */
+export const nullable =
+  <T>(check: Check<T>): Check<T | null> =>
+  (value, path, issues) =>
+    value === null ? null : check(value, path, issues);
 
 export const list =
   <T>(item: Check<T>, { min = 0 } = {}): Check<T[]> =>
@@ -109,16 +122,21 @@ export type Parsed<S extends Shape> = {
   : never;
 
 export const object =
-  <S extends Shape>(shape: S): Check<Parsed<S>> =>
+  <S extends Shape>(
+    shape: S,
+    { unknownKeys = "fail" }: { unknownKeys?: "fail" | "ignore" } = {},
+  ): Check<Parsed<S>> =>
   (value, path, issues) => {
     if (typeof value !== "object" || value === null || Array.isArray(value)) {
       return fail(issues, path, value, "a mapping");
     }
     const record = value as Record<string, unknown>;
-    for (const key of Object.keys(record)) {
-      // Own keys only, so "constructor" or "toString" isn't taken as known.
-      if (!Object.prototype.hasOwnProperty.call(shape, key)) {
-        issues.push(`${at(path, key)}: unknown key`);
+    if (unknownKeys === "fail") {
+      for (const key of Object.keys(record)) {
+        // Own keys only, so "constructor" or "toString" isn't taken as known.
+        if (!Object.prototype.hasOwnProperty.call(shape, key)) {
+          issues.push(`${at(path, key)}: unknown key`);
+        }
       }
     }
     const parsed: Record<string, unknown> = {};

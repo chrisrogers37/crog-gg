@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useMotionPreference } from "../../../hooks/useMotionPreference";
 import site from "virtual:site-config";
-import { githubService, Repository } from "../../../services/githubService";
+import { githubService, type RepoFigures } from "../../../services/githubService";
 import "./RepoStats.css";
 
 interface RepoStatsProps {
@@ -12,23 +12,13 @@ interface RepoStatsProps {
 }
 
 /** A typical repo's figures, which the panel lays out unseen while it loads. */
-const PLACEHOLDER: Pick<
-  Repository,
-  | "stargazers_count"
-  | "forks_count"
-  | "watchers_count"
-  | "open_issues_count"
-  | "language"
-  | "license"
-  | "pushed_at"
-  | "topics"
-> = {
+const PLACEHOLDER: RepoFigures = {
   stargazers_count: 0,
   forks_count: 0,
   watchers_count: 0,
   open_issues_count: 0,
   language: "TypeScript",
-  license: { name: "MIT License", spdx_id: "MIT" },
+  license: { spdx_id: "MIT" },
   pushed_at: "2026-01-01T00:00:00Z",
   topics: [],
 };
@@ -44,7 +34,7 @@ const PLACEHOLDER: Pick<
  */
 export function RepoStats({ owner, repoName }: RepoStatsProps) {
   const reduceMotion = useMotionPreference();
-  const [repo, setRepo] = useState<Repository | null>(null);
+  const [repo, setRepo] = useState<RepoFigures | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -139,7 +129,7 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
             {shown.language}
           </span>
         )}
-        {shown.license && (
+        {shown.license?.spdx_id && (
           <span className="meta-item">
             <span className="meta-icon" aria-hidden="true">📜</span> {shown.license.spdx_id}
           </span>
@@ -150,7 +140,7 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
       </div>
 
       {/* Topics */}
-      {shown.topics && shown.topics.length > 0 && (
+      {shown.topics.length > 0 && (
         <ul className="pills repo-topics" aria-label="Topics">
           {shown.topics.map((topic) => (
             <li key={topic}>{topic}</li>
