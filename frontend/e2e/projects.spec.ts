@@ -48,8 +48,12 @@ test.describe("Projects page", () => {
     await expect(page).toHaveURL(/\/projects\/.+/);
   });
 
-  test("the featured card stands out in the site's accent, in both themes", async ({ page }) => {
+  test("the featured card stands out in the site's accent, in both themes", async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(!FEATURED, "index.yaml features no project");
+    test.skip(isMobile, "the header's theme button: a phone has it in the menu instead");
     const featured = page.locator("article.project-featured");
     const label = featured.locator(".page-eyebrow");
     const card = page.locator(".projects-page .project-row").first();
@@ -234,32 +238,45 @@ const CODE_README = [
   "```",
 ].join("\n");
 
+/**
+ * A project page showing CODE_README in `theme`: its six code fences, once the
+ * README is up. Skips where no project's README can show.
+ */
+const openCodeReadme = async (
+  page: import("@playwright/test").Page,
+  request: import("@playwright/test").APIRequestContext,
+  theme: "light" | "dark",
+) => {
+  const linked = await linkedProject(request);
+  test.skip(!linked, "no project links a repo the API serves");
+  test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript((selectedTheme) => {
+    localStorage.setItem("ui-storage", JSON.stringify({ state: { theme: selectedTheme }, version: 0 }));
+  }, theme);
+  await page.route("**/api/v1/github/readme/**", (route) =>
+    route.fulfill({ json: readmeAnswer(CODE_README) }),
+  );
+  await page.route("**/api/v1/github/repo/**", (route) =>
+    route.fulfill({ status: 503, json: { error: "not needed for README checks" } }),
+  );
+  await page.goto(`/projects/${linked!.id}`);
+  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /dark/ : /^$/);
+
+  const fences = page.locator(".readme-code-block > code");
+  await expect(fences).toHaveCount(6);
+  return fences;
+};
+
 test.describe("README code readability", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
   for (const theme of ["light", "dark"] as const) {
-    test(`plain and highlighted code are readable and keyboard-scrollable in ${theme} mode`, async ({
+    test(`plain and highlighted code are readable and keyboard-focusable in ${theme} mode`, async ({
       page,
       request,
     }) => {
-      const linked = await linkedProject(request);
-      test.skip(!linked, "no project links a repo the API serves");
-      test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
-      await page.emulateMedia({ reducedMotion: "reduce" });
-      await page.addInitScript((selectedTheme) => {
-        localStorage.setItem("ui-storage", JSON.stringify({ state: { theme: selectedTheme }, version: 0 }));
-      }, theme);
-      await page.route("**/api/v1/github/readme/**", (route) =>
-        route.fulfill({ json: readmeAnswer(CODE_README) }),
-      );
-      await page.route("**/api/v1/github/repo/**", (route) =>
-        route.fulfill({ status: 503, json: { error: "not needed for README checks" } }),
-      );
-      await page.goto(`/projects/${linked!.id}`);
-      await expect(page.locator("html")).toHaveClass(theme === "dark" ? /dark/ : /^$/);
-
-      const fences = page.locator(".readme-code-block > code");
-      await expect(fences).toHaveCount(6);
+      const fences = await openCodeReadme(page, request, theme);
       await expect(fences.first()).not.toHaveClass(/hljs/);
       await expect(fences.nth(1)).toHaveClass(/hljs/);
 
@@ -297,17 +314,38 @@ test.describe("README code readability", () => {
         expect(sample.ratio, JSON.stringify(sample)).toBeGreaterThanOrEqual(4.5);
       }
 
-      // Both long fences scroll the focused element itself, not the page.
+      // Both long fences are focusable scroll boxes, and the page doesn't
+      // overflow around them.
       for (const fence of [fences.first(), fences.nth(1)]) {
         await expect(fence).toHaveAttribute("tabindex", "0");
         await fence.focus();
         await expect(fence).toBeFocused();
-        await fence.press("ArrowRight");
-        await expect.poll(() => fence.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(360);
     });
   }
+
+  test("plain and highlighted code scroll with the arrow keys once focused", async ({
+    page,
+    request,
+    isMobile,
+  }) => {
+    test.skip(
+      isMobile,
+      "arrow-key scrolling: a phone has no arrow keys, and Playwright's WebKit doesn't scroll on them",
+    );
+    // One theme: the keys don't depend on it.
+    const fences = await openCodeReadme(page, request, "light");
+
+    // Both long fences scroll the focused element itself, not the page.
+    for (const fence of [fences.first(), fences.nth(1)]) {
+      await fence.focus();
+      await expect(fence).toBeFocused();
+      await fence.press("ArrowRight");
+      await expect.poll(() => fence.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(360);
+  });
 });
 
 test.describe("A deep-linked project page while /api/features answers (#189 M21)", () => {
