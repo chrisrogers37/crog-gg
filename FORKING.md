@@ -63,7 +63,7 @@ It holds your content to the site's rules: every file and photo it names exists,
 ## 6. What's left
 
 - Point these at yourself, or delete them: `SECURITY.md` and `.github/ISSUE_TEMPLATE/config.yml` (where security reports go), and `.github/CODEOWNERS`.
-- Delete `documentation/archive/` and `documentation/planning/`: this repo's history, not yours.
+- Delete `documentation/planning/`: this repo's plans, not yours.
 - CLAUDE.md's "Site copy style" section describes this instance's copy. Write your own.
 - The `.claude/agents/` you won't use, and `.claude/skills/add-project/` if you don't list projects.
 
