@@ -23,4 +23,4 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 ## History
 
 - [CHANGELOG.md](../CHANGELOG.md): notable changes, by date.
-- [archive/](archive/): past plans, reviews and evaluations, kept for their reasoning ([catalogue](planning/README.md#completed-initiatives-all-archived)). Most of what they describe has since been fixed; GitHub issues are the current record.
+- Past plans, reviews and evaluations: git history keeps them (`git log -- documentation/archive`). GitHub issues are the current record.

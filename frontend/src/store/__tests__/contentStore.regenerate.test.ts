@@ -344,9 +344,9 @@ describe("regenerateContent", () => {
      * and the store validates each field is renderable before it replaces
      * what is on the page.
      *
-     * Written up in documentation/archive/evaluations/ai-regeneration-seam-coverage.md
-     * (issue #105). If one of these starts failing again, that write-up is
-     * where the reasoning lives.
+     * Written up for issue #105 in ai-regeneration-seam-coverage.md, which git
+     * history keeps under documentation/archive/evaluations/. If one of these
+     * starts failing again, that write-up is where the reasoning lives.
      */
     it(
       "keeps the prior bio when about comes back as an empty object",
@@ -409,7 +409,7 @@ describe("regenerateContent", () => {
      * is precisely what re-triggers the cooldown. Server refusals now reach
      * the visitor; unexpected exceptions still get the generic message.
      *
-     * Same write-up: documentation/archive/evaluations/ai-regeneration-seam-coverage.md
+     * Same write-up: ai-regeneration-seam-coverage.md, in git history.
      */
     it(
       "tells the visitor it was a cooldown, not a generic failure",
