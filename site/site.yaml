@@ -43,7 +43,7 @@ seo:
     path: /og-image.png
     width: 1200
     height: 630
-    alt: building things that build things. data, agent fleets and music.
+    alt: building things that build things. data, agents, music.
   about:
     description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
   projects:
