@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-19
+
+### Changed
+
+- The line under the home page's headline reads "data, agents, music.", where it was "data, agent fleets and music."
+
 ## 2026-10-15
 
 ### Changed
