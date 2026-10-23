@@ -72,6 +72,7 @@ Each section costs the visitor a daily slot, so send only what the page shows (#
 
 - `/api/v1/github/repo` and `/readme` serve **only public repos of allowed owners**: `github.username` and `github.allowed_owners`. `/repo/<owner>/<name>` and `/readme/<owner>/<name>` name the owner, as the project pages do; the one-segment routes mean `github.username`. Any other owner, and a private or missing repo, get the same 404 before or after GitHub is asked, so the proxy can't reveal which private repos exist (#97, #189).
 - Each is limited to 30 requests a minute per visitor (failing open), and a 200 is cached at Vercel's edge for an hour.
+- A public repo with no README answers `/readme` with a 204 and no body, never cached, so a project page leaves its readme section out without logging a failed request.
 - A request with a query string is a 400, before the rate limiter and without calling GitHub (`_github_query_refused`). The edge caches by full URL, so each new query string would otherwise be a miss that spends the token's quota. The page never sends one.
 - With `features.github: off` in `site.yaml`, every GitHub route answers 404, before its rate limiter and without calling GitHub (`_github_off`, an app-level gate, #189).
 

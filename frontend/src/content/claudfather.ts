@@ -117,6 +117,14 @@ export const claudfather = {
     intro:
       "Explore the product experience, or follow the setup guide to build a local fleet with Claudlobby.",
     setupLabel: "Set up a local fleet with Claudlobby",
+    // Under the setup link. The bounds stay with the README, pinned like the roles.
+    safety: {
+      note: "A worker acts as the user who runs it. It can run shell commands without asking, read and change anything that user can, and use their credentials.",
+      lead: "What bounds a worker, and how to tighten that:",
+      sourceLabel: "Claudlobby's safety model",
+      source: `${CLAUDLOBBY_REPO}/blob/9b7be0887603f50722222939a1d8700f9c4ac697/README.md#safety-model`,
+      asOf: "2026-10-23",
+    },
   },
   follow: {
     heading: "Follow the projects",

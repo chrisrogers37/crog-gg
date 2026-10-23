@@ -86,6 +86,20 @@ describe("Claudfather page", () => {
     ).toHaveAttribute("href", CLAUDLOBBY_GETTING_STARTED);
   });
 
+  it("says under the setup link what a worker can do, and links the safety model", () => {
+    renderWithProviders(<ClaudfatherPage project={project} />);
+    const quickstart = within(document.getElementById("quickstart")!);
+    const { safety } = claudfather.start;
+    expect(quickstart.getByText(safety.note)).toBeVisible();
+    expect(
+      quickstart.getByRole("link", { name: claudfather.start.setupLabel })
+        .nextElementSibling,
+    ).toHaveTextContent(safety.note);
+    expect(
+      quickstart.getByRole("link", { name: safety.sourceLabel }),
+    ).toHaveAttribute("href", safety.source);
+  });
+
   it.each<WebsiteDestination | null>([
     website,
     {
