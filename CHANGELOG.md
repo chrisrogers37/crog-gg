@@ -8,6 +8,10 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 - Claudfather's page says, under its setup link, that a worker acts as the user who runs it, and links Claudlobby's safety model for what bounds a worker and how to tighten that.
 
+### Changed
+
+- `/projects`' description in search results and link previews names what the page lists, Claudfather first, where it spoke of "web apps to mobile development".
+
 ### Fixed
 
 - A project page whose repo has no README leaves out its readme section, where it showed an empty box and logged a failed request. `/api/v1/github/readme` answers such a repo with a 204 and no body, in place of a 404.

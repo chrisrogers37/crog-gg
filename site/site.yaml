@@ -47,7 +47,7 @@ seo:
   about:
     description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
   projects:
-    description: Explore my portfolio of software projects, side projects, and experiments. From web apps to mobile development.
+    description: "things i've built: Claudfather, my tools for running AI teams, plus Storydump, Shuffify, Benzo and Dead Redux."
 
 page_copy:
   projects:
