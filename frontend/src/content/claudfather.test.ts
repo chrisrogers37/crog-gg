@@ -24,6 +24,16 @@ describe("Claudfather portfolio copy", () => {
     }
   });
 
+  it("says a worker acts as its user, and pins the safety model to a dated commit", () => {
+    const { safety } = claudfather.start;
+    expect(safety.note).toMatch(/acts as the user who runs it/);
+    expect(safety.source).toMatch(
+      /^https:\/\/github\.com\/Claudfather\/Claudlobby\/blob\/[0-9a-f]{40}\/README\.md#safety-model$/,
+    );
+    expect(safety.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(Number.isNaN(Date.parse(safety.asOf))).toBe(false);
+  });
+
   it("does not offer the private evaluation repository or an ecosystem-wide license", () => {
     expect(
       claudfather.family.find(({ id }) => id === "claudosseum")?.repo,

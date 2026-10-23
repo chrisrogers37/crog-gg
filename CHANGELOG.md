@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-23
+
+### Added
+
+- Claudfather's page says, under its setup link, that a worker acts as the user who runs it, and links Claudlobby's safety model for what bounds a worker and how to tighten that.
+
 ## 2026-10-19
 
 ### Changed
