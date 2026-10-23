@@ -219,7 +219,7 @@ def test_get_readme_falls_back_when_no_root_readme(client):
     assert r.get_json()["path"] == "README.rst"
 
 
-def test_get_readme_404_when_neither_exists(client):
+def test_get_readme_204_when_neither_exists(client):
     meta = _make_response(200, {"name": "shuffify", "private": False})
 
     def _side_effect(url, **kwargs):
@@ -230,7 +230,8 @@ def test_get_readme_404_when_neither_exists(client):
     with patch("api.index.requests.get", side_effect=_side_effect):
         r = client.get("/api/v1/github/readme/shuffify")
 
-    assert r.status_code == 404
+    assert r.status_code == 204
+    assert r.get_data() == b""
     assert "s-maxage" not in r.headers.get("Cache-Control", ""), "a missing README must never be cached"
 
 
@@ -325,6 +326,26 @@ def test_sub_resource_failure_is_not_passed_through(client):
     with patch("api.index.requests.get", side_effect=_side_effect):
         r = client.get("/api/v1/github/readme/shuffify")
     assert r.status_code == 502
+    assert r.get_json() == _UNAVAILABLE
+
+
+@pytest.mark.parametrize("status_code, expected", [(500, 502), (403, 503)])
+def test_a_failing_fallback_readme_is_not_a_missing_one(client, status_code, expected):
+    """Only a 404 from the last candidate means the repo has no README (a 204).
+    The /readme fallback failing any other way is GitHub's failure, and answers
+    as one."""
+    meta = _make_response(200, {"name": "shuffify", "private": False})
+
+    def _side_effect(url, **kwargs):
+        if url.endswith("/contents/README.md"):
+            return _make_response(404, {"message": "Not Found"})
+        if url.endswith("/readme"):
+            return _failing(status_code)
+        return meta
+
+    with patch("api.index.requests.get", side_effect=_side_effect):
+        r = client.get("/api/v1/github/readme/shuffify")
+    assert r.status_code == expected
     assert r.get_json() == _UNAVAILABLE
 
 

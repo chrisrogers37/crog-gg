@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router";
 import { useProjects, useLoad, useContentStore } from "../../store";
 import type { Project } from "../../types";
@@ -34,6 +34,25 @@ function ReadmeFallback() {
       <div className="page-skeleton" />
       <div className="page-skeleton" />
     </div>
+  );
+}
+
+/**
+ * The README's section, left out once the reply says the repo has none. Keyed
+ * by repo where it's used, so another project's page starts afresh.
+ */
+function ReadmeSection({ owner, name }: { owner: string; name: string }) {
+  const [missing, setMissing] = useState(false);
+  const onMissing = useCallback(() => setMissing(true), []);
+  if (missing) return null;
+  return (
+    <PageSection id="readme" heading="readme">
+      <ErrorBoundary compact>
+        <Suspense fallback={<ReadmeFallback />}>
+          <GitHubReadme owner={owner} repoName={name} onMissing={onMissing} />
+        </Suspense>
+      </ErrorBoundary>
+    </PageSection>
   );
 }
 
@@ -140,13 +159,7 @@ function StandardProject({ project }: { project: Project }) {
       )}
 
       {repo && githubOn && (
-        <PageSection id="readme" heading="readme">
-          <ErrorBoundary compact>
-            <Suspense fallback={<ReadmeFallback />}>
-              <GitHubReadme owner={repo.owner} repoName={repo.name} />
-            </Suspense>
-          </ErrorBoundary>
-        </PageSection>
+        <ReadmeSection key={`${repo.owner}/${repo.name}`} owner={repo.owner} name={repo.name} />
       )}
     </>
   );

@@ -60,6 +60,11 @@ interface GitHubReadmeProps {
   owner: string;
   repoName: string;
   className?: string;
+  /**
+   * Called when the repo has no README, or an empty one, so the page can leave
+   * its section out.
+   */
+  onMissing?: () => void;
 }
 
 /**
@@ -75,6 +80,7 @@ export function GitHubReadme({
   owner,
   repoName,
   className = "",
+  onMissing,
 }: GitHubReadmeProps) {
   const [readme, setReadme] = useState<Readme | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,6 +96,7 @@ export function GitHubReadme({
         const content = await githubService.getReadme(owner, repoName);
         if (!ignore) {
           setReadme(content);
+          if (!content || !content.text.trim()) onMissing?.();
         }
       } catch (err) {
         if (!ignore) {
@@ -108,7 +115,7 @@ export function GitHubReadme({
     return () => {
       ignore = true;
     };
-  }, [owner, repoName]);
+  }, [owner, repoName, onMissing]);
 
   if (isLoading) {
     return (
@@ -123,14 +130,10 @@ export function GitHubReadme({
     );
   }
 
-  // An empty README, or one over the contents API's 1 MB limit, arrives with
-  // no text: say so rather than render an empty article.
-  if (error || !readme || !readme.text.trim()) {
+  if (error) {
     return (
       <div className={`github-readme empty ${className}`}>
-        <p className="readme-empty-message">
-          {error || "No README available for this repository."}
-        </p>
+        <p className="readme-empty-message">{error}</p>
         <a
           href={`https://github.com/${owner}/${repoName}`}
           target="_blank"
@@ -142,6 +145,10 @@ export function GitHubReadme({
       </div>
     );
   }
+
+  // A repo with no README, or an empty one, has nothing to show: onMissing has
+  // told the page to leave its section out.
+  if (!readme || !readme.text.trim()) return null;
 
   return (
     <div className={`github-readme ${className}`}>

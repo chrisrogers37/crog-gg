@@ -255,4 +255,21 @@ describe("ProjectDetailPage's GitHub panels", () => {
     renderAt(["/projects/benzo"]);
     for (const panel of panels()) expect(panel).not.toBeInTheDocument();
   });
+
+  it("leaves the readme out once the repo turns out to have none, and keeps the other sections", async () => {
+    githubServed();
+    useContentStore.setState({ projects: [{ ...LINKED, technologies: ["Python"] }] });
+    vi.spyOn(githubService, "getReadme").mockResolvedValue(null);
+    renderAt(["/projects/benzo"]);
+
+    // The section stands while the README is on its way.
+    expect(screen.getByRole("heading", { name: /^readme$/i })).toBeInTheDocument();
+    // Its chunk loads on its own, so the fetch follows, and the answer takes it out.
+    await waitFor(() => expect(githubService.getReadme).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(screen.queryByRole("heading", { name: /^readme$/i })).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole("heading", { name: /^repository$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^built with$/i })).toBeInTheDocument();
+  });
 });

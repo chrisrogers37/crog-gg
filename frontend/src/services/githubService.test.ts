@@ -179,7 +179,7 @@ describe("githubService", () => {
     });
 
     it("asks by owner, and caches each owner's README apart (#189)", async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
+      globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, status: 204 });
 
       await githubService.getReadme("ada", "same-name");
       await githubService.getReadme("octocat", "same-name");
@@ -190,15 +190,26 @@ describe("githubService", () => {
       ]);
     });
 
-    it("returns null when the repo has no README", async () => {
+    it("returns null when the repo has no README, which the proxy answers with a 204", async () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
+        ok: true,
+        status: 204,
       });
 
       const result = await githubService.getReadme("owner", "no-readme-repo");
 
       expect(result).toBeNull();
+    });
+
+    it("throws error on a 404, a repo the proxy doesn't serve rather than one with no README", async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+      });
+
+      await expect(githubService.getReadme("owner", "no-such-repo")).rejects.toThrow(
+        "Failed to fetch README: 404",
+      );
     });
 
     it("throws error on other failures", async () => {
