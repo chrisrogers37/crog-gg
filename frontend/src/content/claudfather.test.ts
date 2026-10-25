@@ -14,7 +14,7 @@ describe("Claudfather portfolio copy", () => {
   });
 
   it("pins every role to public evidence and dates it", () => {
-    expect(claudfather.family).toHaveLength(4);
+    expect(claudfather.family).toHaveLength(3);
     for (const role of claudfather.family) {
       expect(role.source).toMatch(
         /^https:\/\/github\.com\/Claudfather\/\.github\/blob\/[0-9a-f]{40}\/BRAND\.md/,
@@ -34,12 +34,9 @@ describe("Claudfather portfolio copy", () => {
     expect(Number.isNaN(Date.parse(safety.asOf))).toBe(false);
   });
 
-  it("does not offer the private evaluation repository or an ecosystem-wide license", () => {
-    expect(
-      claudfather.family.find(({ id }) => id === "claudosseum")?.repo,
-    ).toBeNull();
+  it("leaves out the private, archived Claudosseum and an ecosystem-wide license", () => {
     expect(strings(claudfather).join(" ")).not.toMatch(
-      /everything is open source|github\.com\/Claudfather\/Claudosseum/i,
+      /everything is open source|claudosseum/i,
     );
   });
 
@@ -50,8 +47,11 @@ describe("Claudfather portfolio copy", () => {
       /not a recorded run or an automatic integration/,
     );
     if (claudfather.website?.state === "preview") {
-      expect(claudfather.website.caveat).toMatch(/synthetic/i);
-      expect(claudfather.website.caveat).toMatch(/does not run a real team/i);
+      expect(claudfather.website.caveat).toMatch(/in private development/i);
+      expect(claudfather.website.caveat).toMatch(
+        /no sign-up, waitlist or public demo/i,
+      );
+      expect(claudfather.website.label).not.toMatch(/demo|preview|explore/i);
     }
   });
 });

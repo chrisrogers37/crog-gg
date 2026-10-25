@@ -66,7 +66,7 @@ describe("Claudfather page", () => {
       .forEach((level, i) => expect(level).toBeLessThanOrEqual(levels[i] + 1));
   });
 
-  it("offers sources for public components and no link for private evaluation tooling", () => {
+  it("offers sources for public components and no link for a private one", () => {
     renderWithProviders(<ClaudfatherPage project={project} />);
     for (const role of claudfather.family) {
       const row = document.getElementById(role.id)!;

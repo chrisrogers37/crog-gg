@@ -24,8 +24,8 @@ export type FamilyProject = {
 
 const roleEvidence = {
   source:
-    "https://github.com/Claudfather/.github/blob/f207100cf15729c33ea8d74116f1755f1e27cc4e/BRAND.md#names-and-roles",
-  asOf: "2026-10-10",
+    "https://github.com/Claudfather/.github/blob/c28a46084c52602a0ee961c761a22ddb980e472f/BRAND.md#names-and-roles",
+  asOf: "2026-10-24",
 };
 
 export const claudfather = {
@@ -38,10 +38,10 @@ export const claudfather = {
   // Reachability alone does not establish real onboarding. null hides the link.
   website: {
     state: "preview",
-    url: "https://claudfather-ai.vercel.app",
-    label: "Explore the preview",
+    url: "https://claudfather.ai",
+    label: "Visit claudfather.ai",
     caveat:
-      "Development preview with synthetic data. It does not run a real team.",
+      "The website is in private development. There's no sign-up, waitlist or public demo yet.",
   } as WebsiteDestination | null,
   hero: {
     headline: "Build a team of AI workers.",
@@ -66,8 +66,8 @@ export const claudfather = {
         body: "Compose a fleet with Claudlobby and inspect its plan before activating it.",
       },
       {
-        title: "Keep and evaluate the result",
-        body: "Use durable knowledge and evaluation tools where they fit your workflow.",
+        title: "Review and keep the result",
+        body: "Review the work, and keep useful knowledge for the next run.",
       },
     ],
   },
@@ -99,14 +99,6 @@ export const claudfather = {
       repo: "https://github.com/Claudfather/Claudron",
       ...roleEvidence,
     },
-    {
-      id: "claudosseum",
-      job: "Evaluate workflows",
-      name: "Claudosseum",
-      description: "Compare skills and experiments.",
-      repo: null,
-      ...roleEvidence,
-    },
   ] satisfies FamilyProject[],
   why: {
     heading: "Why I'm building it",
@@ -115,7 +107,7 @@ export const claudfather = {
   start: {
     heading: "Get started",
     intro:
-      "Explore the product experience, or follow the setup guide to build a local fleet with Claudlobby.",
+      "To run a team today, follow the setup guide to build a local fleet with Claudlobby.",
     setupLabel: "Set up a local fleet with Claudlobby",
     // Under the setup link. The bounds stay with the README, pinned like the roles.
     safety: {
