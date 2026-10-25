@@ -2,6 +2,16 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-25
+
+### Changed
+
+- Claudfather's page links [claudfather.ai](https://claudfather.ai), which is in private development, with no sign-up, waitlist or public demo yet, where it linked a synthetic development preview on `claudfather-ai.vercel.app`. The link is in the hero only: Get started now leads with the Claudlobby setup guide, for running a team today. The walkthrough's last step no longer offers evaluation tools.
+
+### Removed
+
+- Claudosseum is gone from Claudfather's family: it's private and archived. The roles now cite the brand reference as of 2026-10-24.
+
 ## 2026-10-23
 
 ### Added

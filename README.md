@@ -4,7 +4,7 @@
 
 crog.gg is Chris Rogers's site, Choose Your Own Chris:
 - **`/` is his page**: who he is, a career timeline, his projects, his music and how to reach him, in one column. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
-- **`/projects`** lists the projects, with [Claudfather](https://github.com/Claudfather), an ecosystem of tools for AI teams, workflows and knowledge, featured. Its detailed portfolio page explains the family, shows an illustrative workflow and links to the qualified product preview and public setup guides. crog.gg remains Chris's personal site.
+- **`/projects`** lists the projects, with [Claudfather](https://github.com/Claudfather), an ecosystem of tools for AI teams, workflows and knowledge, featured. Its detailed portfolio page explains the family, shows an illustrative workflow and links to [claudfather.ai](https://claudfather.ai) (in private development) and public setup guides. crog.gg remains Chris's personal site.
 
 For how it's built, and what each content file does, see the [documentation index](documentation/README.md). To work on it, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -219,7 +219,7 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 
 ### Web Analytics
 
-Pageviews and the CTA events go to Vercel Web Analytics through `frontend/src/services/analytics.ts`. `repo_click` still means a visit to the Claudlobby repository front page: the ecosystem uses location `family`; `hero`, `quickstart` and `featured` remain supported for existing callers. `updates_click` still means the Claudlobby releases link. `quickstart_click` remains a legacy event and is not emitted by the new walkthrough. Organization, product-preview, setup-guide and illustrative-anchor clicks do not count as these events or as product activation. Analytics sets no cookies; its script and beacons are served from the site's own origin (`/_vercel/insights/*`). Reported URLs retain only the path and `utm_*` query parameters, with no fragment.
+Pageviews and the CTA events go to Vercel Web Analytics through `frontend/src/services/analytics.ts`. `repo_click` still means a visit to the Claudlobby repository front page: the ecosystem uses location `family`; `hero`, `quickstart` and `featured` remain supported for existing callers. `updates_click` still means the Claudlobby releases link. `quickstart_click` remains a legacy event and is not emitted by the new walkthrough. Organization, claudfather.ai website, setup-guide and illustrative-anchor clicks do not count as these events or as product activation. Analytics sets no cookies; its script and beacons are served from the site's own origin (`/_vercel/insights/*`). Reported URLs retain only the path and `utm_*` query parameters, with no fragment.
 
 1. Vercel → project → **Analytics** → **Enable**, before the first deploy that ships `@vercel/analytics`. The `/_vercel/insights/*` routes exist from the next deployment on; until then every page requests a script that 404s.
 2. Custom events need the **Pro** plan. On Hobby only pageviews are recorded, up to the plan's monthly event cap.

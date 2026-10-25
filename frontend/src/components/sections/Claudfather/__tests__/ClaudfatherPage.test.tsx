@@ -4,6 +4,7 @@ import { renderWithProviders } from "../../../../test/utils";
 import { makeProject } from "../../../../test/builders";
 import {
   claudfather,
+  type FamilyProject,
   type WebsiteDestination,
 } from "../../../../content/claudfather";
 import { CLAUDLOBBY_GETTING_STARTED } from "../../../../content/links";
@@ -17,8 +18,11 @@ const project = makeProject({
   featured: true,
 });
 const website = claudfather.website;
+const family = claudfather.family as FamilyProject[];
+const familySize = family.length;
 afterEach(() => {
   claudfather.website = website;
+  family.splice(familySize);
 });
 
 describe("Claudfather page", () => {
@@ -66,8 +70,19 @@ describe("Claudfather page", () => {
       .forEach((level, i) => expect(level).toBeLessThanOrEqual(levels[i] + 1));
   });
 
-  it("offers sources for public components and no link for private evaluation tooling", () => {
+  it("offers sources for public components and no link for a private one", () => {
+    family.push({
+      ...family[0],
+      id: "private-component",
+      job: "Do private work",
+      name: "Private component",
+      description: "A component whose source is not public.",
+      repo: null,
+    });
     renderWithProviders(<ClaudfatherPage project={project} />);
+    expect(
+      within(document.getElementById("private-component")!).queryByRole("link"),
+    ).toBeNull();
     for (const role of claudfather.family) {
       const row = document.getElementById(role.id)!;
       expect(within(row).getByRole("heading")).toHaveTextContent(role.job);
@@ -118,7 +133,12 @@ describe("Claudfather page", () => {
       );
       if (destination) {
         const links = screen.getAllByRole("link", { name: destination.label });
-        expect(links).toHaveLength(2);
+        expect(links).toHaveLength(1);
+        expect(
+          within(document.getElementById("quickstart")!).queryByRole("link", {
+            name: destination.label,
+          }),
+        ).toBeNull();
         for (const link of links) {
           expect(link).toHaveAttribute("href", destination.url);
           expect(link.parentElement).toHaveTextContent(destination.caveat);

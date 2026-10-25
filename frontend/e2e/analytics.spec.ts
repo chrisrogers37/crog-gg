@@ -43,9 +43,9 @@ test("loads the analytics script from the site's own origin", async ({
   expect(reported).toBe(`${new URL(page.url()).origin}/?utm_source=x`);
 });
 
-test("keeps repo clicks specific and never counts product exploration as activation", async ({ page, context }) => {
+test("keeps repo clicks specific and never counts website, organization or anchor clicks as activation", async ({ page, context }) => {
   test.skip(!CLAUDFATHER, "the site doesn't list the ecosystem page");
-  await context.route("https://claudfather-ai.vercel.app/**", (route) => route.abort());
+  await context.route("https://claudfather.ai/**", (route) => route.abort());
   await page.goto("/projects/claudfather");
   await page.locator('.page-hero a[href="#how-it-works"]').click();
   await page.locator('.page-hero a[href="https://github.com/Claudfather"]').click();

@@ -61,8 +61,10 @@ for (const width of [375, 768, 1440]) {
       await expect(page).toHaveURL(/#how-it-works$/);
       await expectBelowHeader(page, "#how-it-works h2");
       await expect(page.locator("#how-it-works ol > li")).toHaveCount(3);
-      await expect(page.locator("#family .cf-family-row")).toHaveCount(4);
-      await expect(page.locator("#claudosseum a")).toHaveCount(0);
+      await expect(page.locator("#family .cf-family-row")).toHaveCount(
+        content.family.length,
+      );
+      await expect(page.locator("#claudosseum")).toHaveCount(0);
       await expect(
         page.locator(".stats-grid, .cl-counts, #readme"),
       ).toHaveCount(0);
