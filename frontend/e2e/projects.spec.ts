@@ -456,8 +456,10 @@ test.describe("A project page whose repo has no README", () => {
     test.skip(!linked, "no project links a repo the API serves");
     test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
 
+    // A reply with an error status is what the console logs as a failed
+    // request. (Playwright's Chromium reports the 204 below as an aborted
+    // request, so `requestfailed` can't stand in for that.)
     const failed: string[] = [];
-    page.on("requestfailed", (req) => failed.push(`${req.url()}: ${req.failure()?.errorText}`));
     page.on("response", (response) => {
       if (response.status() >= 400) failed.push(`${response.url()}: ${response.status()}`);
     });
