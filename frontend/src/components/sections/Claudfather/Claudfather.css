@@ -184,6 +184,16 @@
   line-height: 1.6;
 }
 
+/* The setup link's caveat: what a worker can do, then its source, close under it. */
+.page-section > .cf-safety {
+  max-width: 44rem;
+  line-height: 1.6;
+}
+
+.cf-safety + .cl-source {
+  margin-top: 0.25rem;
+}
+
 .cf-family {
   list-style: none;
   margin: 1.5rem 0 0;

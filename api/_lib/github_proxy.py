@@ -154,16 +154,15 @@ def _proxy_sub_resource(
     owner: str,
     repo_name: str,
     path: str | tuple[str, ...],
-    label: str,
     endpoint: str,
-    missing_msg: str | None = None,
 ):
     """GET a sub-resource of an already-validated public repo. ``path`` is
     appended to the repo URL (e.g. ``/readme``), and a tuple of paths is tried in
     order so a caller can prefer a specific file over GitHub's own resolution and
-    still fall back when it is absent; ``label`` names the resource in the 404
-    message; ``missing_msg`` (when set) replaces that message. Any failure other
-    than the resource being absent goes to ``_github_unavailable``."""
+    still fall back when it is absent. A repo with none of them is answered 204
+    with no body, never cached: a 404 would show in the browser as a failed
+    request, for a repo that simply has no such resource. Any failure other than
+    the resource being absent goes to ``_github_unavailable``."""
     candidates = (path,) if isinstance(path, str) else path
     for i, candidate in enumerate(candidates):
         try:
@@ -179,7 +178,7 @@ def _proxy_sub_resource(
         if r.status_code == 404 and i < len(candidates) - 1:
             continue
         if r.status_code == 404:
-            return jsonify({"error": missing_msg or f"Failed to fetch {label} from GitHub"}), 404
+            return "", 204
         if r.status_code != 200:
             return _github_unavailable(endpoint, repo_name, r=r)
         try:

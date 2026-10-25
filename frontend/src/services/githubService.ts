@@ -183,10 +183,10 @@ class GitHubService {
         credentials: "include",
       });
 
+      // The proxy answers 204, with no body, for a repo with no README.
+      if (response.status === 204) return null;
+
       if (!response.ok) {
-        if (response.status === 404) {
-          return null; // No README
-        }
         throw new Error(`Failed to fetch README: ${response.status}`);
       }
 

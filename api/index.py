@@ -940,15 +940,9 @@ def get_readme(repo_name, owner=None):
     # Ask for the root README explicitly. GitHub's /readme endpoint resolves
     # .github/README.md ahead of the root file, which surfaces a repo's CI or
     # contributing notes as if they were the project documentation. The fallback
-    # covers repos with no root README.md (.rst/.txt, non-standard casing).
-    return _proxy_sub_resource(
-        owner,
-        repo_name,
-        ("/contents/README.md", "/readme"),
-        "README",
-        "readme",
-        missing_msg="README not found",
-    )
+    # covers repos with no root README.md (.rst/.txt, non-standard casing). A repo
+    # with neither answers 204 with no body.
+    return _proxy_sub_resource(owner, repo_name, ("/contents/README.md", "/readme"), "readme")
 
 
 @app.errorhandler(413)
