@@ -7,9 +7,6 @@ owner:
   name: Chris Rogers
   email: christophertrogers37@gmail.com
   job_title: Data Platform Lead
-  works_for:
-    name: Artemis
-    url: https://artemis.ai
   # A path in site/public/, for the Person schema.
   image: /profile-photo.jpg
   knows_about:
@@ -45,7 +42,7 @@ seo:
     height: 630
     alt: building things that build things. data, agents, music.
   about:
-    description: Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site.
+    description: Chris Rogers. Data and AI engineering. Side projects, side quests and whatever comes next.
   projects:
     description: "things i've built: Claudfather, my tools for running AI teams, plus Storydump, Shuffify, Benzo and Dead Redux."
 
