@@ -31,6 +31,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 
 - The line under the home page's headline reads "data, agents, music.", where it was "data, agent fleets and music."
+- The link-preview card's line under the headline reads "data, agents, music.", where it was "data, agent fleets and music."
 
 ## 2026-10-15
 
