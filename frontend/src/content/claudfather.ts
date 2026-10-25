@@ -67,7 +67,7 @@ export const claudfather = {
       },
       {
         title: "Review and keep the result",
-        body: "Review the work, and keep useful knowledge for the next run.",
+        body: "Check the work and keep useful knowledge for the next run.",
       },
     ],
   },

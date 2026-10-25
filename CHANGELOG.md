@@ -6,7 +6,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Changed
 
-- Claudfather's page links [claudfather.ai](https://claudfather.ai), which it says is in private development, with no sign-up, waitlist or public demo yet, where it linked a synthetic development preview on `claudfather-ai.vercel.app`. Its getting-started line and the walkthrough's last step no longer offer a product experience or evaluation tools to explore.
+- Claudfather's page links [claudfather.ai](https://claudfather.ai), which is in private development, with no sign-up, waitlist or public demo yet, where it linked a synthetic development preview on `claudfather-ai.vercel.app`. The link is in the hero only: Get started now leads with the Claudlobby setup guide, for running a team today. The walkthrough's last step no longer offers evaluation tools.
 
 ### Removed
 
