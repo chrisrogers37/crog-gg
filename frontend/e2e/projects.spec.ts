@@ -196,6 +196,18 @@ const readmeAnswer = (text: string): ReadmeResponse => ({
   download_url: "https://raw.githubusercontent.com/someone/example/main/README.md",
 });
 
+/** GitHub's figures for a repo, as the API passes them through. */
+const REPO_ANSWER = {
+  stargazers_count: 12,
+  forks_count: 3,
+  watchers_count: 12,
+  open_issues_count: 1,
+  language: "Python",
+  license: { name: "MIT License", spdx_id: "MIT" },
+  pushed_at: "2026-09-30T12:00:00Z",
+  topics: [],
+} satisfies Partial<Repository>;
+
 /** A README with everything that can't wrap: a wide table, a long URL, long code. */
 const WIDE_README = [
   "# A README",
@@ -400,18 +412,7 @@ test.describe("A project page on a phone (final UI review)", () => {
     const repoAsked = new Promise<void>((resolve) => (answerRepo = resolve));
     await page.route("**/api/v1/github/repo/**", async (route) => {
       await repoAsked;
-      await route.fulfill({
-        json: {
-          stargazers_count: 12,
-          forks_count: 3,
-          watchers_count: 12,
-          open_issues_count: 1,
-          language: "Python",
-          license: { name: "MIT License", spdx_id: "MIT" },
-          pushed_at: "2026-09-30T12:00:00Z",
-          topics: [],
-        } satisfies Partial<Repository>,
-      });
+      await route.fulfill({ json: REPO_ANSWER });
     });
     await page.route("**/api/v1/github/readme/**", (route) =>
       route.fulfill({ json: readmeAnswer(WIDE_README) }),
@@ -443,6 +444,44 @@ test.describe("A project page on a phone (final UI review)", () => {
     ).toBe(true);
     const url = (await page.getByRole("link", { name: /example\.com/ }).boundingBox())!;
     expect(url.x + url.width).toBeLessThanOrEqual(card.x + card.width);
+  });
+});
+
+test.describe("A project page whose repo has no README", () => {
+  test("leaves out its readme section, and logs no failed request", async ({
+    page,
+    request,
+  }) => {
+    const linked = await linkedProject(request);
+    test.skip(!linked, "no project links a repo the API serves");
+    test.skip(site.features?.github === "off", "site.yaml turns the GitHub panels off");
+
+    const failed: string[] = [];
+    page.on("requestfailed", (req) => failed.push(`${req.url()}: ${req.failure()?.errorText}`));
+    page.on("response", (response) => {
+      if (response.status() >= 400) failed.push(`${response.url()}: ${response.status()}`);
+    });
+
+    // The proxy's answer for a repo with no README: a 204, with no body. It
+    // waits until the section has shown, so it's the answer that takes it away.
+    let answerReadme!: () => void;
+    const readmeAsked = new Promise<void>((resolve) => (answerReadme = resolve));
+    await page.route("**/api/v1/github/readme/**", async (route) => {
+      await readmeAsked;
+      await route.fulfill({ status: 204 });
+    });
+    await page.route("**/api/v1/github/repo/**", (route) => route.fulfill({ json: REPO_ANSWER }));
+    await page.goto(`/projects/${linked!.id}`);
+
+    const readme = page.locator("#readme");
+    await expect(readme).toBeVisible();
+    const answered = page.waitForResponse("**/api/v1/github/readme/**");
+    answerReadme();
+    await answered;
+    await expect(readme).toHaveCount(0);
+    // The repo's figures still show.
+    await expect(page.locator("#repository")).toContainText(REPO_ANSWER.language);
+    expect(failed).toEqual([]);
   });
 });
 
