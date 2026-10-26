@@ -27,14 +27,16 @@ const EXPECTED = {
   labels: "pass",
 };
 
-/* Tests the first run showed can't fail on main, each with its reason. They stay in the table, marked, and don't
-   fail the step; any other test that must fail and passes still does. */
+/* Tests that can't fail on main, with the reason. In Chromium's touch emulation a press also sets :hover, so a
+   control whose main styling has an ungated hover rule (the theme button, the footer, menu and close links, the
+   project rows) shows a change on a press there too: its test proves the PR's pressed state, not main's lack of one.
+   The menu button and the filled and ghost buttons have no such rule, and theirs must still fail on main. Marked in
+   the table; they don't fail the step. */
 const KNOWN_INERT = [
   {
     group: "pressed",
-    title: /the menu's theme button/,
-    reason:
-      "main's own hover rule on the theme button fires on a press in Chromium's touch emulation, so a press changes it there too",
+    title: /^(the menu's theme button|a footer link|a menu link|the menu's close button|a project row) /,
+    reason: "main's hover rule on this control fires on a press in Chromium's touch emulation",
   },
 ];
 
