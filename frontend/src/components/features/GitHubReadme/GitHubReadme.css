@@ -268,3 +268,22 @@
   color: var(--text-color-secondary);
   margin: 1rem 0;
 }
+
+@media (max-width: 480px) {
+  /* A band, as the journey's entries and the Claudfather hero: the card through
+     the gutter, the README's text on it. */
+  .github-readme {
+    margin-inline: calc(-1 * var(--page-gutter, 1rem));
+    border-inline-width: 0;
+    border-radius: 0;
+  }
+
+  .readme-content {
+    padding: 1.5rem var(--page-gutter, 1rem);
+  }
+
+  .github-readme.loading,
+  .github-readme.empty {
+    padding: 2rem var(--page-gutter, 1rem);
+  }
+}

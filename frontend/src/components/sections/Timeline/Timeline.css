@@ -204,11 +204,33 @@
 }
 
 @media (max-width: 480px) {
+  .timeline-track {
+    /* No track on the phone: the first band sits under the heading as every
+       section's content does (12px); the bottom 1rem keeps the skills heading
+       40px below the last band, as at every width (see the gap in the 768px
+       block). */
+    padding: 0 0 1rem;
+  }
+
+  .timeline-line,
+  .timeline-dot {
+    display: none;
+  }
+
   .timeline-entry {
+    display: block;
+    padding-left: 0;
     margin-bottom: 1.5rem;
   }
 
-  .timeline-card {
-    padding: 0.75rem 1rem;
+  /* A band: the card through the gutter, its text on it, as the Claudfather
+     hero and a README. max-width: none, or .timeline-card's max-width: 100%
+     clamps the bleed. */
+  .timeline-entry .timeline-card {
+    max-width: none;
+    margin-inline: calc(-1 * var(--page-gutter, 1rem));
+    padding: 0.75rem var(--page-gutter, 1rem);
+    border-inline-width: 0;
+    border-radius: 0;
   }
 }
