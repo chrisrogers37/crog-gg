@@ -120,13 +120,21 @@ test.describe("sizes", () => {
    * the square's four corners must return the control or something inside it.
    * A padded box and a pseudo-element's hit area both pass; another element
    * overlapping the square fails, and so does a box under 44px.
+   *
+   * A box with rounded corners is hit-tested against its rect snapped to whole
+   * pixels, which can sit up to a pixel from the fractional one, so a corner
+   * counts when it lands on the control measured from the box's own centre or
+   * from the centre of either snapped rect (rounded down, or to the nearest).
    */
   async function expectTapTarget(control: Locator, name: string) {
     const { box, misses } = await control.evaluate((el: HTMLElement, reach: number) => {
       el.scrollIntoView({ block: "center", behavior: "instant" });
       const rect = el.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
+      const centreOf = (snap: (value: number) => number) => ({
+        x: (snap(rect.left) + snap(rect.right)) / 2,
+        y: (snap(rect.top) + snap(rect.bottom)) / 2,
+      });
+      const centres = [centreOf((value) => value), centreOf(Math.floor), centreOf(Math.round)];
       const corners = [
         { label: "top left", dx: -1, dy: -1 },
         { label: "top right", dx: 1, dy: -1 },
@@ -135,8 +143,9 @@ test.describe("sizes", () => {
       ];
       const misses: string[] = [];
       for (const { label, dx, dy } of corners) {
-        const hit = document.elementFromPoint(x + dx * reach, y + dy * reach);
-        if (!hit || !el.contains(hit)) {
+        const hits = centres.map(({ x, y }) => document.elementFromPoint(x + dx * reach, y + dy * reach));
+        if (!hits.some((found) => found !== null && el.contains(found))) {
+          const hit = hits[0];
           const found = hit
             ? `${hit.tagName.toLowerCase()}.${hit.getAttribute("class") ?? ""}`
             : "nothing";
@@ -211,7 +220,8 @@ test.describe("sizes", () => {
       await routeFixtureProject(page);
       await page.goto(`/projects/${FIXTURE}`);
       // The page itself, not the loading frame, which has a trail with no links.
-      await expect(page.locator("main h1")).toBeVisible({ timeout: 15_000 });
+      // The README's own heading is an h1 too, so the page's is the first.
+      await expect(page.locator("main h1").first()).toBeVisible({ timeout: 15_000 });
 
       await expectEachTapTarget(page.locator("main .btn"), "project page button");
       await expectEachTapTarget(page.locator(".demo-actions > *"), "demo control");
@@ -379,10 +389,14 @@ test.describe("pressed", () => {
           "a touch screen can't hover",
         ).toBe(true);
 
+        // The page's sections load after it does and push what's below them
+        // down, so the control is pressed only once they're in and it's on screen.
+        await page.waitForLoadState("networkidle");
         await control.reveal?.(page);
         const target = control.locate(page);
         await expect(target).toBeVisible({ timeout: 15_000 });
         await target.evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
+        await expect(target).toBeInViewport();
 
         const rest = await look(target);
         const box = (await target.boundingBox())!;
@@ -444,25 +458,41 @@ test.describe("insets", () => {
     await page.goto("/");
     await expect(page.locator("header .nav-logo")).toBeVisible();
     await expect(page.locator("main h1")).toBeVisible({ timeout: 15_000 });
+    await page.waitForLoadState("networkidle");
     await setInsets(page, insets);
+    await page.evaluate(
+      () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+    );
   }
+
+  /**
+   * That `measure` reaches `min`. Polled, because the layout can take a frame to
+   * follow the insets; where it never does, the poll runs out and fails.
+   */
+  const expectAtLeast = (measure: () => Promise<number>, min: number, message: string) =>
+    expect.poll(measure, { message, timeout: 5_000 }).toBeGreaterThanOrEqual(min);
+
+  const logoBox = async (page: Page) => (await page.locator("header .nav-logo").boundingBox())!;
 
   /**
    * The header's home link, the page's headings and the footer's text clear the
    * notch's sides, and the footer the home bar.
    */
   async function expectClearOfLandscapeInsets(page: Page) {
-    const logo = (await page.locator("header .nav-logo").boundingBox())!;
-    expect(logo.x, "the home link starts clear of the notch").toBeGreaterThanOrEqual(
+    await expectAtLeast(
+      async () => (await logoBox(page)).x,
       LANDSCAPE.left,
+      "the home link starts clear of the notch",
     );
-    const heading = (await page.locator("main h1").boundingBox())!;
-    expect(heading.x, "the page's text starts clear of the notch").toBeGreaterThanOrEqual(
+    await expectAtLeast(
+      async () => (await page.locator("main h1").boundingBox())!.x,
       LANDSCAPE.left,
+      "the page's text starts clear of the notch",
     );
-    const footerGap = await footerClearance(page);
-    expect(footerGap, "the footer's last link clears the home bar").toBeGreaterThanOrEqual(
+    await expectAtLeast(
+      () => footerClearance(page),
       LANDSCAPE.bottom,
+      "the footer's last link clears the home bar",
     );
 
     // The gutters. The logo and the hero's heading sit well in from the edge on
@@ -470,7 +500,7 @@ test.describe("insets", () => {
     // show it: the section headings and the footer's text start and end at the
     // gutter. Edges are rounded to a tenth of a pixel, so layout's sub-pixel
     // steps don't decide a comparison.
-    const gutters = await page.evaluate(() => {
+    const measureGutters = () => page.evaluate(() => {
       const tenth = (value: number) => Math.round(value * 10) / 10;
       const edges = (selector: string) => {
         const boxes = Array.from(document.querySelectorAll(selector), (el) =>
@@ -488,20 +518,27 @@ test.describe("insets", () => {
         screen: window.innerWidth,
       };
     });
-    expect(gutters.headings.count, "the page has section headings to measure").toBeGreaterThan(0);
-    expect(
-      gutters.headings.left,
-      `the leftmost of ${gutters.headings.count} section headings starts at ${gutters.headings.left}px`,
-    ).toBeGreaterThanOrEqual(LANDSCAPE.left);
-    expect(gutters.footer.count, "the footer has text and links to measure").toBeGreaterThan(0);
-    expect(
-      gutters.footer.left,
-      `the footer's text starts at ${gutters.footer.left}px`,
-    ).toBeGreaterThanOrEqual(LANDSCAPE.left);
-    expect(
-      gutters.footer.right,
-      `the footer's text ends at ${gutters.footer.right}px of a ${gutters.screen}px screen`,
-    ).toBeLessThanOrEqual(gutters.screen - LANDSCAPE.right);
+    const counted = await measureGutters();
+    expect(counted.headings.count, "the page has section headings to measure").toBeGreaterThan(0);
+    expect(counted.footer.count, "the footer has text and links to measure").toBeGreaterThan(0);
+    await expectAtLeast(
+      async () => (await measureGutters()).headings.left,
+      LANDSCAPE.left,
+      "the leftmost section heading starts clear of the notch",
+    );
+    await expectAtLeast(
+      async () => (await measureGutters()).footer.left,
+      LANDSCAPE.left,
+      "the footer's text starts clear of the notch",
+    );
+    await expectAtLeast(
+      async () => {
+        const { footer, screen } = await measureGutters();
+        return screen - footer.right;
+      },
+      LANDSCAPE.right,
+      "the footer's text ends clear of the notch on the other side",
+    );
   }
 
   test("portrait: the header, the footer and the menu clear the notch and the home bar", async ({
@@ -509,24 +546,29 @@ test.describe("insets", () => {
   }) => {
     await homeWithInsets(page, { width: IPHONE_WIDTH, height: PHONE_HEIGHT }, PORTRAIT);
 
-    const logo = (await page.locator("header .nav-logo").boundingBox())!;
-    expect(logo.y, "the home link starts below the notch").toBeGreaterThanOrEqual(PORTRAIT.top);
-
-    const footerGap = await footerClearance(page);
-    expect(footerGap, "the footer's last link clears the home bar").toBeGreaterThanOrEqual(
+    await expectAtLeast(
+      async () => (await logoBox(page)).y,
+      PORTRAIT.top,
+      "the home link starts below the notch",
+    );
+    await expectAtLeast(
+      () => footerClearance(page),
       PORTRAIT.bottom,
+      "the footer's last link clears the home bar",
     );
 
     // The menu's list can be taller than the room, so it scrolls: its end, the
     // theme row, still clears the home bar.
     await openMenu(page);
-    const menuGap = await page.locator(".mobile-menu-content").evaluate((el) => {
-      el.scrollTop = el.scrollHeight;
-      const toggle = el.querySelector(".theme-toggle")!.getBoundingClientRect();
-      return window.innerHeight - toggle.bottom;
-    });
-    expect(menuGap, "the menu's theme button clears the home bar").toBeGreaterThanOrEqual(
+    await expectAtLeast(
+      () =>
+        page.locator(".mobile-menu-content").evaluate((el) => {
+          el.scrollTop = el.scrollHeight;
+          const toggle = el.querySelector(".theme-toggle")!.getBoundingClientRect();
+          return window.innerHeight - toggle.bottom;
+        }),
       PORTRAIT.bottom,
+      "the menu's theme button clears the home bar",
     );
   });
 
