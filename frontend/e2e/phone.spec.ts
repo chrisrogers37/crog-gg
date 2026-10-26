@@ -250,13 +250,24 @@ test.describe("left edges", () => {
       { headingSelector: heading, textSelector: text },
     );
 
-  const expectLevel = (edges: { heading: number; text: number; gutter: number }) => {
-    const all = [edges.heading, edges.text, edges.gutter];
-    expect(
-      Math.max(...all) - Math.min(...all),
-      `heading ${edges.heading}, text ${edges.text}, gutter ${edges.gutter}`,
-    ).toBeLessThanOrEqual(2);
-  };
+  /**
+   * That the heading, the text and the gutter start within 2px of each other.
+   * Polled, because a lazily loaded section's styles can land a frame after its
+   * text; a miss reports the three edges it last saw.
+   */
+  const expectLevel = (page: Page, heading: string, text: string) =>
+    expect
+      .poll(
+        async () => {
+          const edges = await edgesOf(page, heading, text);
+          const all = [edges.heading, edges.text, edges.gutter];
+          return Math.max(...all) - Math.min(...all) <= 2
+            ? "level"
+            : `heading ${edges.heading}, text ${edges.text}, gutter ${edges.gutter}`;
+        },
+        { message: "the heading, the text and the gutter start within 2px", timeout: 5_000 },
+      )
+      .toBe("level");
 
   for (const width of [360, 390] as const) {
     test(`the journey's text is on the gutter, level with its heading, at ${width}px`, async ({
@@ -270,7 +281,7 @@ test.describe("left edges", () => {
       await expect(page.locator("#journey .timeline-title").first()).toBeVisible({
         timeout: 15_000,
       });
-      expectLevel(await edgesOf(page, "#journey h2", "#journey .timeline-title"));
+      await expectLevel(page, "#journey h2", "#journey .timeline-title");
     });
 
     test(`a README's text is on the gutter, level with its heading, at ${width}px`, async ({
@@ -285,7 +296,7 @@ test.describe("left edges", () => {
       await expect(page.locator("#readme .readme-content > p").first()).toBeVisible({
         timeout: 15_000,
       });
-      expectLevel(await edgesOf(page, "#readme h2", "#readme .readme-content > p"));
+      await expectLevel(page, "#readme h2", "#readme .readme-content > p");
     });
   }
 });
