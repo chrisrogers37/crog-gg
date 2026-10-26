@@ -5,6 +5,26 @@
 Tracked in #96, whose checklist is authoritative. The status table that was here was last reviewed on 2026-02-16 and is gone.
 Items 9 and 19 are obsolete (see the notes on those sections). #247 (2026-10-02) made the owner's page `/`, one scrolling page in a new layout, with no tabs and no section navigator: items 2, 10e, 24 and 26, which are about those, no longer apply, and items 1, 7 and 8 describe a header and sections that have changed. The file paths and line numbers below predate it. The typewriter was removed on 2026-10-08, so item 1e is obsolete too.
 
+Re-based 2026-10-26 with #96's phone pass (PR #PHONE_PR): the table below maps the paths named in this document to where the code is now. That PR did items 5, 10, 11, 13, 14, 15, 18, 20 and 22 on the current layout; #96's checklist says which boxes it ticks and what it left.
+
+### Where the files are now
+
+| Named below | Now |
+|---|---|
+| `frontend/src/App.css` (header, sections, skills, bio, section nav) | `App.css` holds only the theme variables, the device's safe-area insets, `#root`, `h1` and links. Header: `components/layout/Layout/Layout.css` and `Navigation/Navigation.css`. Hero: `pages/Home/HomePage.css`. Sections: `styles/page.css`. |
+| `frontend/src/components/SectionNav.tsx`, `common/SectionNavigator/SectionNavigator.css` | gone (#247: one scrolling page) |
+| `frontend/src/components/sections/Projects/ProjectCard.tsx` | gone; `ProjectRow.tsx` and `FeaturedProject.tsx` (#251, #247) |
+| `frontend/src/components/sections/Music/Music.tsx` line 49 | same file; the iframe is lines 38-45, its `height="352"` at line 41 |
+| `frontend/src/components/Skills.tsx`, `hooks/useIsMobile.ts` | gone / never created; `sections/Timeline/SkillBubbles.tsx` |
+| `frontend/src/pages/Projects/ProjectsPage.css` | gone; `/projects` is `ProjectsPage.tsx` on `styles/page.css` and `sections/Projects/Projects.css` |
+| `frontend/src/pages/Projects/ProjectDetailPage.css` | same file; the README card is `features/GitHubReadme/GitHubReadme.css` |
+| `frontend/src/components/sections/ContactCTA/ContactCTA.css` | gone; `ContactCTA.tsx` uses `styles/page.css` (`.link-row`) and `.btn` (`index.css`) |
+| `.home-hamburger` in `HomePage.css` (item 10a) | `.nav-hamburger` in `components/layout/Navigation/Navigation.css` |
+| "the ThemeToggle CSS" (item 10d) | `components/common/ThemeToggle/ThemeToggle.css` |
+| `features/ContributionGraph/ContributionGraph.css` | gone (#255) |
+| `Timeline.css`, `ActionButtons.css`, `Layout.css`, `Footer.css`, `MobileMenu.css`, `RepoStats.css`, `GitHubReadme.css`, `index.css`, `index.html` | unchanged paths; every line number in this document predates #247 |
+| item 23's `--text-secondary` in Timeline.css | fixed: it reads `--text-color-secondary` |
+
 ---
 
 ## Overview
@@ -308,6 +328,8 @@ Also ensure the body background matches the card background on mobile so there's
 
 ### 5. Optimize the Timeline/Journey Section for Mobile
 
+> Done in PR #PHONE_PR, on the current layout: at 480 px and under the dots and the line are gone and each entry is a band the screen's width, its text on the page's gutter; from 481 to 768 px they are as before.
+
 **Problem:** The timeline uses a center-aligned two-column layout with alternating left/right cards. At 768px it switches to single-column left-aligned, but the timeline dot at `left: 1.25rem` and `padding-left: 3.5rem` wastes space. The skills sidebar also appears above the timeline on mobile (order: -1) which pushes actual content down.
 
 **Files to modify:**
@@ -582,6 +604,8 @@ const maxFontSize = isMobile ? 24 : 36;
 
 ### 10. Increase All Touch Target Sizes
 
+> Done in PR #PHONE_PR, on the current layout: the hamburger is 44x44 (was 36x30), the theme toggle has a 44x44 hit area (its 36 px box kept), and the menu's links are 44 px tall (were 43.2 px); the close button was 44 px already, and the section navigator is gone (#247).
+
 **Problem:** Several interactive elements are below the recommended 44x44px minimum (Apple HIG / WCAG 2.5.5).
 
 **Files to modify:**
@@ -683,6 +707,8 @@ const maxFontSize = isMobile ? 24 : 36;
 ---
 
 ### 11. Add Active/Pressed States for Touch Feedback
+
+> Done in PR #PHONE_PR, on the current layout: every link and button styled as a control has a pressed state in both themes, and every hover rule applies only where a pointer can hover.
 
 **Problem:** Mobile users don't have hover states. Currently buttons rely on `:hover` for visual feedback. Need `:active` states for immediate tap feedback.
 
@@ -805,6 +831,8 @@ const maxFontSize = isMobile ? 24 : 36;
 
 ### 13. Optimize the Project Detail Page for Mobile
 
+> Done in PR #PHONE_PR, on the current layout: at 480 px and under the README runs edge to edge, its text on the page's gutter.
+
 **Problem:** The project detail header has a 4rem icon + content side by side. At 640px it switches to stacked, but could use further optimization.
 
 **Files to modify:**
@@ -892,6 +920,8 @@ const maxFontSize = isMobile ? 24 : 36;
 
 ### 14. Optimize the Non-Home Page Layout for Mobile
 
+> Done in PR #PHONE_PR, on the current layout: the header's block padding steps to 0.5rem at 768 px, and the page gutter is max(1rem, the device's side insets); the 0.75rem gutter proposed at 480 px was not adopted, since 16 px is the phone gutter the bled cards align to.
+
 **Problem:** `.layout-main` has `padding: 2rem` which becomes `1rem` at 768px. This is combined with inner page padding creating excessive whitespace.
 
 **Files to modify:**
@@ -926,6 +956,8 @@ const maxFontSize = isMobile ? 24 : 36;
 ---
 
 ### 15. Fix the Footer on Mobile
+
+> Done in PR #PHONE_PR, on the current layout: the footer's links are 44 px tall at 640 px and under, their spacing unchanged.
 
 **Problem:** Footer is reasonable but the social links area could be more touch-friendly.
 
@@ -1042,6 +1074,8 @@ const maxFontSize = isMobile ? 24 : 36;
 
 ### 18. Add Safe Area Insets for Notched Phones
 
+> Done in PR #PHONE_PR, on the current layout: `viewport-fit=cover`, with the insets defined once as `--safe-top`, `--safe-right`, `--safe-bottom` and `--safe-left`, and read by the header, the menu, the footer and the page gutter.
+
 **Problem:** iPhones with notches (iPhone X+) may clip content at the bottom or edges.
 
 **Files to modify:**
@@ -1121,6 +1155,8 @@ Also add the viewport meta tag if not present. Check `frontend/index.html`:
 
 ### 20. Optimize the Repo Stats Grid for Mobile
 
+> Done in PR #PHONE_PR, on the current layout: the row's gap steps at 480; the 0.7rem label was not adopted, it is under 12 px.
+
 **Problem:** At 640px, `.stats-grid` goes from 4 columns to 2. This is fine, but the text could be more compact.
 
 **Files to modify:**
@@ -1177,6 +1213,8 @@ img: ({ src, alt }) => (
 ---
 
 ### 22. Optimize the Action Buttons for Mobile
+
+> Done in PR #PHONE_PR, on the current layout: no 480 px step was added, since the labels fit on one line at 360 px (`e2e/phone.spec.ts` checks it) and a smaller font would shrink the type for nothing.
 
 **Problem:** "SUMMON NEW LORE" and "DISPEL ENCHANTMENT" are uppercase, long text that may appear cramped in full-width stacked buttons.
 
@@ -1390,22 +1428,22 @@ After each phase, verify on:
 | `frontend/src/App.css`                                                     | Header, sections, skills, bio, section nav mobile rules |
 | `frontend/src/pages/Home/HomePage.css`                                     | Home page padding, header, skeleton, hamburger          |
 | `frontend/src/pages/Home/HomePage.tsx`                                     | Potentially horizontal header layout                    |
-| `frontend/src/pages/Projects/ProjectsPage.css`                             | Grid, filters, cards, search input                      |
+| `frontend/src/pages/Projects/ProjectsPage.css` (gone)                      | Grid, filters, cards, search input                      |
 | `frontend/src/pages/Projects/ProjectDetailPage.css`                        | Header, links, footer, readme                           |
 | `frontend/src/components/layout/Layout/Layout.css`                         | Main padding, compact header                            |
 | `frontend/src/components/layout/Footer/Footer.css`                         | Padding, touch targets                                  |
 | `frontend/src/components/layout/MobileMenu/MobileMenu.css`                 | Touch targets, safe area                                |
 | `frontend/src/components/layout/Navigation/Navigation.css`                 | Hamburger sizing                                        |
 | `frontend/src/components/ActionButtons/ActionButtons.css`                  | Mobile button sizing                                    |
-| `frontend/src/components/common/SectionNavigator/SectionNavigator.css`     | Touch targets                                           |
-| `frontend/src/components/sections/ContactCTA/ContactCTA.css`               | Full-width buttons, social links                        |
+| `frontend/src/components/common/SectionNavigator/SectionNavigator.css` (gone) | Touch targets                                           |
+| `frontend/src/components/sections/ContactCTA/ContactCTA.css` (gone)        | Full-width buttons, social links                        |
 | `frontend/src/components/sections/Timeline/Timeline.css`                   | Mobile layout, compact cards, CSS var fix               |
 | `frontend/src/components/sections/Projects/Projects.css`                   | Card image heights, padding                             |
 | `frontend/src/components/sections/Music/Music.css`                         | Spotify embed height                                    |
-| `frontend/src/components/features/ContributionGraph/ContributionGraph.css` | Smaller graph cells                                     |
+| `frontend/src/components/features/ContributionGraph/ContributionGraph.css` (gone) | Smaller graph cells                                     |
 | `frontend/src/components/features/RepoStats/RepoStats.css`                 | Compact stat text                                       |
 | `frontend/src/components/features/GitHubReadme/GitHubReadme.css`           | (Already responsive)                                    |
-| `frontend/src/components/Skills.tsx`                                       | Responsive font size range                              |
-| `frontend/src/hooks/useIsMobile.ts`                                        | NEW: reusable mobile breakpoint hook                    |
+| `frontend/src/components/Skills.tsx` (gone)                                | Responsive font size range                              |
+| `frontend/src/hooks/useIsMobile.ts` (never created)                        | NEW: reusable mobile breakpoint hook                    |
 | `frontend/src/index.css`                                                   | Safe area insets                                        |
 | `frontend/index.html`                                                      | Viewport-fit: cover                                     |
