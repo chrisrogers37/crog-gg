@@ -245,17 +245,21 @@ async function pressedShot(state, bucket, s) {
     await s.go(`${SITE}/`);
     await ready(s);
     await toFooter(s, false);
-    const point = await s.exec(
-      `const link = document.querySelector(".footer-links a"); const box = link.getBoundingClientRect(); return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2), label: link.textContent.trim() };`,
-    );
+    // The link in the middle of the screen, then the finger aimed at the element itself, so no viewport
+    // coordinates are involved: the first run's coordinates landed outside the viewport ("move target out of
+    // bounds"). The release slides the finger up from where it is, so nothing is clicked.
+    await s.exec(`document.querySelector(".footer-links a").scrollIntoView({ block: "center", behavior: "instant" }); return true;`);
+    await sleep(500);
+    const point = await s.exec(`const link = document.querySelector(".footer-links a"); return { label: link.textContent.trim() };`);
+    const element = await s.find(".footer-links a");
     await s.exec(PROBE);
     const press = s
       .touch(
         [
-          { type: "pointerMove", duration: 0, x: point.x, y: point.y },
+          { type: "pointerMove", duration: 0, origin: { [ELEMENT]: element }, x: 0, y: 0 },
           { type: "pointerDown", button: 0 },
           { type: "pause", duration: 4000 },
-          { type: "pointerMove", duration: 100, x: point.x, y: Math.max(40, point.y - 220) },
+          { type: "pointerMove", duration: 100, origin: "pointer", x: 0, y: -120 },
           { type: "pointerUp", button: 0 },
         ],
         60000,
