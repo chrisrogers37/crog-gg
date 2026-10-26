@@ -10,12 +10,13 @@
   left: auto;
   right: 0;
   bottom: 0;
-  width: 280px;
+  box-sizing: border-box;
+  width: calc(280px + var(--safe-right));
   max-width: 85vw;
   height: 100dvh;
   max-height: none;
   margin: 0;
-  padding: 0;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) 0;
   border: 0;
   background: var(--card-background);
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);

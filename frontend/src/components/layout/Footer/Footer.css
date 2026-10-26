@@ -1,7 +1,7 @@
 .footer {
   background: var(--background-color);
   border-top: 1px solid var(--border-color);
-  padding: 2rem;
+  padding: 2rem max(2rem, var(--safe-right)) calc(2rem + var(--safe-bottom)) max(2rem, var(--safe-left));
   margin-top: auto;
 }
 
@@ -39,7 +39,7 @@
 
 @media (max-width: 640px) {
   .footer {
-    padding: 2rem 1rem;
+    padding: 2rem max(1rem, var(--safe-right)) calc(2rem + var(--safe-bottom)) max(1rem, var(--safe-left));
   }
 
   .footer-content {

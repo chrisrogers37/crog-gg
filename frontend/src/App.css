@@ -19,6 +19,16 @@
   --hover-color: theme(colors.primary.700);
 }
 
+/* The device's safe-area insets: the notch, the rounded corners, the home bar.
+   0 wherever there are none. The layout reads these names, never env()
+   directly, so one place defines them and a test can set them. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
 /* Dark mode overrides */
 .dark {
   --primary-color: theme(colors.primary.400);

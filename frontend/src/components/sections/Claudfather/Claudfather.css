@@ -206,7 +206,7 @@
   gap: 2rem;
   padding: 1.5rem 0;
   border-top: 1px solid var(--border-color);
-  scroll-margin-top: 5rem;
+  scroll-margin-top: calc(5rem + var(--safe-top));
 }
 
 .cf-family .cf-project-name {
@@ -231,7 +231,7 @@
 }
 
 .cf-owner-links [id] {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: calc(5rem + var(--safe-top));
 }
 
 @media (max-width: 768px) {
