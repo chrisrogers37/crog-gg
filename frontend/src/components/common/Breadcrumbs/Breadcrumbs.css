@@ -35,6 +35,18 @@
   transition: none;
 }
 
+/* On a phone each crumb's link takes a tap-sized hit area through its padding,
+   and gives it back through its margins, so the trail's row stays 21 px tall
+   and the text stays where it is: the hit box is 45 x (text + 20) px. */
+@media (max-width: 768px) {
+  .breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 0.625rem;
+    margin: -0.75rem -0.625rem;
+  }
+}
+
 .breadcrumb-separator {
   margin: 0 0.5rem;
   color: var(--border-color);

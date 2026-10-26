@@ -162,7 +162,7 @@ test.describe("sizes", () => {
   }
 
   for (const width of WIDTHS) {
-    test(`the header, the menu and the footer are 44px targets at ${width}px`, async ({
+    test(`the header, the menu, the footer and the contact links are 44px targets at ${width}px`, async ({
       page,
       isMobile,
     }) => {
@@ -186,25 +186,39 @@ test.describe("sizes", () => {
       await expect(menu).toBeHidden();
 
       await expectEachTapTarget(page.locator("footer.footer").getByRole("link"), "footer link");
-
-      // The contact and music pills (.btn-sm) are not measured here yet: they
-      // are shorter than 44px. When they have a 44px hit area, add them:
-      // await expectEachTapTarget(page.locator(".btn-sm"), "pill");
+      await expectEachTapTarget(
+        page.locator("#contact .link-row").getByRole("link"),
+        "contact link",
+      );
     });
 
-    test(`a project page's buttons are 44px targets at ${width}px`, async ({ page, isMobile }) => {
+    // Its own test: a site without a music section skips this alone.
+    test(`the music links are 44px targets at ${width}px`, async ({ page, isMobile }) => {
+      test.skip(!SECTIONS.some(({ id }) => id === "music"), "the site shows no music section");
+      test.skip(isMobile && width !== IPHONE_WIDTH, NOT_RESIZED);
+      await phoneAt(page, width, isMobile);
+      await page.goto("/");
+
+      await expectEachTapTarget(page.locator("#music .link-row").getByRole("link"), "music link");
+    });
+
+    test(`a project page's buttons and breadcrumbs are 44px targets at ${width}px`, async ({
+      page,
+      isMobile,
+    }) => {
       test.skip(isMobile && width !== IPHONE_WIDTH, NOT_RESIZED);
       await phoneAt(page, width, isMobile);
       await routeFixtureProject(page);
       await page.goto(`/projects/${FIXTURE}`);
-      await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 15_000 });
+      // The page itself, not the loading frame, which has a trail with no links.
+      await expect(page.locator("main h1")).toBeVisible({ timeout: 15_000 });
 
       await expectEachTapTarget(page.locator("main .btn"), "project page button");
       await expectEachTapTarget(page.locator(".demo-actions > *"), "demo control");
-
-      // The breadcrumb links are not measured here yet: they are shorter than
-      // 44px. When they have a 44px hit area, add them:
-      // await expectEachTapTarget(page.locator(".breadcrumb-link"), "breadcrumb link");
+      await expectEachTapTarget(
+        page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link"),
+        "breadcrumb link",
+      );
     });
   }
 });
