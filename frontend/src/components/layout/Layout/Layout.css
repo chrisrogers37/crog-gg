@@ -34,6 +34,6 @@
   }
 
   .compact-header {
-    padding: calc(1rem + var(--safe-top)) max(1rem, var(--safe-right)) 1rem max(1rem, var(--safe-left));
+    padding: calc(0.5rem + var(--safe-top)) max(1rem, var(--safe-right)) 0.5rem max(1rem, var(--safe-left));
   }
 }

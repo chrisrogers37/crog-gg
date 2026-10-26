@@ -83,8 +83,22 @@
 }
 
 @media (max-width: 768px) {
+  /* A 44px target. The lines stay centred, and the negative margin keeps their
+     right edge where the 8px padding put it. */
   .nav-hamburger {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-right: -0.25rem;
+  }
+
+  .nav-logo {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .nav-links,

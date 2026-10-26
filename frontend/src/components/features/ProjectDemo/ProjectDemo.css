@@ -113,3 +113,21 @@
   height: 100%;
   border: 0;
 }
+
+@media (max-width: 768px) {
+  /* 44px targets; the header's padding shrinks so its height stays about the same. */
+  .demo-link,
+  .demo-fullscreen-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .demo-fullscreen-btn {
+    padding: 0 0.75rem;
+  }
+
+  .demo-header {
+    padding: 0.375rem 1rem;
+  }
+}
