@@ -433,7 +433,10 @@ test.describe("insets", () => {
     await setInsets(page, insets);
   }
 
-  /** The header's home link and the page's text clear the notch's side, and the footer the home bar. */
+  /**
+   * The header's home link, the page's headings and the footer's text clear the
+   * notch's sides, and the footer the home bar.
+   */
   async function expectClearOfLandscapeInsets(page: Page) {
     const logo = (await page.locator("header .nav-logo").boundingBox())!;
     expect(logo.x, "the home link starts clear of the notch").toBeGreaterThanOrEqual(
@@ -447,6 +450,44 @@ test.describe("insets", () => {
     expect(footerGap, "the footer's last link clears the home bar").toBeGreaterThanOrEqual(
       LANDSCAPE.bottom,
     );
+
+    // The gutters. The logo and the hero's heading sit well in from the edge on
+    // a wide screen whether or not the gutter follows the insets, so they can't
+    // show it: the section headings and the footer's text start and end at the
+    // gutter. Edges are rounded to a tenth of a pixel, so layout's sub-pixel
+    // steps don't decide a comparison.
+    const gutters = await page.evaluate(() => {
+      const tenth = (value: number) => Math.round(value * 10) / 10;
+      const edges = (selector: string) => {
+        const boxes = Array.from(document.querySelectorAll(selector), (el) =>
+          el.getBoundingClientRect(),
+        );
+        return {
+          count: boxes.length,
+          left: tenth(Math.min(...boxes.map((box) => box.left))),
+          right: tenth(Math.max(...boxes.map((box) => box.right))),
+        };
+      };
+      return {
+        headings: edges(".page-section > h2"),
+        footer: edges("footer.footer a, footer.footer p"),
+        screen: window.innerWidth,
+      };
+    });
+    expect(gutters.headings.count, "the page has section headings to measure").toBeGreaterThan(0);
+    expect(
+      gutters.headings.left,
+      `the leftmost of ${gutters.headings.count} section headings starts at ${gutters.headings.left}px`,
+    ).toBeGreaterThanOrEqual(LANDSCAPE.left);
+    expect(gutters.footer.count, "the footer has text and links to measure").toBeGreaterThan(0);
+    expect(
+      gutters.footer.left,
+      `the footer's text starts at ${gutters.footer.left}px`,
+    ).toBeGreaterThanOrEqual(LANDSCAPE.left);
+    expect(
+      gutters.footer.right,
+      `the footer's text ends at ${gutters.footer.right}px of a ${gutters.screen}px screen`,
+    ).toBeLessThanOrEqual(gutters.screen - LANDSCAPE.right);
   }
 
   test("portrait: the header, the footer and the menu clear the notch and the home bar", async ({
