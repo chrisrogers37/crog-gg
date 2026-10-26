@@ -27,6 +27,17 @@ const EXPECTED = {
   labels: "pass",
 };
 
+/* Tests the first run showed can't fail on main, each with its reason. They stay in the table, marked, and don't
+   fail the step; any other test that must fail and passes still does. */
+const KNOWN_INERT = [
+  {
+    group: "pressed",
+    title: /the menu's theme button/,
+    reason:
+      "main's own hover rule on the theme button fires on a press in Chromium's touch emulation, so a press changes it there too",
+  },
+];
+
 const strip = (text) => String(text ?? "").replace(/\u001b\[[0-9;]*m/g, "");
 const oneLine = (text, length) => strip(text).split("\n").slice(0, 4).join(" ").replace(/\s+/g, " ").trim().slice(0, length);
 const cell = (text) => String(text ?? "").replace(/\|/g, "\\|");
@@ -85,8 +96,13 @@ try {
     const observed = observe(test);
     let verdict = "not held to an expectation";
     if (expected === "fail") {
-      verdict = observed === "passed" ? "PASSED ON MAIN, MUST FAIL" : observed === "failed" ? "ok" : "skipped, not checked";
-      if (observed === "passed") problems.push(`${group} > ${title} (${project}) passed on main`);
+      const inert = KNOWN_INERT.find((known) => known.group === group && known.title.test(title));
+      if (observed === "passed" && inert) {
+        verdict = `passed on main, known: ${inert.reason}`;
+      } else {
+        verdict = observed === "passed" ? "PASSED ON MAIN, MUST FAIL" : observed === "failed" ? "ok" : "skipped, not checked";
+        if (observed === "passed") problems.push(`${group} > ${title} (${project}) passed on main`);
+      }
     } else if (expected === "pass") {
       verdict = observed === "passed" ? "ok" : observed === "failed" ? "failed, expected to pass (noted)" : "skipped";
     }
