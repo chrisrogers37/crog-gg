@@ -82,11 +82,24 @@
   color: theme("colors.claudfather.ink");
 }
 
-.cl-page .btn-primary:hover {
+@media (hover: hover) {
+  .cl-page .btn-primary:hover {
+    background-color: theme("colors.claudfather.orange");
+    background-image: linear-gradient(
+      theme("colors.claudfather.cream / 15%"),
+      theme("colors.claudfather.cream / 15%")
+    );
+  }
+}
+
+/* Pressed: an ink veil, so the orange goes darker. The orange is stated again
+   because index.css's .btn-primary:active ties the resting rule above, and
+   stylesheet order would settle it. */
+.cl-page .btn-primary:active {
   background-color: theme("colors.claudfather.orange");
   background-image: linear-gradient(
-    theme("colors.claudfather.cream / 15%"),
-    theme("colors.claudfather.cream / 15%")
+    theme("colors.claudfather.ink / 10%"),
+    theme("colors.claudfather.ink / 10%")
   );
 }
 
@@ -97,8 +110,14 @@
   color: theme("colors.claudfather.cream");
 }
 
-.cl-page .cl-hero .btn-ghost:hover {
-  border-color: theme("colors.claudfather.cream");
+@media (hover: hover) {
+  .cl-page .cl-hero .btn-ghost:hover {
+    border-color: theme("colors.claudfather.cream");
+  }
+}
+
+.cl-page .cl-hero .btn-ghost:active {
+  background-color: theme("colors.claudfather.cream / 14%");
 }
 
 /* Claudfather's avatar: the medallion, cut round. */

@@ -23,9 +23,17 @@
   inset: -4px;
 }
 
-.theme-toggle:hover {
-  background: var(--background-color);
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: var(--background-color);
+    color: var(--text-color);
+  }
+}
+
+.theme-toggle:active {
+  background: var(--border-color);
   color: var(--text-color);
+  transition: none;
 }
 
 .theme-toggle:focus-visible {

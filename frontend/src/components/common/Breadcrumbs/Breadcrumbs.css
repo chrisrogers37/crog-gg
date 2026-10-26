@@ -23,8 +23,16 @@
   transition: color 0.2s;
 }
 
-.breadcrumb-link:hover {
+@media (hover: hover) {
+  .breadcrumb-link:hover {
+    color: var(--primary-color);
+  }
+}
+
+.breadcrumb-link:active {
   color: var(--primary-color);
+  text-decoration: none;
+  transition: none;
 }
 
 .breadcrumb-separator {

@@ -95,8 +95,10 @@
   flex: 1;
 }
 
-.timeline-card:hover {
-  border-color: var(--primary-color);
+@media (hover: hover) {
+  .timeline-card:hover {
+    border-color: var(--primary-color);
+  }
 }
 
 .timeline-card-header {

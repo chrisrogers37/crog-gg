@@ -67,7 +67,15 @@
   line-height: 1;
 }
 
-.mobile-menu-close:hover {
+@media (hover: hover) {
+  .mobile-menu-close:hover {
+    color: var(--text-color);
+  }
+}
+
+.mobile-menu-close:active {
+  background: var(--border-color);
+  border-radius: 8px;
   color: var(--text-color);
 }
 
@@ -111,8 +119,16 @@
   transition: color 0.2s;
 }
 
-.mobile-menu-link:hover {
+@media (hover: hover) {
+  .mobile-menu-link:hover {
+    color: var(--primary-color);
+  }
+}
+
+.mobile-menu-link:active {
   color: var(--primary-color);
+  text-decoration: none;
+  transition: none;
 }
 
 /* Theme section */

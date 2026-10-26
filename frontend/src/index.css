@@ -53,6 +53,8 @@
   @apply px-5 py-3 rounded-lg border border-transparent;
   @apply text-base font-semibold;
   @apply transition-colors duration-150;
+  /* Pressed shows at once, not 20% of the way through a fade. */
+  @apply active:no-underline active:transition-none;
 }
 
 .btn-sm {
@@ -63,12 +65,14 @@
 .btn-primary {
   @apply bg-primary-600 text-white;
   @apply hover:bg-primary-700;
+  @apply active:bg-primary-800;
 }
 
 .btn-ghost {
   @apply bg-transparent border-slate-200 text-slate-800;
   @apply hover:border-slate-400;
   @apply dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-400;
+  @apply active:bg-slate-200 dark:active:bg-slate-700;
 }
 
 /* One radius (8px), and a border rather than a shadow (CLAUDE.md). */

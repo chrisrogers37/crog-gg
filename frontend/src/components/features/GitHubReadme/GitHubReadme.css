@@ -58,10 +58,6 @@
   color: var(--primary-color);
 }
 
-.readme-github-link:hover {
-  text-decoration: underline;
-}
-
 /* Content styling */
 .readme-content {
   padding: 1.5rem 2rem;
@@ -113,10 +109,6 @@
 
 .readme-content a {
   color: var(--primary-color);
-}
-
-.readme-content a:hover {
-  text-decoration: underline;
 }
 
 /* Code blocks */

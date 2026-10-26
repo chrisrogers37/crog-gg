@@ -1,3 +1,5 @@
+@reference "../../../index.css";
+
 .project-demo {
   position: static;
   width: 100%;
@@ -54,10 +56,6 @@
   color: var(--primary-color);
 }
 
-.demo-link:hover {
-  text-decoration: underline;
-}
-
 .demo-fullscreen-btn {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
@@ -70,8 +68,19 @@
   transition: background-color 0.15s ease;
 }
 
-.demo-fullscreen-btn:hover {
-  opacity: 0.8;
+@media (hover: hover) {
+  .demo-fullscreen-btn:hover {
+    opacity: 0.8;
+  }
+}
+
+.demo-fullscreen-btn:active {
+  background-color: theme("colors.slate.300");
+  transition: none;
+}
+
+.dark .demo-fullscreen-btn:active {
+  background-color: theme("colors.slate.600");
 }
 
 .demo-container {

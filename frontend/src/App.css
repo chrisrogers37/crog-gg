@@ -17,6 +17,9 @@
      theme it is too light to put white on. */
   --button-color: theme(colors.primary.600);
   --hover-color: theme(colors.primary.700);
+  /* The filled button under a finger: one step past hover. White on it is
+     8.7:1. */
+  --pressed-color: theme(colors.primary.800);
 }
 
 /* The device's safe-area insets: the notch, the rounded corners, the home bar.
@@ -61,7 +64,16 @@ a {
   font-weight: 500;
 }
 
-a:hover {
+/* Hover is for pointers that hover: a tap would leave it stuck on. Pressing
+   shows the same on any pointer. */
+@media (hover: hover) {
+  a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+a:active {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
