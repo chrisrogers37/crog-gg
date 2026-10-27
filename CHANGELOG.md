@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-27
+
+### Changed
+
+- Benzo's project page uses its warm paper, rose and pink pill branding, with the MacBook origin story and clear links to the product site, releases, source and support. Its listing points to benzo.work and describes sleep controls and reported blockers without promising to eliminate heat or battery drain.
+
 ## 2026-10-25
 
 ### Changed

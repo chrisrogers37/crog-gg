@@ -66,6 +66,8 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 - Nothing else: `order`, `featured`, `tags` and `image` were never shown and are gone (#190), so a file that still has one fails, naming it. (Which project is featured is `index.yaml`'s call.)
 - **A page of its own:** a project whose id `frontend/src/content/ownPages.ts` lists shows its own page (`projectPages.ts`) instead of the standard one, as Claudfather's does. Claudfather's wears its org's look: its mark is Claudfather's avatar cropped to its medallion (`site/photos/originals/claudfather.jpg`, made into `site/public/profile-photos/claudfather-*.webp` like the photos, which `npm run site:check` finds when the site lists Claudfather), and its `share_card` is `site/public/claudfather-card.png`, from `site/claudfather-card.html`.
 
+Benzo also has a page of its own. Its evergreen portfolio story lives in `frontend/src/content/benzo.ts`; its card and metadata still use `projects/benzo.yaml`. The page derives its website, Releases, source and issue links from that project file. It uses the product's paper/rose/pill palette from `palette.ts`, within the site's light/dark navigation. Current demo and installation guidance stay on the product site; the portfolio does not embed a second app simulation or fetch the repository README. Keep physical sleep/recovery claims qualified and do not promise heat, fan or battery improvements.
+
 The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through adding a project.
 
 ## showcase.yaml

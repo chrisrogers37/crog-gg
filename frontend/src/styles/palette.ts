@@ -80,3 +80,17 @@ export const claudfather = {
 } as const;
 
 export const palette = { primary, accent, slate, danger } as const;
+
+/** Benzo's public site colors, from its core design module at eed0a96. */
+export const benzo = {
+  paper: "#f8f6f2",
+  ink: "#262923",
+  muted: "#5e6259",
+  line: "#dedfd6",
+  pink: "#d4749c",
+  rose: "#9b3e65",
+  roseHover: "#803052",
+  softPink: "#f0d5e0",
+  pillLight: "#f3c4d7",
+  controlBorder: "#a9ac9c",
+} as const;

@@ -1,11 +1,11 @@
-# Benzo - macOS Deep Sleep Utility
+# Benzo - sleep controls for your Mac
 id: benzo
 title: Benzo
 description: |
-  a macOS menubar utility that forces true deep sleep on MacBooks,
-  eliminating heat, fan noise, and battery drain from USB-C docks.
-  one-click toggle with built-in diagnostics.
-url: https://benzo-gules.vercel.app/
+  a little pill for a Mac that won’t call it a night. sleep controls and
+  reported blockers in the menu bar, built for a desk full of docks,
+  displays and audio gear.
+url: https://benzo.work/
 icon: "\U0001F319"
 category: native-app
 technologies:
