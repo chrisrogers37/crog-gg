@@ -2,11 +2,12 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { loadProjects, readProjects } from "./projectLoader";
 
 /**
- * The defect these guard is silent by construction: the SPA rewrite answers a
- * missing static asset with index.html and status 200, and js-yaml turns that
- * HTML into a string rather than throwing. Neither the status check nor the
- * parse reports it, so the loader used to build a project out of `undefined`
- * fields and render a blank card as though it were real work.
+ * Production answers a missing content file with a 404 (#184), which the
+ * status check refuses. These cases guard a host that still answers with the
+ * app's HTML at 200, as the Vite dev server does. js-yaml turns that HTML into
+ * a string rather than throwing, so neither the status check nor the parse
+ * reports it, and the loader used to build a project out of `undefined` fields
+ * and render a blank card as though it were real work.
  *
  * So each case below asserts the loader REFUSES, not that it copes. Rendering
  * something is the bug.
@@ -26,12 +27,12 @@ icon: music
 category: web
 `;
 
-/** Route each URL to a canned body, the way the deployment actually would. */
+/** Route each URL to a canned body, as a host with an SPA fallback would. */
 const serve = (routes: Record<string, string | null>) =>
   vi.fn().mockImplementation((url: string) => {
     const body = routes[url];
-    // null means "the origin has no such file" -- which in production is NOT a
-    // 404, it is the SPA fallback: 200 with an HTML document.
+    // null means "the origin has no such file", which an SPA fallback answers
+    // with 200 and an HTML document. Production answers it with a 404.
     return Promise.resolve({
       ok: true,
       status: 200,
