@@ -7,10 +7,12 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 
 - Claudfather's page links [claudfather.ai](https://claudfather.ai), which is in private development, with no sign-up, waitlist or public demo yet, where it linked a synthetic development preview on `claudfather-ai.vercel.app`. The link is in the hero only: Get started now leads with the Claudlobby setup guide, for running a team today. The walkthrough's last step no longer offers evaluation tools.
+- The home page's description in search results and link previews reads "Chris Rogers. Data and AI engineering. Side projects, side quests and whatever comes next.", where it was "Chris Rogers leads the data platform at Artemis, after Citadel and Meta. Music, travel, books in Maine and the side projects on this site."
 
 ### Removed
 
 - Claudosseum is gone from Claudfather's family: it's private and archived. The roles now cite the brand reference as of 2026-10-24.
+- The home page's Person schema has no `worksFor`, where it named Artemis.
 
 ## 2026-10-23
 
@@ -31,6 +33,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 
 - The line under the home page's headline reads "data, agents, music.", where it was "data, agent fleets and music."
+- The link-preview card's line under the headline reads "data, agents, music.", where it was "data, agent fleets and music."
 
 ## 2026-10-15
 

@@ -230,8 +230,8 @@ def test_get_readme_204_when_neither_exists(client):
     with patch("api.index.requests.get", side_effect=_side_effect):
         r = client.get("/api/v1/github/readme/shuffify")
 
+    # No body to check: Werkzeug drops a 204's body, whatever the view returns.
     assert r.status_code == 204
-    assert r.get_data() == b""
     assert "s-maxage" not in r.headers.get("Cache-Control", ""), "a missing README must never be cached"
 
 
@@ -313,19 +313,22 @@ def test_upstream_failure_is_logged(client, caplog):
     assert "upstream says no" not in record.getMessage()
 
 
-def test_sub_resource_failure_is_not_passed_through(client):
+@pytest.mark.parametrize("status_code, expected", [(500, 502), (403, 503), (429, 503)])
+def test_sub_resource_failure_is_not_passed_through(client, status_code, expected):
     """The README fetch used to return GitHub's own status code; it now goes
-    through the same mapping as the metadata call."""
+    through the same mapping as the metadata call. A rate-limit reply to the root
+    README is GitHub's failure too, not a sign the repo has none: it is neither a
+    204 nor a reason to try the fallback."""
     meta = _make_response(200, {"name": "shuffify", "private": False})
 
     def _side_effect(url, **kwargs):
         if url.endswith("/contents/README.md"):
-            return _failing(500)
+            return _failing(status_code)
         return meta
 
     with patch("api.index.requests.get", side_effect=_side_effect):
         r = client.get("/api/v1/github/readme/shuffify")
-    assert r.status_code == 502
+    assert r.status_code == expected
     assert r.get_json() == _UNAVAILABLE
 
 
