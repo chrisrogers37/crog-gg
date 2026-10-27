@@ -94,3 +94,8 @@ export const benzo = {
   pillLight: "#f3c4d7",
   controlBorder: "#a9ac9c",
 } as const;
+
+/** Product references checked 2026-10-27; see CONTENT.md for source commits. */
+export const storydump = { paper: "#f4f1ea", ink: "#15130f", orange: "#ff5a1f", orangeDeep: "#9b3308" } as const;
+export const shuffify = { base: "#111417", ink: "#f4f6ef", lime: "#c9ed75", greenDeep: "#3c5a13" } as const;
+export const deadRedux = { page: "#0b0b0d", ink: "#eceae4", amber: "#e8b04b", amberDeep: "#815a12" } as const;

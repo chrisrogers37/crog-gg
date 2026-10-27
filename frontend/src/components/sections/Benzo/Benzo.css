@@ -43,10 +43,6 @@
 .benzo-identity { text-align: center; color: theme("colors.benzo.rose"); }
 .benzo-identity p { max-width: 20ch; margin: 0.75rem auto 0; font-size: 0.875rem; }
 .benzo-mark { display: block; width: 100%; max-width: 260px; margin: auto; }
-.benzo-mark-shell { fill: theme("colors.benzo.pillLight"); stroke: theme("colors.benzo.rose"); stroke-width: 1.5; }
-.benzo-mark-half { fill: theme("colors.benzo.pink"); }
-.benzo-mark-seam { fill: none; stroke: theme("colors.benzo.rose"); stroke-width: 1.5; }
-.benzo-mark-shine { fill: none; stroke: theme("colors.benzo.paper"); stroke-width: 5; stroke-linecap: round; }
 
 .benzo-story { display: grid; grid-template-columns: 1fr 1.25fr; gap: 3rem; }
 .benzo-page h2 { font-size: 1.5rem; font-weight: 650; line-height: 1.25; letter-spacing: -0.025em; }

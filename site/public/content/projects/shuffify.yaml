@@ -2,15 +2,15 @@
 id: shuffify
 title: Shuffify
 description: |
-  a better way to manage your Spotify playlists with advanced 
-  filtering, organization, and discovery features.
+  give your Spotify playlists a fresh order. try a shuffle, space out
+  artists, and preview the changes before saving.
 url: https://shuffify.app
-icon: "\U0001F3B6"
+brand: shuffify
 category: web-app
 technologies:
   - React
   - TypeScript
   - Spotify API
-  - Node.js
+  - Python
 github: https://github.com/chrisrogers37/shuffify
 status: active

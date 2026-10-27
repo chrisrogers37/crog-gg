@@ -2,29 +2,17 @@ import type { ReactNode } from "react";
 import type { Project } from "../../../types";
 import { benzo } from "../../../content/benzo";
 import { githubRepo } from "../../../utils/projectLinks";
+import { PillMark } from "../../common/ProjectMark";
 import "./Benzo.css";
 
 const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
-
-function PillMark() {
-  return (
-    <svg className="benzo-mark" viewBox="0 0 240 170" aria-hidden="true">
-      <g transform="rotate(-28 120 85)">
-        <rect className="benzo-mark-shell" x="25" y="38" width="190" height="94" rx="47" />
-        <path className="benzo-mark-half" d="M120 38h48a47 47 0 0 1 0 94h-48Z" />
-        <path className="benzo-mark-seam" d="M120 39v92" />
-        <path className="benzo-mark-shine" d="M48 75a27 27 0 0 1 27-18h22" />
-      </g>
-    </svg>
-  );
-}
 
 export function BenzoLoadingHero({ children }: { children: ReactNode }) {
   return (
     <div className="benzo-page">
       <div className="page-hero benzo-hero" aria-hidden="true">
         <div>{children}</div>
-        <PillMark />
+        <PillMark className="benzo-mark" />
       </div>
     </div>
   );
@@ -51,7 +39,7 @@ export function BenzoPage({ project }: { project: Project }) {
           {source && <p className="benzo-download-note">{benzo.downloadNote}</p>}
         </div>
         <div className="benzo-identity">
-          <PillMark />
+          <PillMark className="benzo-mark" />
           <p>{benzo.markCaption}</p>
         </div>
       </header>

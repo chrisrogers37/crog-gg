@@ -2,11 +2,10 @@
 id: benzo
 title: Benzo
 description: |
-  a little pill for a Mac that won’t call it a night. sleep controls and
-  reported blockers in the menu bar, built for a desk full of docks,
-  displays and audio gear.
+  sleep controls for a Mac that won’t call it a night. check settings and
+  reported blockers from one little pill in the menu bar.
 url: https://benzo.work/
-icon: "\U0001F319"
+brand: benzo
 category: native-app
 technologies:
   - Swift
