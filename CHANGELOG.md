@@ -2,6 +2,13 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-26
+
+### Changed
+
+- On a phone, the menu's links, the hamburger, the theme button, the footer's links, the contact and music links, a project page's breadcrumbs and a demo's buttons are at least 44 px to tap, every button and link shows that it's pressed, and the page keeps clear of a notched iPhone's notch and home bar, in portrait and landscape (#96).
+- On a phone, the journey's entries and a project's README run edge to edge with their text on the page's gutter, and the journey's dots and line are gone there; the repository details sit tighter when they wrap (#96).
+
 ## 2026-10-25
 
 ### Changed

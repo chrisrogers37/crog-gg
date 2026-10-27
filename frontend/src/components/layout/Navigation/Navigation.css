@@ -17,8 +17,15 @@
   text-decoration: none;
 }
 
-.nav-logo:hover {
+@media (hover: hover) {
+  .nav-logo:hover {
+    color: var(--primary-color);
+  }
+}
+
+.nav-logo:active {
   color: var(--primary-color);
+  text-decoration: none;
 }
 
 .nav-right {
@@ -43,8 +50,16 @@
   position: relative;
 }
 
-.nav-link:hover {
-  color: var(--text-color);
+@media (hover: hover) {
+  .nav-link:hover {
+    color: var(--text-color);
+  }
+}
+
+.nav-link:active {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: none;
 }
 
 .nav-link.active {
@@ -73,6 +88,11 @@
   margin-left: 0.5rem;
 }
 
+.nav-hamburger:active {
+  background: var(--border-color);
+  border-radius: 8px;
+}
+
 .nav-hamburger-line {
   display: block;
   width: 20px;
@@ -83,8 +103,22 @@
 }
 
 @media (max-width: 768px) {
+  /* A 44px target. The lines stay centred, and the negative margin keeps their
+     right edge where the 8px padding put it. */
   .nav-hamburger {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-right: -0.25rem;
+  }
+
+  .nav-logo {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .nav-links,

@@ -64,9 +64,18 @@
   z-index: 2;
 }
 
-.action-buttons .generate-btn:hover:not(:disabled) {
-  background-color: var(--hover-color);
-  transform: scale(1.02);
+@media (hover: hover) {
+  .action-buttons .generate-btn:hover:not(:disabled) {
+    background-color: var(--hover-color);
+    transform: scale(1.02);
+  }
+}
+
+/* After the hover rule: both are as specific, so on a pointer that hovers the
+   press wins. */
+.action-buttons .generate-btn:active:not(:disabled) {
+  background-color: var(--pressed-color);
+  transition: none;
 }
 
 .action-buttons .generate-btn:disabled {
@@ -232,8 +241,15 @@
   color: white;
 }
 
-.action-buttons .reset-btn:hover {
-  background-color: theme("colors.danger.700");
+@media (hover: hover) {
+  .action-buttons .reset-btn:hover {
+    background-color: theme("colors.danger.700");
+  }
+}
+
+.action-buttons .reset-btn:active:not(:disabled) {
+  background-color: theme("colors.danger.800");
+  transition: none;
 }
 
 .action-buttons .reset-btn:disabled {
