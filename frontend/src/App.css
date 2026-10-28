@@ -17,6 +17,19 @@
      theme it is too light to put white on. */
   --button-color: theme(colors.primary.600);
   --hover-color: theme(colors.primary.700);
+  /* The filled button under a finger: one step past hover. White on it is
+     8.7:1. */
+  --pressed-color: theme(colors.primary.800);
+}
+
+/* The device's safe-area insets: the notch, the rounded corners, the home bar.
+   0 wherever there are none. The layout reads these names, never env()
+   directly, so one place defines them and a test can set them. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 /* Dark mode overrides */
@@ -44,14 +57,29 @@ h1 {
   margin: 0;
 }
 
-/* Links */
+/* Links. Their decoration is set with zero specificity (:where), so a link
+   family's own rule (.nav-link, .footer-links a and the rest) decides its
+   decoration on hover and on a press, and a link with no rule of its own,
+   such as one in running text, underlines. */
 a {
   color: var(--primary-color);
-  text-decoration: none;
   font-weight: 500;
 }
 
-a:hover {
+:where(a) {
+  text-decoration: none;
+}
+
+/* Hover is for pointers that hover: a tap would leave it stuck on. Pressing
+   shows the same on any pointer. */
+@media (hover: hover) {
+  :where(a:hover) {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+:where(a:active) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }

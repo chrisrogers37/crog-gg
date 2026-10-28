@@ -1,4 +1,5 @@
 .theme-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,9 +16,24 @@
     background-color 0.2s ease;
 }
 
-.theme-toggle:hover {
-  background: var(--background-color);
+/* The circle stays 36px; the tap lands on a 44px square around it. */
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: var(--background-color);
+    color: var(--text-color);
+  }
+}
+
+.theme-toggle:active {
+  background: var(--border-color);
   color: var(--text-color);
+  transition: none;
 }
 
 .theme-toggle:focus-visible {

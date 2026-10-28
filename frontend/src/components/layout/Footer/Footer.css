@@ -1,7 +1,7 @@
 .footer {
   background: var(--background-color);
   border-top: 1px solid var(--border-color);
-  padding: 2rem;
+  padding: 2rem max(2rem, var(--safe-right)) calc(2rem + var(--safe-bottom)) max(2rem, var(--safe-left));
   margin-top: auto;
 }
 
@@ -33,13 +33,20 @@
   transition: color 0.2s;
 }
 
-.footer-links a:hover {
+@media (hover: hover) {
+  .footer-links a:hover {
+    color: var(--primary-color);
+  }
+}
+
+.footer-links a:active {
   color: var(--primary-color);
+  transition: none;
 }
 
 @media (max-width: 640px) {
   .footer {
-    padding: 2rem 1rem;
+    padding: 2rem max(1rem, var(--safe-right)) calc(2rem + var(--safe-bottom)) max(1rem, var(--safe-left));
   }
 
   .footer-content {
@@ -51,6 +58,16 @@
   .footer-links {
     flex-wrap: wrap;
     justify-content: center;
-    row-gap: 0.5rem;
+    gap: 0 0.5rem;
+  }
+
+  /* 44px targets; the gap and the padding keep the labels 1.5rem apart. */
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 0.5rem;
   }
 }

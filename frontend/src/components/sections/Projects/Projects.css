@@ -25,7 +25,13 @@
   transition: border-color 0.15s;
 }
 
-.card.project-row:hover {
+@media (hover: hover) {
+  .card.project-row:hover {
+    border-color: var(--primary-color);
+  }
+}
+
+.card.project-row:has(.project-row-link:active) {
   border-color: var(--primary-color);
 }
 
@@ -48,7 +54,13 @@
   inset: 0;
 }
 
-.project-row:hover .project-row-link {
+@media (hover: hover) {
+  .project-row:hover .project-row-link {
+    color: var(--primary-color);
+  }
+}
+
+.project-row-link:active {
   color: var(--primary-color);
 }
 
