@@ -1,0 +1,25 @@
+{
+  "sha": "0",
+  "html_url": "https://github.com/example/example/blob/main/README.md",
+  "download_url": "https://raw.githubusercontent.com/example/example/main/README.md",
+  "markdown": [
+    "# A README",
+    "",
+    "A first paragraph of text, long enough to wrap onto several lines on a phone, so the README's left edge and the length of its lines can both be seen.",
+    "",
+    "A second paragraph, with a [link](https://example.com/) and some `inline code` in it.",
+    "",
+    "- the first item of a list",
+    "- the second item of a list",
+    "- the third item of a list",
+    "",
+    "```ts",
+    "const answer: number = 42;",
+    "console.log(`the answer is ${answer}`);",
+    "```",
+    "",
+    "| column 0 | column 1 | column 2 | column 3 | column 4 | column 5 | column 6 | column 7 | column 8 | column 9 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| value 0 | value 1 | value 2 | value 3 | value 4 | value 5 | value 6 | value 7 | value 8 | value 9 |"
+  ]
+}
