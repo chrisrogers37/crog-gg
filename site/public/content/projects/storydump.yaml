@@ -1,9 +1,9 @@
-# Storydump - Instagram Story Scheduling via Telegram
+# Storydump - Instagram Stories from past posts and Google Drive
 id: storydump
 title: Storydump
 description: |
-  turn a Google Drive folder into a daily Instagram Stories queue.
-  review with your team on Telegram or the web before posting.
+  give your Instagram posts another life as Stories. mix in Google Drive
+  media, set a schedule, and review with your team on Telegram or the web.
 url: https://storydump.app
 brand: storydump
 category: ai-tools
