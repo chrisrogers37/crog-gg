@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, scratch/link-specs-on-295]
   pull_request:
     branches: [main]
 
