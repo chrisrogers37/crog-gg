@@ -350,11 +350,12 @@ test.describe("pressed", () => {
       locate: (page) => page.locator("header .nav-logo"),
     },
     // The header's links show from 769px wide, so on a phone only in landscape.
+    // Another page's link: the current page's is already in the pressed colour.
     {
       name: "a nav link in landscape",
       path: "/",
       viewport: { width: PHONE_HEIGHT, height: IPHONE_WIDTH },
-      locate: (page) => page.locator("header .nav-link").first(),
+      locate: (page) => page.locator("header .nav-link:not(.active)").first(),
     },
     {
       name: "a menu link",
