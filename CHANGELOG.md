@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-10-28
+
+### Added
+
+- A Design audit workflow, run by hand on a branch: it builds the branch's frontend and main's, checks every page at 360, 390 and 430 px in both themes for sideways overflow, text under 12 px and axe's color-contrast, target-size, link-name and button-name rules, and holds the branch's Lighthouse median to main's (no more than 2 points lower, CLS no higher) over six runs each.
+
 ## 2026-10-25
 
 ### Changed
