@@ -41,7 +41,6 @@
 
 .footer-links a:active {
   color: var(--primary-color);
-  text-decoration: none;
   transition: none;
 }
 

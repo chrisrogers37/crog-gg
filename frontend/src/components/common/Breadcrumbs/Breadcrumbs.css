@@ -31,7 +31,6 @@
 
 .breadcrumb-link:active {
   color: var(--primary-color);
-  text-decoration: none;
   transition: none;
 }
 

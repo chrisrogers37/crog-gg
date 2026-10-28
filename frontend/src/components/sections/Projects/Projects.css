@@ -62,7 +62,6 @@
 
 .project-row-link:active {
   color: var(--primary-color);
-  text-decoration: none;
 }
 
 .project-row-status {
