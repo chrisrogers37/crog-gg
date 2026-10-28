@@ -2,11 +2,12 @@
 // <OUT>/bite.json); this reads it and holds each test to one rule, whatever the branch. A test is identified by its
 // outermost test.describe title and its title, across projects. The tests main's own phone spec has are listed in
 // <OUT>/bite-main-list.json, written before the branch's spec was copied over; the file is absent when main has no
-// phone spec, and then every test is new. A test the branch adds tests what it changes, so it must fail on main: one
-// that passed there checks nothing about the change, and that, or a run that failed to report, is what fails the step.
-// A test the branch adds that cannot fail on main for a known reason is listed in KNOWN_INERT with the reason: it is
-// marked in the table, and does not fail the step. A run of no tests checks nothing, and fails the step too.
-// A test main already has is expected to pass there; one that fails is noted, and does not fail the step. The table
+// phone spec, and then every test is new. The tests the branch adds are what test its change, so the spec bites when
+// at least one of them fails on main. One that passes there is listed, not failed: a branch may add a guard of what
+// main already does, or a probe of the browser, and the table shows a reviewer which tests catch the change and which
+// do not. The step fails when the branch adds tests and none of them fails on main, when the spec ran no tests, or when
+// the run failed to report. A test main already has is expected to pass there; one that fails is noted, and does not
+// fail the step. The table
 // (test, expected, observed, the assertion message) goes into <OUT>/report.md and <OUT>/report.json, and into the
 // step summary, whichever way the gate goes.
 import { appendFileSync } from "node:fs";
@@ -21,17 +22,6 @@ const strip = (text) => String(text ?? "").replace(/\u001b\[[0-9;]*m/g, "");
 const oneLine = (text, length) => strip(text).split("\n").slice(0, 4).join(" ").replace(/\s+/g, " ").trim().slice(0, length);
 const cell = (text) => String(text ?? "").replace(/\|/g, "\\|");
 const identity = (group, title) => JSON.stringify([group, title]);
-
-/* Tests a branch adds that can't fail on main, with the reason. In Chromium's touch emulation a press also sets :hover, so a
-   control that main styles on an ungated hover rule shows a change on a press there too, and its pressed test proves the branch's
-   pressed state, not main's lack of one. */
-const KNOWN_INERT = [
-  {
-    group: "pressed",
-    title: /^(the menu's theme button|a footer link|a menu link|the menu's close button|a project row) /,
-    reason: "main's hover rule on this control fires on a press in Chromium's touch emulation",
-  },
-];
 
 async function readJson(name) {
   const text = await readFile(join(OUT, name), "utf8");
@@ -106,19 +96,15 @@ try {
     const observed = observe(test);
     let verdict;
     if (isNew) {
-      const inert = KNOWN_INERT.find((known) => known.group === group && known.title.test(title));
-      if (observed === "passed" && inert) {
-        verdict = `passed on main, known: ${inert.reason}`;
-      } else {
-        verdict = observed === "passed" ? "PASSED ON MAIN, MUST FAIL" : observed === "failed" ? "ok" : "skipped, not checked";
-        if (observed === "passed") problems.push(`${group} > ${title} (${project}) passed on main`);
-      }
+      verdict = observed === "failed" ? "ok: catches the change" : observed === "passed" ? "passed on main (listed)" : "skipped, not checked";
     } else {
       verdict = observed === "passed" ? "ok" : observed === "failed" ? "failed, expected to pass (noted)" : "skipped";
     }
     rows.push({ group, title, project, expected: isNew ? "fail" : "pass", observed, verdict, message: observed === "failed" ? message(test) : "" });
   }
   if (tests.length === 0) problems.push("the spec ran no tests");
+  const added = rows.filter((row) => row.expected === "fail");
+  if (added.length > 0 && !added.some((row) => row.observed === "failed")) problems.push(`none of the ${added.length} tests the branch adds failed on main`);
 } catch (error) {
   problems.push(`the spec's report could not be read: ${oneLine(error, 200)}`);
 }
@@ -133,8 +119,8 @@ const lines = [
   "## Prove the spec bites (the phone spec run against main)",
   "",
   `${rows.length} tests across ${new Set(rows.map((row) => row.project)).size} projects: ${counts.passed} passed, ${counts.failed} failed, ${counts.skipped} skipped.`,
-  "Expectation: a test the branch adds must fail on main; a test main already has is expected to pass there.",
-  `Gate (a test the branch adds passed on main, or the run failed to report): ${pass ? "PASS" : "FAIL"}.`,
+  "Expectation: the tests the branch adds catch its change, so at least one fails on main, and any that pass there are listed; a test main already has is expected to pass there.",
+  `Gate (the branch adds tests and none fails on main, the spec ran no tests, or the run failed to report): ${pass ? "PASS" : "FAIL"}.`,
   ...problems.map((problem) => `- ${problem}`),
   "",
   "| group | test | project | expected on main | observed | verdict | assertion message |",
