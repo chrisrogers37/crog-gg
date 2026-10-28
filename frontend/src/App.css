@@ -79,7 +79,7 @@ a {
   }
 }
 
-:where(a:active) {
+a:active {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
