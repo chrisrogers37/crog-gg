@@ -6,7 +6,7 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ### Fixed
 
-- The logo, the nav links, the menu links, the breadcrumbs, the project rows and the footer links no longer underline on hover or on a press; a link in running text, such as one in a README, still does.
+- The logo, the nav links, the menu links, the breadcrumbs and the project rows no longer underline on hover; a link in running text, such as one in a README, still does.
 
 ## 2026-10-26
 

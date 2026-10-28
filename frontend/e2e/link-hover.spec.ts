@@ -111,15 +111,23 @@ async function expectHover(link: Locator, name: string, line: "none" | "underlin
 }
 
 for (const theme of ["light", "dark"] as const) {
-  test(`the logo, a nav link and a footer link keep no underline on hover, in ${theme}`, async ({
-    page,
-  }) => {
+  test(`the logo keeps no underline on hover, in ${theme}`, async ({ page }) => {
+    await open(page, theme, "/");
+
+    await expectHover(page.locator("header .nav-logo"), "the logo", "none");
+  });
+
+  test(`a nav link keeps no underline on hover, in ${theme}`, async ({ page }) => {
+    await open(page, theme, "/");
+
+    await expectHover(page.locator("header .nav-link").first(), "a nav link", "none");
+  });
+
+  test(`a footer link keeps no underline on hover, in ${theme}`, async ({ page }) => {
     await open(page, theme, "/");
     // The page's sections load after it does and push the footer down.
     await page.waitForLoadState("networkidle");
 
-    await expectHover(page.locator("header .nav-logo"), "the logo", "none");
-    await expectHover(page.locator("header .nav-link").first(), "a nav link", "none");
     await expectHover(page.locator(".footer-links a").first(), "a footer link", "none");
   });
 

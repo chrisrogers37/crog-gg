@@ -15,7 +15,7 @@ import { SECTIONS, SUMMON, site } from "./site";
  * - left edges: the journey's and a README's text start on the page's gutter,
  *   level with the headings.
  * - pressed: a control on a screen that can't hover shows that it is pressed,
- *   and shows nothing for a hover.
+ *   with no underline, and shows nothing for a hover.
  * - insets: the layout keeps clear of the notch and the home bar.
  * - env probe: what WebKit's iPhone profile reports for those insets.
  * - labels: SUMMON's labels sit on one line.
@@ -327,6 +327,10 @@ test.describe("pressed", () => {
   type Pressable = {
     name: string;
     path: string;
+    /** The screen's size, if not the phone's held upright. */
+    viewport?: { width: number; height: number };
+    /** The routes the page needs, set before it loads. */
+    route?: (page: Page) => Promise<unknown>;
     /** What puts the control on the screen, if the page doesn't. */
     reveal?: (page: Page) => Promise<unknown>;
     locate: (page: Page) => Locator;
@@ -339,6 +343,18 @@ test.describe("pressed", () => {
       name: "the menu button",
       path: "/",
       locate: (page) => page.getByRole("button", { name: "Open menu" }),
+    },
+    {
+      name: "the logo",
+      path: "/",
+      locate: (page) => page.locator("header .nav-logo"),
+    },
+    // The header's links show from 769px wide, so on a phone only in landscape.
+    {
+      name: "a nav link in landscape",
+      path: "/",
+      viewport: { width: PHONE_HEIGHT, height: IPHONE_WIDTH },
+      locate: (page) => page.locator("header .nav-link").first(),
     },
     {
       name: "a menu link",
@@ -378,6 +394,13 @@ test.describe("pressed", () => {
       path: "/projects",
       locate: (page) => page.locator("a.project-row-link").first(),
     },
+    {
+      name: "a breadcrumb",
+      path: `/projects/${FIXTURE}`,
+      route: routeFixtureProject,
+      locate: (page) =>
+        page.getByRole("navigation", { name: "Breadcrumb" }).locator(".breadcrumb-link").first(),
+    },
   ];
 
   for (const theme of ["light", "dark"] as const) {
@@ -391,6 +414,8 @@ test.describe("pressed", () => {
             JSON.stringify({ state: { theme: selectedTheme }, version: 0 }),
           );
         }, theme);
+        if (control.viewport) await page.setViewportSize(control.viewport);
+        await control.route?.(page);
         await page.goto(control.path);
         await expect(page.locator("html")).toHaveClass(theme === "dark" ? /dark/ : /^$/);
         // The premise: this context can't hover, which is what the hover rules
@@ -416,7 +441,9 @@ test.describe("pressed", () => {
 
         // Pressed shows at once: :active has no transition.
         await page.mouse.down();
-        expect(await look(target), "pressed looks different from rest").not.toEqual(rest);
+        const pressed = await look(target);
+        expect(pressed, "pressed looks different from rest").not.toEqual(rest);
+        expect(pressed.textDecorationLine, "pressed, it has no underline").toBe("none");
 
         // Released away from it, so nothing is clicked: no navigation, no
         // theme change.
