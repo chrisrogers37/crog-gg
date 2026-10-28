@@ -5,6 +5,8 @@ name: Design audit
 # ref under "Use workflow from".
 on:
   workflow_dispatch:
+  push:
+    branches: [scratch/design-audit-main]
 
 permissions:
   contents: read
