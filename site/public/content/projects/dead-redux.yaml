@@ -1,9 +1,9 @@
 # Dead Redux - Daily Grateful Dead Shows
 id: dead-redux
 title: Dead Redux
-description: a new Grateful Dead show hosted each day
+description: a different Grateful Dead show every day. press play and settle in.
 url: https://dead-redux.vercel.app
-icon: "\U0001F3B5"
+brand: dead-redux
 category: web-app
 technologies:
   - TypeScript

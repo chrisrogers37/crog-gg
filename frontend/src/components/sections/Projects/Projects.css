@@ -1,11 +1,9 @@
-/* The featured project's card (the site's .card, index.css), set off by the
-   site's accent, then the rest as compact cards in the same family: a name,
-   the whole description and what it's built with (Chris, 2026-10-03: the old
-   tiles read as generated; 2026-10-04: bare rows looked lost). */
+/* Shared on the homepage and project index. Brand values come from
+   projectPresentation.ts; layout and interaction remain the same per card. */
 
 .project-rows {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -19,11 +17,18 @@
 .project-row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
-  column-gap: 2rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
   padding: 1.25rem 1.5rem;
   transition: border-color 0.15s;
 }
+
+.project-row[data-brand] { --primary-color: var(--project-link); }
+.dark .project-row[data-brand] { --primary-color: var(--project-dark-link); }
+.project-row-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+.project-row-cue { display: flex; align-items: center; gap: 0.75rem; color: var(--primary-color); font-size: 0.875rem; white-space: nowrap; }
+.project-row:focus-within { outline: 2px solid var(--primary-color); outline-offset: 3px; }
 
 .card.project-row:hover {
   border-color: var(--primary-color);
@@ -31,7 +36,7 @@
 
 .project-row-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.45;
 }
@@ -58,7 +63,7 @@
 
 .project-row-description {
   max-width: 40rem;
-  margin: 0;
+  margin: 0.35rem 0 0;
   line-height: 1.6;
   color: var(--text-color-secondary);
 }
@@ -71,9 +76,25 @@
 
 /* Featured: the site's accent as a heavier border, and on its label. */
 .project-featured {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2rem;
   padding: 1.75rem;
   border-width: 2px;
 }
+.project-featured > .project-mark { width: 164px; height: 164px; }
+.card.project-featured[data-brand] {
+  background: var(--project-surface);
+  color: var(--project-ink);
+  --primary-color: var(--project-accent);
+  --text-color: var(--project-ink);
+  --text-color-secondary: var(--project-ink);
+}
+.project-featured[data-brand] .project-featured-description { opacity: 0.88; }
+.project-featured[data-brand] .btn-primary { color: var(--project-surface); background: var(--project-accent); }
+.project-featured[data-brand] .btn-primary:hover { filter: brightness(1.08); }
+.project-featured[data-brand] .btn-ghost { color: var(--project-ink); border-color: var(--project-ink); }
 
 /* At more than .card's weight: its dark-theme rule, .card:is(.dark *), would
    otherwise keep the border grey. The accent follows the theme by itself. */
@@ -136,13 +157,32 @@
 .skeleton-card .btn {
   width: 8rem;
 }
+.skeleton-mark { background: var(--border-color); }
+.skeleton-row .project-row-cue { width: 6.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-card, .skeleton-row { animation: none; }
+  .project-row { transition: none; }
+}
 
 /* On a phone the name sits over its description. */
 @media (max-width: 640px) {
   .project-row {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 0.35rem;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 0.75rem 1rem;
   }
+  .project-row > .project-mark { width: 56px; height: 56px; }
+  .project-row-body { display: contents; }
+  .project-row-head { grid-column: 2; grid-row: 1; }
+  .project-row-description, .project-row-tech, .project-row-cue { grid-column: 1 / -1; margin: 0; }
+  .project-row-cue { margin-top: 0.25rem; }
+  .project-featured { grid-template-columns: minmax(0, 1fr) 64px; gap: 1rem; align-items: start; }
+  .project-featured > .project-mark { width: 64px; height: 64px; }
+  .project-featured-copy { display: contents; }
+  .project-featured .page-eyebrow, .project-featured-title { grid-column: 1; }
+  .project-featured > .project-mark { grid-column: 2; grid-row: 1 / 3; }
+  .project-featured-description, .project-featured .pills, .project-featured .page-ctas { grid-column: 1 / -1; margin: 0; }
+  .project-featured .page-eyebrow { margin: 0; }
 }
 
 @media (max-width: 480px) {

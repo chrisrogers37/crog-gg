@@ -1,0 +1,73 @@
+@reference "../../../index.css";
+
+/* Benzo's product palette lives in palette.ts; no global site-theme change. */
+.benzo-page {
+  display: contents;
+  --primary-color: theme("colors.benzo.rose");
+}
+.dark .benzo-page { --primary-color: theme("colors.benzo.pillLight"); }
+
+.page-hero.benzo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(180px, 1fr);
+  align-items: center;
+  gap: 2rem;
+  max-width: none;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid theme("colors.benzo.line");
+  border-radius: 8px;
+  color: theme("colors.benzo.ink");
+  background: theme("colors.benzo.paper");
+  --text-color: theme("colors.benzo.ink");
+  --text-color-secondary: theme("colors.benzo.muted");
+  --border-color: theme("colors.benzo.line");
+  --primary-color: theme("colors.benzo.rose");
+}
+.benzo-hero .page-headline { font-weight: 700; }
+.benzo-period { color: theme("colors.benzo.rose"); }
+.benzo-headline {
+  margin: 1rem 0 0;
+  max-width: 25ch;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.benzo-lead { margin: 1rem 0 0; line-height: 1.65; color: var(--text-color-secondary); }
+.benzo-hero .btn-primary { color: theme("colors.benzo.paper"); background: theme("colors.benzo.rose"); }
+.benzo-hero .btn-primary:hover { background: theme("colors.benzo.roseHover"); }
+.benzo-hero .btn-ghost { color: theme("colors.benzo.ink"); border-color: theme("colors.benzo.controlBorder"); }
+.benzo-hero .btn-ghost:hover { color: theme("colors.benzo.ink"); background: theme("colors.benzo.softPink"); }
+.benzo-download-note { margin: 0.75rem 0 0; font-size: 0.8125rem; line-height: 1.5; color: var(--text-color-secondary); }
+.benzo-identity { text-align: center; color: theme("colors.benzo.rose"); }
+.benzo-identity p { max-width: 20ch; margin: 0.75rem auto 0; font-size: 0.875rem; }
+.benzo-mark { display: block; width: 100%; max-width: 260px; margin: auto; }
+
+.benzo-story { display: grid; grid-template-columns: 1fr 1.25fr; gap: 3rem; }
+.benzo-page h2 { font-size: 1.5rem; font-weight: 650; line-height: 1.25; letter-spacing: -0.025em; }
+.benzo-story h2 { font-size: clamp(1.75rem, 3vw, 2.25rem); max-width: 20ch; }
+.benzo-story p, .benzo-features p, .benzo-handoff p { line-height: 1.7; color: var(--text-color-secondary); }
+.benzo-story p + p { margin-top: 1rem; }
+.benzo-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; }
+.benzo-features section { border-top: 1px solid var(--border-color); padding-top: 1.25rem; }
+.benzo-features h2 { font-size: 1.125rem; }
+.benzo-features p, .benzo-handoff p { margin: 0.75rem 0 0; }
+.benzo-handoff { display: grid; grid-template-columns: 1.25fr 1fr; gap: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color); }
+.benzo-install-note { padding-left: 2rem; border-left: 1px solid var(--border-color); }
+.benzo-install-note p { margin-top: 0; font-size: 0.9375rem; }
+.benzo-text-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 0.5rem; text-decoration: underline; text-underline-offset: 4px; }
+.benzo-details { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: var(--text-color-secondary); }
+.benzo-details nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.benzo-details a { display: inline-flex; align-items: center; min-height: 44px; }
+
+@media (max-width: 700px) {
+  .page-hero.benzo-hero { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  .benzo-identity { display: flex; align-items: center; justify-content: center; gap: 1rem; border-top: 1px solid theme("colors.benzo.line"); padding-top: 1.25rem; }
+  .benzo-identity .benzo-mark { width: 100px; margin: 0; }
+  .benzo-identity p { margin: 0; text-align: left; }
+  .benzo-story, .benzo-handoff { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .benzo-features { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .benzo-install-note { border-left: 0; padding-left: 0; }
+  .benzo-details { align-items: flex-start; flex-direction: column; gap: 0.5rem; }
+}

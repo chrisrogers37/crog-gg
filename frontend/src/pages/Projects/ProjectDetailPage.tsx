@@ -14,6 +14,8 @@ import { hasOwnPage } from "../../content/ownPages";
 import { PROJECT_PAGE_LOADING, PROJECT_PAGES } from "../../content/projectPages";
 import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
 import { useGithubOn, useScrollToHash } from "../../hooks";
+import { ProjectMark } from "../../components/common/ProjectMark";
+import { projectBrandStyle } from "../../content/projectPresentation";
 import "./ProjectDetailPage.css";
 
 const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
@@ -107,9 +109,10 @@ function StandardProject({ project }: { project: Project }) {
 
   return (
     <>
-      <header className="page-hero">
+      <header className="page-hero project-standard-hero" data-brand={project.brand} style={projectBrandStyle(project.brand)}>
+        <ProjectMark brand={project.brand} icon={project.icon} title={project.title} />
         <p className="page-eyebrow">
-          <span aria-hidden="true">{project.icon}</span> {eyebrow}
+          {eyebrow}
         </p>
         <h1 className="page-headline">{project.title}</h1>
         <p className="page-sub">{project.description}</p>

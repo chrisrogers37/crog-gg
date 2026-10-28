@@ -41,11 +41,24 @@ describe("ProjectRow", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Test Project" })).toBeInTheDocument();
   });
 
-  it("puts the project's emoji beside its name, hidden from screen readers", () => {
+  it("keeps a legacy icon decorative for existing project files", () => {
     renderRow(mockProject);
     const icon = screen.getByText("\u{1F680}");
-    expect(icon).toHaveAttribute("aria-hidden", "true");
-    expect(icon.closest("h3")).toBe(screen.getByRole("heading", { name: "Test Project" }));
+    expect(icon.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Test Project" })).toBeInTheDocument();
+  });
+
+  it("uses an authored brand instead of a legacy emoji without changing the link name", () => {
+    const { container } = renderRow({ ...mockProject, brand: "benzo" });
+    expect(screen.queryByText(mockProject.icon!)).not.toBeInTheDocument();
+    expect(container.querySelector('.project-mark[aria-hidden="true"] svg')).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Test Project" })).toHaveAttribute("href", "/projects/test");
+    expect(screen.getByText("view project").closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it("falls back to a title initial when a project supplies no brand or icon", () => {
+    renderRow({ ...mockProject, icon: undefined });
+    expect(screen.getByText("T").closest('[aria-hidden="true"]')).not.toBeNull();
   });
 
   it("gives the whole description", () => {
