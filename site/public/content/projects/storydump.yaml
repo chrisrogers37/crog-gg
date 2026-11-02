@@ -1,12 +1,11 @@
-# Storydump - Instagram Story Scheduling via Telegram
+# Storydump - Instagram Stories from past posts and Google Drive
 id: storydump
 title: Storydump
 description: |
-  a Telegram bot for managing Instagram story posting from a content
-  repository - smart scheduling, team collaboration, and automated
-  publishing with category-based content distribution.
+  give your Instagram posts another life as Stories. mix in Google Drive
+  media, set a schedule, and review with your team on Telegram or the web.
 url: https://storydump.app
-icon: "\U0001F4F1"
+brand: storydump
 category: ai-tools
 technologies:
   - Python

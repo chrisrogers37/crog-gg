@@ -34,29 +34,33 @@ export function ProjectSkeleton({ count }: { count: number }) {
   return (
     <div className="projects-skeleton" role="status" aria-label="Loading projects">
       <div className="card project-featured skeleton-card" aria-hidden="true">
-        <p className="page-eyebrow">&nbsp;</p>
-        <div className="project-featured-title">&nbsp;</div>
-        <p className="project-featured-description">
-          &nbsp;
-          <br />
-          &nbsp;
-        </p>
-        <ul className="pills">
-          {Array.from({ length: 6 }).map((_, j) => (
-            <li key={j}>&nbsp;</li>
-          ))}
-        </ul>
-        <div className="page-ctas">
-          <span className="btn btn-ghost">&nbsp;</span>
+        <div className="project-featured-copy">
+          <p className="page-eyebrow">&nbsp;</p>
+          <div className="project-featured-title">&nbsp;</div>
+          <p className="project-featured-description">
+            &nbsp;
+            <br />
+            &nbsp;
+          </p>
+          <ul className="pills">
+            {Array.from({ length: 6 }).map((_, j) => (
+              <li key={j}>&nbsp;</li>
+            ))}
+          </ul>
+          <div className="page-ctas">
+            <span className="btn btn-ghost">&nbsp;</span>
+          </div>
         </div>
+        <span className="project-mark skeleton-mark" />
       </div>
       <ul className="project-rows" aria-hidden="true">
         {Array.from({ length: count }).map((_, i) => (
           <li key={i} className="card project-row skeleton-row">
-            <div className="project-row-head">
-              <div className="project-row-title">&nbsp;</div>
-            </div>
+            <span className="project-mark skeleton-mark" />
             <div className="project-row-body">
+              <div className="project-row-head">
+                <div className="project-row-title">&nbsp;</div>
+              </div>
               <p className="project-row-description">
                 &nbsp;
                 <br />
@@ -64,6 +68,7 @@ export function ProjectSkeleton({ count }: { count: number }) {
               </p>
               <p className="project-row-tech">&nbsp;</p>
             </div>
+            <span className="project-row-cue">&nbsp;</span>
           </li>
         ))}
       </ul>

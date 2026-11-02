@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 import type { Project } from "../../../types";
+import { projectBrandStyle, projectLabels } from "../../../content/projectPresentation";
+import { ProjectMark } from "../../common/ProjectMark";
 import "./Projects.css";
 
 type ProjectRowProps = {
@@ -18,27 +20,28 @@ type ProjectRowProps = {
 export function ProjectRow({ project, headingLevel = 3 }: ProjectRowProps) {
   const Heading = `h${headingLevel}` as const;
   return (
-    <li className="card project-row">
-      <div className="project-row-head">
-        <Heading className="project-row-title">
-          <span aria-hidden="true">{project.icon}</span>{" "}
-          <Link to={`/projects/${project.id}`} className="project-row-link">
-            {project.title}
-          </Link>
-        </Heading>
-        {project.status && project.status !== "active" && (
-          <span className="badge project-row-status">{project.status}</span>
-        )}
-      </div>
+    <li className="card project-row" data-brand={project.brand} style={projectBrandStyle(project.brand)}>
+      <ProjectMark brand={project.brand} icon={project.icon} title={project.title} />
       <div className="project-row-body">
+        <div className="project-row-head">
+          <Heading className="project-row-title">
+            <Link to={`/projects/${project.id}`} className="project-row-link">
+              {project.title}
+            </Link>
+          </Heading>
+          {project.status && project.status !== "active" && (
+            <span className="badge project-row-status">{project.status}</span>
+          )}
+        </div>
         <p className="project-row-description">{project.description}</p>
         {project.technologies.length > 0 && (
           <p className="project-row-tech">
-            <span className="sr-only">built with </span>
+            <span className="sr-only">{projectLabels.builtWith} </span>
             {project.technologies.join(" · ")}
           </p>
         )}
       </div>
+      <span className="project-row-cue" aria-hidden="true">{projectLabels.view} <span>→</span></span>
     </li>
   );
 }

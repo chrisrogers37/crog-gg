@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import { ClaudfatherLoadingHero, ClaudfatherPage } from "../components/sections/Claudfather";
+import { BenzoLoadingHero, BenzoPage } from "../components/sections/Benzo/BenzoPage";
 import type { Project } from "../types";
 import type { OwnPageId } from "./ownPages";
 
@@ -11,6 +12,7 @@ import type { OwnPageId } from "./ownPages";
  */
 export const PROJECT_PAGES: Record<OwnPageId, ComponentType<{ project: Project }>> = {
   claudfather: ClaudfatherPage,
+  benzo: BenzoPage,
 };
 
 /**
@@ -19,4 +21,5 @@ export const PROJECT_PAGES: Record<OwnPageId, ComponentType<{ project: Project }
  */
 export const PROJECT_PAGE_LOADING: Record<OwnPageId, ComponentType<{ children: ReactNode }>> = {
   claudfather: ClaudfatherLoadingHero,
+  benzo: BenzoLoadingHero,
 };

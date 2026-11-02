@@ -8,6 +8,17 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 - A Design audit workflow, run by hand on a branch: it builds the branch's frontend and main's, checks every page at 360, 390 and 430 px in both themes for sideways overflow, text under 12 px and axe's color-contrast, target-size, link-name and button-name rules, and holds the branch's Lighthouse median to main's (no more than 2 points lower, CLS no higher) over six runs each.
 
+### Changed
+
+- Storydump's project description leads with reusing past Instagram posts as Stories, alongside Google Drive media. Shuffify's description highlights scheduled reordering and adding songs from chosen playlists. Both descriptions feed the homepage, projects list and project pages.
+
+## 2026-10-27
+
+### Changed
+
+- Project cards on the homepage and projects page use each product's own mark and palette, shorter descriptions and a visible navigation cue. Brand colors, marks and labels share one presentation module; existing fork emoji icons remain supported. Shuffify's stack now correctly names Python instead of Node.js.
+- Benzo's project page uses its warm paper, rose and pink pill branding, with the MacBook origin story and clear links to the product site, releases, source and support. Its listing points to benzo.work and describes sleep controls and reported blockers without promising to eliminate heat or battery drain.
+
 ## 2026-10-25
 
 ### Changed
