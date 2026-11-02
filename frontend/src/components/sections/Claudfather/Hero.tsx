@@ -1,24 +1,8 @@
 import { claudfather } from "../../../content/claudfather";
 import type { Project } from "../../../types";
-import { photoSrc, photoSrcSet } from "../../../utils/photos";
 import { WebsiteLink } from "./WebsiteLink";
-
-/** Shared with the loading frame so the mark starts downloading immediately. */
-export function ClaudfatherMark({ alt }: { alt: string }) {
-  const { photo } = claudfather.mark;
-  return (
-    <img
-      className="cl-mark"
-      alt={alt}
-      width={220}
-      height={220}
-      loading="eager"
-      sizes="(max-width: 480px) 44px, (max-width: 768px) 56px, 220px"
-      srcSet={photoSrcSet(photo)}
-      src={photoSrc(photo)}
-    />
-  );
-}
+import { ClaudfatherMark } from "../../common/ProjectMark";
+export { ClaudfatherMark } from "../../common/ProjectMark";
 
 export function Hero({ project }: { project: Project }) {
   const { hero, mark, website, organization } = claudfather;

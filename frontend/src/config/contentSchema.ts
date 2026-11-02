@@ -6,6 +6,7 @@
  */
 
 import { skillColor } from "../utils/skillColor";
+import { PROJECT_BRAND_IDS } from "../content/projectPresentation";
 import {
   type Check,
   describeProblems,
@@ -104,7 +105,9 @@ export const projectShape = object({
   url: optional(httpsUrl),
   github: optional(httpsUrl),
   demo: optional(httpsUrl),
-  icon: text,
+  /** Brands replace emoji; legacy icons remain supported for existing forks. */
+  brand: optional(oneOf(PROJECT_BRAND_IDS)),
+  icon: optional(text),
   category: text,
   technologies: withDefault(list(text), noSkills),
   status: optional(oneOf(PROJECT_STATUSES)),

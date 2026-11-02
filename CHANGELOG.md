@@ -4,9 +4,20 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ## 2026-10-28
 
+### Changed
+
+- Storydump's project description leads with reusing past Instagram posts as Stories, alongside Google Drive media. Shuffify's description highlights scheduled reordering and adding songs from chosen playlists. Both descriptions feed the homepage, projects list and project pages.
+
 ### Fixed
 
 - The logo, the nav links, the menu links, the breadcrumbs and the project rows no longer underline on hover; a link in running text, such as one in a README, still does.
+
+## 2026-10-27
+
+### Changed
+
+- Project cards on the homepage and projects page use each product's own mark and palette, shorter descriptions and a visible navigation cue. Brand colors, marks and labels share one presentation module; existing fork emoji icons remain supported. Shuffify's stack now correctly names Python instead of Node.js.
+- Benzo's project page uses its warm paper, rose and pink pill branding, with the MacBook origin story and clear links to the product site, releases, source and support. Its listing points to benzo.work and describes sleep controls and reported blockers without promising to eliminate heat or battery drain.
 
 ## 2026-10-26
 

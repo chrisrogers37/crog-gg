@@ -135,6 +135,19 @@ describe("a project's own head", () => {
       expect(schema).not.toHaveProperty(key);
     }
   });
+
+  it("describes Benzo as a macOS utility and distinguishes its product URL from the portfolio page", () => {
+    const [schema] = projectMeta({
+      id: "benzo", title: "Benzo", description: "sleep controls for Mac.", url: "https://product.example/",
+    }).schemas ?? [];
+    expect(schema).toMatchObject({
+      "@type": "SoftwareApplication",
+      operatingSystem: "macOS",
+      applicationCategory: "UtilitiesApplication",
+      url: "https://product.example/",
+      mainEntityOfPage: `${SITE_URL}/projects/benzo`,
+    });
+  });
 });
 
 describe("jsonLd", () => {

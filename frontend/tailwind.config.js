@@ -1,4 +1,4 @@
-import { primary, accent, slate, danger, claudfather } from "./src/styles/palette";
+import { primary, accent, slate, danger, claudfather, benzo } from "./src/styles/palette";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -15,6 +15,7 @@ export default {
         slate,
         danger,
         claudfather,
+        benzo,
       },
 
       fontFamily: {

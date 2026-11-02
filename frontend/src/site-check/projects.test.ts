@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import site from "virtual:site-config";
 import { hasOwnPage } from "../content/ownPages";
+import { PROJECT_BRAND_IDS } from "../content/projectPresentation";
 import type { Project } from "../types/Project";
 import { githubRepo, hasLiveDemo, isServedOwner } from "../utils/projectLinks";
 import { PLANNED, strings } from "../test/claudfatherRules";
@@ -24,13 +25,15 @@ describe("the shipped projects", () => {
     for (const project of projects) expect(project.category, project.id).toMatch(/\S/);
   });
 
-  it("each use one emoji as the icon, which the card prints as text", () => {
+  it("use a supported brand, a legacy emoji, or a title initial", () => {
     // One pictograph, with any variation selector, skin tone or ZWJ joins. An
     // icon-font class name would print as its letters.
     const ONE_EMOJI =
       /^\p{Extended_Pictographic}(?:\uFE0F|\p{Emoji_Modifier}|\u200D\p{Extended_Pictographic})*$/u;
     for (const project of projects) {
-      expect(project.icon, project.id).toMatch(ONE_EMOJI);
+      if (project.brand) expect(PROJECT_BRAND_IDS, project.id).toContain(project.brand);
+      else if (project.icon) expect(project.icon, project.id).toMatch(ONE_EMOJI);
+      else expect(project.title.trim(), project.id).not.toBe("");
     }
   });
 
