@@ -27,7 +27,7 @@ const githubServed = () => useUIStore.setState({ features: { regenerate: false, 
 /** The tests' site's GitHub owner (site.example's github.username). */
 const OWNER = site.github.username;
 
-const BENZO = makeProject({ id: "benzo", title: "Benzo", url: "https://benzo.example" });
+const STANDARD = makeProject({ id: "sample-project", title: "Sample project", url: "https://sample-project.example" });
 
 const renderAt = (entries: string[]) => {
   const router = createMemoryRouter(
@@ -52,7 +52,7 @@ const renderAt = (entries: string[]) => {
 describe("ProjectDetailPage before its project is found", () => {
   it("shows a skeleton while the content loads, not 'Project Not Found'", () => {
     // The store's own starting state: nothing loaded yet, a load pending.
-    renderAt(["/projects/benzo"]);
+    renderAt(["/projects/sample-project"]);
     const loading = screen.getByRole("status", { name: /loading project/i });
     expect(screen.queryByText(/project not found/i)).not.toBeInTheDocument();
     // The breadcrumbs' row held, so the hero lands where its stand-in stood,
@@ -81,12 +81,12 @@ describe("ProjectDetailPage before its project is found", () => {
     const reloadProjects = vi.fn();
     useContentStore.setState({
       projects: [],
-      loads: { ...INITIAL.loads, projects: { error: "content/projects/benzo.yaml has 1 problem(s)" } },
+      loads: { ...INITIAL.loads, projects: { error: "content/projects/sample-project.yaml has 1 problem(s)" } },
       reloadProjects,
     });
-    renderAt(["/projects/benzo"]);
+    renderAt(["/projects/sample-project"]);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "the projects didn't load: content/projects/benzo.yaml has 1 problem(s).",
+      "the projects didn't load: content/projects/sample-project.yaml has 1 problem(s).",
     );
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(reloadProjects).toHaveBeenCalled();
@@ -94,7 +94,7 @@ describe("ProjectDetailPage before its project is found", () => {
   });
 
   it("says 'Project Not Found' only for a loaded list without the slug", () => {
-    useContentStore.setState({ projects: [BENZO], loads: { ...INITIAL.loads, projects: "ready" } });
+    useContentStore.setState({ projects: [STANDARD], loads: { ...INITIAL.loads, projects: "ready" } });
     renderAt(["/projects/nope"]);
     expect(screen.getByRole("heading", { name: /project not found/i })).toBeInTheDocument();
   });
@@ -106,17 +106,17 @@ describe("ProjectDetailPage before its project is found", () => {
  */
 describe("ProjectDetailPage's Go Back", () => {
   beforeEach(() => {
-    useContentStore.setState({ projects: [BENZO], loads: { ...INITIAL.loads, projects: "ready" } });
+    useContentStore.setState({ projects: [STANDARD], loads: { ...INITIAL.loads, projects: "ready" } });
   });
 
   it("goes to /projects when the page was opened directly", () => {
-    const router = renderAt(["/projects/benzo"]);
+    const router = renderAt(["/projects/sample-project"]);
     fireEvent.click(screen.getByRole("button", { name: /go back/i }));
     expect(router.state.location.pathname).toBe("/projects");
   });
 
   it("goes back when there's a page of ours to go back to", () => {
-    const router = renderAt(["/", "/projects/benzo"]);
+    const router = renderAt(["/", "/projects/sample-project"]);
     fireEvent.click(screen.getByRole("button", { name: /go back/i }));
     expect(router.state.location.pathname).toBe("/");
   });
@@ -128,6 +128,33 @@ describe("ProjectDetailPage's Go Back", () => {
  * shows no GitHub panels, so this holds it to that.
  */
 describe("A project with a page of its own", () => {
+  it("uses Benzo's configured destinations without loading generic repository panels", () => {
+    const project = makeProject({
+      id: "benzo",
+      title: "Benzo",
+      url: "https://product.example/",
+      github: `https://github.com/${OWNER}/sleep-tool`,
+    });
+    useContentStore.setState({
+      projects: [project],
+      loads: { ...INITIAL.loads, projects: "ready" },
+    });
+    githubServed();
+    const getRepository = vi.spyOn(githubService, "getRepository");
+    const getReadme = vi.spyOn(githubService, "getReadme");
+    renderAt(["/projects/benzo"]);
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(project.title);
+    expect(screen.getByRole("link", { name: "visit Benzo" })).toHaveAttribute("href", project.url);
+    expect(screen.getByRole("link", { name: "get the Mac app" })).toHaveAttribute("href", `${project.github}/releases`);
+    expect(screen.getByRole("link", { name: "installation & current limits" })).toHaveAttribute("href", `${project.url}#before-install`);
+    expect(screen.getByRole("link", { name: "source on GitHub" })).toHaveAttribute("href", project.github);
+    expect(screen.getByRole("link", { name: "report an issue" })).toHaveAttribute("href", `${project.github}/issues`);
+    expect(screen.queryByRole("heading", { name: /^(repository|readme)$/i })).toBeNull();
+    expect(getRepository).not.toHaveBeenCalled();
+    expect(getReadme).not.toHaveBeenCalled();
+  });
+
   it("renders that page under the breadcrumbs, and asks GitHub for nothing", () => {
     useContentStore.setState({
       projects: [
@@ -163,7 +190,7 @@ describe("A project with a page of its own", () => {
 describe("ProjectDetailPage across projects", () => {
   it("doesn't carry a crashed section over to the next project", async () => {
     const project = (id: string): Project => ({
-      ...BENZO,
+      ...STANDARD,
       id,
       title: id,
       url: `https://github.com/${OWNER}/${id}`,
@@ -207,7 +234,7 @@ describe("ProjectDetailPage across projects", () => {
  * answer, and then only for an owner it serves.
  */
 describe("ProjectDetailPage's GitHub panels", () => {
-  const LINKED: Project = { ...BENZO, github: `https://github.com/${OWNER.toUpperCase()}/benzo` };
+  const LINKED: Project = { ...STANDARD, github: `https://github.com/${OWNER.toUpperCase()}/sample-project` };
   const panels = () => [
     screen.queryByRole("heading", { name: /^repository$/i }),
     screen.queryByRole("heading", { name: /^readme$/i }),
@@ -240,7 +267,7 @@ describe("ProjectDetailPage's GitHub panels", () => {
     ["site.yaml turns GitHub on", () => (site.features = { regenerate: undefined, github: "on" }), true],
   ])("when %s: shown is %s", (_, arrange, shown) => {
     arrange();
-    renderAt(["/projects/benzo"]);
+    renderAt(["/projects/sample-project"]);
     for (const panel of panels()) {
       if (shown) expect(panel).toBeInTheDocument();
       else expect(panel).not.toBeInTheDocument();
@@ -250,9 +277,9 @@ describe("ProjectDetailPage's GitHub panels", () => {
   it("hides them for an owner the API doesn't serve", () => {
     githubServed();
     useContentStore.setState({
-      projects: [{ ...BENZO, github: "https://github.com/someone-else/benzo" }],
+      projects: [{ ...STANDARD, github: "https://github.com/someone-else/sample-project" }],
     });
-    renderAt(["/projects/benzo"]);
+    renderAt(["/projects/sample-project"]);
     for (const panel of panels()) expect(panel).not.toBeInTheDocument();
   });
 
@@ -260,7 +287,7 @@ describe("ProjectDetailPage's GitHub panels", () => {
     githubServed();
     useContentStore.setState({ projects: [{ ...LINKED, technologies: ["Python"] }] });
     vi.spyOn(githubService, "getReadme").mockResolvedValue(null);
-    renderAt(["/projects/benzo"]);
+    renderAt(["/projects/sample-project"]);
 
     // The section stands while the README is on its way.
     expect(screen.getByRole("heading", { name: /^readme$/i })).toBeInTheDocument();

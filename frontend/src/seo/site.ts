@@ -183,6 +183,17 @@ export function createSeo(site: SiteConfig) {
     OwnPageId,
     (project: ProjectSummary, description: string, url: string) => object
   > = {
+    benzo: (project, description, url) => ({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: project.title,
+      description,
+      url: project.url,
+      mainEntityOfPage: url,
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "macOS",
+      author: AUTHOR,
+    }),
     claudfather: (project, description, url) => ({
       "@context": "https://schema.org",
       "@type": "CreativeWork",

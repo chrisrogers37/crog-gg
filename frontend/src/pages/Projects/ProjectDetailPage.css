@@ -34,6 +34,7 @@
     margin-bottom: -2rem;
   }
 }
+.project-standard-hero > .project-mark { margin-bottom: 1.5rem; }
 
 @media (max-width: 480px) {
   /* The README's stand-in has the README's box, so the README lands where it

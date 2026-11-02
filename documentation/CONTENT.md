@@ -54,9 +54,10 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 
 **Each project file:**
 - **`id`:** a lowercase slug (`my-project`). It's the page's URL, `/projects/<id>`, and the name of its prerendered file.
-- **`title`, `description`, `icon` and `category`:** required.
+- **`title`, `description` and `category`:** required. The description is shared by the homepage, project index, standard detail page and metadata; keep it short and specific.
 - **`url`** (optional): the main link, `https`. Without one, the project page's link falls back to `demo`, then `github`.
-- **`icon`:** one emoji, written as a YAML escape (`icon: "\U0001F680"`). The featured card and the project's page print it as text, and no icon font is loaded.
+- **`brand`** (optional): a key from `frontend/src/content/projectPresentation.ts`. It supplies the mark and colors on both lists and standard detail headers. All five projects on crog.gg use brands. The shared module owns card labels and color bindings, `palette.ts` owns raw colors, and `components/common/ProjectMark.tsx` owns the marks. The dedicated Benzo and Claudfather pages reuse those marks too.
+- **`icon`** (optional, legacy): one emoji, written as a YAML escape (`icon: "\U0001F680"`). Existing forks still render it when no brand is selected. Without either field, the mark uses the title's first letter. All marks are decorative; project names remain the accessible link names.
 - **`technologies`** (optional): the list shows them all, in order.
 - **`github`** (optional): a public repo of the site's GitHub owner (`github.username` in `site/site.yaml`, or one of its `allowed_owners`). The API serves no one else's, so another owner's repo shows no stats or README, and `npm run site:check` fails, unless the project has a page of its own (below), which shows neither. Without `github`, a `url` that is a GitHub repo is used instead.
 - **`demo`** (optional): when it differs from `url` and isn't on github.com, the page embeds it. Its exact origin must then be in `frame-src` in `vercel.json`, or the frame is blocked.
@@ -66,7 +67,11 @@ If `timeline.yaml` won't load or doesn't fit, the journey section says so, namin
 - Nothing else: `order`, `featured`, `tags` and `image` were never shown and are gone (#190), so a file that still has one fails, naming it. (Which project is featured is `index.yaml`'s call.)
 - **A page of its own:** a project whose id `frontend/src/content/ownPages.ts` lists shows its own page (`projectPages.ts`) instead of the standard one, as Claudfather's does. Claudfather's wears its org's look: its mark is Claudfather's avatar cropped to its medallion (`site/photos/originals/claudfather.jpg`, made into `site/public/profile-photos/claudfather-*.webp` like the photos, which `npm run site:check` finds when the site lists Claudfather), and its `share_card` is `site/public/claudfather-card.png`, from `site/claudfather-card.html`.
 
+Benzo also has a page of its own. Its evergreen portfolio story lives in `frontend/src/content/benzo.ts`; its card and metadata still use `projects/benzo.yaml`. The page derives its website, Releases, source and issue links from that project file. It uses the product's paper/rose/pill palette from `palette.ts`, within the site's light/dark navigation. Current demo and installation guidance stay on the product site; the portfolio does not embed a second app simulation or fetch the repository README. Keep physical sleep/recovery claims qualified and do not promise heat, fan or battery improvements.
+
 The add-project skill (`.claude/skills/add-project/SKILL.md`) walks through adding a project.
+
+Brand references checked October 27, 2026: Claudfather uses its existing local avatar and palette; Benzo uses its public design module at `eed0a96`. Storydump's ring and colors come from `landing/src/design/brand.tsx` and `palette.ts` at `1d36e1a0b1023b5f7d425ad5f21199f9291b01e1`. Shuffify's shuffle mark and current lime/charcoal colors come from `web/public/images/favicon.svg` and `web/src/design/generated/theme.css` at `5fafc6257f32e522fc88ff665f5fff164335dad3`. Dead Redux's amber/black colors come from `src/app/globals.css` at `3bfc50a7bbe0b564f0c93b16fe59720ed1e8d2f6`; the record mark is a portfolio illustration. Deeper accent shades in `palette.ts` keep text readable on light cards. Product claims were checked against the projects' README/source; these static cards do not imply live service health.
 
 ## showcase.yaml
 
@@ -115,7 +120,7 @@ The `/projects/claudlobby` compatibility route redirects to `/projects/claudfath
   - the files `site.yaml` and `index.html` name exist, and every photo at every size, and a logo for each timeline domain;
   - the music player's origin is in the CSP;
   - none of `site.yaml`'s distinctive values (the name, email, host, site name, page descriptions, social URLs and player) is typed into the code;
-  - the projects: at least one, each in a category, one emoji icon, repos of the site's owner (a project with a page of its own shows no GitHub panels, so its repo may be anyone's), Claudfather's file naming no other model provider when the site lists it, and a `frame-src` entry for an embedded demo;
+  - the projects: at least one, each in a category, a supported brand or legacy emoji (or a title initial), repos of the site's owner (a project with a page of its own shows no GitHub panels, so its repo may be anyone's), Claudfather's file naming no other model provider when the site lists it, and a `frame-src` entry for an embedded demo;
   - the About copy is at least one paragraph and, unless `features.regenerate` is `off`, ends on the sign-off that names the button (`regenerate.labels.button`);
   - each link-preview card, the site's and any project's, is a PNG at the size its head declares; where its source is in `site/`, its alt says what the card says; and neither uses an em-dash;
   - the Person schema's role matches the timeline's current one.

@@ -40,11 +40,11 @@ Ask the user: **"Which position should this go in? Currently: [list the projects
 
 Do NOT assume position. Always ask.
 
-### 3. Pick an Icon
+### 3. Choose a Brand
 
-Pick one emoji, written as a YAML escape (e.g. `icon: "\U0001F680"` for a rocket). The featured card and the project's page render `icon` as plain text and no icon font is loaded, so an icon-font class name would print as literal text. The existing project YAMLs all use this form.
+Use a `brand` key from `frontend/src/content/projectPresentation.ts`, with the project's existing mark and palette as the reference. New raw colors belong in `styles/palette.ts`; marks belong in `components/common/ProjectMark.tsx`. The shared components render them on both project lists and detail pages. Keep copy and links in the YAML.
 
-Match the icon to the project's core function, not its tech stack.
+Existing forks can keep a legacy emoji `icon`; a project with neither field uses its title initial. Do not add an arbitrary brand key without its shared presentation and mark.
 
 ### 4. Create YAML and Update Index
 
@@ -90,7 +90,8 @@ Run `cd frontend && npm run build` and `npm run test:run`. Both must pass.
 | title | Yes | Display name |
 | description | Yes | Casual, lowercase (names keep their capitals), a sentence or two |
 | url | No | Primary link, https (fallback: url > demo > github) |
-| icon | Yes | One emoji, as a YAML escape (shown as plain text) |
+| brand | No | Shared presentation key; preferred for an authored project identity |
+| icon | No | Legacy emoji fallback; a title initial appears if neither is set |
 | category | Yes | web-app, ai-tools, native-app, data-science, open-source |
 | technologies | No | The few that matter most, in order (all shown) |
 | share_card | No | The page's own link preview: path, width, height, alt (see step 4) |

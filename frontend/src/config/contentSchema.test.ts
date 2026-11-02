@@ -36,7 +36,16 @@ describe("projects/index.yaml", () => {
 });
 
 describe("a project file", () => {
+  it("accepts an authored brand without an emoji and preserves the title fallback", () => {
+    const branded = parseContent(projectShape, { ...PROJECT, icon: undefined, brand: "benzo" }, "project.yaml");
+    expect(branded.brand).toBe("benzo");
+    expect(branded.icon).toBeUndefined();
+    const fallback = parseContent(projectShape, { ...PROJECT, icon: undefined }, "project.yaml");
+    expect(fallback.brand).toBeUndefined();
+    expect(fallback.title).toBe(PROJECT.title);
+  });
   it.each([
+    [{ brand: "unknown-brand" }, "brand: expected one of"],
     [{ status: "archived" }, ""],
     [{ status: "done" }, "status: expected one of active, archived, experimental"],
     [{ demo: "http://a.example" }, "demo: expected an https URL"],
