@@ -1,0 +1,143 @@
+name: Design audit
+
+# Builds the chosen ref's frontend and main's, serves both the same way with the API's answers fixed, and runs the phone
+# audit on the ref's build, Lighthouse on both builds, and the ref's phone spec against main. It runs by hand: pick the
+# ref under "Use workflow from".
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      OUT: ${{ github.workspace }}/out
+      PR: http://localhost:4180
+      MAIN: http://localhost:4181
+      PR_ROOT: ${{ github.workspace }}/pr
+    steps:
+      # The chosen ref is checked out whole: its frontend is what is built and audited, and its .github/design-audit is
+      # what runs.
+      - name: Check out the branch
+        uses: actions/checkout@v4
+        with:
+          path: pr
+          persist-credentials: false
+
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: pr/.nvmrc
+
+      - name: Note the commits
+        run: |
+          mkdir -p out
+          echo "PR_SHA=$(git -C pr rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "MAIN_SHA=$(git -C main rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Build the branch's frontend
+        id: build_pr
+        working-directory: pr/frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build main's frontend
+        id: build_main
+        working-directory: main/frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install the audit's tools
+        id: tools
+        working-directory: pr/.github/design-audit
+        run: |
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund playwright@1.58.2 axe-core@4.10.0 pixelmatch@5.3.0 pngjs@7.0.0 lighthouse@13.5.0
+
+      # The browsers land in the shared cache, which main's own @playwright/test (the same version) reads below.
+      - name: Install Chromium and WebKit with their system packages
+        id: deps
+        continue-on-error: true
+        timeout-minutes: 8
+        working-directory: pr/.github/design-audit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Install Chromium and WebKit alone
+        if: steps.deps.outcome != 'success'
+        working-directory: pr/.github/design-audit
+        run: npx playwright install chromium webkit
+
+      - name: Serve both builds the same way
+        id: serve
+        run: |
+          nohup node pr/.github/design-audit/serve.mjs pr/frontend/dist 4180 > out/serve-pr.log 2>&1 &
+          nohup node pr/.github/design-audit/serve.mjs main/frontend/dist 4181 > out/serve-main.log 2>&1 &
+          for port in 4180 4181; do
+            for attempt in $(seq 1 90); do
+              curl -fsS "http://localhost:$port/" > /dev/null 2>&1 && break
+              sleep 1
+            done
+            curl -fsS "http://localhost:$port/api/features" || { cat out/serve-pr.log out/serve-main.log; exit 1; }
+            echo
+          done
+
+      # The checks write their rows into out/report.md and out/report.json before any gate decides; the steps below run
+      # whichever way an earlier one went, so one run holds all the evidence, and the upload runs last.
+      - name: Audit the branch's build
+        id: audit
+        timeout-minutes: 30
+        working-directory: pr/.github/design-audit
+        run: node audit.mjs
+
+      - name: Lighthouse on main and the branch, six runs each
+        id: lighthouse
+        if: ${{ !cancelled() && steps.serve.outcome == 'success' && steps.tools.outcome == 'success' }}
+        timeout-minutes: 20
+        working-directory: pr/.github/design-audit
+        run: node lighthouse.mjs
+
+      # Prove the spec bites: the branch's phone spec and config run against main, where the tests the branch adds have
+      # to fail. Main's own phone spec is listed first, before the copy, so the check can tell its tests from those.
+      - name: List the tests of main's own phone spec
+        if: ${{ !cancelled() && steps.build_main.outcome == 'success' }}
+        run: |
+          if [ -f main/frontend/e2e/phone.spec.ts ]; then (cd main/frontend && npx playwright test e2e/phone.spec.ts --list --reporter=json > ../../out/bite-main-list.json) || true; fi
+
+      - name: Copy the phone spec and the config into main's checkout
+        id: bite_copy
+        if: ${{ !cancelled() && steps.build_main.outcome == 'success' && hashFiles('pr/frontend/e2e/phone.spec.ts') != '' }}
+        run: |
+          cp pr/frontend/e2e/phone.spec.ts main/frontend/e2e/phone.spec.ts
+          cp pr/frontend/playwright.config.ts main/frontend/playwright.config.ts
+
+      # The config starts main's dev server and a preview of its build itself. The expected failures must not end the step.
+      - name: Run the phone spec against main
+        if: ${{ !cancelled() && steps.bite_copy.outcome == 'success' && hashFiles('pr/frontend/e2e/phone.spec.ts') != '' }}
+        timeout-minutes: 20
+        working-directory: main/frontend
+        run: npx playwright test e2e/phone.spec.ts --project=chromium --project=webkit --reporter=json > ../../out/bite.json || true
+
+      - name: Check that the tests that must fail on main did
+        if: ${{ !cancelled() && steps.bite_copy.outcome == 'success' && hashFiles('pr/frontend/e2e/phone.spec.ts') != '' }}
+        working-directory: pr/.github/design-audit
+        run: node bite.mjs
+
+      - name: Upload what the audit recorded
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-audit
+          path: out
+          retention-days: 7
+          if-no-files-found: error
