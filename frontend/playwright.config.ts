@@ -47,11 +47,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
       testIgnore: [/prerender\.spec\.ts/, /analytics\.spec\.ts/],
     },
-    // Safari's engine on a phone (#272), for the pages most visitors see.
+    // Safari's engine on a phone (#272), for the pages most visitors see and
+    // the phone checks (phone.spec.ts), whose env() probe measures this
+    // profile.
     {
       name: "webkit",
       use: { ...devices["iPhone 13"] },
-      testMatch: /(home|projects)\.spec\.ts/,
+      testMatch: /(home|projects|phone)\.spec\.ts/,
     },
     // The crawler's view of a production build: raw HTML, no browser.
     {

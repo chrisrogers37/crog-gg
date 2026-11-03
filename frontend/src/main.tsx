@@ -17,6 +17,10 @@ const applyCurrentTheme = () => applyTheme(useUIStore.getState().theme);
 applyCurrentTheme();
 window.matchMedia(DARK_QUERY).addEventListener("change", applyCurrentTheme);
 
+// iOS Safari paints :active on a tap reliably only when a touch listener
+// exists; passive, so it costs scrolling nothing.
+document.addEventListener("touchstart", () => {}, { passive: true });
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <HelmetProvider>

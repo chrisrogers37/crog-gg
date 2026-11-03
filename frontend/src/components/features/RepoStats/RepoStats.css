@@ -88,3 +88,10 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+@media (max-width: 480px) {
+  /* Wrapped, the row's two lines sit close enough to read as one block. */
+  .repo-meta {
+    gap: 0.5rem 1rem;
+  }
+}

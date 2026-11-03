@@ -35,3 +35,14 @@
   }
 }
 .project-standard-hero > .project-mark { margin-bottom: 1.5rem; }
+
+@media (max-width: 480px) {
+  /* The README's stand-in has the README's box, so the README lands where it
+     stood. */
+  .readme-fallback {
+    margin-inline: calc(-1 * var(--page-gutter, 1rem));
+    padding: 1.5rem var(--page-gutter, 1rem);
+    border-inline-width: 0;
+    border-radius: 0;
+  }
+}

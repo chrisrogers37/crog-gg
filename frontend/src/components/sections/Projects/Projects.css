@@ -30,7 +30,13 @@
 .project-row-cue { display: flex; align-items: center; gap: 0.75rem; color: var(--primary-color); font-size: 0.875rem; white-space: nowrap; }
 .project-row:focus-within { outline: 2px solid var(--primary-color); outline-offset: 3px; }
 
-.card.project-row:hover {
+@media (hover: hover) {
+  .card.project-row:hover {
+    border-color: var(--primary-color);
+  }
+}
+
+.card.project-row:has(.project-row-link:active) {
   border-color: var(--primary-color);
 }
 
@@ -53,8 +59,15 @@
   inset: 0;
 }
 
-.project-row:hover .project-row-link {
+@media (hover: hover) {
+  .project-row:hover .project-row-link {
+    color: var(--primary-color);
+  }
+}
+
+.project-row-link:active {
   color: var(--primary-color);
+  text-decoration: none;
 }
 
 .project-row-status {

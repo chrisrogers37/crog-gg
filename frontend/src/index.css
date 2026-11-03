@@ -53,22 +53,34 @@
   @apply px-5 py-3 rounded-lg border border-transparent;
   @apply text-base font-semibold;
   @apply transition-colors duration-150;
+  /* Pressed shows at once, not 20% of the way through a fade. */
+  @apply active:no-underline active:transition-none;
 }
 
 .btn-sm {
   @apply px-3 py-1.5 text-sm;
 }
 
+/* On a phone the small button keeps its type and gets the tap height, 44 px:
+   a 20 px line + 2 x 11 px + the 2 px border. */
+@media (max-width: 768px) {
+  .btn-sm {
+    padding-block: 0.6875rem;
+  }
+}
+
 /* White on primary-600 is 5.2:1, so the same fill works in both themes. */
 .btn-primary {
   @apply bg-primary-600 text-white;
   @apply hover:bg-primary-700;
+  @apply active:bg-primary-800;
 }
 
 .btn-ghost {
   @apply bg-transparent border-slate-200 text-slate-800;
   @apply hover:border-slate-400;
   @apply dark:border-slate-700 dark:text-slate-100 dark:hover:border-slate-400;
+  @apply active:bg-slate-200 dark:active:bg-slate-700;
 }
 
 /* One radius (8px), and a border rather than a shadow (CLAUDE.md). */

@@ -77,7 +77,7 @@
 /* The header sticks, so an in-page link (#journey and the like) stops its
    section's heading below the header rather than under it. */
 .page-section {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: calc(5rem + var(--safe-top));
 }
 
 /* The section's own heading: a README rendered in a section has h2s too. */

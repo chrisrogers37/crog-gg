@@ -14,14 +14,14 @@
   max-width: 1200px;
   margin: 0 auto;
   /* The page's gutter: an edge-to-edge band inside takes it back. */
-  --page-gutter: 2rem;
-  padding: var(--page-gutter);
+  --page-gutter: max(2rem, var(--safe-left), var(--safe-right));
+  padding: 2rem var(--page-gutter);
 }
 
 .compact-header {
   background: var(--card-background);
   border-bottom: 1px solid var(--border-color);
-  padding: 1rem 2rem;
+  padding: calc(1rem + var(--safe-top)) max(2rem, var(--safe-right)) 1rem max(2rem, var(--safe-left));
   position: sticky;
   top: 0;
   z-index: 100;
@@ -29,10 +29,11 @@
 
 @media (max-width: 768px) {
   .layout-main {
-    --page-gutter: 1rem;
+    --page-gutter: max(1rem, var(--safe-left), var(--safe-right));
+    padding: 1rem var(--page-gutter);
   }
 
   .compact-header {
-    padding: 1rem;
+    padding: calc(0.5rem + var(--safe-top)) max(1rem, var(--safe-right)) 0.5rem max(1rem, var(--safe-left));
   }
 }

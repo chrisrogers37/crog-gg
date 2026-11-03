@@ -15,6 +15,13 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 - Project cards on the homepage and projects page use each product's own mark and palette, shorter descriptions and a visible navigation cue. Brand colors, marks and labels share one presentation module; existing fork emoji icons remain supported. Shuffify's stack now correctly names Python instead of Node.js.
 - Benzo's project page uses its warm paper, rose and pink pill branding, with the MacBook origin story and clear links to the product site, releases, source and support. Its listing points to benzo.work and describes sleep controls and reported blockers without promising to eliminate heat or battery drain.
 
+## 2026-10-26
+
+### Changed
+
+- On a phone, the menu's links, the hamburger, the theme button, the footer's links, the contact and music links, a project page's breadcrumbs and a demo's buttons are at least 44 px to tap, every button and link shows that it's pressed, and the page keeps clear of a notched iPhone's notch and home bar, in portrait and landscape (#96).
+- On a phone, the journey's entries and a project's README run edge to edge with their text on the page's gutter, and the journey's dots and line are gone there; the repository details sit tighter when they wrap (#96).
+
 ## 2026-10-25
 
 ### Changed
