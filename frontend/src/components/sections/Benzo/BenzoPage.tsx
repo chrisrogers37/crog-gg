@@ -1,11 +1,10 @@
 import type { ReactNode } from "react";
 import type { Project } from "../../../types";
 import { benzo } from "../../../content/benzo";
+import { EXTERNAL } from "../../../content/links";
 import { githubRepo } from "../../../utils/projectLinks";
 import { PillMark } from "../../common/ProjectMark";
 import "./Benzo.css";
-
-const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 export function BenzoLoadingHero({ children }: { children: ReactNode }) {
   return (

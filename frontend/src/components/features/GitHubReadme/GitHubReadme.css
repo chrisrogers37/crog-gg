@@ -2,10 +2,7 @@
 
 .github-readme {
   --readme-code-background: theme("colors.white");
-  border-radius: 8px;
   overflow: hidden;
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
 }
 
 .dark .github-readme {

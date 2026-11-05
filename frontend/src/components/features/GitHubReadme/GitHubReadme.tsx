@@ -119,7 +119,7 @@ export function GitHubReadme({
 
   if (isLoading) {
     return (
-      <div className={`github-readme loading ${className}`}>
+      <div className={`card github-readme loading ${className}`}>
         <div className="readme-skeleton">
           <div className="skeleton-line w-3-4" />
           <div className="skeleton-line w-full" />
@@ -132,7 +132,7 @@ export function GitHubReadme({
 
   if (error) {
     return (
-      <div className={`github-readme empty ${className}`}>
+      <div className={`card github-readme empty ${className}`}>
         <p className="readme-empty-message">{error}</p>
         <a
           href={`https://github.com/${owner}/${repoName}`}
@@ -151,7 +151,7 @@ export function GitHubReadme({
   if (!readme || !readme.text.trim()) return null;
 
   return (
-    <div className={`github-readme ${className}`}>
+    <div className={`card github-readme ${className}`}>
       <article className="readme-content">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}

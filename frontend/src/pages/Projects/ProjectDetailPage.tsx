@@ -10,6 +10,7 @@ import { SEO } from "../../components/SEO";
 import { projectBreadcrumbs, projectMeta } from "../../seo";
 import { ProjectDemo } from "../../components/features/ProjectDemo";
 import { RepoStats } from "../../components/features/RepoStats";
+import { EXTERNAL } from "../../content/links";
 import { hasOwnPage } from "../../content/ownPages";
 import { PROJECT_PAGE_LOADING, PROJECT_PAGES } from "../../content/projectPages";
 import { githubRepo, hasLiveDemo } from "../../utils/projectLinks";
@@ -17,8 +18,6 @@ import { useGithubOn, useScrollToHash } from "../../hooks";
 import { ProjectMark } from "../../components/common/ProjectMark";
 import { projectBrandStyle } from "../../content/projectPresentation";
 import "./ProjectDetailPage.css";
-
-const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 // react-markdown and highlight.js, in a chunk of their own: fetched only for
 // a page that shows a README, not for Claudfather's, which has none.

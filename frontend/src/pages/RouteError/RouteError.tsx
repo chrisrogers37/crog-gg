@@ -11,7 +11,7 @@ export function RouteError() {
   const error = useRouteError();
   return (
     <div className="page">
-      <div className="error-boundary" role="alert">
+      <div className="card error-boundary" role="alert">
         <div className="error-boundary__icon">!</div>
         <h2 className="error-boundary__title">something went wrong</h2>
         <p className="error-boundary__message">

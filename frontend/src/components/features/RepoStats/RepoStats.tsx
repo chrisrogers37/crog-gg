@@ -151,9 +151,9 @@ export function RepoStats({ owner, repoName }: RepoStatsProps) {
   );
 
   return repo ? (
-    <div className="repo-stats">{panel}</div>
+    <div className="card repo-stats">{panel}</div>
   ) : (
-    <div className="repo-stats loading" role="status" aria-label="Loading repository stats">
+    <div className="card repo-stats loading" role="status" aria-label="Loading repository stats">
       <div aria-hidden="true">{panel}</div>
     </div>
   );

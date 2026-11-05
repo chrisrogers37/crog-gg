@@ -1,5 +1,8 @@
 import { parseUrl } from "../config/check";
 
+/** Spread on a link that leaves the site: it opens in a new tab, with no opener and no referrer. */
+export const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" } as const;
+
 /**
  * Claudlobby's URLs, which its project page links to (#173). The owner's own
  * profiles are socials in site/site.yaml (#188).
