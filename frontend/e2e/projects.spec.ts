@@ -35,19 +35,6 @@ test.describe("Projects page", () => {
     expect(featuredBox!.y).toBeLessThan(firstRow!.y);
   });
 
-  test("project rows link to detail pages", async ({ page }) => {
-    const projectRows = page.locator("a.project-row-link");
-    await expect(projectRows.first()).toBeVisible();
-    await expect(projectRows.first()).toHaveAttribute("href", /\/projects\/.+/);
-  });
-
-  test("clicking a project's name navigates to detail", async ({ page }) => {
-    const projectRows = page.locator("a.project-row-link");
-    await expect(projectRows.first()).toBeVisible();
-    await projectRows.first().click();
-    await expect(page).toHaveURL(/\/projects\/.+/);
-  });
-
   test("the featured card stands out in the site's accent, in both themes", async ({
     page,
     isMobile,

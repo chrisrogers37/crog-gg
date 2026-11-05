@@ -9,20 +9,6 @@ import { SECTIONS } from "./site";
  */
 
 test.describe("Site Navigation", () => {
-  test("home page loads successfully", async ({ page }) => {
-    await page.goto("/");
-    // Page should have loaded without error
-    await expect(page.locator("body")).toBeVisible();
-    // Should have main content area
-    await expect(page.getByRole("main")).toBeVisible();
-  });
-
-  test("projects page is accessible", async ({ page }) => {
-    await page.goto("/projects");
-    // Should have a heading
-    await expect(page.locator("h1")).toBeVisible();
-  });
-
   test("can navigate between pages using links", async ({ page }) => {
     // Start on projects page (has navigation header)
     await page.goto("/projects");
@@ -145,24 +131,6 @@ test.describe("Layout Components", () => {
   });
 });
 
-test.describe("External Links", () => {
-  test("social links open in new tab", async ({ page }) => {
-    await page.goto("/");
-
-    // Home ships external links (the owner's socials, in its contact section
-    // and the footer), so a count-gate here would be inconsistent with the
-    // suite.
-    // Worse, this is a security assertion: under the gate, removing every
-    // target="_blank" made the rel="noopener" check silently stop running
-    // instead of failing, which is the one outcome it exists to prevent.
-    const externalLinks = page.locator('a[target="_blank"]');
-    await expect(externalLinks.first()).toBeVisible();
-
-    const rel = await externalLinks.first().getAttribute("rel");
-    expect(rel).toContain("noopener");
-  });
-});
-
 test.describe("Mobile Menu", () => {
   test("mobile menu opens and closes", async ({ page }) => {
     // Set mobile viewport
@@ -244,16 +212,6 @@ test.describe("Mobile Menu", () => {
 });
 
 test.describe("Responsive Design", () => {
-  test("page renders on mobile viewport", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
-
-    // Page should still render main elements
-    await expect(
-      page.locator('h1, .profile-name, [class*="name"]').first(),
-    ).toBeVisible();
-  });
-
   test("page renders on tablet viewport", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");

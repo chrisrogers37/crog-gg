@@ -8,7 +8,7 @@ export default {
     extend: {
       // Color palette: single source of truth lives in src/styles/palette.ts.
       // primary = blue (brand), accent = purple, slate = neutral, danger = red, and
-      // Claudlobby's page's own (claudfather).
+      // Claudfather's and Benzo's pages' own (claudfather, benzo).
       colors: {
         primary,
         accent,

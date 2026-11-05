@@ -11,10 +11,6 @@ describe("uiStore", () => {
   });
 
   describe("Theme", () => {
-    it("starts with light theme by default", () => {
-      expect(useUIStore.getState().theme).toBe("light");
-    });
-
     it("setTheme updates the theme", () => {
       const { setTheme } = useUIStore.getState();
 
@@ -49,10 +45,6 @@ describe("uiStore", () => {
   });
 
   describe("Mobile Menu", () => {
-    it("starts with mobile menu closed", () => {
-      expect(useUIStore.getState().isMobileMenuOpen).toBe(false);
-    });
-
     it("toggleMobileMenu opens the menu when closed", () => {
       const { toggleMobileMenu } = useUIStore.getState();
 

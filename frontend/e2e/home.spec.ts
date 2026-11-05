@@ -43,7 +43,8 @@ test.describe("Home page", () => {
     await expect(page.locator('#contact a[href^="mailto:"]')).toBeVisible();
     const social = page.locator('#contact a[target="_blank"]').first();
     await expect(social).toBeVisible();
-    expect(await social.getAttribute("rel")).toContain("noopener");
+    // Every new-tab link on the page has noopener, not just the contact section's.
+    await expect(page.locator('a[target="_blank"]:not([rel~="noopener"])')).toHaveCount(0);
   });
 
   test("shows the location exactly when the bio has one", async ({ page }) => {
