@@ -15,7 +15,8 @@ import { SECTIONS, SUMMON, site } from "./site";
  * - left edges: the journey's and a README's text start on the page's gutter,
  *   level with the headings.
  * - pressed: a control on a screen that can't hover shows that it is pressed,
- *   and shows nothing for a hover.
+ *   and shows nothing for a hover; a button on a brand's own surface keeps its
+ *   label readable while pressed.
  * - insets: the layout keeps clear of the notch and the home bar.
  * - env probe: what WebKit's iPhone profile reports for those insets.
  * - labels: SUMMON's labels sit on one line.
@@ -94,6 +95,41 @@ async function routeFixtureProject(page: Page) {
   await page.route("https://demo.example.org/**", (route) =>
     route.fulfill({ contentType: "text/html", body: "<p>A demo.</p>" }),
   );
+}
+
+/**
+ * Routes two projects whose buttons wear a brand on the brand's own surface:
+ * a featured card with a GitHub button, which no site's featured card has
+ * yet, in Claudfather's colours, and Benzo, whose page is its own.
+ */
+async function routeBrandedProjects(page: Page) {
+  const projects = {
+    "brand-fixture.yaml": {
+      id: "brand-fixture",
+      title: "Brand fixture",
+      description: "A fixture.",
+      brand: "claudfather",
+      category: "tool",
+      github: `https://github.com/${site.github.username}/brand-fixture`,
+      technologies: ["TypeScript"],
+    },
+    "benzo.yaml": {
+      id: "benzo",
+      title: "Benzo",
+      description: "A fixture.",
+      brand: "benzo",
+      category: "app",
+      url: "https://benzo.example.org/",
+      github: `https://github.com/${site.github.username}/benzo`,
+      technologies: ["Swift"],
+    },
+  };
+  await page.route("**/content/projects/index.yaml", (route) =>
+    route.fulfill({ json: { projects: Object.keys(projects), featured: "brand-fixture.yaml" } }),
+  );
+  for (const [file, json] of Object.entries(projects)) {
+    await page.route(`**/content/projects/${file}`, (route) => route.fulfill({ json }));
+  }
 }
 
 /** The mobile menu, open (the panel has slid in when this returns). */
@@ -321,15 +357,55 @@ test.describe("pressed", () => {
         color: style.color,
         textDecorationLine: style.textDecorationLine,
         backgroundImage: style.backgroundImage,
+        filter: style.filter,
       };
+    });
+
+  /**
+   * The contrast of a control's label with what shows behind it: its own fill
+   * over its ancestors', down to the first opaque one, as the screen mixes them.
+   */
+  const labelContrast = (control: Locator) =>
+    control.evaluate((el: HTMLElement) => {
+      const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
+      const paint = (color: string) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, 1, 1);
+        return [...ctx.getImageData(0, 0, 1, 1).data];
+      };
+      const fills: string[] = [];
+      for (let node: Element | null = el; node; node = node.parentElement) {
+        fills.unshift(getComputedStyle(node).backgroundColor);
+        ctx.clearRect(0, 0, 1, 1);
+        if (paint(fills[0])[3] === 255) break;
+      }
+      paint("#fff");
+      const back = fills.map(paint).at(-1)!;
+      const front = paint(getComputedStyle(el).color);
+      const luminance = (rgb: number[]) => {
+        const [r, g, b] = rgb.slice(0, 3).map((value) => {
+          const channel = value / 255;
+          return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const [light, dark] = [luminance(front), luminance(back)].sort((a, b) => b - a);
+      return (light + 0.05) / (dark + 0.05);
     });
 
   type Pressable = {
     name: string;
     path: string;
+    /** What the page needs served that a site may not have. */
+    route?: (page: Page) => Promise<unknown>;
     /** What puts the control on the screen, if the page doesn't. */
     reveal?: (page: Page) => Promise<unknown>;
     locate: (page: Page) => Locator;
+    /**
+     * It sits on a brand's own surface, where the site's pressed fills don't
+     * belong, so its label must keep 4.5:1 while it's pressed.
+     */
+    branded?: true;
   };
 
   // The menu's controls are found by their classes, not their roles: a press
@@ -378,6 +454,34 @@ test.describe("pressed", () => {
       path: "/projects",
       locate: (page) => page.locator("a.project-row-link").first(),
     },
+    {
+      name: "the featured card's filled button",
+      path: "/projects",
+      route: routeBrandedProjects,
+      locate: (page) => page.locator(".project-featured .btn-primary"),
+      branded: true,
+    },
+    {
+      name: "the featured card's GitHub button",
+      path: "/projects",
+      route: routeBrandedProjects,
+      locate: (page) => page.locator(".project-featured .btn-ghost"),
+      branded: true,
+    },
+    {
+      name: "Benzo's filled button",
+      path: "/projects/benzo",
+      route: routeBrandedProjects,
+      locate: (page) => page.locator(".benzo-hero .btn-primary"),
+      branded: true,
+    },
+    {
+      name: "Benzo's ghost button",
+      path: "/projects/benzo",
+      route: routeBrandedProjects,
+      locate: (page) => page.locator(".benzo-hero .btn-ghost"),
+      branded: true,
+    },
   ];
 
   for (const theme of ["light", "dark"] as const) {
@@ -391,6 +495,7 @@ test.describe("pressed", () => {
             JSON.stringify({ state: { theme: selectedTheme }, version: 0 }),
           );
         }, theme);
+        await control.route?.(page);
         await page.goto(control.path);
         await expect(page.locator("html")).toHaveClass(theme === "dark" ? /dark/ : /^$/);
         // The premise: this context can't hover, which is what the hover rules
@@ -417,6 +522,9 @@ test.describe("pressed", () => {
         // Pressed shows at once: :active has no transition.
         await page.mouse.down();
         expect(await look(target), "pressed looks different from rest").not.toEqual(rest);
+        if (control.branded) {
+          expect(await labelContrast(target), "its label stays readable pressed").toBeGreaterThanOrEqual(4.5);
+        }
 
         // Released away from it, so nothing is clicked: no navigation, no
         // theme change.

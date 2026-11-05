@@ -57,6 +57,7 @@ const SPOTIFY = /\/\/open\.spotify\.com\//;
 const INSIGHTS = /\/_vercel\/(insights|speed-insights)\//;
 const FIXTURE_PATH = "/projects/phone-fixture";
 const CLAUDFATHER = "/projects/claudfather";
+const BENZO = "/projects/benzo";
 
 const HOLDS = [
   "the API is serve.mjs's fixed JSON on both builds (/api/features, the repo and README answers; every other /api/* is a 404)",
@@ -418,6 +419,28 @@ async function routeFixture(page) {
   );
 }
 
+/* The featured card with a GitHub button, which no site's featured card has yet, in Claudfather's colours: a light
+   label on the brand's dark surface, as the spec's fixture has. */
+async function routeFeaturedFixture(page) {
+  const owner = githubOwner();
+  await page.route("**/content/projects/index.yaml", (route) =>
+    route.fulfill({ json: { projects: ["brand-fixture.yaml"], featured: "brand-fixture.yaml" } }),
+  );
+  await page.route("**/content/projects/brand-fixture.yaml", (route) =>
+    route.fulfill({
+      json: {
+        id: "brand-fixture",
+        title: "Brand fixture",
+        description: "A fixture.",
+        brand: "claudfather",
+        category: "tool",
+        github: `https://github.com/${owner}/brand-fixture`,
+        technologies: ["TypeScript"],
+      },
+    }),
+  );
+}
+
 /* The box of `locator` grown by `pad` and kept inside the screen. */
 async function clipAround(page, locator, pad) {
   const box = await locator.boundingBox();
@@ -445,10 +468,21 @@ const FAMILIES = [
     frame: (target) => target.locator("xpath=ancestor::li[contains(@class, 'project-row')][1]"),
   },
   { name: "accent", path: "/", target: (page) => page.locator("#projects .page-links a").first() },
-  { name: "demo", path: FIXTURE_PATH, fixture: true, target: (page) => page.locator(".demo-fullscreen-btn") },
+  { name: "demo", path: FIXTURE_PATH, fixture: routeFixture, target: (page) => page.locator(".demo-fullscreen-btn") },
   { name: "cf-filled", path: CLAUDFATHER, target: (page) => page.locator(".cl-hero .btn-primary").first() },
   { name: "cf-ghost", path: CLAUDFATHER, target: (page) => page.locator(".cl-hero .btn-ghost").first() },
+  { name: "featured-filled", path: "/projects", target: (page) => page.locator(".project-featured .btn-primary") },
+  {
+    name: "featured-ghost",
+    path: "/projects",
+    fixture: routeFeaturedFixture,
+    target: (page) => page.locator(".project-featured .btn-ghost"),
+  },
+  { name: "benzo-filled", path: BENZO, target: (page) => page.locator(".benzo-hero .btn-primary") },
+  { name: "benzo-ghost", path: BENZO, target: (page) => page.locator(".benzo-hero .btn-ghost") },
 ];
+// The families on a project's own page, which a site that does not list the project lacks.
+const OWN_PAGES = { [CLAUDFATHER]: "Claudfather", [BENZO]: "Benzo" };
 
 /* The control at rest, then under a held press that ends away from it, so nothing is clicked. */
 async function pressedPair(browser, family, theme) {
@@ -458,7 +492,7 @@ async function pressedPair(browser, family, theme) {
   try {
     // A link dragged off its box would be dropped as a navigation; the press is not a drag.
     await context.addInitScript(() => document.addEventListener("dragstart", (event) => event.preventDefault(), true));
-    if (family.fixture) await routeFixture(page);
+    if (family.fixture) await family.fixture(page);
     await page.goto(PR + family.path, { waitUntil: "load", timeout: 60000 });
     await settle(page);
     row.hoverNone = await page.evaluate(() => matchMedia("(hover: none)").matches);
@@ -489,8 +523,8 @@ async function pressedPair(browser, family, theme) {
 async function pressedPhase(browser) {
   for (const family of FAMILIES) {
     for (const theme of THEMES) {
-      if (family.path === CLAUDFATHER && !PAGES.includes(CLAUDFATHER)) {
-        report.pressed.rows.push({ family: family.name, theme, error: "the site lists no Claudfather page" });
+      if (OWN_PAGES[family.path] && !PAGES.includes(family.path)) {
+        report.pressed.rows.push({ family: family.name, theme, error: `the site lists no ${OWN_PAGES[family.path]} page` });
         continue;
       }
       console.log(`pressed: ${family.name} ${theme}`);
