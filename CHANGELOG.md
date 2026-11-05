@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-11-04
+
+### Fixed
+
+- On a touch screen, the featured project's buttons and the buttons at the top of Benzo's page show that they're pressed, and a tap no longer leaves them in their hover look (#300).
+
 ## 2026-10-28
 
 ### Added
