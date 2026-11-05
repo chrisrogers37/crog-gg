@@ -27,13 +27,9 @@ signature of a rule that reaches the model on neither -- so every anchor test be
 is parametrized over both modes on purpose. A fantasy-only assertion passes for an
 anchor that has been quietly moved behind ``use_fantasy``, which is the exact
 regression these exist to catch.
-
-The fake OpenAI client is built locally rather than shared, matching the other
-test_regenerate_* modules; see test_regenerate_failure_reporting.py for why that
-consolidation is deferred rather than absent.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -42,13 +38,9 @@ from api._lib.site_config import CONFIG
 from api.index import _lost_paragraphs, _lost_verbatim
 
 
-def _press(client, sections=None, use_fantasy=True):
+def _press(client, fake_openai, sections=None, use_fantasy=True):
     """One press of the button. Returns the prompts delivered to the model."""
-    fake = MagicMock()
-    resp = MagicMock()
-    resp.choices = [MagicMock()]
-    resp.choices[0].message.content = '{"bio": "rewritten"}'
-    fake.chat.completions.create.return_value = resp
+    fake = fake_openai()
 
     # use_fantasy=None means OMIT the key. A third case, and not the same as
     # sending False -- it is the one the server's default decides, and the one
@@ -77,7 +69,7 @@ def _register_in(user_prompt):
 
 
 @pytest.mark.parametrize("use_fantasy", [True, False])
-def test_every_standing_constraint_rides_every_section_in_both_modes(client, notes_section, use_fantasy):
+def test_every_standing_constraint_rides_every_section_in_both_modes(client, fake_openai, notes_section, use_fantasy):
     """Length and facts are pinned on the system prompt, independent of the mode.
 
     Independence is the whole reason turning variation up is safe: on the old
@@ -86,7 +78,7 @@ def test_every_standing_constraint_rides_every_section_in_both_modes(client, not
     ``format``, which is what keeps them separable -- and what would break first
     if a later change moved either behind ``use_fantasy``.
     """
-    prompts = _press(client, {"about": {"bio": "hi"}, "notes": {"entries": []}}, use_fantasy)
+    prompts = _press(client, fake_openai, {"about": {"bio": "hi"}, "notes": {"entries": []}}, use_fantasy)
     assert len(prompts) == 2, f"expected one call per section, got {len(prompts)}"
     for p in prompts:
         assert "Two things are fixed" in p["system"]
@@ -100,7 +92,7 @@ def test_every_standing_constraint_rides_every_section_in_both_modes(client, not
             assert rule in p["system"]
 
 
-def test_the_style_rules_reach_the_model_at_all(client):
+def test_the_style_rules_reach_the_model_at_all(client, fake_openai):
     """The rule existed only as a repo instruction, so the model never saw it.
 
     "NEVER use em-dashes" is a house rule in CLAUDE.md, which is addressed to the
@@ -123,7 +115,7 @@ def test_the_style_rules_reach_the_model_at_all(client):
     tests' site has one of its own.
     """
     assert CONFIG.style_rules, "the tests' site.yaml names a style rule to check"
-    system = _press(client)[0]["system"]
+    system = _press(client, fake_openai)[0]["system"]
     for rule in CONFIG.style_rules:
         assert " " + rule in system
 
@@ -135,17 +127,17 @@ def test_no_style_rules_add_no_tone_anchor():
     assert _tone_anchor(("Be brief.", "Be kind.")) == " Be brief. Be kind."
 
 
-def test_a_they_persona_reads_grammatically(client):
+def test_a_they_persona_reads_grammatically(client, fake_openai):
     """The tests' site writes its persona as they/them (#189)."""
     assert CONFIG.pronouns["subj"] == "they"
-    system = _press(client)[0]["system"]
+    system = _press(client, fake_openai)[0]["system"]
     assert "the work they actually do, the field they do it in" in system
     assert "the places they have lived and worked" in system
     assert "Rename their employers, their tools and their craft" in system
     assert any("a merchant who owes them a favour" in register for register in _LORE_REGISTERS)
 
 
-def test_the_paragraph_rule_survives_the_press_it_has_to_survive(client):
+def test_the_paragraph_rule_survives_the_press_it_has_to_survive(client, fake_openai):
     """about_text is authored as paragraphs and rewritten wholesale on every press.
 
     The client renders it under ``white-space: pre-line``, so the blank lines in
@@ -155,13 +147,13 @@ def test_the_paragraph_rule_survives_the_press_it_has_to_survive(client):
     next press is handed. The content fix is undone by the first press without
     this, which is what makes this the load-bearing half of that change.
     """
-    system = _press(client)[0]["system"]
+    system = _press(client, fake_openai)[0]["system"]
     assert "Preserve the paragraph structure" in system
     assert "same number of paragraphs" in system
     assert "real newline characters inside the JSON string" in system
 
 
-def test_the_button_cannot_be_renamed_by_the_lore_that_names_it(client):
+def test_the_button_cannot_be_renamed_by_the_lore_that_names_it(client, fake_openai):
     """The last line of the About copy tells the reader which control to press.
 
     A rewrite that renames SUMMON NEW LORE in the world of the telling has obeyed
@@ -170,7 +162,7 @@ def test_the_button_cannot_be_renamed_by_the_lore_that_names_it(client):
     copy that is interface rather than prose, and the registers are otherwise
     encouraged to rename everything they touch.
     """
-    system = _press(client)[0]["system"]
+    system = _press(client, fake_openai)[0]["system"]
     assert _VERBATIM_STRINGS, "the protected-string table is empty"
     for verbatim in _VERBATIM_STRINGS:
         assert verbatim in system, f"{verbatim!r} is never shown to the model"
@@ -180,7 +172,7 @@ def test_the_button_cannot_be_renamed_by_the_lore_that_names_it(client):
     assert "never rename the interface" in system
 
 
-def test_the_new_guards_do_not_contradict_the_freedoms_beside_them(client):
+def test_the_new_guards_do_not_contradict_the_freedoms_beside_them(client, fake_openai):
     """Structure and typography are pinned; the register is still free.
 
     _FACT_ANCHOR hands the model genre, register, voice and rhythm on purpose, and
@@ -189,14 +181,14 @@ def test_the_new_guards_do_not_contradict_the_freedoms_beside_them(client):
     opens on a spoken address. Pinning the overreach here means widening one of
     these later has to fail a test rather than quietly cost the feature.
     """
-    system = _press(client)[0]["system"]
+    system = _press(client, fake_openai)[0]["system"]
     assert "FREE: genre, register, imagery, narrative voice" in system
     assert "Which form the telling takes is yours to choose" in system
     for overreach in ("lowercase", "sentence length", "do not use metaphor", "keep it formal"):
         assert overreach not in system, f"a guard reached into the register: {overreach}"
 
 
-def test_a_press_that_loses_the_flag_still_gets_the_button_it_pressed(client):
+def test_a_press_that_loses_the_flag_still_gets_the_button_it_pressed(client, fake_openai):
     """A missing use_fantasy must not select the path that looks like a no-op.
 
     The plain rewrite keeps the sentence skeleton and leaves display_name alone,
@@ -206,36 +198,36 @@ def test_a_press_that_loses_the_flag_still_gets_the_button_it_pressed(client):
     logs. The only shipped caller always sends True, so a request without the key
     is one that LOST it, never one asking for plain.
     """
-    prompts = _press(client, sections={"about": {"bio": "hi"}}, use_fantasy=None)
+    prompts = _press(client, fake_openai, sections={"about": {"bio": "hi"}}, use_fantasy=None)
     assert _register_in(prompts[0]["user"]) is not None, "a flagless press fell through to the plain rewrite"
     assert "TELL IT AS" in prompts[0]["user"]
 
 
-def test_plain_is_still_reachable_by_asking_for_it(client):
+def test_plain_is_still_reachable_by_asking_for_it(client, fake_openai):
     """The default moved; the path did not disappear.
 
     Paired with the test above deliberately: "absent means fantasy" is only right
     while "False means plain" still holds. Making the flag unreadable altogether
     would satisfy that test on its own, and this is what says so.
     """
-    prompts = _press(client, use_fantasy=False)
+    prompts = _press(client, fake_openai, use_fantasy=False)
     assert _register_in(prompts[0]["user"]) is None
     assert "TELL IT AS" not in prompts[0]["user"]
 
 
-def test_one_press_is_one_register(client, notes_section):
+def test_one_press_is_one_register(client, fake_openai, notes_section):
     """Every section of a single press lands in the same world.
 
     Sampled per section instead, one press could open `about` as a sea shanty and
     the section beside it as a stat block -- which reads as broken rather than wild.
     """
-    prompts = _press(client, {"about": {"bio": "hi"}, "notes": {"entries": []}})
+    prompts = _press(client, fake_openai, {"about": {"bio": "hi"}, "notes": {"entries": []}})
     registers = {_register_in(p["user"]) for p in prompts}
     assert len(registers) == 1, f"one press delivered {len(registers)} registers: {registers}"
     assert registers.pop() is not None, "no register reached the model"
 
 
-def test_the_register_changes_between_presses(client):
+def test_the_register_changes_between_presses(client, fake_openai):
     """The dial actually turns -- the one property separating the fix from the defect.
 
     Sampling server-side rather than asking the model to vary is what makes this
@@ -245,19 +237,19 @@ def test_the_register_changes_between_presses(client):
     A constant register is caught at two presses; the extra ten buy false-failure
     headroom only, at 16^-11 for a sampler that is working.
     """
-    seen = {_register_in(_press(client)[0]["user"]) for _ in range(12)}
+    seen = {_register_in(_press(client, fake_openai)[0]["user"]) for _ in range(12)}
     assert None not in seen, "a press delivered no register"
     assert len(seen) > 1, f"the register never changed across 12 presses: {seen}"
 
 
-def test_a_plain_rewrite_gets_no_register(client):
+def test_a_plain_rewrite_gets_no_register(client, fake_openai):
     """The wildness dial belongs to SUMMON, not to every rewrite."""
-    prompts = _press(client, use_fantasy=False)
+    prompts = _press(client, fake_openai, use_fantasy=False)
     assert _register_in(prompts[0]["user"]) is None
     assert "TELL IT AS" not in prompts[0]["user"]
 
 
-def test_the_worked_examples_are_gone(client):
+def test_the_worked_examples_are_gone(client, fake_openai):
     """Regression guard on the defect itself.
 
     A worked example is an attractor: handed the same one every call, the model
@@ -265,7 +257,7 @@ def test_the_worked_examples_are_gone(client):
     one re-pins the destination and the button goes quiet again -- a failure no
     length or shape assertion would catch.
     """
-    user = _press(client)[0]["user"]
+    user = _press(client, fake_openai)[0]["user"]
     for attractor in (
         "Great Archives of Knowledge",
         "Ancient Orchestrator of Realms",
@@ -319,9 +311,9 @@ def test_a_control_absent_from_the_input_is_not_expected_back():
     assert _lost_verbatim({"bio": "no controls here."}, {"bio": "still none."}) == []
 
 
-def test_the_name_rule_names_the_sites_own_names(client):
+def test_the_name_rule_names_the_sites_own_names(client, fake_openai):
     # The rewritten name keeps one of site.yaml's name variants, not the
     # owner's (#189 M06).
-    prompts = _press(client)[0]
+    prompts = _press(client, fake_openai)[0]
     rule = " or ".join(f"'{name}'" for name in CONFIG.name_variants)
     assert f"still contains {rule}" in prompts["system"] + prompts["user"]

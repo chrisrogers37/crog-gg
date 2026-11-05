@@ -10,15 +10,8 @@ Two things are pinned here. That the request no longer carries a parameter the
 current model generation rejects, and that when a call does fail the response
 names the cause -- so the next failure costs one look instead of one deploy per
 hypothesis.
-
-Local mock builder rather than a shared one: `_mock_openai` in test_regenerate.py,
-`_with_model_returning` in test_regenerate_social_links.py and `_model` in
-test_regenerate_call_bounds.py are already copies of this, and consolidating
-them is a separate cleanup that would touch files owned by other in-flight
-branches.
 """
 
-import json
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -30,7 +23,6 @@ from api.index import (
     FAILURE_MODEL_ERROR,
     FAILURE_NOT_JSON,
     FAILURE_UNEXPECTED,
-    OPENAI_SAMPLING,
     _describe_failure,
 )
 
@@ -38,29 +30,15 @@ _BIO = {"bio": "hi"}
 _BODY = {"sections": {"about": _BIO}}
 
 
-def _client(content=None, error=None):
-    fake = MagicMock()
-    if error is not None:
-        fake.chat.completions.create.side_effect = error
-    else:
-        fake.chat.completions.create.return_value = MagicMock(choices=[MagicMock(message=MagicMock(content=content))])
-    return fake
-
-
-def test_no_sampling_parameter_is_sent():
-    # The observed failure. The current model generation accepts only the
-    # default temperature and rejects an explicit one outright, so a single
-    # stray kwarg fails 100% of calls rather than degrading.
-    assert "temperature" not in OPENAI_SAMPLING
-    assert "top_p" not in OPENAI_SAMPLING
-
-
-def test_the_request_carries_no_rejected_parameter(client):
-    fake = _client(content=json.dumps({"bio": "rewritten"}))
+def test_the_request_carries_no_rejected_parameter(client, fake_openai):
+    fake = fake_openai()
     with patch("api.index.openai_client", fake):
         client.post("/api/regenerate", json=_BODY)
 
     kwargs = fake.chat.completions.create.call_args.kwargs
+    # The observed failure. The current model generation accepts only the
+    # default temperature and rejects an explicit one outright, so a single
+    # stray kwarg fails 100% of calls rather than degrading.
     assert "temperature" not in kwargs, f"a rejected sampling param reached the API: {sorted(kwargs)}"
     # Exact, so every parameter on the wire is one someone chose (#194 M12).
     # No safety_identifier: conftest leaves IP_HASH_SALT unset.
@@ -80,7 +58,9 @@ def _api_error(status, code=None, param=None, message="Unsupported value: 'tempe
     """
     body = {"error": {"message": message, "type": "invalid_request_error", "param": param, "code": code}}
     response = httpx.Response(status, request=httpx.Request("POST", "https://api.openai.com/v1/chat/completions"))
-    return openai.OpenAI(api_key="test")._make_status_error(f"Error code: {status} - {body}", body=body, response=response)
+    return openai.OpenAI(api_key="test")._make_status_error(
+        f"Error code: {status} - {body}", body=body, response=response
+    )
 
 
 def test_describe_failure_extracts_the_machine_tokens():
@@ -100,11 +80,15 @@ def test_describe_failure_also_reads_a_wrapped_envelope():
     assert public["code"] == "unsupported_value" and private["param"] == "temperature"
 
 
-def test_a_quota_error_names_itself(client):
+def test_a_quota_error_names_itself(client, fake_openai):
     exc = _api_error(429, code="insufficient_quota", message="You exceeded your current quota. " * 12)
-    with patch("api.index.openai_client", _client(error=exc)):
+    with patch("api.index.openai_client", fake_openai(error=exc)):
         r = client.post("/api/regenerate", json=_BODY)
-    assert r.get_json()["failures"]["about"] == {"reason": FAILURE_MODEL_ERROR, "status": 429, "code": "insufficient_quota"}
+    assert r.get_json()["failures"]["about"] == {
+        "reason": FAILURE_MODEL_ERROR,
+        "status": 429,
+        "code": "insufficient_quota",
+    }
 
 
 def test_describe_failure_survives_an_error_with_no_body():
@@ -113,9 +97,9 @@ def test_describe_failure_survives_an_error_with_no_body():
     assert private == {"type": "OpenAIError", "param": None, "message": "boom"}
 
 
-def test_a_failed_request_names_the_cause(client):
+def test_a_failed_request_names_the_cause(client, fake_openai):
     exc = _api_error(400, code="unsupported_value", param="temperature")
-    with patch("api.index.openai_client", _client(error=exc)):
+    with patch("api.index.openai_client", fake_openai(error=exc)):
         r = client.post("/api/regenerate", json=_BODY)
 
     assert r.status_code == 500
@@ -126,13 +110,13 @@ def test_a_failed_request_names_the_cause(client):
     assert body["failures"]["about"] == {"reason": FAILURE_MODEL_ERROR, "status": 400, "code": "unsupported_value"}
 
 
-def test_provider_text_stays_in_the_log(client, caplog, monkeypatch):
+def test_provider_text_stays_in_the_log(client, fake_openai, caplog, monkeypatch):
     import logging
 
     monkeypatch.delenv("VERCEL_ENV", raising=False)
     caplog.set_level(logging.ERROR, logger="crog")
     exc = _api_error(400, code="unsupported_value", param="temperature")
-    with patch("api.index.openai_client", _client(error=exc)):
+    with patch("api.index.openai_client", fake_openai(error=exc)):
         r = client.post("/api/regenerate", json=_BODY)
 
     assert "does not support" not in r.get_data(as_text=True)
@@ -142,12 +126,12 @@ def test_provider_text_stays_in_the_log(client, caplog, monkeypatch):
     assert "'param': 'temperature'" in record.getMessage()
 
 
-def test_preview_responses_keep_the_provider_text(client, monkeypatch):
+def test_preview_responses_keep_the_provider_text(client, fake_openai, monkeypatch):
     # Previews sit behind Vercel's login, so they keep #134's browser-side
     # diagnosis.
     monkeypatch.setenv("VERCEL_ENV", "preview")
     exc = _api_error(400, code="unsupported_value", param="temperature")
-    with patch("api.index.openai_client", _client(error=exc)):
+    with patch("api.index.openai_client", fake_openai(error=exc)):
         r = client.post("/api/regenerate", json=_BODY)
 
     failure = r.get_json()["failures"]["about"]
@@ -155,34 +139,27 @@ def test_preview_responses_keep_the_provider_text(client, monkeypatch):
     assert "Unsupported value" in failure["message"]
 
 
-def test_a_non_json_response_also_names_itself(client):
-    with patch("api.index.openai_client", _client(content="not json at all")):
+def test_a_non_json_response_also_names_itself(client, fake_openai):
+    with patch("api.index.openai_client", fake_openai(content="not json at all")):
         r = client.post("/api/regenerate", json=_BODY)
 
     assert r.status_code == 500
     assert r.get_json()["failures"]["about"]["reason"] == FAILURE_NOT_JSON
 
 
-def _section_aware_client():
-    """Answer each section in its own shape.
+def _section_aware(**kwargs):
+    """A ``per_call`` that answers each section in its own shape.
 
     One canned body standing in for every section is an artifact, not a
     simplification: a response that shares no key with the section it rewrites
     is a legitimate thing to reject, so a shared body makes the test assert the
     rejection rather than the success it is named for.
     """
-    fake = MagicMock()
-
-    def per_call(**kwargs):
-        prompt = kwargs["messages"][1]["content"]
-        body = {"entries": [{"title": "Engineer"}]} if "entries" in prompt else {"bio": "rewritten"}
-        return MagicMock(choices=[MagicMock(message=MagicMock(content=json.dumps(body)))])
-
-    fake.chat.completions.create.side_effect = per_call
-    return fake
+    prompt = kwargs["messages"][1]["content"]
+    return {"entries": [{"title": "Engineer"}]} if "entries" in prompt else {"bio": "rewritten"}
 
 
-def test_every_failure_reaches_the_log_at_one_level(client, caplog):
+def test_every_failure_reaches_the_log_at_one_level(client, fake_openai, caplog):
     """Internal taxonomy logs unconditionally, and at a single level.
 
     Split across two levels it is not one taxonomy but two half-populated ones:
@@ -195,7 +172,7 @@ def test_every_failure_reaches_the_log_at_one_level(client, caplog):
     caplog.set_level(logging.DEBUG, logger="crog")
 
     exc = openai.OpenAIError("boom")
-    cases = [(_client(error=exc), FAILURE_MODEL_ERROR), (_client(content="not json"), FAILURE_NOT_JSON)]
+    cases = [(fake_openai(error=exc), FAILURE_MODEL_ERROR), (fake_openai(content="not json"), FAILURE_NOT_JSON)]
     levels = set()
     for fake, token in cases:
         caplog.clear()
@@ -209,8 +186,8 @@ def test_every_failure_reaches_the_log_at_one_level(client, caplog):
 
 
 @pytest.mark.parametrize("sections", [{"about": _BIO}, {"about": _BIO, "notes": {"entries": []}}])
-def test_a_successful_request_reports_no_failures(client, notes_section, sections):
-    with patch("api.index.openai_client", _section_aware_client()):
+def test_a_successful_request_reports_no_failures(client, fake_openai, notes_section, sections):
+    with patch("api.index.openai_client", fake_openai(per_call=_section_aware)):
         r = client.post("/api/regenerate", json={"sections": sections})
     assert r.status_code == 200
     assert r.get_json()["failures"] == {}
@@ -228,27 +205,20 @@ def _choice(content, finish_reason="stop"):
     return MagicMock(message=MagicMock(content=content), finish_reason=finish_reason)
 
 
-def _choices_client(choices):
-    fake = MagicMock()
-    fake.chat.completions.create.return_value = MagicMock(choices=choices)
-    return fake
-
-
 def _about_gets(about_choices):
-    """`about` receives ``about_choices``; `notes` receives a usable rewrite."""
-    fake = MagicMock()
+    """A ``per_call``: `about` receives ``about_choices``; `notes` receives a usable rewrite."""
 
     def per_call(**kwargs):
         if "entries" in kwargs["messages"][1]["content"]:
-            return MagicMock(choices=[_choice(json.dumps({"entries": [{"title": "Engineer"}]}))])
+            return {"entries": [{"title": "Engineer"}]}
         return MagicMock(choices=about_choices)
 
-    fake.chat.completions.create.side_effect = per_call
-    return fake
+    return per_call
 
 
-def test_none_content_is_counted_and_sibling_survives(client, notes_section):
-    with patch("api.index.openai_client", _about_gets([_choice(None, finish_reason="content_filter")])):
+def test_none_content_is_counted_and_sibling_survives(client, fake_openai, notes_section):
+    about = _about_gets([_choice(None, finish_reason="content_filter")])
+    with patch("api.index.openai_client", fake_openai(per_call=about)):
         r = client.post("/api/regenerate", json=_TWO)
     assert r.status_code == 200
     body = r.get_json()
@@ -262,8 +232,8 @@ def test_none_content_is_counted_and_sibling_survives(client, notes_section):
     [[], None, [_choice("")], [_choice("  \n ")], [MagicMock(message=None, finish_reason="stop")]],
     ids=["empty-choices", "null-choices", "empty-text", "blank-text", "null-message"],
 )
-def test_empty_completion_is_counted(client, choices):
-    with patch("api.index.openai_client", _choices_client(choices)):
+def test_empty_completion_is_counted(client, fake_openai, choices):
+    with patch("api.index.openai_client", fake_openai(per_call=lambda **_: MagicMock(choices=choices))):
         r = client.post("/api/regenerate", json=_BODY)
     assert r.status_code == 500
     assert r.is_json

@@ -34,29 +34,7 @@ from api.index import (
     _regen_daily_key,
 )
 
-# Bound at import time, before conftest's autouse fixture replaces them.
-_REAL = {
-    "check_and_consume": rate_limit.check_and_consume,
-    "get_cooldown_remaining": rate_limit.get_cooldown_remaining,
-    "claim_cooldown": rate_limit.claim_cooldown,
-}
-
 _BODY = {"sections": {"about": {"bio": "hi"}}}
-
-
-@pytest.fixture
-def real_limiter():
-    """Put back the real primitives that conftest's autouse fixture stubs."""
-    with patch.multiple("api.index.rate_limit", **_REAL):
-        yield
-
-
-@pytest.fixture
-def redis_down(real_limiter):
-    """Real limiter, unreachable Redis."""
-    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("redis down")):
-        with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("redis down")):
-            yield
 
 
 @pytest.fixture
@@ -121,7 +99,7 @@ def test_free_limits_endpoint_still_answers_during_an_outage(client, metering_br
     assert r.status_code == 200
 
 
-def test_parallel_presses_get_one_200_and_429s_for_the_rest(client, real_limiter, fake_upstash):
+def test_parallel_presses_get_one_200_and_429s_for_the_rest(client, fake_openai, real_limiter, fake_upstash):
     # The cooldown used to be a TTL read and, later, a SETEX, so presses that
     # all read before any wrote all got through (#194 M64). Holding each press
     # after its first Redis call until every press has made one forces that
@@ -141,8 +119,7 @@ def test_parallel_presses_get_one_200_and_429s_for_the_rest(client, real_limiter
     def press(_):
         return client.application.test_client().post("/api/regenerate", json=_BODY).status_code
 
-    model = MagicMock()
-    model.chat.completions.create.return_value.choices = [MagicMock(message=MagicMock(content='{"bio": "rewritten"}'))]
+    model = fake_openai()
 
     with patch("api.index.openai_client", model):
         with patch("api._lib.redis_client._post", side_effect=held_after_first_call):
