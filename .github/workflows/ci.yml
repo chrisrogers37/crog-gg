@@ -80,7 +80,7 @@ jobs:
   frontend-e2e-tests:
     # Twice: the owner's site, and the fictional one a fork starts from (#191).
     name: Frontend E2E Tests (${{ matrix.site }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
