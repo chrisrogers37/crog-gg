@@ -79,8 +79,6 @@ export const claudfather = {
   cream: "#faedd4", // the face: 13:1 on charcoal
 } as const;
 
-export const palette = { primary, accent, slate, danger } as const;
-
 /** Benzo's public site colors, from its core design module at eed0a96. */
 export const benzo = {
   paper: "#f8f6f2",

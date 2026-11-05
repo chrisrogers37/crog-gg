@@ -7,7 +7,6 @@ export const seo = createSeo(site);
 export const {
   SITE_URL,
   OG_IMAGE,
-  absoluteUrl,
   pageTitle,
   headTags,
   HOME_META,
@@ -17,4 +16,4 @@ export const {
 } = seo;
 
 export { jsonLd, projectBreadcrumbs } from "./site";
-export type { LandingPage, PageMeta, ProjectSummary } from "./site";
+export type { PageMeta } from "./site";

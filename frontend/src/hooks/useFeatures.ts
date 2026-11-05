@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import site from "virtual:site-config";
-import { API_URL } from "../config/api";
 import { NO_FEATURES, isOn, parseFeatures, type Features } from "../config/features";
 import { useUIStore } from "../store/uiStore";
 import { isServedOwner } from "../utils/projectLinks";
@@ -15,7 +14,7 @@ const FEATURES_TIMEOUT_MS = 3000;
  */
 export async function fetchFeatures(): Promise<Features> {
   try {
-    const response = await fetch(`${API_URL}/api/features`, {
+    const response = await fetch("/api/features", {
       signal: AbortSignal.timeout(FEATURES_TIMEOUT_MS),
     });
     if (!response.ok) return NO_FEATURES;
