@@ -6,22 +6,18 @@ both name the visitor by ``client_tag`` instead.
 """
 
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from api._lib.request_utils import client_tag
 
 _IP = "203.0.113.7"
 
 
-def test_a_press_leaves_no_address_in_keys_or_logs(client, salted, caplog):
+def test_a_press_leaves_no_address_in_keys_or_logs(client, fake_openai, salted, caplog):
     caplog.set_level(logging.INFO, logger="crog")
-    choice = MagicMock(finish_reason="stop")
-    choice.message.content = '{"bio": "rewritten"}'
-    model = MagicMock()
-    model.chat.completions.create.return_value = MagicMock(choices=[choice])
 
     with (
-        patch("api.index.openai_client", model),
+        patch("api.index.openai_client", fake_openai()),
         patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim,
         patch("api.index.rate_limit.check_and_consume", return_value=None) as consume,
         patch("api.index.rate_limit.get_cooldown_remaining", return_value=0) as read,

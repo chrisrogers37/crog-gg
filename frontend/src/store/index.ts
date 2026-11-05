@@ -8,10 +8,8 @@ export {
   useTimeline,
   useShowcase,
 } from "./contentStore";
-export type { Load, LoadedContent } from "./contentStore";
 
 export {
   useUIStore,
-  useTheme,
   useIsMobileMenuOpen,
 } from "./uiStore";

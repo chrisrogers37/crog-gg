@@ -21,10 +21,6 @@ export const isClaudlobbyFrontPage = (href: string) => {
   );
 };
 
-export const CLAUDLOBBY_ISSUES = `${CLAUDLOBBY_REPO}/issues`;
-
-export const CLAUDLOBBY_README_QUICKSTART = `${CLAUDLOBBY_REPO}#quick-start`;
-
 export const CLAUDLOBBY_GETTING_STARTED = `${CLAUDLOBBY_REPO}/blob/main/documentation/getting-started.md`;
 
 /** Where Watch → Custom → Releases subscribes, and the same list as a feed. */

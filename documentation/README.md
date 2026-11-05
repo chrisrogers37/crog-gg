@@ -13,7 +13,13 @@ Start with the [root README](../README.md) for setup, testing and deployment.
 - [FORKING.md](../FORKING.md): making the site yours, from `npm run site:init` to a deployed site (#192).
 - [CLAUDE.md](../CLAUDE.md): conventions, the design system and the copy style, for people and coding agents.
 - [AGENTS.md](../AGENTS.md): running the project, for any coding agent.
-- `.claude/skills/add-project/SKILL.md`: adding a project. `.claude/agents/oncall-guide.md`: diagnosing production.
+- `.claude/skills/add-project/SKILL.md`: adding a project. `.claude/agents/oncall-guide.md`: diagnosing production. `.claude/agents/build-validator.md`: running CI's checks locally. `.claude/agents/verify-app.md`: checking a change in the running app.
+
+## Licenses and security
+
+- [CONTENT-TERMS.md](../CONTENT-TERMS.md): the owner's content, which the code's MIT [LICENSE](../LICENSE) doesn't cover.
+- [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md): the assets from other projects, under their own licenses.
+- [SECURITY.md](../SECURITY.md): reporting a vulnerability privately.
 
 ## Plans
 

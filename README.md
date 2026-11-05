@@ -174,6 +174,8 @@ GitHub Actions runs CI (`.github/workflows/ci.yml`) on every push to `main` and 
 
 Preview verification still needs the Vercel automation bypass configured as an Actions secret (#195). This workflow does not create that credential; changing deployment access is a separate setup step.
 
+**Design audit** (`.github/workflows/design-audit.yml`) runs by hand on a chosen branch, from the Actions tab ("Use workflow from"). It builds that branch's frontend and main's, serves both with the API's answers fixed, and checks every page at 360, 390 and 430 px in both themes for sideways overflow, text under 12 px and axe's color-contrast, target-size, link-name and button-name rules. Its Lighthouse gate runs both builds six times: the branch's median performance must be no more than 2 points below main's, and its median CLS no higher. It also runs the branch's phone spec against main: the tests the branch adds must catch its change, so at least one of them fails there, and any that pass are listed. The report and the shots are the run's `design-audit` artifact.
+
 GitHub treats a skipped job as successful for branch protection, so it does not block merging. Check the Smoke job's conclusion and summary when reviewing deployment evidence.
 
 There is no manually-triggered deploy workflow. Vercel deploys directly from the Git integration.
@@ -191,7 +193,7 @@ Deployed on Vercel. Every push to `main` auto-deploys to https://www.crog.gg (th
 
 ### Environment variables
 
-Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one that's local only). This table is the list the other docs point to; local development needs none of them ([`.env.example`](.env.example) is the template).
+Production's are set in the Vercel project's settings (`FLASK_DEBUG` and `SITE_DIR` aren't set there). This table is the list the other docs point to; local development needs none of them ([`.env.example`](.env.example) is the template).
 
 | Var                                     | Required          | Notes                                                                                                                                                                                           |
 | --------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -200,6 +202,7 @@ Production's are set in the Vercel project's settings (`FLASK_DEBUG` is the one 
 | `KV_REST_API_URL` + `KV_REST_API_TOKEN` | for SUMMON        | Auto-injected by the Upstash Marketplace integration. Without them `/api/regenerate` returns 503 (see Troubleshooting). If `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are set, the client reads them first. |
 | `IP_HASH_SALT`                          | recommended       | A random secret (32+ characters) that keys the anonymous visitor tag used in rate-limit keys, log lines and `/api/regenerate`'s `safety_identifier`. Without it, keys and logs name visitors by address. Setting or changing it resets every visitor's rate-limit windows once. It's set in Production only: previews sit behind Vercel's login, so the only addresses they see are the owner's and automation's. Previews that serve the public need it too, with a different value. |
 | `OPENAI_MODEL`                          | optional          | Overrides the rewrite model (`gpt-5.6-luna`). Changing it means checking `OPENAI_SAMPLING` in `api/index.py`, which depends on the model. `REGEN_GLOBAL_DAILY_MAX` is sized from the default model's worst-case cost |
+| `SITE_DIR`                              | optional          | The site folder (`site.yaml`, `public/`) that the build, dev server, tests, photo and card scripts and API read: absolute or relative to the repo root, `site` when unset. CI also runs `site.example`, and the API's tests always do. Leave it unset on Vercel: the function bundles only `site/site.yaml`. |
 | `FLASK_DEBUG`                           | local only        | `true` runs the local Flask server in debug mode and adds the Vite dev server's localhost origins to CORS. The Vite proxy makes local calls same-origin anyway. Never set it in Vercel.         |
 
 ### Bounding OpenAI spend

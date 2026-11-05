@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import site from "virtual:site-config";
-import { API_URL } from "../config/api";
 import { BioData, Project } from "../types";
 import { TimelineData } from "../types/Timeline";
 import type { ShowcaseImage } from "../types/Showcase";
@@ -269,7 +268,7 @@ export const useContentStore = create<ContentStore>()(
           // One click is one request. Sending a request per section raced them
           // against each other through the server's per-IP cooldown, so the
           // second was rejected and the whole regeneration was discarded.
-          const response = await fetch(`${API_URL}/api/regenerate`, {
+          const response = await fetch("/api/regenerate", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -380,7 +379,7 @@ export const useContentStore = create<ContentStore>()(
         const before = get().cooldownEndsAt;
         set({ limitsRequested: true });
         try {
-          const response = await fetch(`${API_URL}/api/limits`, {
+          const response = await fetch("/api/limits", {
             headers: { Accept: "application/json" },
           });
           const limits = await response.json();
