@@ -21,7 +21,7 @@ discarded the whole regeneration.
 
 import json
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import openai
 import pytest
@@ -36,27 +36,6 @@ from api.index import (
     _prompt_json,
     _regen_daily_key,
 )
-
-
-def _mock_openai(content='{"bio": "rewritten"}', error=None, per_call=None):
-    """A fake OpenAI client.
-
-    Returns ``content`` by default; ``error`` raises it instead, and
-    ``per_call`` takes over entirely for tests that need the response to depend
-    on which section is being rewritten.
-    """
-    fake = MagicMock()
-    if per_call is not None:
-        fake.chat.completions.create.side_effect = per_call
-    elif error is not None:
-        fake.chat.completions.create.side_effect = error
-    else:
-        resp = MagicMock()
-        resp.choices = [MagicMock()]
-        resp.choices[0].message.content = content
-        fake.chat.completions.create.return_value = resp
-    return fake
-
 
 # --- input validation (runs before metering / OpenAI) ----------------------
 
@@ -146,11 +125,11 @@ _BIO_ROOM = MAX_SECTION_CHARS - len(_prompt_json({"bio": ""}))
         pytest.param("<" * (_BIO_ROOM // 6 + 1), id="escaped-into-the-prompt"),
     ],
 )
-def test_oversized_section_is_413_unmetered(client, bio):
+def test_oversized_section_is_413_unmetered(client, fake_openai, bio):
     # The 64 KB body cap still lets one section carry dozens of times the
     # shipped content into a paid prompt; the section cap stops it before any
     # metering (#194 M11).
-    with patch("api.index.openai_client", _mock_openai()):
+    with patch("api.index.openai_client", fake_openai()):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": bio}}})
     assert r.status_code == 413
@@ -158,17 +137,17 @@ def test_oversized_section_is_413_unmetered(client, bio):
     claim.assert_not_called()
 
 
-def test_a_section_at_the_cap_is_accepted(client):
-    with patch("api.index.openai_client", _mock_openai()):
+def test_a_section_at_the_cap_is_accepted(client, fake_openai):
+    with patch("api.index.openai_client", fake_openai()):
         r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "a" * _BIO_ROOM}}})
     assert r.status_code == 200
 
 
-def test_a_rewrite_too_long_to_send_back_is_refused(client):
+def test_a_rewrite_too_long_to_send_back_is_refused(client, fake_openai):
     # Each rewrite comes back as the next press's input, so one over the cap
     # would make every later press a 413. The visitor keeps the copy they have.
     too_long = json.dumps({"bio": "a" * (_BIO_ROOM + 1)})
-    with patch("api.index.openai_client", _mock_openai(content=too_long)):
+    with patch("api.index.openai_client", fake_openai(content=too_long)):
         r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 500
     assert r.get_json()["failures"]["about"] == {"reason": FAILURE_TOO_LONG, "chars": MAX_SECTION_CHARS + 1}
@@ -177,8 +156,8 @@ def test_a_rewrite_too_long_to_send_back_is_refused(client):
 # --- metering: cooldown starts for any accepted request (#107) -------------
 
 
-def test_valid_request_succeeds_and_starts_cooldown(client):
-    with patch("api.index.openai_client", _mock_openai()):
+def test_valid_request_succeeds_and_starts_cooldown(client, fake_openai):
+    with patch("api.index.openai_client", fake_openai()):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 200
@@ -189,19 +168,19 @@ def test_valid_request_succeeds_and_starts_cooldown(client):
     claim.assert_called_once()
 
 
-def test_openai_error_still_starts_cooldown(client):
+def test_openai_error_still_starts_cooldown(client, fake_openai):
     # A validated request that errors at OpenAI must still burn the cooldown so a
     # caller can't retry expensive generations back-to-back by forcing errors (#107).
-    with patch("api.index.openai_client", _mock_openai(error=openai.OpenAIError("boom"))):
+    with patch("api.index.openai_client", fake_openai(error=openai.OpenAIError("boom"))):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 500
     claim.assert_called_once()
 
 
-def test_non_json_model_output_still_starts_cooldown(client):
+def test_non_json_model_output_still_starts_cooldown(client, fake_openai):
     # Non-JSON model output -> 500, but the cooldown was already started (#107).
-    with patch("api.index.openai_client", _mock_openai(content="not json at all")):
+    with patch("api.index.openai_client", fake_openai(content="not json at all")):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as claim:
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
     assert r.status_code == 500
@@ -218,10 +197,10 @@ def test_malformed_request_does_not_meter(client):
     claim.assert_not_called()
 
 
-def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
+def test_cooldown_refusal_is_a_429_that_spends_nothing(client, fake_openai):
     # A press refused by the cooldown uses no daily slot and makes no model
     # call, and says how long is left (#194).
-    fake = _mock_openai()
+    fake = fake_openai()
     with patch("api.index.openai_client", fake):
         with patch("api.index.rate_limit.claim_cooldown", return_value=12):
             with patch("api.index.rate_limit.check_and_consume") as consume:
@@ -238,10 +217,10 @@ def test_cooldown_refusal_is_a_429_that_spends_nothing(client):
     fake.chat.completions.create.assert_not_called()
 
 
-def test_daily_slot_consumed_per_section(client, notes_section):
+def test_daily_slot_consumed_per_section(client, fake_openai, notes_section):
     # Batching sections into one request must cost the same as the per-section
     # requests it replaces, or the daily caps would be trivially stretched.
-    with patch("api.index.openai_client", _mock_openai()):
+    with patch("api.index.openai_client", fake_openai()):
         with patch("api.index.rate_limit.check_and_consume", return_value=None) as consume:
             r = client.post(
                 "/api/regenerate",
@@ -258,8 +237,8 @@ def test_daily_slot_consumed_per_section(client, notes_section):
     assert consume.call_args.kwargs["cost"] == 2
 
 
-def test_daily_limit_reached_returns_429(client):
-    with patch("api.index.openai_client", _mock_openai()):
+def test_daily_limit_reached_returns_429(client, fake_openai):
+    with patch("api.index.openai_client", fake_openai()):
         with patch(
             "api.index.rate_limit.check_and_consume", return_value=_regen_daily_key(Visitor.from_ip("127.0.0.1"))
         ):
@@ -269,11 +248,11 @@ def test_daily_limit_reached_returns_429(client):
     assert (body["error"], body["limit"], body["cooldown_total"]) == ("daily limit reached", "daily", 30)
 
 
-def test_global_ceiling_returns_503(client, caplog):
+def test_global_ceiling_returns_503(client, fake_openai, caplog):
     # The site-wide budget is spent: nobody's press can be served, so it's the
     # service that's unavailable, not this visitor who's over a limit (#194 M11).
     caplog.set_level(logging.WARNING, logger="crog")
-    fake = _mock_openai()
+    fake = fake_openai()
     with patch("api.index.openai_client", fake):
         with patch("api.index.rate_limit.check_and_consume", return_value=REGEN_GLOBAL_KEY):
             r = client.post("/api/regenerate", json={"sections": {"about": {"bio": "hi"}}})
@@ -291,11 +270,11 @@ def test_global_ceiling_returns_503(client, caplog):
 # --- one action is one request ---------------------------------------------
 
 
-def test_multi_section_request_checks_cooldown_once(client, notes_section):
+def test_multi_section_request_checks_cooldown_once(client, fake_openai, notes_section):
     # The regression this route shape exists to prevent: a full regeneration used
     # to be two concurrent requests, so the second hit the cooldown the first had
     # just started and was rejected. One request means one gate check.
-    with patch("api.index.openai_client", _mock_openai()):
+    with patch("api.index.openai_client", fake_openai()):
         with patch("api.index.rate_limit.claim_cooldown", return_value=0) as gate:
             r = client.post(
                 "/api/regenerate",
@@ -305,7 +284,7 @@ def test_multi_section_request_checks_cooldown_once(client, notes_section):
     gate.assert_called_once()
 
 
-def test_every_section_prompt_carries_the_length_anchor(client, notes_section):
+def test_every_section_prompt_carries_the_length_anchor(client, fake_openai, notes_section):
     """The rewrite must be told not to grow (#134).
 
     The client sends the CURRENT content, so each rewrite takes the previous
@@ -316,7 +295,7 @@ def test_every_section_prompt_carries_the_length_anchor(client, notes_section):
     It pins delivery, NOT compliance: a prompt cannot enforce a length, and only
     regenerating from the original actually bounds the loop.
     """
-    fake = _mock_openai()
+    fake = fake_openai()
     with patch("api.index.openai_client", fake):
         client.post(
             "/api/regenerate",
@@ -330,20 +309,16 @@ def test_every_section_prompt_carries_the_length_anchor(client, notes_section):
         assert "do not expand it" in sys_prompt.lower()
 
 
-def test_all_requested_sections_are_returned(client, notes_section):
+def test_all_requested_sections_are_returned(client, fake_openai, notes_section):
     # Each section is answered in its own shape. A rewrite that shares no key
     # with the section it replaces is now refused (#105), so one canned body
     # standing in for both sections would be rejected for whichever it did not
     # match -- that is the check working, not a limit of it.
     def _per_section(**kwargs):
         prompt = kwargs["messages"][1]["content"]
-        body = '{"entries": [{"title": "Engineer"}]}' if "entries" in prompt else '{"bio": "rewritten"}'
-        resp = MagicMock()
-        resp.choices = [MagicMock()]
-        resp.choices[0].message.content = body
-        return resp
+        return '{"entries": [{"title": "Engineer"}]}' if "entries" in prompt else '{"bio": "rewritten"}'
 
-    with patch("api.index.openai_client", _mock_openai(per_call=_per_section)):
+    with patch("api.index.openai_client", fake_openai(per_call=_per_section)):
         r = client.post(
             "/api/regenerate",
             json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
@@ -352,18 +327,15 @@ def test_all_requested_sections_are_returned(client, notes_section):
     assert set(r.get_json()["content"]) == {"about", "notes"}
 
 
-def test_partial_failure_keeps_the_sections_that_worked(client, notes_section):
+def test_partial_failure_keeps_the_sections_that_worked(client, fake_openai, notes_section):
     # The old client discarded BOTH sections when either failed, including the
     # one that succeeded. A partial failure must degrade, not collapse.
     def _per_section(**kwargs):
         if "notes-marker" in kwargs["messages"][1]["content"]:
             raise openai.OpenAIError("boom")
-        resp = MagicMock()
-        resp.choices = [MagicMock()]
-        resp.choices[0].message.content = '{"bio": "rewritten"}'
-        return resp
+        return '{"bio": "rewritten"}'
 
-    with patch("api.index.openai_client", _mock_openai(per_call=_per_section)):
+    with patch("api.index.openai_client", fake_openai(per_call=_per_section)):
         r = client.post(
             "/api/regenerate",
             json={
@@ -380,8 +352,8 @@ def test_partial_failure_keeps_the_sections_that_worked(client, notes_section):
     assert body["failed_sections"] == ["notes"]
 
 
-def test_total_failure_is_a_500(client, notes_section):
-    with patch("api.index.openai_client", _mock_openai(error=openai.OpenAIError("boom"))):
+def test_total_failure_is_a_500(client, fake_openai, notes_section):
+    with patch("api.index.openai_client", fake_openai(error=openai.OpenAIError("boom"))):
         r = client.post(
             "/api/regenerate",
             json={"sections": {"about": {"bio": "hi"}, "notes": {"entries": []}}},
@@ -398,10 +370,10 @@ def test_total_failure_is_a_500(client, notes_section):
 # --- prompt-injection boundary (#89) ---------------------------------------
 
 
-def test_user_content_is_delimited_in_prompt(client):
+def test_user_content_is_delimited_in_prompt(client, fake_openai):
     # Untrusted content is wrapped in <user_content> tags and the system prompt
     # carries the "treat as data" guard (#89).
-    fake = _mock_openai()
+    fake = fake_openai()
     with patch("api.index.openai_client", fake):
         r = client.post(
             "/api/regenerate",

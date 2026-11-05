@@ -27,18 +27,6 @@ from unittest.mock import patch
 
 import pytest
 
-from api._lib import rate_limit
-
-# Bound at import time, before conftest's autouse fixture replaces it.
-_REAL_GET_COOLDOWN = rate_limit.get_cooldown_remaining
-
-
-@pytest.fixture
-def real_limiter():
-    """Undo conftest's stub so the limiter's own decision is what runs."""
-    with patch("api.index.rate_limit.get_cooldown_remaining", _REAL_GET_COOLDOWN):
-        yield
-
 
 def _redis_unreachable():
     return patch(
@@ -49,13 +37,6 @@ def _redis_unreachable():
 
 def _redis_returns_ttl(ttl: int):
     return patch("api._lib.rate_limit.redis_client.command", return_value=ttl)
-
-
-@pytest.fixture
-def redis_down(real_limiter):
-    """Real limiter, unreachable Redis."""
-    with _redis_unreachable():
-        yield
 
 
 @pytest.fixture
@@ -72,9 +53,7 @@ def redis_up_on_cooldown(real_limiter):
         yield
 
 
-def test_a_healthy_read_with_no_cooldown_reports_itself_as_metered(
-    client, redis_up_no_cooldown
-):
+def test_a_healthy_read_with_no_cooldown_reports_itself_as_metered(client, redis_up_no_cooldown):
     body = client.get("/api/limits").get_json()
 
     assert body["metering_available"] is True
@@ -82,9 +61,7 @@ def test_a_healthy_read_with_no_cooldown_reports_itself_as_metered(
     assert body["is_on_cooldown"] is False
 
 
-def test_a_healthy_read_during_a_cooldown_reports_the_seconds_left(
-    client, redis_up_on_cooldown
-):
+def test_a_healthy_read_during_a_cooldown_reports_the_seconds_left(client, redis_up_on_cooldown):
     body = client.get("/api/limits").get_json()
 
     assert body["metering_available"] is True

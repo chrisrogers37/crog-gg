@@ -5,11 +5,12 @@ how pytest is invoked. The backend package is rooted at the repo root and
 imports itself as ``api.*`` (e.g. ``from api._lib import rate_limit``), so the
 repo root must be importable for the test suite.
 
-The Flask test client and a hermetic rate-limit fixture are exposed here so
-every test module shares them without redefining the plumbing.
+The Flask test client, the hermetic stubs and the fakes and fixtures the test
+modules share are defined here, once, so no module redefines the plumbing.
 """
 
 import importlib
+import json
 import os
 import sys
 
@@ -24,8 +25,15 @@ from unittest.mock import MagicMock, patch  # noqa: E402
 
 import pytest  # noqa: E402
 
-from api._lib import request_utils  # noqa: E402
-from api.index import app  # noqa: E402
+from api._lib import rate_limit, request_utils  # noqa: E402
+from api.index import _MAX_COMPLETION_TOKENS, _PROMPTS, app  # noqa: E402
+
+# Bound at import time, before _hermetic_rate_limit replaces them.
+_REAL_LIMITER = {
+    "check_and_consume": rate_limit.check_and_consume,
+    "get_cooldown_remaining": rate_limit.get_cooldown_remaining,
+    "claim_cooldown": rate_limit.claim_cooldown,
+}
 
 
 @pytest.fixture
@@ -43,13 +51,29 @@ def _hermetic_rate_limit():
 
     Production failure modes differ per call site (#113): the free GitHub
     endpoints fall open, the paid /api/regenerate gates fail closed. Tests that
-    exercise either behaviour must patch over this fixture -- it stubs the very
-    primitives under test. See tests/test_regenerate_spend_guard.py.
+    exercise either behaviour must patch over this fixture, which stubs the very
+    primitives under test: ``real_limiter`` puts them back. See
+    tests/test_regenerate_spend_guard.py.
     """
     with patch("api.index.rate_limit.check_and_consume", return_value=None):
         with patch("api.index.rate_limit.get_cooldown_remaining", return_value=0):
             with patch("api.index.rate_limit.claim_cooldown", return_value=0):
                 yield
+
+
+@pytest.fixture
+def real_limiter():
+    """Put back the real primitives that ``_hermetic_rate_limit`` stubs."""
+    with patch.multiple("api.index.rate_limit", **_REAL_LIMITER):
+        yield
+
+
+@pytest.fixture
+def redis_down(real_limiter):
+    """Real limiter, unreachable Redis."""
+    with patch("api._lib.rate_limit.redis_client.command", side_effect=RuntimeError("redis down")):
+        with patch("api._lib.rate_limit.redis_client.pipeline", side_effect=RuntimeError("redis down")):
+            yield
 
 
 @pytest.fixture(autouse=True)
@@ -71,6 +95,68 @@ def _no_real_openai():
         yield
     # A press the handler turned into a failed section still fails the test.
     client.chat.completions.create.assert_not_called()
+
+
+@pytest.fixture
+def fake_openai():
+    """Build a fake OpenAI client, to patch in as ``api.index.openai_client``.
+
+    Each call answers with ``content``, the reply's text: a string as it is, or
+    a dict or list sent as its JSON, by default a usable ``about`` rewrite.
+    ``finish_reason`` and ``usage`` ride on the reply. ``error`` is raised
+    instead, and ``per_call`` takes over entirely, for a test whose answer
+    depends on the section: it gets each call's arguments and returns that
+    call's content, taken as ``content`` is, or a whole response.
+    """
+
+    def build(content='{"bio": "rewritten"}', error=None, per_call=None, finish_reason="stop", usage=None):
+        def reply(text):
+            if isinstance(text, (dict, list)):
+                text = json.dumps(text)
+            choice = MagicMock(finish_reason=finish_reason)
+            choice.message.content = text
+            return MagicMock(choices=[choice], usage=usage)
+
+        def answer(**kwargs):
+            response = per_call(**kwargs)
+            return reply(response) if isinstance(response, (str, dict, list)) else response
+
+        fake = MagicMock()
+        if per_call is not None:
+            fake.chat.completions.create.side_effect = answer
+        elif error is not None:
+            fake.chat.completions.create.side_effect = error
+        else:
+            fake.chat.completions.create.return_value = reply(content)
+        return fake
+
+    return build
+
+
+# Shaped like a real section's prompt: a role, and a format that asks for JSON
+# in words, as JSON mode requires.
+_NOTES_PROMPT = {
+    "system": "You rewrite short notes. Return ONLY valid JSON with no prefixes or additional text.",
+    "format": "Return ONLY the JSON object, with every text field rewritten.\n",
+}
+
+
+@pytest.fixture
+def notes_section(monkeypatch):
+    """Register "notes", a test-only second /api/regenerate section, and return
+    its name. `about` is the only real section, but metering per section,
+    partial failure, the shared deadline and one register per press are about
+    every section a press sends, so their tests need a second one to send.
+
+    Added to the dicts api.index reads: its ``_PROMPTS`` is prompts.py's own
+    dict, imported by name, so the allowlist and the prompt both see it.
+    monkeypatch takes it out again after the test. Its output budget differs
+    from about's, so a test can tell which section's bound a call got. Like any
+    section but about, it has no ``_UNAUTHORED_KEYS`` entry.
+    """
+    monkeypatch.setitem(_PROMPTS, "notes", _NOTES_PROMPT)
+    monkeypatch.setitem(_MAX_COMPLETION_TOKENS, "notes", 1000)
+    return "notes"
 
 
 @pytest.fixture
