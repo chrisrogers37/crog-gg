@@ -4,6 +4,10 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 
 ## 2026-11-04
 
+### Changed
+
+- On a project page, the repository details have the card's background, as the demo and the README do (#304).
+
 ### Fixed
 
 - On a touch screen, the featured project's buttons and the buttons at the top of Benzo's page show that they're pressed, and a tap no longer leaves them in their hover look (#300).
