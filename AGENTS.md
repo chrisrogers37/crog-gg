@@ -8,7 +8,7 @@ This is crog.gg: a Vite/React frontend in `frontend/` and a Flask backend in `ap
 
 ### Services and how to run them
 
-- Frontend (Vite dev server, port 5173): `cd frontend && npm run dev`. The pages render from the YAML in `site/public/content/`, and Claudlobby's from `frontend/src/content/claudlobby.ts`, so the site works with no backend or secrets; only SUMMON NEW LORE and the GitHub panels need the backend, and without it they don't show (`GET /api/features`).
+- Frontend (Vite dev server, port 5173): `cd frontend && npm run dev`. The pages render from the YAML in `site/public/content/`, and Claudfather's and Benzo's from `frontend/src/content/claudfather.ts` and `benzo.ts`, so the site works with no backend or secrets; only SUMMON NEW LORE and the GitHub panels need the backend, and without it they don't show (`GET /api/features`).
 - Backend (Flask, port 5001): from the repo root, `python3 -m api.index`. `python api/index.py` fails with `ModuleNotFoundError: No module named 'api'`: run as a file, the repo root isn't on `sys.path`.
 - The Vite dev server proxies `/api/*` to the backend on `:5001` (see `frontend/vite.config.ts`), so the frontend always calls same-origin `/api`. The retired `VITE_API_URL` setting is ignored.
 

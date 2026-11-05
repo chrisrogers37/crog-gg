@@ -12,14 +12,14 @@ A few assets in this repository come from other projects and keep their own lice
 
 ## Font Awesome Free
 
-- **Files:** the Instagram and Spotify icons in `frontend/src/components/sections/ContactCTA/ContactCTA.tsx` and `frontend/src/components/sections/Music/Music.tsx`.
+- **Files:** the Spotify and Instagram icons (`SpotifyIcon` and `InstagramIcon`) in `frontend/src/components/common/SocialIcons.tsx`.
 - **Source:** Font Awesome Free by Fonticons, Inc., https://fontawesome.com
 - **License:** icons are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); see https://fontawesome.com/license/free
 - **Changes:** none. The SVG path data is inlined as-is.
 
 ## Feather
 
-- **Files:** the external-link icon in `frontend/src/components/sections/Music/Music.tsx`, and the sun, moon and monitor icons in `frontend/src/components/common/ThemeToggle/ThemeToggle.tsx`.
+- **Files:** the link icon (`LinkIcon`) in `frontend/src/components/common/SocialIcons.tsx`, and the sun, moon and monitor icons in `frontend/src/components/common/ThemeToggle/ThemeToggle.tsx`.
 - **Source:** Feather, https://github.com/feathericons/feather
 - **License:** MIT:
 
@@ -49,9 +49,40 @@ SOFTWARE.
 
 ## Material Icons
 
-- **Files:** the email icon in `frontend/src/components/sections/ContactCTA/ContactCTA.tsx`.
+- **Files:** the email icon (`EmailIcon`) in `frontend/src/components/common/SocialIcons.tsx`.
 - **Source:** Material Icons ("email") by Google, https://github.com/google/material-design-icons
 - **License:** [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- **Changes:** the icon's path is inlined with its top-left corner's `1.99` rounded to `2`.
+
+## Octicons
+
+- **Files:** GitHub's mark (`GitHubMark`) in `frontend/src/components/common/GitHubMark.tsx`.
+- **Source:** Octicons ("mark-github") by GitHub, https://github.com/primer/octicons
+- **License:** MIT:
+
+```
+MIT License
+
+Copyright (c) 2023 GitHub Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## Trademarks
 
