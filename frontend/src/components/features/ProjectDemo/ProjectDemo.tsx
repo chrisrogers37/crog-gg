@@ -31,7 +31,7 @@ export function ProjectDemo({ url, title, height = 600 }: ProjectDemoProps) {
     <dialog
       ref={dialogRef}
       open={!isFullscreen}
-      className={`project-demo ${isFullscreen ? "fullscreen" : ""}`}
+      className={`card project-demo ${isFullscreen ? "fullscreen" : ""}`}
       aria-modal={isFullscreen}
       aria-label={`${title} demo`}
       onCancel={(event) => {

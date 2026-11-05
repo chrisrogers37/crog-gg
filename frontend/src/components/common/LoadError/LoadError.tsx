@@ -13,7 +13,7 @@ type LoadErrorProps = {
 export function LoadError({ message, onRetry, compact = false }: LoadErrorProps) {
   return (
     <div
-      className={compact ? "error-boundary error-boundary--compact" : "error-boundary"}
+      className={compact ? "card error-boundary error-boundary--compact" : "card error-boundary"}
       role="alert"
     >
       <p className="error-boundary__message">{message}</p>
