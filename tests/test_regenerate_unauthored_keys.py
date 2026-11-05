@@ -39,6 +39,9 @@ ORIGINAL_SOCIAL_LINKS = {
 # What a caller sends under each unauthored key, and what the model writes there instead.
 SENT = {"email": ORIGINAL_EMAIL, "social_links": ORIGINAL_SOCIAL_LINKS}
 AUTHORED = {"email": "invented@nowhere.test", "social_links": {"github": "https://github.com/lookalike-example/"}}
+# The mode each key's cases post. social_links runs in fantasy mode, the only mode the page sends;
+# email runs in the plain rewrite, and its fantasy-mode case is its own test.
+FANTASY = {"email": False, "social_links": True}
 
 
 def _bio(social_links=None, email=ORIGINAL_EMAIL):
@@ -75,7 +78,7 @@ def test_prose_rewrites_still_pass_through(client, fake_openai, key):
     mangled["about_text"] = "a completely rewritten biography"
     mangled["display_name"] = "Chris T. Rogers"
 
-    result = _regenerate(client, fake_openai, mangled, _bio(**{key: SENT[key]}))
+    result = _regenerate(client, fake_openai, mangled, _bio(**{key: SENT[key]}), use_fantasy=FANTASY[key])
 
     assert result["about_text"] == "a completely rewritten biography"
     assert result["display_name"] == "Chris T. Rogers"
@@ -85,7 +88,9 @@ def test_prose_rewrites_still_pass_through(client, fake_openai, key):
 @pytest.mark.parametrize("key", ["email", "social_links"])
 def test_input_without_the_key_is_not_synthesised(client, fake_openai, key):
     """A caller that sent nothing under the key must not get a value the model made up."""
-    result = _regenerate(client, fake_openai, _bio(**{key: AUTHORED[key]}), _bio(**{key: None}))
+    result = _regenerate(
+        client, fake_openai, _bio(**{key: AUTHORED[key]}), _bio(**{key: None}), use_fantasy=FANTASY[key]
+    )
 
     assert key not in result
 
@@ -99,7 +104,12 @@ def test_another_section_is_untouched(client, fake_openai, notes_section, key):
     rewritten = {"entries": [{"title": "rewritten"}], key: AUTHORED[key]}
 
     result = _regenerate(
-        client, fake_openai, rewritten, {"entries": [{"title": "original"}], key: SENT[key]}, section="notes"
+        client,
+        fake_openai,
+        rewritten,
+        {"entries": [{"title": "original"}], key: SENT[key]},
+        section="notes",
+        use_fantasy=FANTASY[key],
     )
 
     assert result == rewritten
@@ -165,7 +175,7 @@ def test_javascript_url_from_model_is_discarded(client, fake_openai):
     """The security case: a javascript: URL must never reach the client."""
     mangled = _bio({**ORIGINAL_SOCIAL_LINKS, "github": "javascript:alert(document.domain)"})
 
-    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS))
+    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS), use_fantasy=FANTASY["social_links"])
 
     assert result["social_links"]["github"] == ORIGINAL_SOCIAL_LINKS["github"]
     assert "javascript:" not in json.dumps(result["social_links"])
@@ -182,7 +192,7 @@ def test_every_scheme_the_model_invents_is_discarded(client, fake_openai):
         }
     )
 
-    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS))
+    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS), use_fantasy=FANTASY["social_links"])
 
     assert result["social_links"] == ORIGINAL_SOCIAL_LINKS
 
@@ -203,7 +213,7 @@ def test_plausible_lookalike_urls_are_discarded(client, fake_openai):
         }
     )
 
-    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS))
+    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS), use_fantasy=FANTASY["social_links"])
 
     assert result["social_links"] == ORIGINAL_SOCIAL_LINKS
 
@@ -212,7 +222,7 @@ def test_model_cannot_add_new_link_keys(client, fake_openai):
     """A key absent from the input must not appear in the output."""
     mangled = _bio({**ORIGINAL_SOCIAL_LINKS, "payments": "https://not-chris.example/pay"})
 
-    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS))
+    result = _regenerate(client, fake_openai, mangled, _bio(ORIGINAL_SOCIAL_LINKS), use_fantasy=FANTASY["social_links"])
 
     assert "payments" not in result["social_links"]
     assert result["social_links"] == ORIGINAL_SOCIAL_LINKS
@@ -220,7 +230,7 @@ def test_model_cannot_add_new_link_keys(client, fake_openai):
 
 def test_model_cannot_drop_links_entirely(client, fake_openai):
     """Omitting social_links must restore them, not leave the client without."""
-    result = _regenerate(client, fake_openai, _bio(), _bio(ORIGINAL_SOCIAL_LINKS))
+    result = _regenerate(client, fake_openai, _bio(), _bio(ORIGINAL_SOCIAL_LINKS), use_fantasy=FANTASY["social_links"])
 
     assert result["social_links"] == ORIGINAL_SOCIAL_LINKS
 
