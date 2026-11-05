@@ -106,8 +106,15 @@
 }
 .project-featured[data-brand] .project-featured-description { opacity: 0.88; }
 .project-featured[data-brand] .btn-primary { color: var(--project-surface); background: var(--project-accent); }
-.project-featured[data-brand] .btn-primary:hover { filter: brightness(1.08); }
 .project-featured[data-brand] .btn-ghost { color: var(--project-ink); border-color: var(--project-ink); }
+@media (hover: hover) {
+  .project-featured[data-brand] .btn-primary:hover { filter: brightness(1.08); }
+}
+/* Pressed, on any screen: the filled button as it looks hovered, and the ghost
+   under a veil of its own ink, as on Claudfather's page. index.css's slate fill
+   would sit under a label meant for the brand's surface. */
+.project-featured[data-brand] .btn-primary:active { filter: brightness(1.08); }
+.project-featured[data-brand] .btn-ghost:active { background-color: color-mix(in oklab, var(--project-ink) 14%, transparent); }
 
 /* At more than .card's weight: its dark-theme rule, .card:is(.dark *), would
    otherwise keep the border grey. The accent follows the theme by itself. */
