@@ -31,7 +31,7 @@ describe("fetchFeatures", () => {
     const fetchMock = answering(async () => Response.json(ANSWER));
     expect(await fetchFeatures()).toEqual(SERVED);
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toMatch(/\/api\/features$/);
+    expect(url).toBe("/api/features");
     expect(timeout).toHaveBeenCalledWith(3000);
     expect(init.signal).toBe(timeout.mock.results[0].value);
   });

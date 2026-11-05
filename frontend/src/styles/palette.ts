@@ -8,7 +8,7 @@
  *
  * Scales follow Tailwind's 50..950 convention:
  *   primary = blue (brand)   accent = purple   slate = neutral   danger = red
- * claudfather is named colours, not a scale: Claudlobby's page alone.
+ * claudfather is named colours, not a scale, for Claudfather alone.
  */
 
 export const primary = {
@@ -69,7 +69,8 @@ export const danger = {
 /**
  * Claudfather's colours, read off its avatar (the GitHub org Claudlobby lives
  * in): the medallion's orange, the night behind it, the robot's cream face.
- * Only Claudlobby's page and its share card wear them (Claudlobby.css).
+ * Only its page (Claudfather.css), its share card and its project cards
+ * (content/projectPresentation.ts) wear them.
  */
 export const claudfather = {
   orange: "#e5711f", // 4.8:1 on charcoal, 5.7:1 under ink text
@@ -78,8 +79,6 @@ export const claudfather = {
   ink: "#171717", // the suit
   cream: "#faedd4", // the face: 13:1 on charcoal
 } as const;
-
-export const palette = { primary, accent, slate, danger } as const;
 
 /** Benzo's public site colors, from its core design module at eed0a96. */
 export const benzo = {

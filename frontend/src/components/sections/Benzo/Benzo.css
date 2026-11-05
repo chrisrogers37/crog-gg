@@ -36,9 +36,15 @@
 }
 .benzo-lead { margin: 1rem 0 0; line-height: 1.65; color: var(--text-color-secondary); }
 .benzo-hero .btn-primary { color: theme("colors.benzo.paper"); background: theme("colors.benzo.rose"); }
-.benzo-hero .btn-primary:hover { background: theme("colors.benzo.roseHover"); }
 .benzo-hero .btn-ghost { color: theme("colors.benzo.ink"); border-color: theme("colors.benzo.controlBorder"); }
-.benzo-hero .btn-ghost:hover { color: theme("colors.benzo.ink"); background: theme("colors.benzo.softPink"); }
+@media (hover: hover) {
+  .benzo-hero .btn-primary:hover { background: theme("colors.benzo.roseHover"); }
+  .benzo-hero .btn-ghost:hover { color: theme("colors.benzo.ink"); background: theme("colors.benzo.softPink"); }
+}
+/* Pressed, on any screen: the hover look. The hero is paper in both themes, so
+   these outrank index.css's pressed fills, the dark theme's slate included. */
+.page-hero.benzo-hero .btn-primary:active { background: theme("colors.benzo.roseHover"); }
+.page-hero.benzo-hero .btn-ghost:active { color: theme("colors.benzo.ink"); background: theme("colors.benzo.softPink"); }
 .benzo-download-note { margin: 0.75rem 0 0; font-size: 0.8125rem; line-height: 1.5; color: var(--text-color-secondary); }
 .benzo-identity { text-align: center; color: theme("colors.benzo.rose"); }
 .benzo-identity p { max-width: 20ch; margin: 0.75rem auto 0; font-size: 0.875rem; }

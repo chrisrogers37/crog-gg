@@ -14,7 +14,7 @@ repos: [chrisrogers37/crog-gg]
 
 Add one actual captured still or short recording to the Claudfather portfolio walkthrough. Clearly distinguish a synthetic public-preview capture from a verified local run. Keep the sample as dated case-study evidence and link to the product website for its current demo, without mirroring a live sandbox.
 
-PR title: `feat: add dated Claudfather portfolio evidence`. Class: SAFE, high impact, medium effort. Risk: medium because misleading or private material can undermine trust. One PR. Dependency: [Phase 1](01_featured-ecosystem.md), including its content module, detailed page, conceptual walkthrough and shared destination record.
+PR title: `feat: add dated Claudfather portfolio evidence`. Class: SAFE, high impact, medium effort. Risk: medium because misleading or private material can undermine trust. One PR. Dependency: [Phase 1](https://github.com/chrisrogers37/crog-gg/pull/265), including its content module, detailed page, conceptual walkthrough and shared destination record.
 
 ## Why it matters
 
@@ -22,7 +22,7 @@ The existing page has no product screen or captured output. Its strong brand mar
 
 ## Context
 
-Before screenshots: [desktop](https://github.com/user-attachments/assets/61c60692-096b-4585-9377-bce9ee1f02b8), [mobile](https://github.com/user-attachments/assets/b343bc0a-a002-435a-b7cc-d44c0b68967b). Existing `frontend/src/components/sections/Claudlobby/ClaudlobbyPage.tsx:21-27` renders text/card sections only; `frontend/src/content/claudlobby.ts:61-99` gives source-pinned roles, not evidence of a recorded run. The Phase 1 replacement supplies an explicitly conceptual `#how-it-works` sequence.
+Before screenshots: [desktop](https://github.com/user-attachments/assets/61c60692-096b-4585-9377-bce9ee1f02b8), [mobile](https://github.com/user-attachments/assets/b343bc0a-a002-435a-b7cc-d44c0b68967b). At [`0dafe75`](https://github.com/chrisrogers37/crog-gg/tree/0dafe753034ca9fac4abd4398f0422e3f508dcf5) (main before #265), `frontend/src/components/sections/Claudlobby/ClaudlobbyPage.tsx:21-27` renders text/card sections only; `frontend/src/content/claudlobby.ts:61-99` gives source-pinned roles, not evidence of a recorded run. The Phase 1 replacement supplies an explicitly conceptual `#how-it-works` sequence.
 
 Available captured candidate: [public demo reference](https://github.com/user-attachments/assets/feda46e0-2083-4e9b-a543-ae62c011b9cf), captured from `https://claudfather-ai.vercel.app/demo` on 2026-10-10. It visibly labels synthetic data and no real bots. No request was submitted. The public build revision was unavailable. This is evidence of the preview UI only; readable responsive presentation and content provenance still need implementation.
 
@@ -121,7 +121,7 @@ At 1440 px: one substantial readable figure beside/above concise explanatory tex
 ## Related
 
 - [Overview](00_OVERVIEW.md)
-- [Required Phase 1](01_featured-ecosystem.md)
+- [Required Phase 1 (PR #265)](https://github.com/chrisrogers37/crog-gg/pull/265)
 - [Public brand/source rules](https://github.com/Claudfather/.github/blob/main/BRAND.md)
 - [Public ecosystem overview](https://github.com/Claudfather)
 

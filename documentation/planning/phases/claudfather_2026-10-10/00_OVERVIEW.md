@@ -29,7 +29,7 @@ Before evidence:
 - [Desktop Claudlobby page](https://github.com/user-attachments/assets/61c60692-096b-4585-9377-bce9ee1f02b8): charcoal/orange hero followed by role cards, step cards, inventory counts, setup, roadmap and updates.
 - [Mobile Claudlobby page](https://github.com/user-attachments/assets/b343bc0a-a002-435a-b7cc-d44c0b68967b): the same narrative becomes a long stack of noninteractive cards.
 - [Current public preview reference](https://github.com/user-attachments/assets/feda46e0-2083-4e9b-a543-ae62c011b9cf), captured from `/demo` on 2026-10-10. The page visibly says synthetic data and no real bots; the public build revision was unavailable.
-- `frontend/src/content/claudlobby.ts:39-47` supplies the umbrella mark, fleet headline and Star/Quickstart labels. `ClaudlobbyPage.tsx:21-27` sets the long section order. `Hero.tsx:61-72` makes stars the primary action.
+- At [`0dafe75`](https://github.com/chrisrogers37/crog-gg/tree/0dafe753034ca9fac4abd4398f0422e3f508dcf5) (main before #265), `frontend/src/content/claudlobby.ts:39-47` supplies the umbrella mark, fleet headline and Star/Quickstart labels. `ClaudlobbyPage.tsx:21-27` sets the long section order. `Hero.tsx:61-72` makes stars the primary action.
 
 ## Selected design
 
@@ -104,14 +104,14 @@ The card/page copy above is a design proposal, not a claim of measured achieveme
 
 | Order | PR | Class | Impact / effort | Dependency |
 | --- | --- | --- | --- | --- |
-| 1 | [Featured ecosystem and detailed portfolio page](01_featured-ecosystem.md) | SAFE structure + RISK umbrella story | High / medium | None |
+| 1 | [Featured ecosystem and detailed portfolio page](https://github.com/chrisrogers37/crog-gg/pull/265) | SAFE structure + RISK umbrella story | High / medium | None |
 | 2 | [Dated product evidence](02_product-evidence.md) | SAFE evidence + explicit synthetic/local tradeoff | High / medium | Phase 1 |
 
-Each phase is one PR, with responsive/accessibility checks and repository-required validation. Phase 1 is implemented in [PR #265](https://github.com/chrisrogers37/crog-gg/pull/265), with local, CI and authenticated deployment-preview checks passing; review and merge remain. Phase 2 remains a draft. Phase 1 is useful without Phase 2, because its walkthrough is explicitly conceptual.
+Each phase is one PR, with responsive/accessibility checks and repository-required validation. Phase 1 shipped in [PR #265](https://github.com/chrisrogers37/crog-gg/pull/265), merged 2026-10-10. Phase 2 remains a draft. Phase 1 is useful without Phase 2, because its walkthrough is explicitly conceptual.
 
 ## Related
 
-- [Phase 1](01_featured-ecosystem.md)
+- [Phase 1 (PR #265)](https://github.com/chrisrogers37/crog-gg/pull/265)
 - [Phase 2](02_product-evidence.md)
 - [Public brand reference](https://github.com/Claudfather/.github/blob/main/BRAND.md)
 - [Public ecosystem overview](https://github.com/Claudfather)

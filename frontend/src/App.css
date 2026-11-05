@@ -57,23 +57,29 @@ h1 {
   margin: 0;
 }
 
-/* Links */
+/* Links. Their decoration is set with zero specificity (:where), so a link
+   family's own rule (.nav-link, .footer-links a and the rest) decides its
+   decoration on hover and on a press, and a link with no rule of its own,
+   such as one in running text, underlines. */
 a {
   color: var(--primary-color);
-  text-decoration: none;
   font-weight: 500;
+}
+
+:where(a) {
+  text-decoration: none;
 }
 
 /* Hover is for pointers that hover: a tap would leave it stuck on. Pressing
    shows the same on any pointer. */
 @media (hover: hover) {
-  a:hover {
+  :where(a:hover) {
     text-decoration: underline;
     text-underline-offset: 2px;
   }
 }
 
-a:active {
+:where(a:active) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }

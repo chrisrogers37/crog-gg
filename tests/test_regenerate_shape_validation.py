@@ -13,7 +13,7 @@ the caller keeps the fields that did come back rather than losing the section.
 """
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -59,14 +59,6 @@ def test_usable_shapes_are_accepted(parsed):
     assert _section_rejection(parsed, original) is None
 
 
-def _client_returning(payload):
-    fake = MagicMock()
-    fake.chat.completions.create.return_value = MagicMock(
-        choices=[MagicMock(message=MagicMock(content=json.dumps(payload)))]
-    )
-    return fake
-
-
 # A client may still send social_links and email: the page did until #190, and
 # the API keeps guarding them. Testing with a thinner object hides the
 # interaction below, because the unauthored-key restore has nothing to graft
@@ -88,10 +80,10 @@ _REAL_BIO = {
         pytest.param("a truncated sentence with no shape at all", id="bare-string"),
     ],
 )
-def test_unusable_section_is_reported_as_failed_not_as_success(client, model_returns):
+def test_unusable_section_is_reported_as_failed_not_as_success(client, fake_openai, model_returns):
     # End to end: the endpoint must not hand the caller a blank section and
     # call it a success. Nothing usable came back, so the request fails.
-    with patch("api.index.openai_client", _client_returning(model_returns)):
+    with patch("api.index.openai_client", fake_openai(content=json.dumps(model_returns))):
         r = client.post("/api/regenerate", json={"sections": {"about": _REAL_BIO}})
     assert r.status_code == 500
     body = r.get_json()
@@ -99,7 +91,7 @@ def test_unusable_section_is_reported_as_failed_not_as_success(client, model_ret
     assert body["failed_sections"] == ["about"]
 
 
-def test_unauthored_key_restore_cannot_rescue_an_unusable_shape(client):
+def test_unauthored_key_restore_cannot_rescue_an_unusable_shape(client, fake_openai):
     """Regression: order of validation vs the unauthored-key restore.
 
     `_UNAUTHORED_KEYS` grafts `email` and `social_links` from the original onto
@@ -113,31 +105,31 @@ def test_unauthored_key_restore_cannot_rescue_an_unusable_shape(client):
     when the request carries the unauthored keys, which is what a real client
     sends and what a thin fixture omits.
     """
-    with patch("api.index.openai_client", _client_returning({})):
+    with patch("api.index.openai_client", fake_openai(content={})):
         r = client.post("/api/regenerate", json={"sections": {"about": _REAL_BIO}})
 
     assert r.status_code == 500, "empty object was rescued by the unauthored-key restore"
     assert "content" not in r.get_json() or not r.get_json().get("content")
 
 
-def test_a_usable_partial_rewrite_still_succeeds(client):
+def test_a_usable_partial_rewrite_still_succeeds(client, fake_openai):
     # A rewrite legitimately returns a subset of what it was given; the restore
     # then puts the unauthored keys back.
-    with patch("api.index.openai_client", _client_returning({"about_text": "rewritten"})):
+    with patch("api.index.openai_client", fake_openai(content={"about_text": "rewritten"})):
         r = client.post("/api/regenerate", json={"sections": {"about": _REAL_BIO}})
     assert r.status_code == 200
     # Everything the model left out keeps the visitor's copy (#196 M16).
     assert r.get_json()["content"]["about"] == {**_REAL_BIO, "about_text": "rewritten"}
 
 
-def test_a_non_string_bio_field_is_dropped_and_counted(client, caplog):
+def test_a_non_string_bio_field_is_dropped_and_counted(client, fake_openai, caplog):
     """A field that came in as a string has to come back as one: an object in a
     text field reached the page and turned it into the 404 page (#196 M16). The
     server drops it before validation and logs it; the rest of the rewrite still
     lands."""
     caplog.set_level("WARNING", logger="crog")
     reply = {"about_text": {"nested": "x"}, "tagline": ["a", "list"], "display_name": "Chris R."}
-    with patch("api.index.openai_client", _client_returning(reply)):
+    with patch("api.index.openai_client", fake_openai(content=reply)):
         r = client.post("/api/regenerate", json={"sections": {"about": _ORIGINAL}})
 
     # The dropped field keeps the visitor's copy, and tagline, which the input
@@ -149,11 +141,11 @@ def test_a_non_string_bio_field_is_dropped_and_counted(client, caplog):
     )
 
 
-def test_a_blank_string_field_keeps_the_visitors_copy(client, caplog):
+def test_a_blank_string_field_keeps_the_visitors_copy(client, fake_openai, caplog):
     # Whitespace in place of the name would blank it on the page; the server
     # counts it like any other wrong-typed field and puts the original back.
     caplog.set_level("WARNING", logger="crog")
-    with patch("api.index.openai_client", _client_returning({"about_text": "rewritten", "display_name": "  "})):
+    with patch("api.index.openai_client", fake_openai(content={"about_text": "rewritten", "display_name": "  "})):
         r = client.post("/api/regenerate", json={"sections": {"about": _ORIGINAL}})
     assert r.status_code == 200
     assert r.get_json()["content"]["about"] == {"about_text": "rewritten", "display_name": "Chris"}

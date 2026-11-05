@@ -2,6 +2,12 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-11-04
+
+### Fixed
+
+- On a touch screen, the featured project's buttons and the buttons at the top of Benzo's page show that they're pressed, and a tap no longer leaves them in their hover look (#300).
+
 ## 2026-10-28
 
 ### Added
@@ -11,6 +17,10 @@ Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepac
 ### Changed
 
 - Storydump's project description leads with reusing past Instagram posts as Stories, alongside Google Drive media. Shuffify's description highlights scheduled reordering and adding songs from chosen playlists. Both descriptions feed the homepage, projects list and project pages.
+
+### Fixed
+
+- The logo, the nav links, the menu links, the breadcrumbs and the project rows no longer underline on hover; a link in running text, such as one in a README, still does.
 
 ## 2026-10-27
 
