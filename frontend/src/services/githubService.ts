@@ -1,4 +1,3 @@
-import { API_URL } from "../config/api";
 import {
   type Check,
   count,
@@ -134,7 +133,7 @@ class GitHubService {
   private cacheTTL: number = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
-    this.baseUrl = `${API_URL}/api/v1/github`;
+    this.baseUrl = "/api/v1/github";
     this.cache = new Map();
   }
 

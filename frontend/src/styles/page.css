@@ -103,18 +103,6 @@
   color: var(--text-color-secondary);
 }
 
-/* A bulleted list in a section. */
-.page-list {
-  margin: 0.75rem 0 0;
-  padding-left: 1.1rem;
-  list-style: disc;
-  line-height: 1.6;
-}
-
-.page-list li + li {
-  margin-top: 0.5rem;
-}
-
 /* A row of links that closes a section. */
 .page-links {
   display: flex;
