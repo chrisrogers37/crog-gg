@@ -517,6 +517,12 @@ test.describe("pressed", () => {
         const rest = await look(target);
         const box = (await target.boundingBox())!;
         await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        // A hover's colour fades in (.btn's transition), so the control is read
+        // once any fade it started has finished.
+        await target.evaluate(async (el) => {
+          const fades = el.getAnimations().filter((animation) => "transitionProperty" in animation);
+          await Promise.all(fades.map((fade) => fade.finished.catch(() => undefined)));
+        });
         expect(await look(target), "a pointer over it shows nothing").toEqual(rest);
 
         // Pressed shows at once: :active has no transition.
