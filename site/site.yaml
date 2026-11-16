@@ -44,12 +44,12 @@ seo:
   about:
     description: Chris Rogers. Data and AI engineering. Side projects, side quests and whatever comes next.
   projects:
-    description: "things i've built: Claudfather, my tools for running AI teams, plus Storydump, Shuffify, Benzo and Dead Redux."
+    description: "what i'm working on: Claudfather, my tools for running AI teams, plus Storydump, Shuffify, Benzo and Dead Redux."
 
 page_copy:
   projects:
     eyebrow: projects
-    heading: things i've built.
+    heading: what i'm working on
     github_link: more on GitHub
   not_found:
     heading: page not found
@@ -120,7 +120,7 @@ hero:
     - /profile-photos/photo-4
     - /profile-photos/photo-5
   labels:
-    projects: see what i'm building
+    projects: see my projects
     contact: say hey
 
 regenerate:
