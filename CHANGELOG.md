@@ -2,6 +2,15 @@
 
 Notable changes to crog.gg. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The site deploys continuously from `main`, so entries are grouped by date (US Eastern) rather than by version.
 
+## 2026-11-16
+
+### Changed
+
+- The hero's link to the projects reads "see my projects", where it was "see what i'm building".
+- The About text's first paragraph says "coding with AI" and "agent teams that can ship applications", where it said "building with AI" and "agent teams that can build applications".
+- Claudfather's description reads "run a team of AI workers, give them useful workflows, and keep what they learn.", where it started "build a team of AI workers". The home page and the projects page show it, and Claudfather's page carries it as its description.
+- The projects page's heading reads "what i'm working on", where it was "things i've built.", and the page's description starts "what i'm working on:", where it started "things i've built:".
+
 ## 2026-11-04
 
 ### Changed
