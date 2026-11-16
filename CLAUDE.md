@@ -18,7 +18,7 @@ This file provides project-specific guidance for Claude Code. Update this file w
 Give Claude verification loops for 2-3x quality improvement:
 
 1. Make changes
-2. Run typecheck: `cd frontend && npm run typecheck` (the app, unit tests and e2e; `npm run build` checks only the app)
+2. Run typecheck: `cd frontend && npm run typecheck` (the app, unit tests and e2e; `npm run build` checks the app, `vite.config.ts` and `scripts/`, not the tests)
 3. Run tests: `cd frontend && npm run test:run`
 4. Lint before committing: `cd frontend && npm run lint`
 5. Before creating a PR: run every row of the table in CONTRIBUTING.md's "Before you open a PR" (the API rows only if the Python side changed)
@@ -129,7 +129,7 @@ git diff                # Review changes before commit
 
 ### Testing
 
-- Unit tests co-located with components in `__tests__` directories
+- Unit tests sit beside the code they test: a sibling `*.test.ts(x)` file, or a file in a `__tests__` directory
 - E2E tests in `frontend/e2e/`
 - Mock external APIs in tests
 - Unit tests read the fictional `site.example/` (#191), through `virtual:site-config` and `@site/...`; never import the owner's `site/` by path, and set what a test needs on the fixture (its sections, a feature) instead of assuming it. The owner's content rules live in `src/site-check/` (`npm run site:check`, the active site)
