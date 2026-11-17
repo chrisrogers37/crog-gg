@@ -1,10 +1,8 @@
 # CLAUDE.md - Project Instructions for Claude Code
 
-This file provides project-specific guidance for Claude Code. Update this file whenever Claude does something incorrectly so it learns not to repeat mistakes.
-
 ## Project Overview
 
-**crog.gg** - **Choose Your Own Chris**, Chris's personal site with AI-regenerated content, on `/`, and his projects on `/projects`, with Claudfather (his ecosystem of tools for AI teams, workflows and knowledge) featured and on a page of its own. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
+**crog.gg** (formerly Choose Your Own Chris) - Chris's personal site with AI-regenerated content, on `/`, and his projects on `/projects`, with Claudfather (his ecosystem of tools for AI teams, workflows and knowledge) featured and on a page of its own. React + TypeScript frontend, Flask backend deployed as a single Vercel Python Function.
 
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand for state
 - **Backend**: Flask (`api/index.py`) on Vercel Python runtime, OpenAI API, Upstash Redis for rate limiting
@@ -14,8 +12,6 @@ This file provides project-specific guidance for Claude Code. Update this file w
 **Read before you change.** `/api/regenerate`, the GitHub proxy or metering: [documentation/ARCHITECTURE.md](documentation/ARCHITECTURE.md). The content YAML: [documentation/CONTENT.md](documentation/CONTENT.md). The checks CI runs, and how to link issues: [CONTRIBUTING.md](CONTRIBUTING.md). Environment variables: the README's [table](README.md#environment-variables).
 
 ## Development Workflow
-
-Give Claude verification loops for 2-3x quality improvement:
 
 1. Make changes
 2. Run typecheck: `cd frontend && npm run typecheck` (the app, unit tests and e2e; `npm run build` checks the app, `vite.config.ts` and `scripts/`, not the tests)
@@ -163,7 +159,7 @@ await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
 - Who the site is (the owner, the URLs, the socials, the copy around the content) is `site/site.yaml`, checked at build time and read through `virtual:site-config` (#188; fields: documentation/CONTENT.md). Don't type an owner value into the code: `npm run site:check` fails on its distinctive ones (the name, email, host, descriptions and URLs). Code that `vite.config.ts` imports can't import the virtual module; it calls `siteConfig()` (`frontend/scripts/site-config.ts`). The API reads the same file (`api/_lib/site_config.py`, #189): its CORS origins, GitHub owner, the button's label, the rewrite's persona, and the `features` that hide SUMMON and the GitHub panels where the deployment can't serve them (`GET /api/features`)
 - Content lives in `site/public/content/` as YAML files
-- Exception: Claudfather's page copy (`/projects/claudfather`) is `frontend/src/content/claudfather.ts`, a typed module bundled at build time. The portfolio owns evergreen purpose, component roles and creator context. The product site owns current demos/onboarding/status; repositories own installation/reference/releases. `website` is one authored preview/live/null destination with its label and caveat: switch it only after verifying public access and actual launch claims, or set it to null to hide an unavailable preview. No health polling or launch timers. Role descriptions, and the safety note under the setup link, carry public commit-pinned sources and dates. The website implementation is private: no source/install link for it, and no blanket ecosystem license claims. A component that goes private or is archived leaves the family (Claudosseum, 2026-10-24). `claudfather.test.ts` enforces plain copy, evidence and preview honesty. The old `/projects/claudlobby` redirects with queries and useful fragments preserved.
+- Exception: Claudfather's page copy (`/projects/claudfather`) is `frontend/src/content/claudfather.ts`, a typed module bundled at build time. The portfolio owns evergreen purpose, component roles and creator context. The product site owns current demos/onboarding/status; repositories own installation/reference/releases. `website` is one authored preview/live/null destination with its label and caveat: switch it only after verifying public access and actual launch claims, or set it to null to hide an unavailable preview. No health polling or launch timers. Role descriptions, and the safety note under the setup link, carry public commit-pinned sources and dates. The website implementation is private: no source/install link for it, and no blanket ecosystem license claims. A component that goes private or is archived leaves the family. `claudfather.test.ts` enforces plain copy, evidence and preview honesty. The old `/projects/claudlobby` redirects with queries and useful fragments preserved.
 - Benzo also has a dedicated portfolio page (`content/benzo.ts` and `components/sections/Benzo/`). Its links come from the project YAML; its colors live in `palette.ts`. Keep the personal origin story here and current demo/install guidance on the product site.
 - Project cards on `/` and `/projects` share `content/projectPresentation.ts` and `common/ProjectMark.tsx`. Select a `brand` in project YAML; keep copy and destinations in that same file. Raw colors belong in `palette.ts`. Reuse the marks in detail pages, and preserve legacy `icon` support for forks.
 - Bio, experience, education, skills, timeline, showcase, projects all loaded from YAML
@@ -229,7 +225,7 @@ The README's [table](README.md#environment-variables) lists them all. The token'
 The site has two voices (#179):
 
 - **Claudfather's page (`/projects/claudfather`): platform voice.** Plain, specific and honest, with no jokes or self-deprecation, because it asks developers to trust an autonomous tool with their repos. Sentence case. Copy is `frontend/src/content/claudfather.ts`.
-- **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, headings, labels, buttons and the nav included, but names and acronyms keep their capitals: Spotify, macOS, AI, SEO, NYC (Chris, 2026-10-03). The SUMMON button's labels keep their all-caps game style. Casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact and music lines in `site/site.yaml`.
+- **Everything else (the owner's page at `/`, and the projects): personal voice.** Lowercase, headings, labels, buttons and the nav included, but names and acronyms keep their capitals: Spotify, macOS, AI, SEO, NYC. The SUMMON button's labels keep their all-caps game style. Casual and conversational, not corporate; jokes welcome, SUMMON NEW LORE included. Example: "alright, here goes..." not "Here's what makes me tick—". Copy is `site/public/content/*.yaml`, and the contact and music lines in `site/site.yaml`.
 - **Claims on Claudfather's page stay honest.** Label the illustrative workflow, and the website as in private development. Link to owners for current capabilities; do not imply automatic integration or real hosted execution. The enforced rules are listed under Content Files.
 - **Both voices: NEVER use em-dashes** (—). Use a regular dash, a comma or an ellipsis instead. `claudfather.test.ts` enforces it on Claudfather's page and `site-check/cards.test.ts` on the link-preview cards; elsewhere it's a convention. The regenerate prompt asks the model for the same (`regenerate.style_rules` in `site/site.yaml`): a request, not a check.
 
@@ -250,7 +246,3 @@ Example - cropping with CSS (not image manipulation):
   object-position: top; /* Shows top of image, crops bottom */
 }
 ```
-
----
-
-_Update this file continuously. Every mistake Claude makes is a learning opportunity._

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisrogers37/crog-gg/actions/workflows/ci.yml)
 
-crog.gg is Chris Rogers's site, Choose Your Own Chris:
+crog.gg is Chris Rogers's site:
 - **`/` is his page**: who he is, a career timeline, his projects, his music and how to reach him, in one column. Its About section can be rewritten on demand by an AI model, as lore in a different register each time.
 - **`/projects`** lists the projects, with [Claudfather](https://github.com/Claudfather), an ecosystem of tools for AI teams, workflows and knowledge, featured. Its detailed portfolio page explains the family, shows an illustrative workflow and links to [claudfather.ai](https://claudfather.ai) (in private development) and public setup guides. crog.gg remains Chris's personal site.
 
