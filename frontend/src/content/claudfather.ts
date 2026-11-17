@@ -44,7 +44,7 @@ export const claudfather = {
       "The website is in private development. There's no sign-up, waitlist or public demo yet.",
   } as WebsiteDestination | null,
   hero: {
-    headline: "Build a team of AI workers.",
+    headline: "Run a team of AI workers.",
     sub: "Tools for running a team, giving it reusable workflows, and keeping what it learns. For solo founders and small teams.",
     status: "Early alpha",
     cta: "See how it works",
