@@ -21,7 +21,7 @@ const cards = fs
   .map((file) => file.slice(0, -".html".length));
 if (cards.length === 0) throw new Error(`no card source (<name>.html) in ${site}`);
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ chromiumSandbox: !process.env.GITHUB_ACTIONS });
 try {
   const page = await browser.newPage({
     viewport: { width: 1200, height: 630 },

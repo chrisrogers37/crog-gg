@@ -38,6 +38,9 @@ export default defineConfig({
 
     // Take screenshot on failure
     screenshot: "only-on-failure",
+
+    // Chromium runs with its sandbox, except on GitHub's runners
+    launchOptions: { chromiumSandbox: !process.env.GITHUB_ACTIONS },
   },
 
   // Configure projects for major browsers
