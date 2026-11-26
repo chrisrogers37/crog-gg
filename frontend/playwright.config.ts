@@ -38,6 +38,9 @@ export default defineConfig({
 
     // Take screenshot on failure
     screenshot: "only-on-failure",
+
+    // Chromium runs with its sandbox
+    launchOptions: { chromiumSandbox: true },
   },
 
   // Configure projects for major browsers
