@@ -860,10 +860,10 @@ const gate = (name, pass, detail) => report.gates.push({ name, pass, detail });
 await mkdir(OUT, { recursive: true });
 const chromiumBrowser = await (async () => {
   try {
-    return await chromium.launch({ chromiumSandbox: true });
+    return await chromium.launch({ chromiumSandbox: !process.env.GITHUB_ACTIONS });
   } catch (error) {
     console.log(`Playwright's Chromium did not start (${oneLine(error, 200)}); using the runner's Chrome`);
-    return chromium.launch({ channel: "chrome", chromiumSandbox: true });
+    return chromium.launch({ channel: "chrome", chromiumSandbox: !process.env.GITHUB_ACTIONS });
   }
 })();
 report.browsers.chromium = chromiumBrowser.version();
